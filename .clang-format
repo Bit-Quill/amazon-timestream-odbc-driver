@@ -1,0 +1,17 @@
+# Common settings
+BasedOnStyle: Google
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: 'false'
+AllowShortLoopsOnASingleLine: 'false'
+BreakBeforeBinaryOperators: NonAssignment
+IndentWidth: '2'
+SortIncludes: false
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: 'false'
+SpacesInAngles: 'true'
+SpacesInParentheses: 'false'
+SpacesInSquareBrackets: 'false'
+TabWidth: '2'
+UseTab: 'false'
+
+# See https://zed0.co.uk/clang-format-configurator/ for generating this file.
