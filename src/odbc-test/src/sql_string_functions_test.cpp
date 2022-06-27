@@ -46,7 +46,7 @@ using ignite::impl::binary::BinaryUtils;
 BOOST_FIXTURE_TEST_SUITE(SqlStringFunctionTestSuite,
                          ignite::SqlTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionAscii) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionAscii, *disabled()) {
   TestType in;
 
   in.strField = "Hi";
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionAscii) {
                                   static_cast< int32_t >('H'));
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionBitLength) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionBitLength, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor";
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionBitLength) {
       in.strField.size() * 16);
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionChar) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionChar, *disabled()) {
   TestType in;
 
   in.i32Field = static_cast< int32_t >('H');
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionChar) {
                                    "H");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionCharLength) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionCharLength, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor";
 
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionCharLength) {
       "SELECT {fn CHAR_LENGTH(strField)} FROM TestType", in.strField.size());
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionCharacterLength) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionCharacterLength, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor";
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionCharacterLength) {
       in.strField.size());
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionConcat) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionConcat, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor sit amet,";
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionConcat) {
       in.strField + " consectetur adipiscing elit");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionDifference) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionDifference, *disabled()) {
   TestType in;
   in.strField = "Hello";
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionDifference) {
       "SELECT {fn DIFFERENCE(strField, \'Hola!\')} FROM TestType", 4);
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionInsert) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionInsert, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionInsert) {
       "Hello Ignite!");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionLcase) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionLcase, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionLcase) {
                                    "hello world!");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionLeft) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionLeft, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionLeft) {
       "SELECT {fn LEFT(strField, 5)} FROM TestType", "Hello");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionLength) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionLength, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
 
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionLength) {
                                  in.strField.size());
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionLocate) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionLocate, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
 
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionLocate) {
       "SELECT {fn LOCATE(\'ip\', strField)} FROM TestType", 7);
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionLocate2) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionLocate2, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
 
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionLocate2) {
       "SELECT {fn LOCATE(\'ip\', strField, 10)} FROM TestType", 43);
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionLtrim) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionLtrim, *disabled()) {
   TestType in;
   in.strField = "    Lorem ipsum  ";
 
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionLtrim) {
                                    "Lorem ipsum  ");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionOctetLength) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionOctetLength, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
 
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionOctetLength) {
       in.strField.size() * 2);
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionPosition) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionPosition, *disabled()) {
   TestType in;
   in.strField = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
 
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionPosition) {
       "SELECT {fn POSITION(\'sit\', strField)} FROM TestType", 19);
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionRepeat) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionRepeat, *disabled()) {
   TestType in;
   in.strField = "Test";
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionRepeat) {
       "SELECT {fn REPEAT(strField,4)} FROM TestType", "TestTestTestTest");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionReplace) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionReplace, *disabled()) {
   TestType in;
   in.strField = "Hello Ignite!";
 
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionReplace) {
       "Hello World!");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionRight) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionRight, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionRight) {
       "SELECT {fn RIGHT(strField, 6)} FROM TestType", "World!");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionRtrim) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionRtrim, *disabled()) {
   TestType in;
   in.strField = "    Lorem ipsum  ";
 
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionRtrim) {
                                    "    Lorem ipsum");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionSoundex) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionSoundex, *disabled()) {
   TestType in;
   in.strField = "Hello Ignite!";
 
@@ -265,11 +265,11 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionSoundex) {
       "SELECT {fn SOUNDEX(strField)} FROM TestType", "H425");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionSpace) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionSpace, *disabled()) {
   CheckSingleResult< std::string >("SELECT {fn SPACE(10)}", "          ");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionSubstring) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionSubstring, *disabled()) {
   TestType in;
   in.strField = "Hello Ignite!";
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionSubstring) {
       "SELECT {fn SUBSTRING(strField, 7, 6)} FROM TestType", "Ignite");
 }
 
-BOOST_AUTO_TEST_CASE(TestStringFunctionUcase) {
+BOOST_AUTO_TEST_CASE(TestStringFunctionUcase, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(TestStringFunctionUcase) {
                                    "HELLO WORLD!");
 }
 
-BOOST_AUTO_TEST_CASE(Test92StringFunctionLower) {
+BOOST_AUTO_TEST_CASE(Test92StringFunctionLower, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(Test92StringFunctionLower) {
                                    "hello world!");
 }
 
-BOOST_AUTO_TEST_CASE(Test92StringFunctionUpper) {
+BOOST_AUTO_TEST_CASE(Test92StringFunctionUpper, *disabled()) {
   TestType in;
   in.strField = "Hello World!";
 
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(Test92StringFunctionUpper) {
                                    "HELLO WORLD!");
 }
 
-BOOST_AUTO_TEST_CASE(Test92StringFunctionSubstring) {
+BOOST_AUTO_TEST_CASE(Test92StringFunctionSubstring, *disabled()) {
   TestType in;
   in.strField = "Hello Ignite!";
 
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(Test92StringFunctionSubstring) {
       "SELECT SUBSTRING(strField FROM 7 FOR 6) FROM TestType", "Ignite");
 }
 
-BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimBoth) {
+BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimBoth, *disabled()) {
   TestType in;
   in.strField = "    Lorem ipsum  ";
 
@@ -335,7 +335,7 @@ BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimBoth) {
       "SELECT TRIM(BOTH FROM strField) FROM TestType", "Lorem ipsum");
 }
 
-BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimLeading) {
+BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimLeading, *disabled()) {
   TestType in;
   in.strField = "    Lorem ipsum  ";
 
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimLeading) {
       "SELECT TRIM(LEADING FROM strField) FROM TestType", "Lorem ipsum  ");
 }
 
-BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimTrailing) {
+BOOST_AUTO_TEST_CASE(Test92StringFunctionTrimTrailing, *disabled()) {
   TestType in;
   in.strField = "    Lorem ipsum  ";
 

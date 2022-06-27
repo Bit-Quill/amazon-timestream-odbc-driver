@@ -135,7 +135,7 @@ SQLSMALLINT unsupportedSql[] = {SQL_INTERVAL_MONTH,
 
 BOOST_FIXTURE_TEST_SUITE(ApiRobustnessTestSuite, ApiRobustnessTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize) {
+BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize, *disabled()) {
   // check that statement array size cannot be set to values other than 1
 
   std::string dsnConnectionString;
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize) {
 // only enable for Windows and Linux as it crashes on Mac
 // with iODBC, traced by AD-820
 // https://bitquill.atlassian.net/browse/AD-820
-BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
+BOOST_AUTO_TEST_CASE(TestSQLDriverConnect, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
 }
 #endif
 
-BOOST_AUTO_TEST_CASE(TestSQLConnect) {
+BOOST_AUTO_TEST_CASE(TestSQLConnect, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnect) {
   SQLGetInfo(dbc, SQL_DRIVER_NAME, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLPrepare) {
+BOOST_AUTO_TEST_CASE(TestSQLPrepare, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(TestSQLPrepare) {
   SQLCloseCursor(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
+BOOST_AUTO_TEST_CASE(TestSQLExecDirect, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
   SQLCloseCursor(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch) {
+BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
   connectToLocalServer("odbc-test");
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch) {
   SQLExtendedFetch(stmt, SQL_FETCH_NEXT, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLNumResultCols) {
+BOOST_AUTO_TEST_CASE(TestSQLNumResultCols, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > sql =
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNumResultCols) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLForeignKeys) {
+BOOST_AUTO_TEST_CASE(TestSQLForeignKeys, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > fkTableName = MakeSqlBuffer("jni_test_001_sub_doc");
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeys) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLTables) {
+BOOST_AUTO_TEST_CASE(TestSQLTables, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(TestSQLTables) {
   SQLTables(dbc, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLColumns) {
+BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -459,7 +459,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns) {
   SQLColumns(dbc, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys) {
+BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > catalogName = {0};
@@ -491,7 +491,7 @@ BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys) {
   SQLPrimaryKeys(stmt, 0, 0, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
+BOOST_AUTO_TEST_CASE(TestSQLBindCol, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   SQLBindCol(stmt, 4, SQL_C_SLONG, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLBindParameter) {
+BOOST_AUTO_TEST_CASE(TestSQLBindParameter, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -596,7 +596,7 @@ BOOST_AUTO_TEST_CASE(TestSQLBindParameter) {
                    0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLNativeSql) {
+BOOST_AUTO_TEST_CASE(TestSQLNativeSql, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -632,7 +632,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNativeSql) {
   SQLNativeSql(dbc, sql.data(), 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLColAttribute) {
+BOOST_AUTO_TEST_CASE(TestSQLColAttribute, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -680,7 +680,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttribute) {
   SQLColAttribute(stmt, 1, SQL_DESC_COUNT, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLDescribeCol) {
+BOOST_AUTO_TEST_CASE(TestSQLDescribeCol, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -723,7 +723,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeCol) {
   SQLDescribeCol(stmt, 1, 0, 0, 0, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLRowCount) {
+BOOST_AUTO_TEST_CASE(TestSQLRowCount, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -746,7 +746,7 @@ BOOST_AUTO_TEST_CASE(TestSQLRowCount) {
   SQLRowCount(stmt, nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLForeignKeysSegFault) {
+BOOST_AUTO_TEST_CASE(TestSQLForeignKeysSegFault, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -844,7 +844,7 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeysSegFault) {
   SQLCloseCursor(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr) {
+BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -865,7 +865,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr) {
   SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr) {
+BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -886,7 +886,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr) {
   SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetDiagField) {
+BOOST_AUTO_TEST_CASE(TestSQLGetDiagField, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
   connectToLocalServer("odbc-test");
@@ -914,7 +914,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagField) {
   SQLGetDiagField(SQL_HANDLE_STMT, stmt, 1, SQL_DIAG_MESSAGE_TEXT, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec) {
+BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLWCHAR state[ODBC_BUFFER_SIZE];
@@ -956,7 +956,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec) {
   SQLGetDiagRec(SQL_HANDLE_STMT, stmt, 1, 0, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetData) {
+BOOST_AUTO_TEST_CASE(TestSQLGetData, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -1000,7 +1000,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetData) {
   SQLFetch(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr) {
+BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -1021,7 +1021,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr) {
   SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, nullptr, 0, nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns) {
+BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -1099,7 +1099,7 @@ BOOST_AUTO_TEST_CASE(TestFetchScrollFirst, *disabled()) {
 // only enable for Windows and Linux as it crashes on Mac
 // with iODBC, traced by AD-820
 // https://bitquill.atlassian.net/browse/AD-820
-BOOST_AUTO_TEST_CASE(TestSQLError) {
+BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -1147,7 +1147,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError) {
 }
 #endif
 
-BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords) {
+BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLHANDLE hnd;
@@ -1165,7 +1165,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords) {
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(TestManyFds) {
+BOOST_AUTO_TEST_CASE(TestManyFds, *disabled()) {
   enum { FDS_NUM = 2000 };
 
   std::FILE* fds[FDS_NUM];

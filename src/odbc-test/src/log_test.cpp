@@ -56,7 +56,7 @@ void setLoggerVars(std::shared_ptr< Logger > logger,
   logger->SetLogPath(origLogPath.get());
 }
 
-BOOST_AUTO_TEST_CASE(TestLogStreamCreatedOnDefaultInstance) {
+BOOST_AUTO_TEST_CASE(TestLogStreamCreatedOnDefaultInstance, *disabled()) {
   std::minstd_rand randNum;
   randNum.seed(29);
 
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(TestLogStreamCreatedOnDefaultInstance) {
     setLoggerVars(logger, origLogPath, origLogLevel);
 }
 
-BOOST_AUTO_TEST_CASE(TestLogStreamWithInfoLevel) {
+BOOST_AUTO_TEST_CASE(TestLogStreamWithInfoLevel, *disabled()) {
   std::minstd_rand randNum;
   randNum.seed(31);
 
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithInfoLevel) {
     setLoggerVars(logger, origLogPath, origLogLevel);
 }
 
-BOOST_AUTO_TEST_CASE(TestLogStreamWithErrorLevel) {
+BOOST_AUTO_TEST_CASE(TestLogStreamWithErrorLevel, *disabled()) {
   std::minstd_rand randNum;
   randNum.seed(42);
 
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithErrorLevel) {
     setLoggerVars(logger, origLogPath, origLogLevel);
 }
 
-BOOST_AUTO_TEST_CASE(TestLogSetInvalidLogPath) {
+BOOST_AUTO_TEST_CASE(TestLogSetInvalidLogPath, *disabled()) {
   std::string logPath = "invalid\\log\\path";
 
   std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();

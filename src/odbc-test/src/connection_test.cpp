@@ -33,6 +33,7 @@ using boost::unit_test::precondition;
 using ignite::odbc::if_integration;
 using ignite::odbc::OdbcTestSuite;
 using ignite_test::GetOdbcErrorMessage;
+using namespace boost::unit_test;
 
 /**
  * Test setup fixture.
@@ -82,7 +83,7 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreInternalSSHTunnel,
+BOOST_AUTO_TEST_CASE(TestConnectionRestoreInternalSSHTunnel, *disabled(),
                      *precondition(if_integration())) {
   std::string connectionString;
   CreateDsnConnectionStringForRemoteServer(connectionString);
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionRestoreInternalSSHTunnel,
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreExternalSSHTunnel,
+BOOST_AUTO_TEST_CASE(TestConnectionRestoreExternalSSHTunnel, *disabled(),
                      *precondition(if_integration())) {
   std::string connectionString;
   CreateDsnConnectionStringForRemoteServer(connectionString, false);
@@ -98,14 +99,14 @@ BOOST_AUTO_TEST_CASE(TestConnectionRestoreExternalSSHTunnel,
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreLocalServer) {
+BOOST_AUTO_TEST_CASE(TestConnectionRestoreLocalServer, *disabled()) {
   std::string connectionString;
   CreateDsnConnectionStringForLocalServer(connectionString);
   Connect(connectionString);
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet) {
+BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
   const std::string miscOptions =
       "APP_NAME=TestAppName;"
       "LOGIN_TIMEOUT_SEC=30;"
@@ -124,7 +125,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet) {
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
+BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties, *disabled()) {
   std::string connectionString =
       "DRIVER={Amazon DocumentDB};"
       "HOSTNAME=localhost;"
@@ -138,7 +139,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionIncompleteSSHTunnelProperties) {
+BOOST_AUTO_TEST_CASE(TestConnectionIncompleteSSHTunnelProperties, *disabled()) {
   std::string connectionString =
       "DRIVER={Amazon DocumentDB};"
       "HOSTNAME=host.com;"
@@ -156,7 +157,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionIncompleteSSHTunnelProperties) {
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionInvalidUser) {
+BOOST_AUTO_TEST_CASE(TestConnectionInvalidUser, *disabled()) {
   std::string connectionString;
   CreateDsnConnectionStringForLocalServer(connectionString, "", "invaliduser");
 

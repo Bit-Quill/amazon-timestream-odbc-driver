@@ -269,7 +269,7 @@ struct StreamingTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(StreamingTestSuite, StreamingTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestStreamingSimple) {
+BOOST_AUTO_TEST_CASE(TestStreamingSimple, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLRETURN res =
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingSimple) {
   CheckValues(0, 110);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingAllOptions) {
+BOOST_AUTO_TEST_CASE(TestStreamingAllOptions, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLRETURN res = ExecQuery(
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingAllOptions) {
   BOOST_CHECK_EQUAL(cache.Size(), 512);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingNotAllowedOverwrite) {
+BOOST_AUTO_TEST_CASE(TestStreamingNotAllowedOverwrite, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLRETURN res =
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingNotAllowedOverwrite) {
   BOOST_CHECK_EQUAL(cache.Size(), 10);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingReset) {
+BOOST_AUTO_TEST_CASE(TestStreamingReset, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLRETURN res =
@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingReset) {
   BOOST_CHECK_EQUAL(cache.Size(), 50);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingClosingStatement) {
+BOOST_AUTO_TEST_CASE(TestStreamingClosingStatement, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLRETURN res =
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingClosingStatement) {
   BOOST_CHECK_EQUAL(cache.Size(), 10);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingSeveralStatements) {
+BOOST_AUTO_TEST_CASE(TestStreamingSeveralStatements, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLHSTMT stmt2;
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingSeveralStatements) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt2));
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingSeveralStatementsClosing) {
+BOOST_AUTO_TEST_CASE(TestStreamingSeveralStatementsClosing, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLHSTMT stmt2;
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingSeveralStatementsClosing) {
   BOOST_CHECK_EQUAL(cache.Size(), 50);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingDifferentStatements) {
+BOOST_AUTO_TEST_CASE(TestStreamingDifferentStatements, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   SQLHSTMT stmt2;
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE(TestStreamingDifferentStatements) {
   BOOST_CHECK_EQUAL(GetI32Field(42), 42);
 }
 
-BOOST_AUTO_TEST_CASE(TestStreamingManyObjects) {
+BOOST_AUTO_TEST_CASE(TestStreamingManyObjects, *disabled()) {
   const static int32_t OBJECT_NUM = 100000;
 
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");

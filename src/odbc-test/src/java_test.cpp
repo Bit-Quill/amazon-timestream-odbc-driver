@@ -164,7 +164,7 @@ struct AutoCloseResultSet {
 
 BOOST_FIXTURE_TEST_SUITE(JavaTestSuite, JavaTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestDriverManagerGetConnection) {
+BOOST_AUTO_TEST_CASE(TestDriverManagerGetConnection, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(TestDriverManagerGetConnection) {
   connection = SharedPointer< GlobalJObject >(nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetSshTunnelPort,
+BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetSshTunnelPort, *disabled(),
                      *precondition(if_integration())) {
   PrepareContext(true, true);  // remote, internal SSH tunnel
   BOOST_REQUIRE(_ctx.Get() != nullptr);
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetSshTunnelPort,
   BOOST_CHECK(port > 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetSshTunnelPortSshTunnelNotActive,
+BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetSshTunnelPortSshTunnelNotActive, *disabled(),
                      *precondition(if_integration())) {
   PrepareContext(true, false);  // remote, external SSH tunnel
   BOOST_REQUIRE(_ctx.Get() != nullptr);
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetSshTunnelPortSshTunnelNotActive,
   BOOST_CHECK_EQUAL(port, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetDatabaseMetadata) {
+BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetDatabaseMetadata, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE(TestDocumentDbConnectionGetDatabaseMetadata) {
   BOOST_REQUIRE(databaseMetadata.Get());
 }
 
-BOOST_AUTO_TEST_CASE(TestDocumentDbDatabaseSchemaMetadataGetSchemaName) {
+BOOST_AUTO_TEST_CASE(TestDocumentDbDatabaseSchemaMetadataGetSchemaName, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE(TestDocumentDbDatabaseSchemaMetadataGetSchemaName) {
   BOOST_CHECK_EQUAL(schemaName, "_default");
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionGetMetaData) {
+BOOST_AUTO_TEST_CASE(TestConnectionGetMetaData, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionGetMetaData) {
   BOOST_REQUIRE(databaseMetaData.Get() != nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetTables) {
+BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetTables, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetTables) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetColumns) {
+BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetColumns, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -648,7 +648,7 @@ BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetColumns) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetPrimaryKeys) {
+BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetPrimaryKeys, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -818,7 +818,7 @@ BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetPrimaryKeys) {
   BOOST_CHECK_EQUAL(1, i);
 }
 
-BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetImportedKeys) {
+BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetImportedKeys, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 
@@ -1137,7 +1137,7 @@ BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetImportedKeys) {
   BOOST_CHECK_EQUAL(2, i);
 }
 
-BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetImportedKeysReturnsNone) {
+BOOST_AUTO_TEST_CASE(TestDatabaseMetaDataGetImportedKeysReturnsNone, *disabled()) {
   PrepareContext();
   BOOST_REQUIRE(_ctx.Get() != nullptr);
 

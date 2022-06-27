@@ -26,32 +26,32 @@ using namespace boost::unit_test;
 BOOST_FIXTURE_TEST_SUITE(SqlDateTimeFunctionTestSuite,
                          ignite::SqlTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestCurrentDate) {
+BOOST_AUTO_TEST_CASE(TestCurrentDate, *disabled()) {
   CheckSingleResult< Date >("SELECT {fn CURRENT_DATE()}");
   CheckSingleResult< Timestamp >("SELECT {fn CURRENT_DATE()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestCurdate) {
+BOOST_AUTO_TEST_CASE(TestCurdate, *disabled()) {
   CheckSingleResult< Date >("SELECT {fn CURDATE()}");
   CheckSingleResult< Timestamp >("SELECT {fn CURDATE()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestCurrentTime) {
+BOOST_AUTO_TEST_CASE(TestCurrentTime, *disabled()) {
   CheckSingleResult< Timestamp >("SELECT {fn CURRENT_TIME()}");
   CheckSingleResult< Time >("SELECT {fn CURRENT_TIME()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestCurtime) {
+BOOST_AUTO_TEST_CASE(TestCurtime, *disabled()) {
   CheckSingleResult< Timestamp >("SELECT {fn CURTIME()}");
   CheckSingleResult< Time >("SELECT {fn CURTIME()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestCurrentTimestamp) {
+BOOST_AUTO_TEST_CASE(TestCurrentTimestamp, *disabled()) {
   CheckSingleResult< Timestamp >("SELECT {fn CURRENT_TIMESTAMP()}");
   CheckSingleResult< Time >("SELECT {fn CURRENT_TIMESTAMP()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestDayname) {
+BOOST_AUTO_TEST_CASE(TestDayname, *disabled()) {
   TestType in;
 
   in.dateField = common::MakeDateGmt(2016, 8, 29);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(TestDayname) {
       "SELECT {fn DAYNAME(dateField)} FROM TestType", "Monday");
 }
 
-BOOST_AUTO_TEST_CASE(TestDayofmonth) {
+BOOST_AUTO_TEST_CASE(TestDayofmonth, *disabled()) {
   TestType in;
 
   in.dateField = common::MakeDateGmt(2016, 8, 29);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(TestDayofmonth) {
       "SELECT {fn DAY_OF_MONTH(dateField)} FROM TestType", 29);
 }
 
-BOOST_AUTO_TEST_CASE(TestDayofweek) {
+BOOST_AUTO_TEST_CASE(TestDayofweek, *disabled()) {
   TestType in;
 
   in.dateField = common::MakeDateGmt(2016, 8, 29);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(TestDayofweek) {
       "SELECT {fn DAY_OF_WEEK(dateField)} FROM TestType", 2);
 }
 
-BOOST_AUTO_TEST_CASE(TestDayofyear) {
+BOOST_AUTO_TEST_CASE(TestDayofyear, *disabled()) {
   TestType in;
 
   in.dateField = common::MakeDateGmt(2016, 8, 29);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(TestDayofyear) {
       "SELECT {fn DAY_OF_YEAR(dateField)} FROM TestType", 242);
 }
 
-BOOST_AUTO_TEST_CASE(TestExtract) {
+BOOST_AUTO_TEST_CASE(TestExtract, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(TestExtract) {
       "SELECT {fn EXTRACT(SECOND FROM timestampField)} FROM TestType", 23);
 }
 
-BOOST_AUTO_TEST_CASE(TestHour) {
+BOOST_AUTO_TEST_CASE(TestHour, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(TestHour) {
       "SELECT {fn HOUR(timestampField)} FROM TestType", 13);
 }
 
-BOOST_AUTO_TEST_CASE(TestMinute) {
+BOOST_AUTO_TEST_CASE(TestMinute, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(TestMinute) {
       "SELECT {fn MINUTE(timestampField)} FROM TestType", 45);
 }
 
-BOOST_AUTO_TEST_CASE(TestMonth) {
+BOOST_AUTO_TEST_CASE(TestMonth, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(TestMonth) {
       "SELECT {fn MONTH(timestampField)} FROM TestType", 2);
 }
 
-BOOST_AUTO_TEST_CASE(TestMonthname) {
+BOOST_AUTO_TEST_CASE(TestMonthname, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -171,11 +171,11 @@ BOOST_AUTO_TEST_CASE(TestMonthname) {
       "SELECT {fn MONTHNAME(timestampField)} FROM TestType", "February");
 }
 
-BOOST_AUTO_TEST_CASE(TestNow) {
+BOOST_AUTO_TEST_CASE(TestNow, *disabled()) {
   CheckSingleResult< Timestamp >("SELECT {fn NOW()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestQuarter) {
+BOOST_AUTO_TEST_CASE(TestQuarter, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(TestQuarter) {
       "SELECT {fn QUARTER(timestampField)} FROM TestType", 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestSecond) {
+BOOST_AUTO_TEST_CASE(TestSecond, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(TestSecond) {
       "SELECT {fn SECOND(timestampField)} FROM TestType", 23);
 }
 
-BOOST_AUTO_TEST_CASE(TestWeek) {
+BOOST_AUTO_TEST_CASE(TestWeek, *disabled()) {
   TestType in;
 
   in.timestampField =
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(TestWeek) {
       "SELECT {fn WEEK(timestampField)} FROM TestType", 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestYear) {
+BOOST_AUTO_TEST_CASE(TestYear, *disabled()) {
   TestType in;
 
   in.timestampField =

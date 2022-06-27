@@ -76,7 +76,7 @@ struct ErrorTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(ErrorTestSuite, ErrorTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestConnectFail) {
+BOOST_AUTO_TEST_CASE(TestConnectFail, *disabled()) {
   // Allocate an environment handle
   SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
 
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(TestConnectFail) {
   BOOST_CHECK_EQUAL(GetOdbcErrorState(SQL_HANDLE_DBC, dbc), "08001");
 }
 
-BOOST_AUTO_TEST_CASE(TestDuplicateKey) {
+BOOST_AUTO_TEST_CASE(TestDuplicateKey, *disabled()) {
   StartAdditionalNode("Node1");
 
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(TestDuplicateKey) {
   BOOST_CHECK_EQUAL(GetOdbcErrorState(SQL_HANDLE_STMT, stmt), "23000");
 }
 
-BOOST_AUTO_TEST_CASE(TestUpdateKey) {
+BOOST_AUTO_TEST_CASE(TestUpdateKey, *disabled()) {
   StartAdditionalNode("Node1");
 
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(TestUpdateKey) {
   BOOST_CHECK_EQUAL(GetOdbcErrorState(SQL_HANDLE_STMT, stmt), "42000");
 }
 
-BOOST_AUTO_TEST_CASE(TestTableNotFound) {
+BOOST_AUTO_TEST_CASE(TestTableNotFound, *disabled()) {
   StartAdditionalNode("Node1");
 
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=PUBLIC");
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(TestTableNotFound) {
   BOOST_CHECK_EQUAL(GetOdbcErrorState(SQL_HANDLE_STMT, stmt), "42S02");
 }
 
-BOOST_AUTO_TEST_CASE(TestIndexNotFound) {
+BOOST_AUTO_TEST_CASE(TestIndexNotFound, *disabled()) {
   StartAdditionalNode("Node1");
 
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=PUBLIC");
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(TestIndexNotFound) {
   BOOST_CHECK_EQUAL(GetOdbcErrorState(SQL_HANDLE_STMT, stmt), "42S12");
 }
 
-BOOST_AUTO_TEST_CASE(TestSyntaxError) {
+BOOST_AUTO_TEST_CASE(TestSyntaxError, *disabled()) {
   StartAdditionalNode("Node1");
 
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=PUBLIC");

@@ -49,7 +49,7 @@ using ignite::impl::binary::BinaryUtils;
 BOOST_FIXTURE_TEST_SUITE(SqlNumericFunctionTestSuite,
                          ignite::SqlTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionAbs) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionAbs, *disabled()) {
   TestType in;
 
   in.i32Field = -42;
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionAbs) {
                                   std::abs(in.i32Field));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionAcos) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionAcos, *disabled()) {
   TestType in;
 
   in.doubleField = 0.32;
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionAcos) {
                               std::acos(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionAsin) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionAsin, *disabled()) {
   TestType in;
 
   in.doubleField = 0.12;
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionAsin) {
                               std::asin(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionAtan) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionAtan, *disabled()) {
   TestType in;
 
   in.doubleField = 0.14;
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionAtan) {
                               std::atan(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionAtan2) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionAtan2, *disabled()) {
   TestType in;
 
   in.doubleField = 0.24;
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionAtan2) {
       std::atan2(in.doubleField, 0.2));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionCeiling) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionCeiling, *disabled()) {
   TestType in;
 
   in.doubleField = 7.31;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionCeiling) {
                               std::ceil(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionCos) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionCos, *disabled()) {
   TestType in;
 
   in.doubleField = 2.31;
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionCos) {
                               std::cos(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionCot) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionCot, *disabled()) {
   TestType in;
 
   in.doubleField = 2.31;
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionCot) {
                               1 / std::tan(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionDegrees) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionDegrees, *disabled()) {
   TestType in;
 
   in.doubleField = 2.31;
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionDegrees) {
                               in.doubleField * M_1_PI * 180);
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionExp) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionExp, *disabled()) {
   TestType in;
 
   in.doubleField = 1.23;
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionExp) {
                               std::exp(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionFloor) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionFloor, *disabled()) {
   TestType in;
 
   in.doubleField = 5.29;
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionFloor) {
                               std::floor(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionLog) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionLog, *disabled()) {
   TestType in;
 
   in.doubleField = 15.3;
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionLog) {
                               std::log(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionLog10) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionLog10, *disabled()) {
   TestType in;
 
   in.doubleField = 15.3;
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionLog10) {
                               std::log10(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionMod) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionMod, *disabled()) {
   TestType in;
 
   in.i64Field = 26;
@@ -204,11 +204,11 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionMod) {
                                  in.i64Field % 3);
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionPi) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionPi, *disabled()) {
   CheckSingleResult< double >("SELECT {fn PI()}", M_PI);
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionPower) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionPower, *disabled()) {
   TestType in;
 
   in.doubleField = 1.81;
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionPower) {
       std::pow(in.doubleField, 2.5));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionRadians) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionRadians, *disabled()) {
   TestType in;
 
   in.doubleField = 161;
@@ -231,11 +231,11 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionRadians) {
                               in.doubleField * M_PI / 180.0);
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionRand) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionRand, *disabled()) {
   CheckSingleResult< double >("SELECT {fn RAND()} * 0", 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionRound) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionRound, *disabled()) {
   TestType in;
 
   in.doubleField = 5.29;
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionRound) {
                               std::floor(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionSign) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionSign, *disabled()) {
   TestType in;
 
   in.doubleField = -1.39;
@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionSign) {
                                                     : 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionSin) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionSin, *disabled()) {
   TestType in;
 
   in.doubleField = 1.01;
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionSin) {
                               std::sin(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionSqrt) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionSqrt, *disabled()) {
   TestType in;
 
   in.doubleField = 2.56;
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionSqrt) {
                               std::sqrt(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionTan) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionTan, *disabled()) {
   TestType in;
 
   in.doubleField = 0.56;
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE(TestNumericFunctionTan) {
                               std::tan(in.doubleField));
 }
 
-BOOST_AUTO_TEST_CASE(TestNumericFunctionTruncate) {
+BOOST_AUTO_TEST_CASE(TestNumericFunctionTruncate, *disabled()) {
   TestType in;
 
   in.doubleField = 4.17133;

@@ -69,14 +69,14 @@ struct AttributesTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(AttributesTestSuite, AttributesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestLegacyConnection) {
+BOOST_AUTO_TEST_CASE(TestLegacyConnection, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=cache");
 
   InsertTestStrings(10, false);
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_1_0) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_1_0, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.1.0");
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_1_0) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_1_5) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_1_5, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.1.5");
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_1_5) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_3_0) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_3_0, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.3.0");
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_3_0) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_3_2) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_3_2, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.3.2");
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_3_2) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_5_0) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_5_0, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.5.0");
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_5_0) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_7_0) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_7_0, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.7.0");
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_7_0) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_8_0) {
+BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_8_0, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PROTOCOL_VERSION=2.8.0");
@@ -139,28 +139,28 @@ BOOST_AUTO_TEST_CASE(TestConnectionProtocolVersion_2_8_0) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRangeBegin) {
+BOOST_AUTO_TEST_CASE(TestConnectionRangeBegin, *disabled()) {
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11110..11115;SCHEMA=cache");
 
   InsertTestStrings(10, false);
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRangeEnd) {
+BOOST_AUTO_TEST_CASE(TestConnectionRangeEnd, *disabled()) {
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11108..11110;SCHEMA=cache");
 
   InsertTestStrings(10, false);
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRangeMiddle) {
+BOOST_AUTO_TEST_CASE(TestConnectionRangeMiddle, *disabled()) {
   Connect("DRIVER={Apache Ignite};ADDRESS=127.0.0.1:11108..11115;SCHEMA=cache");
 
   InsertTestStrings(10, false);
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionMultipleAddresses) {
+BOOST_AUTO_TEST_CASE(TestConnectionMultipleAddresses, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:4242,127.0.0.1:11109..11115,127.0.0.1;SCHEMA="
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionMultipleAddresses) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadGet) {
+BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadGet, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLUINTEGER dead = SQL_CD_TRUE;
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadGet) {
   BOOST_REQUIRE_EQUAL(dead, SQL_CD_FALSE);
 }
 
-BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadSet) {
+BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadSet, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLUINTEGER dead = SQL_CD_TRUE;
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadSet) {
   CheckSQLConnectionDiagnosticError("HY092");
 }
 
-BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout) {
+BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLULEN timeout = -1;
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout) {
   BOOST_REQUIRE_EQUAL(timeout, 7);
 }
 
-BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeout) {
+BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeout, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLUINTEGER timeout = -1;
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeout) {
   BOOST_REQUIRE_EQUAL(timeout, 42);
 }
 
-BOOST_AUTO_TEST_CASE(ConnectionAttributeLoginTimeout) {
+BOOST_AUTO_TEST_CASE(ConnectionAttributeLoginTimeout, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLUINTEGER timeout = -1;
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeLoginTimeout) {
  * 3. Get current ODBC version from env handle.
  * 4. Check that version is of the expected value.
  */
-BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttrDriverVersion) {
+BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttrDriverVersion, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLINTEGER version;

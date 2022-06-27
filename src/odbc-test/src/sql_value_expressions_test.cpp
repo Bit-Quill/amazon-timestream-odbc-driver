@@ -26,7 +26,7 @@ using namespace boost::unit_test;
 BOOST_FIXTURE_TEST_SUITE(SqlValueExpressionTestSuite,
                          ignite::SqlTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestCase) {
+BOOST_AUTO_TEST_CASE(TestCase, *disabled()) {
   TestType in;
 
   in.i32Field = 82;
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(TestCase) {
       in.i32Field / 3);
 }
 
-BOOST_AUTO_TEST_CASE(TestCast) {
+BOOST_AUTO_TEST_CASE(TestCast, *disabled()) {
   TestType in;
 
   in.i32Field = 12345;
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(TestCast) {
       common::LexicalCast< std::string >(in.i32Field) + in.strField);
 }
 
-BOOST_AUTO_TEST_CASE(TestCoalesce) {
+BOOST_AUTO_TEST_CASE(TestCoalesce, *disabled()) {
   CheckSingleResult< std::string >("SELECT COALESCE('One', 'Two', 'Three')",
                                    "One");
   CheckSingleResult< std::string >("SELECT COALESCE(NULL, 'Two', 'Three')",
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(TestCoalesce) {
                                    "Three");
 }
 
-BOOST_AUTO_TEST_CASE(TestNullif) {
+BOOST_AUTO_TEST_CASE(TestNullif, *disabled()) {
   TestType in;
 
   in.strField = "SomeValue";

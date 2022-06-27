@@ -31,13 +31,13 @@ using namespace ignite::odbc;
 
 BOOST_AUTO_TEST_SUITE(ColumnTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestColumnDefaultConstruction) {
+BOOST_AUTO_TEST_CASE(TestColumnDefaultConstruction, *disabled()) {
   Column column;
 
   BOOST_REQUIRE(!column.IsValid());
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnShort) {
+BOOST_AUTO_TEST_CASE(TestColumnShort, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(TestColumnShort) {
   BOOST_REQUIRE_EQUAL(column.GetUnreadDataLength(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnString) {
+BOOST_AUTO_TEST_CASE(TestColumnString, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(TestColumnString) {
   BOOST_REQUIRE_EQUAL(column.GetUnreadDataLength(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnStringSeveral) {
+BOOST_AUTO_TEST_CASE(TestColumnStringSeveral, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(TestColumnStringSeveral) {
   BOOST_REQUIRE_EQUAL(res, data);
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnMultiString) {
+BOOST_AUTO_TEST_CASE(TestColumnMultiString, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE(TestColumnMultiString) {
   BOOST_REQUIRE_EQUAL(column2.GetUnreadDataLength(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnByteArray) {
+BOOST_AUTO_TEST_CASE(TestColumnByteArray, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(TestColumnByteArray) {
   BOOST_REQUIRE_EQUAL(column.GetUnreadDataLength(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnByteArrayHalfBuffer) {
+BOOST_AUTO_TEST_CASE(TestColumnByteArrayHalfBuffer, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(TestColumnByteArrayHalfBuffer) {
                                   data.end());
 }
 
-BOOST_AUTO_TEST_CASE(TestColumnByteArrayTwoColumns) {
+BOOST_AUTO_TEST_CASE(TestColumnByteArrayTwoColumns, *disabled()) {
   InteropUnpooledMemory mem(4096);
   InteropOutputStream outStream(&mem);
   BinaryWriterImpl writer(&outStream, 0);

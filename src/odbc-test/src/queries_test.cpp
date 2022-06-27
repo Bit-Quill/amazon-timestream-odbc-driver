@@ -191,7 +191,7 @@ struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(QueriesTestSuite, QueriesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
+BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
+BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData) {
+BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData) {
+BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -603,39 +603,39 @@ BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData) {
   BOOST_CHECK_EQUAL(9, actual_rows);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsInt8) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsInt8, *disabled()) {
   CheckTwoRowsInt< signed char >(SQL_C_STINYINT);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsUint8) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsUint8, *disabled()) {
   CheckTwoRowsInt< unsigned char >(SQL_C_UTINYINT);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsInt16) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsInt16, *disabled()) {
   CheckTwoRowsInt< signed short >(SQL_C_SSHORT);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsUint16) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsUint16, *disabled()) {
   CheckTwoRowsInt< unsigned short >(SQL_C_USHORT);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsInt32) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsInt32, *disabled()) {
   CheckTwoRowsInt< SQLINTEGER >(SQL_C_SLONG);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsUint32) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsUint32, *disabled()) {
   CheckTwoRowsInt< SQLUINTEGER >(SQL_C_ULONG);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsInt64) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsInt64, *disabled()) {
   CheckTwoRowsInt< int64_t >(SQL_C_SBIGINT);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsUint64) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsUint64, *disabled()) {
   CheckTwoRowsInt< uint64_t >(SQL_C_UBIGINT);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRowsString) {
+BOOST_AUTO_TEST_CASE(TestTwoRowsString, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret;
@@ -847,7 +847,7 @@ BOOST_AUTO_TEST_CASE(TestDataAtExecution, *disabled()) {
   BOOST_CHECK(ret == SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestNullFields) {
+BOOST_AUTO_TEST_CASE(TestNullFields, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret;
@@ -945,7 +945,7 @@ BOOST_AUTO_TEST_CASE(TestParamsNum, *disabled()) {
   CheckParamsNum("SELECT * FROM TestType WHERE _key=? AND _val=?", 2);
 }
 
-BOOST_AUTO_TEST_CASE(TestExecuteAfterCursorClose) {
+BOOST_AUTO_TEST_CASE(TestExecuteAfterCursorClose, *disabled()) {
   connectToLocalServer("odbc-test");
 
   int64_t key = 0;
@@ -1049,7 +1049,7 @@ BOOST_AUTO_TEST_CASE(TestCloseNonFullFetch, *disabled()) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestErrorMessage) {
+BOOST_AUTO_TEST_CASE(TestErrorMessage, *disabled()) {
   connectToLocalServer("odbc-test");
 
   // Just selecting everything to make sure everything is OK
@@ -1066,7 +1066,7 @@ BOOST_AUTO_TEST_CASE(TestErrorMessage) {
     BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
 }
 
-BOOST_AUTO_TEST_CASE(TestLoginTimeout) {
+BOOST_AUTO_TEST_CASE(TestLoginTimeout, *disabled()) {
   Prepare();
 
   std::string dsnConnectionString;
@@ -1127,7 +1127,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionTimeoutFail, *disabled()) {
     BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery) {
+BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
@@ -1144,7 +1144,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery) {
+BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -1161,7 +1161,7 @@ BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery) {
+BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -1183,7 +1183,7 @@ BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestManyCursors) {
+BOOST_AUTO_TEST_CASE(TestManyCursors, *disabled()) {
   connectToLocalServer("odbc-test");
 
   for (int32_t i = 0; i < 1000; ++i) {
@@ -1293,7 +1293,7 @@ BOOST_AUTO_TEST_CASE(TestManyCursorsTwoSelects2, *disabled()) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar) {
+BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -1326,7 +1326,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar) {
+BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -1361,7 +1361,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataNarrowChar) {
+BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataNarrowChar, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);

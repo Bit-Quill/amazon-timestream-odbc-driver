@@ -134,7 +134,7 @@ void CheckUnexpectedEndOfStatement(const std::string& sql,
 
 BOOST_AUTO_TEST_SUITE(SqlParsingTestSuite)
 
-BOOST_AUTO_TEST_CASE(LexerTokens) {
+BOOST_AUTO_TEST_CASE(LexerTokens, *disabled()) {
   std::string sql(
       "word "
       "otherword "
@@ -195,66 +195,66 @@ BOOST_AUTO_TEST_CASE(LexerTokens) {
   BOOST_CHECK(!*hasNext);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOff) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOff, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming off", false, false, 2048, 0, 0,
                                  0, false);
   CheckSingleSetStreamingCommand("set streaming 0", false, false, 2048, 0, 0, 0,
                                  false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOffMixedCase) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOffMixedCase, *disabled()) {
   CheckSingleSetStreamingCommand("SET Streaming OfF", false, false, 2048, 0, 0,
                                  0, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOn) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOn, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on", true, false, 2048, 0, 0, 0,
                                  false);
   CheckSingleSetStreamingCommand("set streaming 1", true, false, 2048, 0, 0, 0,
                                  false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllowOverwriteOn) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllowOverwriteOn, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on allow_overwrite on", true,
                                  true, 2048, 0, 0, 0, false);
   CheckSingleSetStreamingCommand("set streaming on allow_overwrite 1", true,
                                  true, 2048, 0, 0, 0, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllowOverwriteOff) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllowOverwriteOff, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on allow_overwrite off", true,
                                  false, 2048, 0, 0, 0, false);
   CheckSingleSetStreamingCommand("set streaming on allow_overwrite 0", true,
                                  false, 2048, 0, 0, 0, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnPageSize512) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnPageSize512, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on batch_size 512", true, false,
                                  512, 0, 0, 0, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnPerNodeBufferSize500) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnPerNodeBufferSize500, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on per_node_buffer_size 500",
                                  true, false, 2048, 500, 0, 0, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnPerNodeParallelOperations4) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnPerNodeParallelOperations4, *disabled()) {
   CheckSingleSetStreamingCommand(
       "set streaming on per_node_parallel_operations 4", true, false, 2048, 0,
       4, 0, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnFlushFrequency100) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnFlushFrequency100, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on flush_frequency 100", true,
                                  false, 2048, 0, 0, 100, false);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnOrdered) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnOrdered, *disabled()) {
   CheckSingleSetStreamingCommand("set streaming on ordered", true, false, 2048,
                                  0, 0, 0, true);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAll) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAll, *disabled()) {
   CheckSingleSetStreamingCommand(
       "set streaming 1 "
       "allow_overwrite on "
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAll) {
       true, true, 512, 500, 4, 100, true);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllDisorder) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllDisorder, *disabled()) {
   CheckSingleSetStreamingCommand(
       "set streaming 1 "
       "batch_size 512 "
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllDisorder) {
       true, true, 512, 500, 4, 100, true);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllBackward) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllBackward, *disabled()) {
   CheckSingleSetStreamingCommand(
       "set streaming 1 "
       "ordered "
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(ParserSetStreamingOnAllBackward) {
       true, true, 512, 500, 4, 100, true);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnOff) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnOff, *disabled()) {
   std::string sql("set streaming 1; set streaming off");
 
   odbc::SqlParser parser(sql);
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(ParserSetStreamingOnOff) {
   BOOST_CHECK(cmd.get() == 0);
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOnUnexpectedTokenError) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOnUnexpectedTokenError, *disabled()) {
   CheckUnexpectedTokenError("set streaming 1 ololo", "ololo");
   CheckUnexpectedTokenError("set streaming 1 ordered lorem_ipsum",
                             "lorem_ipsum");
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(ParserSetStreamingOnUnexpectedTokenError) {
   CheckUnexpectedTokenError("some", "some", "");
 }
 
-BOOST_AUTO_TEST_CASE(ParserSetStreamingOffUnexpectedTokenError) {
+BOOST_AUTO_TEST_CASE(ParserSetStreamingOffUnexpectedTokenError, *disabled()) {
   CheckUnexpectedTokenError("set streaming 0 ololo", "ololo");
   CheckUnexpectedTokenError("set streaming 0 ordered", "ordered",
                             "no parameters with STREAMING OFF command");
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(ParserSetStreamingOffUnexpectedTokenError) {
                             "lorem_ipsum");
 }
 
-BOOST_AUTO_TEST_CASE(ParserInternalCommand) {
+BOOST_AUTO_TEST_CASE(ParserInternalCommand, *disabled()) {
   BOOST_CHECK(odbc::sql_utils::IsInternalCommand("set streaming 1"));
   BOOST_CHECK(odbc::sql_utils::IsInternalCommand("set streaming 0"));
   BOOST_CHECK(odbc::sql_utils::IsInternalCommand("set streaming on"));
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(ParserInternalCommand) {
   BOOST_CHECK(odbc::sql_utils::IsInternalCommand("set streaming blah"));
 }
 
-BOOST_AUTO_TEST_CASE(ParserNonInternalCommand) {
+BOOST_AUTO_TEST_CASE(ParserNonInternalCommand, *disabled()) {
   BOOST_CHECK(!odbc::sql_utils::IsInternalCommand(""));
   BOOST_CHECK(!odbc::sql_utils::IsInternalCommand("Blah"));
   BOOST_CHECK(!odbc::sql_utils::IsInternalCommand("0"));

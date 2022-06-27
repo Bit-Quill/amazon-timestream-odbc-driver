@@ -27,7 +27,7 @@ using namespace boost::unit_test;
 
 BOOST_FIXTURE_TEST_SUITE(SqlTypesTestSuite, ignite::SqlTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestGuidTrivial) {
+BOOST_AUTO_TEST_CASE(TestGuidTrivial, *disabled()) {
   CheckSingleResult< std::string >(
       "SELECT {guid '04CC382A-0B82-F520-08D0-07A0620C0004'}",
       "04cc382a-0b82-f520-08d0-07a0620c0004");
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(TestGuidTrivial) {
       "63802467-9f4a-4f71-8fc8-cf2d99a28ddf");
 }
 
-BOOST_AUTO_TEST_CASE(TestGuidEqualsToColumn) {
+BOOST_AUTO_TEST_CASE(TestGuidEqualsToColumn, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(TestGuidEqualsToColumn) {
       in2.i32Field);
 }
 
-BOOST_AUTO_TEST_CASE(TestByteArraySelect) {
+BOOST_AUTO_TEST_CASE(TestByteArraySelect, *disabled()) {
   TestType in;
   const int8_t data[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
   in.i8ArrayField.assign(data, data + sizeof(data) / sizeof(data[0]));
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(TestByteArraySelect) {
       "SELECT i8ArrayField FROM TestType", in.i8ArrayField);
 }
 
-BOOST_AUTO_TEST_CASE(TestByteArrayParam) {
+BOOST_AUTO_TEST_CASE(TestByteArrayParam, *disabled()) {
   SQLRETURN ret;
 
   TestType in;
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(TestByteArrayParam) {
   BOOST_REQUIRE(ret == SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestByteArrayParamInsert) {
+BOOST_AUTO_TEST_CASE(TestByteArrayParamInsert, *disabled()) {
   SQLRETURN ret;
 
   const int8_t data[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(TestByteArrayParamInsert) {
                                   paramData.end());
 }
 
-BOOST_AUTO_TEST_CASE(TestStingParamNullLen) {
+BOOST_AUTO_TEST_CASE(TestStingParamNullLen, *disabled()) {
   SQLRETURN ret;
 
   TestType in;
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(TestStingParamNullLen) {
   BOOST_REQUIRE(ret == SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestByteParamInsert) {
+BOOST_AUTO_TEST_CASE(TestByteParamInsert, *disabled()) {
   SQLRETURN ret;
 
   SQLCHAR request[] = "INSERT INTO TestType(_key, i8Field) VALUES(?, ?)";
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(TestByteParamInsert) {
   BOOST_REQUIRE_EQUAL(out.i8Field, data);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimestampSelect) {
+BOOST_AUTO_TEST_CASE(TestTimestampSelect, *disabled()) {
   TestType in1;
   in1.i32Field = 1;
   in1.timestampField =
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(TestTimestampSelect) {
       in1.timestampField);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimestampInsert) {
+BOOST_AUTO_TEST_CASE(TestTimestampInsert, *disabled()) {
   SQLRETURN ret;
 
   SQLCHAR request[] = "INSERT INTO TestType(_key, timestampField) VALUES(?, ?)";
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(TestTimestampInsert) {
                       expected.GetSecondFraction());
 }
 
-BOOST_AUTO_TEST_CASE(TestTimeSelect) {
+BOOST_AUTO_TEST_CASE(TestTimeSelect, *disabled()) {
   TestType in1;
   in1.i32Field = 1;
   in1.timeField = common::MakeTimeGmt(19, 54, 01);
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(TestTimeSelect) {
                             in1.timeField);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimeInsert) {
+BOOST_AUTO_TEST_CASE(TestTimeInsert, *disabled()) {
   SQLRETURN ret;
 
   SQLCHAR request[] = "INSERT INTO TestType(_key, timeField) VALUES(?, ?)";
@@ -398,15 +398,15 @@ void FetchAndCheckDate(SQLHSTMT stmt, const std::string& req,
   BOOST_CHECK_EQUAL(res.year, 2020);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchLiteralDate) {
+BOOST_AUTO_TEST_CASE(TestFetchLiteralDate, *disabled()) {
   FetchAndCheckDate(stmt, "select DATE '2020-10-25'", SQL_C_TYPE_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchLiteralDateLegacy) {
+BOOST_AUTO_TEST_CASE(TestFetchLiteralDateLegacy, *disabled()) {
   FetchAndCheckDate(stmt, "select DATE '2020-10-25'", SQL_C_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsDate) {
+BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsDate, *disabled()) {
   TestType val1;
   val1.dateField = common::MakeDateGmt(2020, 10, 25);
 
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsDate) {
                     SQL_C_TYPE_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsDateLegacy) {
+BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsDateLegacy, *disabled()) {
   TestType val1;
   val1.dateField = common::MakeDateGmt(2020, 10, 25);
 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsDateLegacy) {
                     SQL_C_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsIs) {
+BOOST_AUTO_TEST_CASE(TestFetchFieldDateAsIs, *disabled()) {
   TestType val1;
   val1.dateField = common::MakeDateGmt(2020, 10, 25);
 
@@ -462,15 +462,15 @@ void FetchAndCheckTime(SQLHSTMT stmt, const std::string& req,
   BOOST_CHECK_EQUAL(res.second, 13);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchLiteralTime) {
+BOOST_AUTO_TEST_CASE(TestFetchLiteralTime, *disabled()) {
   FetchAndCheckTime(stmt, "select TIME '12:42:13'", SQL_C_TYPE_TIME);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchLiteralTimeLegacy) {
+BOOST_AUTO_TEST_CASE(TestFetchLiteralTimeLegacy, *disabled()) {
   FetchAndCheckTime(stmt, "select TIME '12:42:13'", SQL_C_TYPE_TIME);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchFieldTimeAsIs) {
+BOOST_AUTO_TEST_CASE(TestFetchFieldTimeAsIs, *disabled()) {
   TestType val1;
   val1.timeField = common::MakeTimeGmt(12, 42, 13);
 
@@ -479,7 +479,7 @@ BOOST_AUTO_TEST_CASE(TestFetchFieldTimeAsIs) {
   FetchAndCheckTime(stmt, "select timeField from TestType", SQL_C_TYPE_TIME);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchFieldTimeAsIsLegacy) {
+BOOST_AUTO_TEST_CASE(TestFetchFieldTimeAsIsLegacy, *disabled()) {
   TestType val1;
   val1.timeField = common::MakeTimeGmt(12, 42, 13);
 

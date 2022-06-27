@@ -27,7 +27,7 @@ using namespace ignite::odbc::config;
 
 BOOST_AUTO_TEST_SUITE(ConnectionInfoTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo) {
+BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo, *disabled()) {
   char buffer[4096];
   short reslen = 0;
 
