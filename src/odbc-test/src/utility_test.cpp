@@ -29,7 +29,7 @@ using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_SUITE(UtilityTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces) {
+BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces, *disabled()) {
   std::string inStr("   \r \n    \t  some meaningfull data   \n\n   \t  \r  ");
   std::string expectedOutStr("some meaningfull data");
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces) {
   BOOST_REQUIRE(expectedOutStr == realOutStr);
 }
 
-BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBuffer) {
+BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBuffer, *disabled()) {
   SQLWCHAR buffer[1024];
   std::wstring wstr(L"你好 - Some data. And some more data here.");
   std::string str = ToUtf8(wstr);
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBufferRepetative, *disabled()) {
             << " nanoseconds\n";
 }
 
-BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString) {
+BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString, *disabled()) {
   std::string utf8String = u8"你好 - Some data. And some more data here.";
   std::vector< SQLWCHAR > buffer = ToWCHARVector(utf8String);
   std::string utf8StringShortened = u8"你好 - Some da";
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString) {
   BOOST_CHECK_EQUAL(utf8StringShortened, result);
 }
 
-BOOST_AUTO_TEST_CASE(TestUtilityWriteReadString) {
+BOOST_AUTO_TEST_CASE(TestUtilityWriteReadString, *disabled()) {
   using namespace impl::binary;
   using namespace impl::interop;
 
@@ -249,7 +249,7 @@ void CheckDecimalWriteRead(const std::string& val) {
  * -3472986487.9625196, 3472.9864879625196, -3472.9864879625196,
  * 0.34729864879625196, -0.34729864879625196
  */
-BOOST_AUTO_TEST_CASE(TestUtilityWriteReadDecimal) {
+BOOST_AUTO_TEST_CASE(TestUtilityWriteReadDecimal, *disabled()) {
   CheckDecimalWriteRead("0");
   CheckDecimalWriteRead("1");
   CheckDecimalWriteRead("-1");

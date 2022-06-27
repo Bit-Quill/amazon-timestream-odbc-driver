@@ -32,6 +32,7 @@
 using namespace ignite::odbc;
 using namespace ignite::odbc::config;
 using ignite::odbc::common::EncodeURIComponent;
+using namespace boost::unit_test;
 
 namespace {
 const std::string testDriverName = "Test Driver";
@@ -337,7 +338,7 @@ void CheckDsnConfig(const Configuration& cfg) {
 
 BOOST_AUTO_TEST_SUITE(ConfigurationTestSuite)
 
-BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
+BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault, *disabled()) {
   BOOST_CHECK_NE(testDriverName, Configuration::DefaultValue::driver);
   BOOST_CHECK_NE(testDsn, Configuration::DefaultValue::dsn);
   BOOST_CHECK_NE(testDatabaseName, Configuration::DefaultValue::database);
@@ -375,7 +376,7 @@ BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
   BOOST_CHECK(testScanMethod != Configuration::DefaultValue::scanMethod);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
+BOOST_AUTO_TEST_CASE(TestConnectStringUppercase, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -415,7 +416,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
   CheckConnectionConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
+BOOST_AUTO_TEST_CASE(TestConnectStringLowercase, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -455,7 +456,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
   CheckConnectionConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
+BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -497,7 +498,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
   CheckConnectionConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
+BOOST_AUTO_TEST_CASE(TestConnectStringMixed, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -537,7 +538,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
   CheckConnectionConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringWhitepaces) {
+BOOST_AUTO_TEST_CASE(TestConnectStringWhitepaces, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -579,7 +580,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhitepaces) {
   CheckConnectionConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidAddress) {
+BOOST_AUTO_TEST_CASE(TestConnectStringInvalidAddress, *disabled()) {
   Configuration cfg;
 
   ParseConnectStringWithError("hostname=example.com:0;", cfg);
@@ -591,7 +592,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringInvalidAddress) {
   ParseConnectStringWithError("hostname=example.com:;", cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringValidAddress) {
+BOOST_AUTO_TEST_CASE(TestConnectStringValidAddress, *disabled()) {
   CheckValidAddress("hostname=example.com:1;", EndPoint("example.com", 1));
   CheckValidAddress("hostname=example.com:31242;",
                     EndPoint("example.com", 31242));
@@ -605,36 +606,36 @@ BOOST_AUTO_TEST_CASE(TestConnectStringValidAddress) {
                     EndPoint("example.com", 1000, 10));
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidLogLevel) {
+BOOST_AUTO_TEST_CASE(TestConnectStringInvalidLogLevel, *disabled()) {
   CheckInvalidLogLevel("log_level=debug_level;");
   CheckInvalidLogLevel("log_level=off_level;");
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringValidLogLevel) {
+BOOST_AUTO_TEST_CASE(TestConnectStringValidLogLevel, *disabled()) {
   CheckValidLogLevel("log_level=debug;", LogLevel::Type::DEBUG_LEVEL);
   CheckValidLogLevel("log_level=info;", LogLevel::Type::INFO_LEVEL);
   CheckValidLogLevel("log_level=error;", LogLevel::Type::ERROR_LEVEL);
   CheckValidLogLevel("log_level=off;", LogLevel::Type::OFF);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidScanMethod) {
+BOOST_AUTO_TEST_CASE(TestConnectStringInvalidScanMethod, *disabled()) {
   CheckInvalidScanMethod("scan_method=forward;");
   CheckInvalidScanMethod("scan_method=id_random;");
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringValidScanMethod) {
+BOOST_AUTO_TEST_CASE(TestConnectStringValidScanMethod, *disabled()) {
   CheckValidScanMethod("scan_method=all;", ScanMethod::Type::ALL);
   CheckValidScanMethod("scan_method=id_forward;", ScanMethod::Type::ID_FORWARD);
   CheckValidScanMethod("scan_method=id_reverse;", ScanMethod::Type::ID_REVERSE);
   CheckValidScanMethod("scan_method=random;", ScanMethod::Type::RANDOM);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidReadPreference) {
+BOOST_AUTO_TEST_CASE(TestConnectStringInvalidReadPreference, *disabled()) {
   CheckInvalidReadPreference("read_preference=primary_nearest;");
   CheckInvalidReadPreference("read_preference=nearest_preferred;");
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringValidReadPreference) {
+BOOST_AUTO_TEST_CASE(TestConnectStringValidReadPreference, *disabled()) {
   CheckValidReadPreference("read_preference=primary;",
                            ReadPreference::Type::PRIMARY);
   CheckValidReadPreference("read_preference=primary_preferred;",
@@ -647,7 +648,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringValidReadPreference) {
                            ReadPreference::Type::NEAREST);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidBoolKeys) {
+BOOST_AUTO_TEST_CASE(TestConnectStringInvalidBoolKeys, *disabled()) {
   typedef std::set< std::string > Set;
 
   Set keys;
@@ -672,7 +673,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringInvalidBoolKeys) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringValidBoolKeys) {
+BOOST_AUTO_TEST_CASE(TestConnectStringValidBoolKeys, *disabled()) {
   typedef std::set< std::string > Set;
 
   Set keys;
@@ -696,7 +697,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringValidBoolKeys) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestDsnStringUppercase) {
+BOOST_AUTO_TEST_CASE(TestDsnStringUppercase, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -711,7 +712,7 @@ BOOST_AUTO_TEST_CASE(TestDsnStringUppercase) {
   CheckDsnConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestDsnStringLowercase) {
+BOOST_AUTO_TEST_CASE(TestDsnStringLowercase, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -726,7 +727,7 @@ BOOST_AUTO_TEST_CASE(TestDsnStringLowercase) {
   CheckDsnConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestDsnStringMixed) {
+BOOST_AUTO_TEST_CASE(TestDsnStringMixed, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;
@@ -741,7 +742,7 @@ BOOST_AUTO_TEST_CASE(TestDsnStringMixed) {
   CheckDsnConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestDsnStringWhitespaces) {
+BOOST_AUTO_TEST_CASE(TestDsnStringWhitespaces, *disabled()) {
   Configuration cfg;
 
   std::stringstream constructor;

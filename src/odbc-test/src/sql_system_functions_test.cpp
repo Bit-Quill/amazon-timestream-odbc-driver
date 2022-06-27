@@ -26,15 +26,15 @@ using namespace boost::unit_test;
 BOOST_FIXTURE_TEST_SUITE(SqlSystemFunctionTestSuite,
                          ignite::SqlTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestSystemFunctionDatabase) {
+BOOST_AUTO_TEST_CASE(TestSystemFunctionDatabase, *disabled()) {
   CheckSingleResult< std::string >("SELECT {fn DATABASE()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestSystemFunctionUser) {
+BOOST_AUTO_TEST_CASE(TestSystemFunctionUser, *disabled()) {
   CheckSingleResult< std::string >("SELECT {fn USER()}");
 }
 
-BOOST_AUTO_TEST_CASE(TestSystemFunctionIfnull) {
+BOOST_AUTO_TEST_CASE(TestSystemFunctionIfnull, *disabled()) {
   CheckSingleResult< SQLINTEGER >("SELECT {fn IFNULL(NULL, 42)}", 42);
 }
 

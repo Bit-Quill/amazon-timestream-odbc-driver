@@ -128,7 +128,7 @@ void CheckRowData(Row& row, size_t rowIdx) {
 
 BOOST_AUTO_TEST_SUITE(RowTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestRowMoveToNext) {
+BOOST_AUTO_TEST_CASE(TestRowMoveToNext, *disabled()) {
   ignite::impl::interop::InteropUnpooledMemory mem(4096);
 
   const size_t rowNum = 32;
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(TestRowMoveToNext) {
   BOOST_REQUIRE(row.GetSize() == 4);
 }
 
-BOOST_AUTO_TEST_CASE(TestRowRead) {
+BOOST_AUTO_TEST_CASE(TestRowRead, *disabled()) {
   ignite::impl::interop::InteropUnpooledMemory mem(4096);
 
   const size_t rowNum = 8;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(TestRowRead) {
   CheckRowData(row, rowNum - 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleRow) {
+BOOST_AUTO_TEST_CASE(TestSingleRow, *disabled()) {
   ignite::impl::interop::InteropUnpooledMemory mem(4096);
 
   FillMemWithData(mem, 1);
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(TestSingleRow) {
   CheckRowData(row, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestTwoRows) {
+BOOST_AUTO_TEST_CASE(TestTwoRows, *disabled()) {
   ignite::impl::interop::InteropUnpooledMemory mem(4096);
 
   FillMemWithData(mem, 2);

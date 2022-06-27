@@ -32,8 +32,9 @@ using namespace ignite::odbc::impl::binary;
 using ignite::odbc::OdbcTestSuite;
 using ignite::odbc::meta::ColumnMeta;
 using ignite::odbc::meta::Nullability;
+using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(TestGetAttribute) {
+BOOST_AUTO_TEST_CASE(TestGetAttribute, *disabled()) {
   // Only SQL_DESC_* fields are tested in this test.
   // This is because those are the fields that would be passed to
   // SQLColAttribute function.
@@ -193,7 +194,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   BOOST_CHECK_EQUAL(intVal, SQL_ATTR_READWRITE_UNKNOWN);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -230,7 +231,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -267,7 +268,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName, *disabled()) {
   using namespace ignite::odbc::type_traits;
 
   std::string schema("database");
@@ -308,7 +309,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -352,7 +353,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -398,7 +399,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -439,7 +440,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeLength) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeLength, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -480,7 +481,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLength) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -522,7 +523,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeNullable) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -555,7 +556,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable) {
   BOOST_CHECK_EQUAL(intVal, SQL_NULLABLE_UNKNOWN);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -593,7 +594,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributePrecision) {
+BOOST_AUTO_TEST_CASE(TestGetAttributePrecision, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -634,7 +635,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributePrecision) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeScale) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeScale, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -675,7 +676,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeScale) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");
@@ -700,7 +701,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed) {
   BOOST_CHECK_EQUAL(intVal, SQL_NAMED);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetAttributeUnsigned) {
+BOOST_AUTO_TEST_CASE(TestGetAttributeUnsigned, *disabled()) {
   std::string schema("database");
   std::string table("table");
   std::string column("column");

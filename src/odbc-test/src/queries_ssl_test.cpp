@@ -86,14 +86,14 @@ struct SslQueriesTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(SslQueriesTestSuite, SslQueriesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestConnectionSslSuccess) {
+BOOST_AUTO_TEST_CASE(TestConnectionSslSuccess, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   InsertTestStrings(10, false);
   InsertTestBatch(11, 2000, 1989);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionSslReject) {
+BOOST_AUTO_TEST_CASE(TestConnectionSslReject, *disabled()) {
   std::string cfgDirPath = GetTestConfigDir();
 
   std::stringstream connectString;
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionSslReject) {
   BOOST_CHECK_EQUAL(codes.count(GetOdbcErrorState(SQL_HANDLE_DBC, dbc)), 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestLoginTimeout) {
+BOOST_AUTO_TEST_CASE(TestLoginTimeout, *disabled()) {
   Prepare();
 
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT,
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(TestLoginTimeout) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery) {
+BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery) {
   InsertTestStrings(10, false);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionTimeoutBatch) {
+BOOST_AUTO_TEST_CASE(TestConnectionTimeoutBatch, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionTimeoutBatch) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionTimeoutBoth) {
+BOOST_AUTO_TEST_CASE(TestConnectionTimeoutBoth, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionTimeoutBoth) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery) {
+BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery) {
   InsertTestStrings(10, false);
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryTimeoutBatch) {
+BOOST_AUTO_TEST_CASE(TestQueryTimeoutBatch, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(TestQueryTimeoutBatch) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryTimeoutBoth) {
+BOOST_AUTO_TEST_CASE(TestQueryTimeoutBoth, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(TestQueryTimeoutBoth) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery) {
+BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery) {
   InsertTestStrings(10, false);
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutBatch) {
+BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutBatch, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutBatch) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutBoth) {
+BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutBoth, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,

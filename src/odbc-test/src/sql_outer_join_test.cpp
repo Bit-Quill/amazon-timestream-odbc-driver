@@ -29,7 +29,7 @@ BOOST_FIXTURE_TEST_SUITE(SqlOuterJoinTestSuite, ignite::SqlTestSuiteFixture)
 
 // Checking that left outer joins are supported.
 // Corresponds to SQL_OJ_LEFT flag.
-BOOST_AUTO_TEST_CASE(TestOuterJoinLeft) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinLeft, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(TestOuterJoinLeft) {
 // Checking that the column names in the ON clause of the outer join do not
 // have to be in the same order as their respective table names in the OUTER
 // JOIN clause. Corresponds to SQL_OJ_NOT_ORDERED flag.
-BOOST_AUTO_TEST_CASE(TestOuterJoinOrdering) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinOrdering, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(TestOuterJoinOrdering) {
 // Checking that the comparison operator in the ON clause can be any of the ODBC
 // comparison operators. Corresponds to SQL_OJ_ALL_COMPARISON_OPS flag.
 // Operator '<'.
-BOOST_AUTO_TEST_CASE(TestOuterJoinOpsLess) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinOpsLess, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(TestOuterJoinOpsLess) {
 // Checking that the comparison operator in the ON clause can be any of the ODBC
 // comparison operators. Corresponds to SQL_OJ_ALL_COMPARISON_OPS flag.
 // Operator '>'.
-BOOST_AUTO_TEST_CASE(TestOuterJoinOpsGreater) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinOpsGreater, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(TestOuterJoinOpsGreater) {
 // Checking that the comparison operator in the ON clause can be any of the ODBC
 // comparison operators. Corresponds to SQL_OJ_ALL_COMPARISON_OPS flag.
 // Operator '<='.
-BOOST_AUTO_TEST_CASE(TestOuterJoinOpsLessOrEqual) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinOpsLessOrEqual, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(TestOuterJoinOpsLessOrEqual) {
 // Checking that the comparison operator in the ON clause can be any of the ODBC
 // comparison operators. Corresponds to SQL_OJ_ALL_COMPARISON_OPS flag.
 // Operator '>='.
-BOOST_AUTO_TEST_CASE(TestOuterJoinOpsGreaterOrEqual) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinOpsGreaterOrEqual, *disabled()) {
   TestType in1;
   TestType in2;
 
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(TestOuterJoinOpsGreaterOrEqual) {
 // Checking that the comparison operator in the ON clause can be any of the ODBC
 // comparison operators. Corresponds to SQL_OJ_ALL_COMPARISON_OPS flag.
 // Operator '!='.
-BOOST_AUTO_TEST_CASE(TestOuterJoinOpsNotEqual) {
+BOOST_AUTO_TEST_CASE(TestOuterJoinOpsNotEqual, *disabled()) {
   TestType in1;
   TestType in2;
 

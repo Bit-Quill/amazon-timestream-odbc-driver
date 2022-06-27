@@ -492,7 +492,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(MetaQueriesTestSuite, MetaQueriesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestGetTypeInfoAllTypes) {
+BOOST_AUTO_TEST_CASE(TestGetTypeInfoAllTypes, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_ALL_TYPES);
@@ -501,7 +501,7 @@ BOOST_AUTO_TEST_CASE(TestGetTypeInfoAllTypes) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeLiteral) {
+BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeLiteral, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -518,7 +518,7 @@ BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeLiteral) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeField) {
+BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeField, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req = MakeSqlBuffer(
@@ -535,7 +535,7 @@ BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeField) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeLiteral) {
+BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeLiteral, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -552,7 +552,7 @@ BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeLiteral) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_TIME);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeField) {
+BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeField, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeField) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_TIMESTAMP);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -589,7 +589,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength) {
   BOOST_CHECK_EQUAL(intVal, 4);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -609,7 +609,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion) {
   BOOST_CHECK_EQUAL(intVal, 10);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDataTypesAndColumnNames) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDataTypesAndColumnNames, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -663,7 +663,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDataTypesAndColumnNames) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescAutoUniqueValue) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescAutoUniqueValue, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -673,7 +673,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescAutoUniqueValue) {
   callSQLColAttribute(stmt, req, SQL_DESC_AUTO_UNIQUE_VALUE, SQL_FALSE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseColumnName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseColumnName, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -683,7 +683,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseColumnName) {
                       std::string("field"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseTableName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseTableName, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseTableName) {
                       std::string("meta_queries_test_002_with_array"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescCaseSensitive) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescCaseSensitive, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -708,7 +708,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescCaseSensitive) {
   callSQLColAttribute(stmt, req2, SQL_DESC_CASE_SENSITIVE, SQL_FALSE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescCatalogName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescCatalogName, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -718,7 +718,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescCatalogName) {
   callSQLColAttribute(stmt, req, SQL_DESC_CATALOG_NAME, std::string(""));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescConciseType) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescConciseType, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -741,7 +741,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescConciseType) {
   // callSQLColAttribute(stmt, req3, SQL_DESC_CONCISE_TYPE, SQL_TYPE_NULL);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescCount) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescCount, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -751,7 +751,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescCount) {
   callSQLColAttribute(stmt, req, SQL_DESC_COUNT, 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescDisplaySize) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescDisplaySize, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -781,7 +781,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescDisplaySize) {
   callSQLColAttribute(stmt, req5, SQL_DESC_DISPLAY_SIZE, 19);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescFixedPrecScale) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescFixedPrecScale, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -791,7 +791,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescFixedPrecScale) {
   callSQLColAttribute(stmt, req, SQL_DESC_FIXED_PREC_SCALE, SQL_FALSE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLabel) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLabel, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -800,7 +800,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLabel) {
   callSQLColAttribute(stmt, req, SQL_DESC_LABEL, std::string("fieldBoolean"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLength) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLength, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -830,7 +830,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLength) {
   callSQLColAttribute(stmt, req5, SQL_DESC_LENGTH, 16);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralPrefix) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralPrefix, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -850,7 +850,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralPrefix) {
   callSQLColAttribute(stmt, req3, SQL_DESC_LITERAL_PREFIX, std::string("0x"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralSuffix) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralSuffix, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -865,7 +865,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralSuffix) {
   callSQLColAttribute(stmt, req2, SQL_DESC_LITERAL_SUFFIX, std::string("'"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLocalTypeName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLocalTypeName, *disabled()) {
   using ignite::odbc::type_traits::SqlTypeName;
 
   std::string databaseName("odbc-test");
@@ -902,7 +902,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLocalTypeName) {
                       SqlTypeName::INTEGER);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescName, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -911,7 +911,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescName) {
   callSQLColAttribute(stmt, req, SQL_DESC_NAME, std::string("field"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescNullable) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescNullable, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -927,7 +927,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescNullable) {
   callSQLColAttribute(stmt, req2, SQL_DESC_NULLABLE, SQL_NULLABLE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescNumPrecRadix) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescNumPrecRadix, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -947,7 +947,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescNumPrecRadix) {
   callSQLColAttribute(stmt, req3, SQL_DESC_NUM_PREC_RADIX, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -979,7 +979,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
   callSQLColAttribute(stmt, req5, SQL_DESC_OCTET_LENGTH, 16 * size_of_char);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1009,7 +1009,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision) {
   callSQLColAttribute(stmt, req5, SQL_DESC_PRECISION, 19);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescScale) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescScale, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1019,7 +1019,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescScale) {
   callSQLColAttribute(stmt, req, SQL_DESC_SCALE, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescSchemaName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescSchemaName, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1029,7 +1029,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescSchemaName) {
                       std::string("odbc-test"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescSearchable) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescSearchable, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1039,7 +1039,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescSearchable) {
   callSQLColAttribute(stmt, req, SQL_DESC_SEARCHABLE, SQL_PRED_BASIC);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescTableName) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescTableName, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1049,7 +1049,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescTableName) {
                       std::string("meta_queries_test_002_with_array"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescType) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescType, *disabled()) {
   std::string dsnConnectionString;
   std::string databaseName("odbc-test");
   CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
@@ -1075,7 +1075,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescType) {
   // callSQLColAttribute(stmt, req4, SQL_DESC_TYPE, SQL_TYPE_NULL);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescUnnamed) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescUnnamed, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1085,7 +1085,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescUnnamed) {
   callSQLColAttribute(stmt, req, SQL_DESC_UNNAMED, SQL_NAMED);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescUnsigned) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescUnsigned, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1100,7 +1100,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescUnsigned) {
   callSQLColAttribute(stmt, req2, SQL_DESC_UNSIGNED, SQL_TRUE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescUpdatable) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescUpdatable, *disabled()) {
   std::string databaseName("odbc-test");
   connectToLocalServer(databaseName);
 
@@ -1111,7 +1111,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescUpdatable) {
                       SQL_ATTR_READWRITE_UNKNOWN);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -1129,7 +1129,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -1160,7 +1160,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare) {
   BOOST_CHECK_EQUAL(intVal, 4);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -1191,7 +1191,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare) {
   BOOST_CHECK_EQUAL(intVal, 10);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnScalePrepare) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnScalePrepare, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > req =
@@ -1218,7 +1218,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnScalePrepare) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithGetTypeInfo) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithGetTypeInfo, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_WVARCHAR);
@@ -1229,7 +1229,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithGetTypeInfo) {
   CheckSingleRowResultSetWithGetData(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOne) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOne, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
 
@@ -1248,7 +1248,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOne) {
                                      utility::SqlWcharToString(table.data()));
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneFromLocalServer) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneFromLocalServer, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
 
@@ -1266,7 +1266,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneFromLocalServer) {
   CheckSingleRowResultSetWithGetData(stmt, 3, "meta_queries_test_001");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneWithTableTypes) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneWithTableTypes, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
   std::vector< SQLWCHAR > tableTypes =
@@ -1286,7 +1286,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneWithTableTypes) {
   CheckSingleRowResultSetWithGetData(stmt, 3, "meta_queries_test_001");
 }
 
-BOOST_AUTO_TEST_CASE(TestDataTypes) {
+BOOST_AUTO_TEST_CASE(TestDataTypes, *disabled()) {
   std::string dsnConnectionString;
   std::string databaseName("odbc-test");
   CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
@@ -1433,7 +1433,7 @@ BOOST_AUTO_TEST_CASE(TestDataTypes) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneForQuotedTypes) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneForQuotedTypes, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
   std::vector< SQLWCHAR > tableTypes =
@@ -1453,7 +1453,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneForQuotedTypes) {
   CheckSingleRowResultSetWithGetData(stmt, 3, "meta_queries_test_001");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNoneForUnsupportedTableType) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNoneForUnsupportedTableType, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
   std::vector< SQLWCHAR > tableTypes = MakeSqlBuffer("VIEW");
@@ -1472,7 +1472,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNoneForUnsupportedTableType) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNone) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNone, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
 
@@ -1505,7 +1505,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNone) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsMany) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsMany, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
 
@@ -1547,7 +1547,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsMany) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsOneFromLocalServer) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsOneFromLocalServer, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_002");
   std::vector< SQLWCHAR > column = MakeSqlBuffer("fieldString");
@@ -1576,7 +1576,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsOneFromLocalServer) {
   CheckSingleRowResultSetWithGetData(stmt, 4, "fieldString");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsNone) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsNone, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
 
@@ -1622,7 +1622,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsNone) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsMany) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsMany, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
 
@@ -1665,7 +1665,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsMany) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsOneFromLocalServer) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsOneFromLocalServer, *disabled()) {
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
 
   std::string dsnConnectionString;
@@ -1684,7 +1684,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsOneFromLocalServer) {
   CheckSingleRowResultSetWithGetData(stmt, 4, "meta_queries_test_001__id");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsNone) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsNone, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
 
@@ -1725,7 +1725,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsNone) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsOneFromLocalServer) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsOneFromLocalServer, *disabled()) {
   std::vector< SQLWCHAR > table =
       MakeSqlBuffer("meta_queries_test_002_with_array_array");
 
@@ -1770,7 +1770,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsOneFromLocalServer) {
                                      "meta_queries_test_002_with_array__id");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsNone) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsNone, *disabled()) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table =
       MakeSqlBuffer("meta_queries_test_002_with_array_array");
@@ -1813,7 +1813,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsNone) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
+BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForLocalServer(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -1942,7 +1942,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery, *disabled()) {
   connectToLocalServer("odbc-test");
 
   std::vector< SQLWCHAR > selectReq =
@@ -1959,7 +1959,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery) {
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions) {
+BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLUINTEGER val = 0;
@@ -1971,7 +1971,7 @@ BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions) {
   BOOST_CHECK_NE(val, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLNumResultColsAfterSQLPrepare) {
+BOOST_AUTO_TEST_CASE(TestSQLNumResultColsAfterSQLPrepare, *disabled()) {
   connectToLocalServer("odbc-test");
 
   SQLRETURN ret = PrepareQuery("select fieldInt from meta_queries_test_001");
@@ -2005,7 +2005,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNumResultColsAfterSQLPrepare) {
  * 4. Prepare statement.
  * 5. Check precision and scale of every column using SQLDescribeCol.
  */
-BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterPrepare) {
+BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterPrepare, *disabled()) {
   CheckSQLDescribeColPrecisionAndScale(&OdbcTestSuite::PrepareQuery);
 }
 
@@ -2018,7 +2018,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterPrepare) {
  * 3. Create table with decimal and char columns with specified size and scale.
  * 4. Execute statement.
  * 5. Check precision and scale of every column using SQLDescribeCol. */
-BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterExec) {
+BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterExec, *disabled()) {
   CheckSQLDescribeColPrecisionAndScale(&OdbcTestSuite::ExecQuery);
 }
 
@@ -2032,7 +2032,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterExec) {
  * 4. Prepare statement.
  * 5. Check precision and scale of every column using SQLColAttribute.
  */
-BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare) {
+BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare, *disabled()) {
   CheckSQLColAttributePrecisionAndScale(&OdbcTestSuite::PrepareQuery);
 }
 
@@ -2045,7 +2045,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare) {
  * 3. Create table with decimal and char columns with specified size and scale.
  * 4. Execute statement.
  * 5. Check precision and scale of every column using SQLColAttribute. */
-BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterExec) {
+BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterExec, *disabled()) {
   CheckSQLColAttributePrecisionAndScale(&OdbcTestSuite::ExecQuery);
 }
 

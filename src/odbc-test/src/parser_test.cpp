@@ -58,7 +58,7 @@ bool operator==(const TestMessage& lhs, const TestMessage& rhs) {
 
 BOOST_AUTO_TEST_SUITE(ParserTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestParserEncodeDecode) {
+BOOST_AUTO_TEST_CASE(TestParserEncodeDecode, *disabled()) {
   Parser parser;
 
   std::vector< int8_t > buffer;

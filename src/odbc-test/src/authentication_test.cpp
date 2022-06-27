@@ -105,7 +105,7 @@ struct AuthenticationTestSuiteFixture : odbc::OdbcTestSuite {
 BOOST_FIXTURE_TEST_SUITE(AuthenticationTestSuite,
                          AuthenticationTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestConnectionDefaultAuthSuccess) {
+BOOST_AUTO_TEST_CASE(TestConnectionDefaultAuthSuccess, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   InsertTestStrings(10, false);
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionDefaultAuthSuccess) {
  * 3. Check that connection can be used successfully for SQL insert and select
  * operations.
  */
-BOOST_AUTO_TEST_CASE(TestConnectionLegacyAuthSuccess) {
+BOOST_AUTO_TEST_CASE(TestConnectionLegacyAuthSuccess, *disabled()) {
   std::stringstream comp;
 
   comp << "DRIVER={Apache Ignite};"
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionLegacyAuthSuccess) {
  * 4. Check that connection can be used successfully for SQL insert and select
  * operations.
  */
-BOOST_AUTO_TEST_CASE(TestConnectionBothAuthSuccess) {
+BOOST_AUTO_TEST_CASE(TestConnectionBothAuthSuccess, *disabled()) {
   std::stringstream comp;
 
   comp << "DRIVER={Apache Ignite};"
@@ -219,14 +219,14 @@ BOOST_AUTO_TEST_CASE(TestConnectionBothAuthSuccess) {
   InsertTestBatch(11, 20, 9);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionAuthReject) {
+BOOST_AUTO_TEST_CASE(TestConnectionAuthReject, *disabled()) {
   std::string state =
       ExpectConnectionReject(MakeConnectionString("unknown", "unknown"));
 
   BOOST_CHECK_EQUAL(std::string("08004"), state);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionUserOperationsQuery) {
+BOOST_AUTO_TEST_CASE(TestConnectionUserOperationsQuery, *disabled()) {
   Connect(MakeDefaultConnectionString());
 
   SQLRETURN ret = ExecQuery("CREATE USER \"test\" WITH PASSWORD 'somePass'");

@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_SUITE(CursorBindingTestSuite, CursorBindingTestSuiteFixture)
     }                                                                        \
   } while (false)
 
-BOOST_AUTO_TEST_CASE(TestCursorBindingColumnWise) {
+BOOST_AUTO_TEST_CASE(TestCursorBindingColumnWise, *disabled()) {
   enum { ROWS_COUNT = 15 };
   enum { ROW_ARRAY_SIZE = 10 };
   enum { BUFFER_SIZE = 1024 };
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(TestCursorBindingColumnWise) {
   ODBC_THROW_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestCursorBindingRowWise) {
+BOOST_AUTO_TEST_CASE(TestCursorBindingRowWise, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};ADDRESS=127.0.0.1:11110;SCHEMA=cache;PAGE_SIZE=8");

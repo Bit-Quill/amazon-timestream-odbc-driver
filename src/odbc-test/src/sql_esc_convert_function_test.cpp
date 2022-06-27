@@ -36,7 +36,7 @@ int CheckConnectionInfo(HDBC dbc, int infoType) {
   return mask;
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionGetInfo) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionGetInfo, *disabled()) {
   BOOST_REQUIRE(CheckConnectionInfo(dbc, SQL_CONVERT_FUNCTIONS) != 0);
   BOOST_REQUIRE(CheckConnectionInfo(dbc, SQL_CONVERT_BIGINT) != 0);
   BOOST_REQUIRE(CheckConnectionInfo(dbc, SQL_CONVERT_BINARY) != 0);
@@ -63,26 +63,26 @@ BOOST_AUTO_TEST_CASE(TestEscConvertFunctionGetInfo) {
   BOOST_REQUIRE(CheckConnectionInfo(dbc, SQL_CONVERT_GUID) != 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt64) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt64, *disabled()) {
   CheckSingleResult< SQLBIGINT >(
       "SELECT {fn CONVERT(72623859790382856, SQL_BIGINT)}", 72623859790382856);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt32) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt32, *disabled()) {
   CheckSingleResult< SQLINTEGER >(
       "SELECT {fn CONVERT(1234567890, SQL_INTEGER)}", 1234567890);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt16) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt16, *disabled()) {
   CheckSingleResult< SQLSMALLINT >("SELECT {fn CONVERT(12345, SQL_SMALLINT)}",
                                    12345);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt8) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionInt8, *disabled()) {
   CheckSingleResult< int8_t >("SELECT {fn CONVERT(123, SQL_TINYINT)}", 123);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionByteArray) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionByteArray, *disabled()) {
   int32_t value = ToBigEndian(123456);
 
   std::vector< int8_t > val;
@@ -92,27 +92,27 @@ BOOST_AUTO_TEST_CASE(TestEscConvertFunctionByteArray) {
       "SELECT {fn CONVERT(123456, SQL_BINARY(4))}", val);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionBool) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionBool, *disabled()) {
   CheckSingleResult< bool >("SELECT {fn CONVERT(1, SQL_BIT)}", true);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionString) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionString, *disabled()) {
   CheckSingleResult< std::string >("SELECT {fn CONVERT(123, SQL_VARCHAR(10))}",
                                    "123");
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionDecimal) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionDecimal, *disabled()) {
   CheckSingleResult< Decimal >("SELECT {fn CONVERT(-1.25, SQL_DECIMAL(5,2))}",
                                Decimal("-1.25"));
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionDouble) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionDouble, *disabled()) {
   CheckSingleResult< double >("SELECT CAST(-1.25 AS DOUBLE)", -1.25);
   CheckSingleResult< double >("SELECT CONVERT(-1.25, DOUBLE)", -1.25);
   CheckSingleResult< double >("SELECT {fn CONVERT(-1.25, SQL_DOUBLE)}", -1.25);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionFloat) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionFloat, *disabled()) {
   CheckSingleResult< float >("SELECT CAST(-1.25 AS REAL)", -1.25);
   CheckSingleResult< float >("SELECT CONVERT(-1.25, REAL)", -1.25);
   CheckSingleResult< float >("SELECT CAST(-1.25 AS FLOAT4)", -1.25);
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(TestEscConvertFunctionFloat) {
   CheckSingleResult< float >("SELECT {fn CONVERT(-1.25, SQL_REAL)}", -1.25);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionGuid) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionGuid, *disabled()) {
   // no support for binding as GUID because we report v3.0 to DM, thus fallback
   // to string binding for now
   CheckSingleResult< std::string >(
@@ -129,20 +129,20 @@ BOOST_AUTO_TEST_CASE(TestEscConvertFunctionGuid) {
       "04cc382a-0b82-f520-08d0-07a0620c0004");
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionDate) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionDate, *disabled()) {
   using ignite::impl::binary::BinaryUtils;
   Date date = common::MakeDateGmt(1983, 3, 14);
   CheckSingleResult< Date >("SELECT {fn CONVERT('1983-03-14', SQL_DATE)}",
                             date);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionTime) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionTime, *disabled()) {
   using ignite::impl::binary::BinaryUtils;
   Time time = common::MakeTimeGmt(13, 20, 15);
   CheckSingleResult< Time >("SELECT {fn CONVERT('13:20:15', SQL_TIME)}", time);
 }
 
-BOOST_AUTO_TEST_CASE(TestEscConvertFunctionTimestamp) {
+BOOST_AUTO_TEST_CASE(TestEscConvertFunctionTimestamp, *disabled()) {
   using ignite::impl::binary::BinaryUtils;
   Timestamp ts = common::MakeTimestampGmt(1983, 3, 14, 13, 20, 15, 999999000);
   CheckSingleResult< Timestamp >(

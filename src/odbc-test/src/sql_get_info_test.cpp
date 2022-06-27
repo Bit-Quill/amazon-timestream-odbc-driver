@@ -92,7 +92,7 @@ struct SqlGetInfoTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(SqlGetInfoTestSuite, SqlGetInfoTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestValues) {
+BOOST_AUTO_TEST_CASE(TestValues, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   CheckStrInfo(SQL_DRIVER_NAME, "Apache Ignite");

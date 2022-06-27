@@ -361,7 +361,7 @@ struct TransactionTestSuiteFixture : public odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(TransactionTestSuite, TransactionTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionCommit) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionCommit, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionCommit) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackInsert) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackInsert, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackInsert) {
   CheckNoTestValue(42);
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackUpdate1) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackUpdate1, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   InsertTestValue(42, "Some");
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackUpdate1) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackUpdate2) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackUpdate2, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackUpdate2) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackDelete1) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackDelete1, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   InsertTestValue(42, "Some");
@@ -474,7 +474,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackDelete1) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackDelete2) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackDelete2, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -503,7 +503,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionRollbackDelete2) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeError) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeError, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};address=127.0.0.1:11110;schema=cache;nested_tx_mode=error");
@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeError) {
   BOOST_CHECK_EQUAL(ret, SQL_ERROR);
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeIgnore) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeIgnore, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};address=127.0.0.1:11110;schema=cache;nested_tx_mode=ignore");
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeIgnore) {
   CheckNoTestValue(42);
 }
 
-BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeCommit) {
+BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeCommit, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};address=127.0.0.1:11110;schema=cache;nested_tx_mode=commit");
@@ -570,7 +570,7 @@ BOOST_AUTO_TEST_CASE(TransactionConnectionTxModeCommit) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentCommit) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentCommit, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -589,7 +589,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentCommit) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackInsert) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackInsert, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -608,7 +608,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackInsert) {
   CheckNoTestValue(42);
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackUpdate1) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackUpdate1, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   InsertTestValue(42, "Some");
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackUpdate1) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackUpdate2) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackUpdate2, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -660,7 +660,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackUpdate2) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackDelete1) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackDelete1, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   InsertTestValue(42, "Some");
@@ -683,7 +683,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackDelete1) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackDelete2) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackDelete2, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   SQLRETURN ret =
@@ -712,7 +712,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentRollbackDelete2) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeError) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeError, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};address=127.0.0.1:11110;schema=cache;nested_tx_mode=error");
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeError) {
   BOOST_CHECK_EQUAL(ret, SQL_ERROR);
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeIgnore) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeIgnore, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};address=127.0.0.1:11110;schema=cache;nested_tx_mode=ignore");
@@ -752,7 +752,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeIgnore) {
   CheckNoTestValue(42);
 }
 
-BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeCommit) {
+BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeCommit, *disabled()) {
   Connect(
       "DRIVER={Apache "
       "Ignite};address=127.0.0.1:11110;schema=cache;nested_tx_mode=commit");
@@ -779,7 +779,7 @@ BOOST_AUTO_TEST_CASE(TransactionEnvironmentTxModeCommit) {
   CheckTestValue(42, "Some");
 }
 
-BOOST_AUTO_TEST_CASE(TransactionVersionMismatchError) {
+BOOST_AUTO_TEST_CASE(TransactionVersionMismatchError, *disabled()) {
   Connect("DRIVER={Apache Ignite};address=127.0.0.1:11110;schema=cache");
 
   InsertTestValue(1, "test_1");

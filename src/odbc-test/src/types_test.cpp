@@ -66,7 +66,7 @@ struct TypesTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(TypesTestSuite, TypesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestZeroDecimal) {
+BOOST_AUTO_TEST_CASE(TestZeroDecimal, *disabled()) {
   Connect("DRIVER={Apache Ignite};SERVER=127.0.0.1;PORT=11110;SCHEMA=PUBLIC");
 
   SQLCHAR ddl[] =

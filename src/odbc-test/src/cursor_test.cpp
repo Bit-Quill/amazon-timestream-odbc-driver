@@ -95,7 +95,7 @@ void CheckCursorEnd(Cursor& cursor) {
 
 BOOST_AUTO_TEST_SUITE(CursorTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestCursorEmpty) {
+BOOST_AUTO_TEST_CASE(TestCursorEmpty, *disabled()) {
   Cursor cursor(testQueryId);
 
   BOOST_REQUIRE(cursor.GetQueryId() == testQueryId);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(TestCursorEmpty) {
   CheckCursorNeedUpdate(cursor);
 }
 
-BOOST_AUTO_TEST_CASE(TestCursorLast) {
+BOOST_AUTO_TEST_CASE(TestCursorLast, *disabled()) {
   const int32_t pageSize = 16;
 
   Cursor cursor(testQueryId);
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(TestCursorLast) {
   CheckCursorEnd(cursor);
 }
 
-BOOST_AUTO_TEST_CASE(TestCursorUpdate) {
+BOOST_AUTO_TEST_CASE(TestCursorUpdate, *disabled()) {
   const int32_t pageSize = 16;
 
   Cursor cursor(testQueryId);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(TestCursorUpdate) {
   CheckCursorEnd(cursor);
 }
 
-BOOST_AUTO_TEST_CASE(TestCursorUpdateOneRow) {
+BOOST_AUTO_TEST_CASE(TestCursorUpdateOneRow, *disabled()) {
   Cursor cursor(testQueryId);
 
   std::shared_ptr< ResultPage > resultPage = CreateTestPage(false, 1);
