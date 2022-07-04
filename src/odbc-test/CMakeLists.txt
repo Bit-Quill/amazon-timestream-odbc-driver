@@ -50,8 +50,6 @@ set(SOURCES
          src/column_meta_test.cpp
          src/configuration_test.cpp
          src/connection_test.cpp
-         src/java_test.cpp
-         src/jni_test.cpp
          src/log_test.cpp
          src/meta_queries_test.cpp
          src/odbc_test_suite.cpp
@@ -122,18 +120,10 @@ set(SOURCES
          ../odbc/src/diagnostic/diagnosable_adapter.cpp
          ../odbc/src/diagnostic/diagnostic_record_storage.cpp
          ../odbc/src/diagnostic/diagnostic_record.cpp
-         ../odbc/src/documentdb_column.cpp
-         ../odbc/src/documentdb_cursor.cpp
-         ../odbc/src/documentdb_row.cpp
          ../odbc/src/dsn_config.cpp
          ../odbc/src/environment.cpp
          ../odbc/src/ignite_error.cpp
-         ../odbc/src/jni/database_metadata.cpp
-         ../odbc/src/jni/documentdb_connection.cpp
-         ../odbc/src/jni/documentdb_mql_query_context.cpp
-         ../odbc/src/jni/documentdb_query_mapping_service.cpp
          ../odbc/src/jni/java.cpp
-         ../odbc/src/jni/result_set.cpp
          ../odbc/src/log.cpp
          ../odbc/src/message.cpp
          ../odbc/src/meta/column_meta.cpp
@@ -170,6 +160,7 @@ set(SOURCES
          ../odbc/src/time.cpp
          ../odbc/src/timestamp.cpp
          ../odbc/src/ignite.cpp
+         ../odbc/src/ts_error.cpp
         )
 
 if (WIN32)

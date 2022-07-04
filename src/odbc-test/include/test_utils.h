@@ -146,17 +146,6 @@ std::string GetOdbcErrorState(SQLSMALLINT handleType, SQLHANDLE handle,
  */
 std::string GetOdbcErrorMessage(SQLSMALLINT handleType, SQLHANDLE handle,
                                 int idx = 1);
-
-/**
- * @return Test config directory path.
- */
-std::string GetTestConfigDir();
-
-/**
- * Remove all the LFS artifacts.
- */
-void ClearLfs();
-
 }  // namespace ignite_test
 
 #endif  // _IGNITE_ODBC_TEST_TEST_UTILS

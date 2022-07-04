@@ -135,42 +135,6 @@ class IGNITE_IMPORT_EXPORT JavaGlobalRef {
  * @return Path to the file. Empty string if the library was not found.
  */
 IGNITE_IMPORT_EXPORT std::string FindJvmLibrary(const std::string& path);
-
-/**
- * Helper function to create classpath based on Ignite home directory.
- *
- * @param home Home directory; expected to be valid.
- * @param forceTest Force test classpath.
- * @return Classpath.
- */
-IGNITE_IMPORT_EXPORT std::string CreateDocumentDbHomeClasspath(
-    const std::string& home, bool forceTest);
-
-/**
- * Create Ignite classpath based on user input and home directory.
- *
- * @param usrCp User's classpath.
- * @param home Ignite home directory.
- * @return Classpath.
- */
-IGNITE_IMPORT_EXPORT std::string CreateDocumentDbClasspath(
-    const std::string& usrCp, const std::string& home);
-
-/**
- * Resolve DOCUMENTDB_HOME directory. Resolution is performed in several
- * steps:
- * 1) Check for path provided as argument.
- * 2) Check for environment variable.
- * 3) Check for current working directory.
- * Result of these checks are evaluated based on existence of certain
- * predefined folders inside possible Ignite home. If they are found,
- * IGNITE_HOME is considered resolved.
- *
- * @param path Optional path to evaluate.
- * @return Resolved Ignite home.
- */
-IGNITE_IMPORT_EXPORT std::string ResolveDocumentDbHome(
-    const std::string& path = "");
 }  // namespace jni
 }  // namespace odbc
 }  // namespace ignite

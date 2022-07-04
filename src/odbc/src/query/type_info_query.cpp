@@ -131,71 +131,56 @@ TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
   const std::string sch;
   const std::string tbl;
 
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TYPE_NAME", JDBC_TYPE_VARCHAR,
+  // replace TS_INVALID_TYPE with correct type when implement
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TYPE_NAME", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DATA_TYPE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DATA_TYPE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", JDBC_TYPE_INTEGER,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_PREFIX",
-                                   JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_PREFIX", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_SUFFIX",
-                                   JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_SUFFIX", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "CREATE_PARAMS", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "CREATE_PARAMS", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "CASE_SENSITIVE",
-                                   JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "CASE_SENSITIVE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "SEARCHABLE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "SEARCHABLE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "UNSIGNED_ATTRIBUTE",
-                                   JDBC_TYPE_SMALLINT,
+                                   TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "FIXED_PREC_SCALE",
-                                   JDBC_TYPE_SMALLINT,
+                                   TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "AUTO_UNIQUE_VALUE",
-                                   JDBC_TYPE_SMALLINT,
+                                   TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "LOCAL_TYPE_NAME",
-                                   JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "LOCAL_TYPE_NAME", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "MINIMUM_SCALE",
-                                   JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "MINIMUM_SCALE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "MAXIMUM_SCALE",
-                                   JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "MAXIMUM_SCALE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE",
-                                   JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATETIME_SUB",
-                                   JDBC_TYPE_SMALLINT,
+                                   TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX",
-                                   JDBC_TYPE_INTEGER,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX", TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "INTERVAL_PRECISION",
-                                   JDBC_TYPE_SMALLINT,
+                                   TS_INVALID_TYPE,
                                    Nullability::NULLABILITY_UNKNOWN));
 
   assert(IsSqlTypeSupported(sqlType) || sqlType == SQL_ALL_TYPES);
 
   if (sqlType == SQL_ALL_TYPES) {
-    types.push_back(JDBC_TYPE_VARCHAR);
-    types.push_back(JDBC_TYPE_SMALLINT);
-    types.push_back(JDBC_TYPE_INTEGER);
-    types.push_back(JDBC_TYPE_DECIMAL);
-    types.push_back(JDBC_TYPE_FLOAT);
-    types.push_back(JDBC_TYPE_DOUBLE);
-    types.push_back(JDBC_TYPE_BOOLEAN);
-    types.push_back(JDBC_TYPE_TINYINT);
-    types.push_back(JDBC_TYPE_BIGINT);
-    types.push_back(JDBC_TYPE_BINARY);
+    // replace TS_INVALID_TYPE with correct type when implement
+    types.push_back(TS_INVALID_TYPE);
   } else
     types.push_back(*SqlTypeToBinary(sqlType));
 }
@@ -282,22 +267,26 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
     }
 
     case ResultColumn::LITERAL_PREFIX: {
+      // not implemented
+      /* enable this block with change if needed
       if (currentType == JDBC_TYPE_VARCHAR)
         buffer.PutString("'");
       else if (currentType == IGNITE_TYPE_BINARY)
         buffer.PutString("0x");
       else
         buffer.PutNull();
-
+      */
       break;
     }
 
     case ResultColumn::LITERAL_SUFFIX: {
+      // not implemented
+      /* enable this block with change if needed
       if (currentType == JDBC_TYPE_VARCHAR)
         buffer.PutString("'");
       else
         buffer.PutNull();
-
+      */
       break;
     }
 
@@ -314,11 +303,13 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
     }
 
     case ResultColumn::CASE_SENSITIVE: {
+      // not implemented
+      /* enable this block with change if needed
       if (currentType == JDBC_TYPE_VARCHAR)
         buffer.PutInt16(SQL_TRUE);
       else
         buffer.PutInt16(SQL_FALSE);
-
+      */
       break;
     }
 

@@ -23,9 +23,6 @@
 #include "ignite/odbc/connection.h"
 #include "ignite/odbc/ignite_error.h"
 #include "ignite/odbc/impl/binary/binary_common.h"
-#include "ignite/odbc/jni/database_metadata.h"
-#include "ignite/odbc/jni/java.h"
-#include "ignite/odbc/jni/result_set.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
 #include "ignite/odbc/odbc_error.h"
@@ -33,8 +30,6 @@
 
 using ignite::odbc::IgniteError;
 using ignite::odbc::common::concurrent::SharedPointer;
-using ignite::odbc::jni::DatabaseMetaData;
-using ignite::odbc::jni::java::JniErrorInfo;
 
 namespace {
 struct ResultColumn {
@@ -127,41 +122,46 @@ ColumnMetadataQuery::ColumnMetadataQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", JDBC_TYPE_VARCHAR,
+  // replace TS_INVALID_TYPE with correct type when implement
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DATA_TYPE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "DATA_TYPE", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TYPE_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "TYPE_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", JDBC_TYPE_INTEGER,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "BUFFER_LENGTH", JDBC_TYPE_INTEGER,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "BUFFER_LENGTH", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DECIMAL_DIGITS",
-                                   JDBC_TYPE_SMALLINT, Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX",
-                                   JDBC_TYPE_SMALLINT, Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DECIMAL_DIGITS", TS_INVALID_TYPE,
+                                   Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX", TS_INVALID_TYPE,
+                                   Nullability::NULLABLE));
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "NULLABLE", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "REMARKS", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_DEF", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_DEF", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE",
-                                   JDBC_TYPE_SMALLINT, Nullability::NO_NULL));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE", TS_INVALID_TYPE,
+                                   Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATETIME_SUB",
-                                   JDBC_TYPE_SMALLINT, Nullability::NULLABLE));
+                                   TS_INVALID_TYPE, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "CHAR_OCTET_LENGTH",
-                                   JDBC_TYPE_INTEGER, Nullability::NULLABLE));
+                                   TS_INVALID_TYPE, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "ORDINAL_POSITION",
-                                   JDBC_TYPE_INTEGER, Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "IS_NULLABLE", JDBC_TYPE_VARCHAR,
+                                   TS_INVALID_TYPE, Nullability::NO_NULL));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "IS_NULLABLE", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
 }
 
@@ -370,26 +370,8 @@ SqlResult::Type ColumnMetadataQuery::NextResultSet() {
 }
 
 SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
-  IgniteError error;
-  SharedPointer< DatabaseMetaData > databaseMetaData =
-      connection.GetMetaData(error);
-  if (!databaseMetaData.IsValid()
-      || error.GetCode() != IgniteError::IGNITE_SUCCESS) {
-    diag.AddStatusRecord(error.GetText());
-    return SqlResult::AI_ERROR;
-  }
-
-  JniErrorInfo errInfo;
-  SharedPointer< ResultSet > resultSet = databaseMetaData.Get()->GetColumns(
-      catalog, schema, table, column, errInfo);
-  if (!resultSet.IsValid()
-      || errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    diag.AddStatusRecord(errInfo.errMsg);
-    return SqlResult::AI_ERROR;
-  }
-
-  meta::ReadColumnMetaVector(resultSet, meta);
-
+  // not implemented
+  /* may be enabled later for reuse
   for (size_t i = 0; i < meta.size(); ++i) {
     if (meta[i].GetDataType()) {
       LOG_MSG("\n[" << i << "] SchemaName:     "
@@ -410,8 +392,9 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
                     << "] ColumnType: not available");
     }
   }
+  */
 
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_ERROR;
 }
 }  // namespace query
 }  // namespace odbc

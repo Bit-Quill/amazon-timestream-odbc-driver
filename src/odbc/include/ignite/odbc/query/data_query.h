@@ -19,11 +19,7 @@
 #define _IGNITE_ODBC_QUERY_DATA_QUERY
 
 #include "ignite/odbc/app/parameter_set.h"
-#include "ignite/odbc/documentdb_cursor.h"
 #include "ignite/odbc/query/query.h"
-#include "ignite/odbc/jni/documentdb_mql_query_context.h"
-
-using ignite::odbc::jni::DocumentDbMqlQueryContext;
 
 namespace ignite {
 namespace odbc {
@@ -156,14 +152,6 @@ class DataQuery : public Query {
    */
   SqlResult::Type MakeRequestFetch();
 
-  /**
-   * Gets the MQL query context.
-   *
-   * @return Result.
-   */
-  SqlResult::Type GetMqlQueryContext(
-      SharedPointer< DocumentDbMqlQueryContext >& mqlQueryContext,
-      IgniteError& error);
 
   /**
    * Make next result set request and use response to set internal state.
@@ -189,22 +177,13 @@ class DataQuery : public Query {
    */
   SqlResult::Type ProcessConversionResult(app::ConversionResult::Type convRes,
                                           int32_t rowIdx, int32_t columnIdx);
-  ;
-
+  
   /**
    * Set result set meta.
    *
    * @param value Metadata value.
    */
   void SetResultsetMeta(const meta::ColumnMetaVector& value);
-
-  /**
-   * Set result set meta by reading Jdbc column metadata vector.
-   *
-   * @param jdbcMetaVector JdbcColumnMetadata vector.
-   */
-  void ReadJdbcColumnMetadataVector(
-      std::vector< JdbcColumnMetadata > jdbcVector);
 
   /**
    * Close query.
@@ -229,7 +208,8 @@ class DataQuery : public Query {
   meta::ColumnMetaVector resultMeta_{};
 
   /** Cursor. */
-  std::unique_ptr< DocumentDbCursor > cursor_{};
+  // need to create one cursor_ for timestream
+  //std::unique_ptr< DocumentDbCursor > cursor_{};
 
   /** Timeout. */
   int32_t& timeout_;

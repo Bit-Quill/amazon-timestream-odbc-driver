@@ -40,8 +40,6 @@ const char* JAVA_DLL1 = "/jre/lib/amd64/server/libjvm.so";
 const char* JAVA_DLL2 = "/lib/server/libjvm.so";
 const char* JAVA_DLL_DARWIN = "libjvm.dylib";
 
-const char* DOCUMENTDB_HOME = "DOCUMENTDB_HOME";
-
 const char* IGNITE_NATIVE_TEST_CLASSPATH = "IGNITE_NATIVE_TEST_CLASSPATH";
 
 /** Excluded modules from test classpath. */
@@ -369,50 +367,6 @@ std::string NormalizeClasspath(const std::string& usrCp) {
     return usrCp;
 
   return usrCp + ';';
-}
-
-std::string CreateDocumentDbClasspath(const std::string& usrCp,
-                                      const std::string& home) {
-  // 1. Append user classpath if it exists.
-  std::string cp = NormalizeClasspath(usrCp);
-
-  // 2. Append home classpath
-  if (!home.empty()) {
-    std::string env = GetEnv(IGNITE_NATIVE_TEST_CLASSPATH, "false");
-
-    bool forceTest = ToLower(env) == "true";
-
-    std::string homeCp = CreateDocumentDbHomeClasspath(home, forceTest);
-
-    cp.append(homeCp);
-  }
-
-  // 3. Return.
-  return cp;
-}
-
-std::string ResolveDocumentDbHome(const std::string& path) {
-  // 1. Check passed argument.
-  if (IsValidDirectory(path))
-    return path;
-
-  // 2. Check environment variable.
-  std::string home = GetEnv(DOCUMENTDB_HOME);
-
-  if (IsValidDirectory(home))
-    return home;
-
-  // 3. Check current work dir.
-  FixedSizeArray< char > curDir(1024 * 16);
-
-  char* res = getcwd(curDir.GetData(), curDir.GetSize());
-
-  if (!res)
-    return std::string();
-
-  std::string curDirStr(curDir.GetData());
-
-  return ResolveIgniteHome0(curDirStr);
 }
 }  // namespace jni
 }  // namespace odbc

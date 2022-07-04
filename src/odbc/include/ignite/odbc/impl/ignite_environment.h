@@ -89,15 +89,6 @@ class IGNITE_IMPORT_EXPORT IgniteEnvironment {
   const IgniteConfiguration& GetConfiguration() const;
 
   /**
-   * Populate callback handlers.
-   *
-   * @param target (current env wrapped into a shared pointer).
-   * @return JNI handlers.
-   */
-  jni::java::JniHandlers GetJniHandlers(
-      common::concurrent::SharedPointer< IgniteEnvironment >* target);
-
-  /**
    * Set context.
    *
    * @param ctx Context.

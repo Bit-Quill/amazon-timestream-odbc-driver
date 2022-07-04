@@ -25,19 +25,10 @@
 #include <mongocxx/pipeline.hpp>
 
 #include "ignite/odbc/connection.h"
-#include "ignite/odbc/documentdb_cursor.h"
-#include "ignite/odbc/jni/documentdb_mql_query_context.h"
-#include "ignite/odbc/jni/documentdb_query_mapping_service.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/query/batch_query.h"
-
-using ignite::odbc::jni::DocumentDbConnectionProperties;
-using ignite::odbc::jni::DocumentDbDatabaseMetadata;
-using ignite::odbc::jni::DocumentDbMqlQueryContext;
-using ignite::odbc::jni::DocumentDbQueryMappingService;
-using ignite::odbc::jni::JdbcColumnMetadata;
 
 namespace ignite {
 namespace odbc {
@@ -66,8 +57,11 @@ DataQuery::~DataQuery() {
 SqlResult::Type DataQuery::Execute() {
   LOG_DEBUG_MSG("Execute is called");
 
+  // not implemented
+  /* for timestream implementation reference
   if (cursor_.get())
     InternalClose();
+  */
 
   LOG_DEBUG_MSG("Execute exiting");
 
@@ -96,6 +90,8 @@ const meta::ColumnMetaVector* DataQuery::GetMeta() {
 SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   LOG_DEBUG_MSG("FetchNextRow is called");
 
+  // not implemented
+  /* for timestream implementation reference
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -153,16 +149,19 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
       return SqlResult::AI_ERROR;
     }
   }
+  */
 
-  LOG_DEBUG_MSG("FetchNextRow exiting with AI_SUCCESS");
+  LOG_DEBUG_MSG("FetchNextRow exiting");
 
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_ERROR;
 }
 
 SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
                                      app::ApplicationDataBuffer& buffer) {
   LOG_DEBUG_MSG("GetColumn is called");
 
+  // not implemented
+  /* for timestream implementation reference
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -189,10 +188,11 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
       row->ReadColumnToBuffer(columnIdx, buffer);
 
   SqlResult::Type result = ProcessConversionResult(convRes, 0, columnIdx);
+  */
 
   LOG_DEBUG_MSG("GetColumn exiting");
 
-  return result;
+  return SqlResult::AI_ERROR;
 }
 
 SqlResult::Type DataQuery::Close() {
@@ -204,6 +204,8 @@ SqlResult::Type DataQuery::Close() {
 SqlResult::Type DataQuery::InternalClose() {
   LOG_DEBUG_MSG("InternalClose is called");
 
+  // not implemented
+  /* for timestream implementation reference
   if (!cursor_.get()) {
     LOG_DEBUG_MSG("InternalClose exiting");
 
@@ -214,16 +216,21 @@ SqlResult::Type DataQuery::InternalClose() {
   if (result == SqlResult::AI_SUCCESS) {
     cursor_.reset();
   }
+  */
 
   LOG_DEBUG_MSG("InternalClose exiting");
 
-  return result;
+  return SqlResult::AI_ERROR;
 }
 
 bool DataQuery::DataAvailable() const {
   LOG_DEBUG_MSG("DataAvailable is called, and exiting");
 
-  return cursor_.get() && cursor_->HasData();
+  // not implemented
+ 
+  // for timestream implementation reference
+  //return cursor_.get() && cursor_->HasData();
+  return false;
 }
 
 int64_t DataQuery::AffectedRows() const {
@@ -245,7 +252,10 @@ SqlResult::Type DataQuery::NextResultSet() {
 SqlResult::Type DataQuery::MakeRequestExecute() {
   LOG_DEBUG_MSG("MakeRequestExecute is called");
 
-  cursor_.reset();
+  // not implemented
+ 
+  // for timestream implementation reference
+  //cursor_.reset(); 
 
   LOG_DEBUG_MSG("MakeRequestExecute exiting");
 
@@ -255,125 +265,19 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
 SqlResult::Type DataQuery::MakeRequestClose() {
   LOG_DEBUG_MSG("MakeRequestClose is called, and exiting");
 
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_ERROR;
 }
 
 SqlResult::Type DataQuery::MakeRequestFetch() {
   LOG_DEBUG_MSG("MakeRequestFetch is called");
 
-  try {
-    SharedPointer< DocumentDbMqlQueryContext > mqlQueryContext;
-    IgniteError error;
-
-    SqlResult::Type result = GetMqlQueryContext(mqlQueryContext, error);
-    if (result != SqlResult::AI_SUCCESS) {
-      diag.AddStatusRecord(error.GetText());
-
-      LOG_ERROR_MSG(
-          "MakeRequestFetch exiting with error msg: " << error.GetText());
-
-      return result;
-    }
-
-    std::vector< std::string > const& aggregateOperations =
-        mqlQueryContext.Get()->GetAggregateOperations();
-    std::vector< JdbcColumnMetadata >& columnMetadata =
-        mqlQueryContext.Get()->GetColumnMetadata();
-    std::vector< std::string >& paths = mqlQueryContext.Get()->GetPaths();
-
-    if (!resultMetaAvailable_) {
-      ReadJdbcColumnMetadataVector(columnMetadata);
-    }
-
-    const config::Configuration& config = connection_.GetConfiguration();
-    std::string databaseName = config.GetDatabase();
-    std::string collectionName = mqlQueryContext.Get()->GetCollectionName();
-
-    std::shared_ptr< mongocxx::client > const& mongoClient =
-        connection_.GetMongoClient();
-    mongocxx::database database = mongoClient.get()->database(databaseName);
-    mongocxx::collection collection = database[collectionName];
-    auto pipeline = mongocxx::pipeline{};
-    for (auto const& stage : aggregateOperations) {
-      pipeline.append_stage(bsoncxx::from_json(stage));
-    }
-    auto options = mongocxx::options::aggregate{};
-    options.batch_size(config.GetDefaultFetchSize());
-    mongocxx::cursor cursor = collection.aggregate(pipeline, options);
-
-    this->cursor_.reset(new DocumentDbCursor(cursor, columnMetadata, paths));
-
-    LOG_DEBUG_MSG("MakeRequestFetch exiting");
-
-    return SqlResult::AI_SUCCESS;
-  } catch (mongocxx::exception const& xcp) {
-    std::stringstream message;
-    message << "Unable to establish connection with DocumentDB."
-            << " code: " << xcp.code().value()
-            << " messagge: " << xcp.code().message()
-            << " cause: " << xcp.what();
-    odbc::IgniteError error(
-        odbc::IgniteError::IGNITE_ERR_SECURE_CONNECTION_FAILURE,
-        message.str().c_str());
-    diag.AddStatusRecord(error.GetText());
-
-    LOG_ERROR_MSG(
-        "MakeRequestFetch exiting with error msg: " << error.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
+  // not implemented
 
   LOG_DEBUG_MSG("MakeRequestFetch exiting");
+
+  return SqlResult::AI_ERROR;
 }
 
-SqlResult::Type DataQuery::GetMqlQueryContext(
-    SharedPointer< DocumentDbMqlQueryContext >& mqlQueryContext,
-    IgniteError& error) {
-  LOG_DEBUG_MSG("GetMqlQueryContext is called");
-
-  SharedPointer< DocumentDbConnectionProperties > connectionProperties =
-      connection_.GetConnectionProperties(error);
-  if (error.GetCode() != IgniteError::IGNITE_SUCCESS) {
-    LOG_ERROR_MSG(
-        "GetMqlQueryContext exiting with error msg: " << error.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-  SharedPointer< DocumentDbDatabaseMetadata > databaseMetadata =
-      connection_.GetDatabaseMetadata(error);
-  if (error.GetCode() != IgniteError::IGNITE_SUCCESS) {
-    LOG_ERROR_MSG(
-        "GetMqlQueryContext exiting with error msg: " << error.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-  JniErrorInfo errInfo;
-  SharedPointer< DocumentDbQueryMappingService > queryMappingService =
-      DocumentDbQueryMappingService::Create(connectionProperties,
-                                            databaseMetadata, errInfo);
-  if (errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    IgniteError::SetError(errInfo.code, errInfo.errCls.c_str(),
-                          errInfo.errMsg.c_str(), error);
-    LOG_ERROR_MSG(
-        "GetMqlQueryContext exiting with error msg: " << error.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-  mqlQueryContext =
-      queryMappingService.Get()->GetMqlQueryContext(sql_, 0, errInfo);
-  if (errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    IgniteError::SetError(errInfo.code, errInfo.errCls.c_str(),
-                          errInfo.errMsg.c_str(), error);
-
-    LOG_ERROR_MSG(
-        "GetMqlQueryContext exiting with error msg: " << error.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-  LOG_DEBUG_MSG("GetMqlQueryContext exiting");
-
-  return SqlResult::AI_SUCCESS;
-}
 
 SqlResult::Type DataQuery::MakeRequestMoreResults() {
   LOG_DEBUG_MSG("MakeRequestMoreResults is called, and exiting");
@@ -384,47 +288,11 @@ SqlResult::Type DataQuery::MakeRequestMoreResults() {
 SqlResult::Type DataQuery::MakeRequestResultsetMeta() {
   LOG_DEBUG_MSG("MakeRequestResultsetMeta is called");
 
-  IgniteError error;
-  SharedPointer< DocumentDbMqlQueryContext > mqlQueryContext;
-  SqlResult::Type sqlRes = GetMqlQueryContext(mqlQueryContext, error);
-  if (!mqlQueryContext.IsValid() || sqlRes != SqlResult::AI_SUCCESS) {
-    diag.AddStatusRecord(error.GetText());
-    LOG_ERROR_MSG(
-        "MakeRequestResultsetMeta exiting with error msg: " << error.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-  ReadJdbcColumnMetadataVector(mqlQueryContext.Get()->GetColumnMetadata());
+  // not implemented
 
   LOG_DEBUG_MSG("MakeRequestResultsetMeta exiting");
 
-  return SqlResult::AI_SUCCESS;
-}
-
-void DataQuery::ReadJdbcColumnMetadataVector(
-    std::vector< JdbcColumnMetadata > jdbcVector) {
-  LOG_DEBUG_MSG("ReadJdbcColumnMetadataVector is called");
-
-  using ignite::odbc::meta::ColumnMeta;
-  resultMeta_.clear();
-
-  if (jdbcVector.empty()) {
-    LOG_ERROR_MSG(
-        "ReadJdbcColumnMetadataVector exiting without reading jdbc vector");
-    LOG_INFO_MSG("reason: jdbcVector is empty");
-
-    return;
-  }
-
-  IgniteError error;
-  int32_t prevPosition = 0;
-  for (JdbcColumnMetadata jdbcMetadata : jdbcVector) {
-    resultMeta_.emplace_back(ColumnMeta());
-    resultMeta_.back().ReadJdbcMetadata(jdbcMetadata, prevPosition);
-  }
-  resultMetaAvailable_ = true;
-
-  LOG_DEBUG_MSG("ReadJdbcColumnMetadataVector exiting");
+  return SqlResult::AI_ERROR;
 }
 
 SqlResult::Type DataQuery::ProcessConversionResult(

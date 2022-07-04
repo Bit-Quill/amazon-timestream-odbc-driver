@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute, *disabled()) {
   std::string table("table");
   std::string column("column");
 
-  ColumnMeta columnMeta(schema, table, column, JDBC_TYPE_VARCHAR,
+  ColumnMeta columnMeta(schema, table, column, TS_INVALID_TYPE,
                         Nullability::NULLABLE);
 
   SQLLEN intVal;
@@ -203,23 +203,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, std::string > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_CHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_NCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_NVARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_LONGNVARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_BINARY, std::string("0x")),
-      std::make_pair(JDBC_TYPE_VARBINARY, std::string("0x")),
-      std::make_pair(JDBC_TYPE_LONGVARBINARY, std::string("0x")),
-      std::make_pair(JDBC_TYPE_BIGINT, std::string("")),
-      std::make_pair(JDBC_TYPE_BOOLEAN, std::string("")),
-      std::make_pair(JDBC_TYPE_FLOAT, std::string(""))};
+  std::vector< std::pair< int16_t, std::string > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, std::string >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving std::string value
@@ -240,23 +226,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, std::string > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_CHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_NCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_NVARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_LONGNVARCHAR, std::string("'")),
-      std::make_pair(JDBC_TYPE_BINARY, std::string("")),
-      std::make_pair(JDBC_TYPE_VARBINARY, std::string("")),
-      std::make_pair(JDBC_TYPE_LONGVARBINARY, std::string("")),
-      std::make_pair(JDBC_TYPE_BIGINT, std::string("")),
-      std::make_pair(JDBC_TYPE_BOOLEAN, std::string("")),
-      std::make_pair(JDBC_TYPE_FLOAT, std::string(""))};
+  std::vector<std::pair< int16_t, std::string >> tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, std::string >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving std::string value
@@ -279,25 +251,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, std::string > tests[] = {
-      std::make_pair(JDBC_TYPE_BOOLEAN, SqlTypeName::BIT),
-      std::make_pair(JDBC_TYPE_SMALLINT, SqlTypeName::SMALLINT),
-      std::make_pair(JDBC_TYPE_TINYINT, SqlTypeName::TINYINT),
-      std::make_pair(JDBC_TYPE_INTEGER, SqlTypeName::INTEGER),
-      std::make_pair(JDBC_TYPE_BIGINT, SqlTypeName::BIGINT),
-      std::make_pair(JDBC_TYPE_FLOAT, SqlTypeName::FLOAT),
-      std::make_pair(JDBC_TYPE_REAL, SqlTypeName::REAL),
-      std::make_pair(JDBC_TYPE_DOUBLE, SqlTypeName::DOUBLE),
-      std::make_pair(JDBC_TYPE_VARCHAR, SqlTypeName::VARCHAR),
-      std::make_pair(JDBC_TYPE_BINARY, SqlTypeName::BINARY),
-      std::make_pair(JDBC_TYPE_VARBINARY, SqlTypeName::VARBINARY),
-      std::make_pair(JDBC_TYPE_DATE, SqlTypeName::DATE),
-      std::make_pair(JDBC_TYPE_TIME, SqlTypeName::TIME),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, SqlTypeName::TIMESTAMP)};
+  std::vector< std::pair< int16_t, std::string > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, std::string >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving std::string value
@@ -318,30 +274,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_NCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_NVARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_LONGNVARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_BOOLEAN, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_SMALLINT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_TINYINT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_INTEGER, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_BIGINT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_FLOAT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_REAL, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_DOUBLE, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_DATE, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_TIME, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, SQL_FALSE)};
+  std::vector<std::pair< int16_t, SQLLEN >> tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -362,27 +297,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_WVARCHAR),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_WCHAR),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_WLONGVARCHAR),
-      std::make_pair(JDBC_TYPE_BOOLEAN, SQL_BIT),
-      std::make_pair(JDBC_TYPE_SMALLINT, SQL_SMALLINT),
-      std::make_pair(JDBC_TYPE_TINYINT, SQL_TINYINT),
-      std::make_pair(JDBC_TYPE_INTEGER, SQL_INTEGER),
-      std::make_pair(JDBC_TYPE_BIGINT, SQL_BIGINT),
-      std::make_pair(JDBC_TYPE_FLOAT, SQL_FLOAT),
-      std::make_pair(JDBC_TYPE_REAL, SQL_REAL),
-      std::make_pair(JDBC_TYPE_DOUBLE, SQL_DOUBLE),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_BINARY),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_VARBINARY),
-      std::make_pair(JDBC_TYPE_DATE, SQL_TYPE_DATE),
-      std::make_pair(JDBC_TYPE_TIME, SQL_TYPE_TIME),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -408,27 +325,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_BOOLEAN, 1),
-      std::make_pair(JDBC_TYPE_SMALLINT, 6),
-      std::make_pair(JDBC_TYPE_TINYINT, 4),
-      std::make_pair(JDBC_TYPE_INTEGER, 11),
-      std::make_pair(JDBC_TYPE_BIGINT, 20),
-      std::make_pair(JDBC_TYPE_FLOAT, 24),
-      std::make_pair(JDBC_TYPE_REAL, 14),
-      std::make_pair(JDBC_TYPE_DOUBLE, 24),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_DATE, 10),
-      std::make_pair(JDBC_TYPE_TIME, 8),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, 19)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -449,27 +348,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLength, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_BOOLEAN, 1),
-      std::make_pair(JDBC_TYPE_SMALLINT, 2),
-      std::make_pair(JDBC_TYPE_TINYINT, 1),
-      std::make_pair(JDBC_TYPE_INTEGER, 4),
-      std::make_pair(JDBC_TYPE_BIGINT, 8),
-      std::make_pair(JDBC_TYPE_FLOAT, 4),
-      std::make_pair(JDBC_TYPE_REAL, 4),
-      std::make_pair(JDBC_TYPE_DOUBLE, 8),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_DATE, 6),
-      std::make_pair(JDBC_TYPE_TIME, 6),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, 16)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -491,27 +372,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength, *disabled()) {
   bool found;
   size_t size_of_char = sizeof(char);
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_BOOLEAN, 1 * size_of_char),
-      std::make_pair(JDBC_TYPE_SMALLINT, 2 * size_of_char),
-      std::make_pair(JDBC_TYPE_TINYINT, 1 * size_of_char),
-      std::make_pair(JDBC_TYPE_INTEGER, 4 * size_of_char),
-      std::make_pair(JDBC_TYPE_BIGINT, 8 * size_of_char),
-      std::make_pair(JDBC_TYPE_FLOAT, 4 * size_of_char),
-      std::make_pair(JDBC_TYPE_REAL, 4 * size_of_char),
-      std::make_pair(JDBC_TYPE_DOUBLE, 8 * size_of_char),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_DATE, 6 * size_of_char),
-      std::make_pair(JDBC_TYPE_TIME, 6 * size_of_char),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, 16 * size_of_char)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -531,7 +394,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaNullable(schema, table, column, JDBC_TYPE_NULL,
+  ColumnMeta columnMetaNullable(schema, table, column, TS_INVALID_TYPE,
                                 Nullability::NULLABLE);
 
   // test SQL_DESC_NULLABLE
@@ -539,7 +402,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_NULLABLE);
 
-  ColumnMeta columnMetaNoNulls(schema, table, column, JDBC_TYPE_VARCHAR,
+  ColumnMeta columnMetaNoNulls(schema, table, column, TS_INVALID_TYPE,
                                Nullability::NO_NULL);
 
   // test SQL_DESC_NULLABLE
@@ -547,7 +410,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_NO_NULLS);
 
-  ColumnMeta columnMetaUnknown(schema, table, column, JDBC_TYPE_BOOLEAN,
+  ColumnMeta columnMetaUnknown(schema, table, column, TS_INVALID_TYPE,
                                Nullability::NULLABILITY_UNKNOWN);
 
   // test SQL_DESC_NULLABLE
@@ -565,24 +428,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, 0), std::make_pair(JDBC_TYPE_CHAR, 0),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, 0),
-      std::make_pair(JDBC_TYPE_BOOLEAN, 10),
-      // JDBC_TYPE_BOOLEAN corresponds to SQL_BIT, which gives radix 10
-      std::make_pair(JDBC_TYPE_SMALLINT, 10),
-      std::make_pair(JDBC_TYPE_TINYINT, 10),
-      std::make_pair(JDBC_TYPE_INTEGER, 10),
-      std::make_pair(JDBC_TYPE_BIGINT, 10), std::make_pair(JDBC_TYPE_FLOAT, 2),
-      std::make_pair(JDBC_TYPE_REAL, 2), std::make_pair(JDBC_TYPE_DOUBLE, 2),
-      std::make_pair(JDBC_TYPE_BINARY, 0),
-      std::make_pair(JDBC_TYPE_VARBINARY, 0), std::make_pair(JDBC_TYPE_DATE, 0),
-      std::make_pair(JDBC_TYPE_TIME, 0),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, 0)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -603,27 +451,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributePrecision, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_BOOLEAN, 1),
-      std::make_pair(JDBC_TYPE_SMALLINT, 5),
-      std::make_pair(JDBC_TYPE_TINYINT, 3),
-      std::make_pair(JDBC_TYPE_INTEGER, 10),
-      std::make_pair(JDBC_TYPE_BIGINT, 19),
-      std::make_pair(JDBC_TYPE_FLOAT, 15),
-      std::make_pair(JDBC_TYPE_REAL, 7),
-      std::make_pair(JDBC_TYPE_DOUBLE, 15),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_NO_TOTAL),
-      std::make_pair(JDBC_TYPE_DATE, 10),
-      std::make_pair(JDBC_TYPE_TIME, 8),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, 19)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -644,27 +474,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeScale, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, -1),
-      std::make_pair(JDBC_TYPE_CHAR, -1),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, -1),
-      std::make_pair(JDBC_TYPE_BOOLEAN, -1),
-      std::make_pair(JDBC_TYPE_SMALLINT, 0),
-      std::make_pair(JDBC_TYPE_TINYINT, 0),
-      std::make_pair(JDBC_TYPE_INTEGER, 0),
-      std::make_pair(JDBC_TYPE_BIGINT, 0),
-      std::make_pair(JDBC_TYPE_FLOAT, -1),
-      std::make_pair(JDBC_TYPE_REAL, -1),
-      std::make_pair(JDBC_TYPE_DOUBLE, -1),
-      std::make_pair(JDBC_TYPE_BINARY, -1),
-      std::make_pair(JDBC_TYPE_VARBINARY, -1),
-      std::make_pair(JDBC_TYPE_DATE, -1),
-      std::make_pair(JDBC_TYPE_TIME, -1),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, -1)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
@@ -684,7 +496,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed, *disabled()) {
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaUnnamed(schema, table, std::string(""), JDBC_TYPE_NULL,
+  ColumnMeta columnMetaUnnamed(schema, table, std::string(""), TS_INVALID_TYPE,
                                Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED
@@ -692,7 +504,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed, *disabled()) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_UNNAMED);
 
-  ColumnMeta columnMetaNamed(schema, table, column, JDBC_TYPE_NULL,
+  ColumnMeta columnMetaNamed(schema, table, column, TS_INVALID_TYPE,
                              Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED
@@ -710,31 +522,9 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnsigned, *disabled()) {
   std::string resVal;
   bool found;
 
-  std::pair< int16_t, SQLLEN > tests[] = {
-      std::make_pair(JDBC_TYPE_VARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_CHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_NCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_NVARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_LONGVARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_LONGNVARCHAR, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_BOOLEAN, SQL_FALSE),
-      // JDBC_TYPE_BOOLEAN corresponds to SQL_BIT, which is signed
-      std::make_pair(JDBC_TYPE_SMALLINT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_TINYINT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_INTEGER, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_BIGINT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_FLOAT, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_REAL, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_DOUBLE, SQL_FALSE),
-      std::make_pair(JDBC_TYPE_BINARY, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_VARBINARY, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_DATE, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_TIME, SQL_TRUE),
-      std::make_pair(JDBC_TYPE_TIMESTAMP, SQL_TRUE)};
+  std::vector< std::pair< int16_t, SQLLEN > > tests;
 
-  int numTests = sizeof(tests) / sizeof(std::pair< int16_t, SQLLEN >);
-
-  for (int i = 0; i < numTests; i++) {
+  for (int i = 0; i < tests.size(); i++) {
     ColumnMeta columnMeta(schema, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value

@@ -115,85 +115,11 @@ const char* StatementAttrIdToString(long id) {
 
 #undef DBG_STR_CASE
 #endif  // _DEBUG
-/**
- * Warning: if any JDBC Type is added or becomes deprecated on the JDBC side,
- * the change should be reflected under this function as well.
- */
+
 const boost::optional< std::string > BinaryTypeToSqlTypeName(
     boost::optional< int16_t > binaryType) {
-  if (!binaryType)
-    return boost::none;
-  switch (*binaryType) {
-    case JDBC_TYPE_BIT:
-    case JDBC_TYPE_BOOLEAN:
-      return SqlTypeName::BIT;
-
-    case JDBC_TYPE_SMALLINT:
-      return SqlTypeName::SMALLINT;
-
-    case JDBC_TYPE_TINYINT:
-      return SqlTypeName::TINYINT;
-
-    case JDBC_TYPE_INTEGER:
-      return SqlTypeName::INTEGER;
-
-    case JDBC_TYPE_BIGINT:
-      return SqlTypeName::BIGINT;
-
-    case JDBC_TYPE_FLOAT:
-      return SqlTypeName::FLOAT;
-
-    case JDBC_TYPE_REAL:
-      return SqlTypeName::REAL;
-
-    case JDBC_TYPE_DOUBLE:
-      return SqlTypeName::DOUBLE;
-
-    case JDBC_TYPE_NUMERIC:
-      return SqlTypeName::NUMERIC;
-
-    case JDBC_TYPE_DECIMAL:
-      return SqlTypeName::DECIMAL;
-
-    case JDBC_TYPE_VARCHAR:
-    case JDBC_TYPE_NVARCHAR:
-      return SqlTypeName::VARCHAR;
-
-    case JDBC_TYPE_LONGVARCHAR:
-    case JDBC_TYPE_LONGNVARCHAR:
-      return SqlTypeName::LONGVARCHAR;
-
-    case JDBC_TYPE_DATE:
-      return SqlTypeName::DATE;
-
-    case JDBC_TYPE_TIME:
-      return SqlTypeName::TIME;
-
-    case JDBC_TYPE_TIMESTAMP:
-      return SqlTypeName::TIMESTAMP;
-
-    case JDBC_TYPE_LONGVARBINARY:
-      return SqlTypeName::LONGVARBINARY;
-
-    case JDBC_TYPE_NULL:
-      return SqlTypeName::SQL_NULL;
-
-    case JDBC_TYPE_VARBINARY:
-      return SqlTypeName::VARBINARY;
-
-    case JDBC_TYPE_BINARY:
-    case JDBC_TYPE_BLOB:
-    case JDBC_TYPE_CLOB:
-    case JDBC_TYPE_ARRAY:
-    case JDBC_TYPE_STRUCT:
-    case JDBC_TYPE_JAVA_OBJECT:
-    case JDBC_TYPE_ROWID:
-    case JDBC_TYPE_NCLOB:
-    case JDBC_TYPE_SQLXML:
-    case JDBC_TYPE_REF_CURSOR:
-    default:
-      return SqlTypeName::BINARY;
-  }
+  // not implemented
+  return boost::none;
 }
 
 bool IsApplicationTypeSupported(boost::optional< int16_t > type) {
@@ -251,81 +177,9 @@ bool IsSqlTypeSupported(boost::optional< int16_t > type) {
   }
 }
 
-/**
- * Warning: if any JDBC Type is added or becomes deprecated on the
- * JDBC side, the change should be reflected under this function as
- * well.
- */
 boost::optional< int16_t > SqlTypeToBinary(boost::optional< int16_t > sqlType) {
-  if (!sqlType)
-    return boost::none;
-  switch (*sqlType) {
-    case SQL_BIT:
-      return JDBC_TYPE_BOOLEAN;
-
-    case SQL_TINYINT:
-      return JDBC_TYPE_TINYINT;
-
-    case SQL_SMALLINT:
-      return JDBC_TYPE_SMALLINT;
-
-    case SQL_INTEGER:
-      return JDBC_TYPE_INTEGER;
-
-    case SQL_BIGINT:
-      return JDBC_TYPE_BIGINT;
-
-    case SQL_FLOAT:
-      return JDBC_TYPE_FLOAT;
-
-    case SQL_REAL:
-      return JDBC_TYPE_REAL;
-
-    case SQL_DOUBLE:
-      return JDBC_TYPE_DOUBLE;
-
-    case SQL_NUMERIC:
-      return JDBC_TYPE_NUMERIC;
-
-    case SQL_DECIMAL:
-      return JDBC_TYPE_DECIMAL;
-
-    case SQL_CHAR:
-    case SQL_WCHAR:
-      return JDBC_TYPE_CHAR;
-
-    case SQL_VARCHAR:
-    case SQL_WVARCHAR:
-      return JDBC_TYPE_VARCHAR;
-
-    case SQL_LONGVARCHAR:
-    case SQL_WLONGVARCHAR:
-      return JDBC_TYPE_LONGVARCHAR;
-
-    case SQL_TYPE_DATE:
-      return JDBC_TYPE_DATE;
-
-    case SQL_TYPE_TIME:
-      return JDBC_TYPE_TIME;
-
-    case SQL_TYPE_TIMESTAMP:
-      return JDBC_TYPE_TIMESTAMP;
-
-    case SQL_BINARY:
-      return JDBC_TYPE_BINARY;
-
-    case SQL_VARBINARY:
-      return JDBC_TYPE_VARBINARY;
-
-    case SQL_LONGVARBINARY:
-      return JDBC_TYPE_LONGVARBINARY;
-
-    case SQL_TYPE_NULL:
-      return JDBC_TYPE_NULL;
-
-    default:
-      return JDBC_TYPE_BINARY;
-  }
+  // not implemented
+  return boost::none;
 }
 
 OdbcNativeType::Type ToDriverType(int16_t type) {
@@ -401,90 +255,10 @@ OdbcNativeType::Type ToDriverType(int16_t type) {
   }
 }
 
-/**
- * Warning: if any JDBC Type is added or becomes deprecated on the
- * JDBC side, the change should be reflected under this function as
- * well.
- */
 boost::optional< int16_t > BinaryToSqlType(
     boost::optional< int16_t > binaryType) {
-  if (!binaryType)
-    return boost::none;
-  switch (*binaryType) {
-    case JDBC_TYPE_BIT:
-    case JDBC_TYPE_BOOLEAN:
-      return SQL_BIT;
-
-    case JDBC_TYPE_TINYINT:
-      return SQL_TINYINT;
-
-    case JDBC_TYPE_SMALLINT:
-      return SQL_SMALLINT;
-
-    case JDBC_TYPE_INTEGER:
-      return SQL_INTEGER;
-
-    case JDBC_TYPE_BIGINT:
-      return SQL_BIGINT;
-
-    case JDBC_TYPE_FLOAT:
-      return SQL_FLOAT;
-
-    case JDBC_TYPE_REAL:
-      return SQL_REAL;
-
-    case JDBC_TYPE_DOUBLE:
-      return SQL_DOUBLE;
-
-    case JDBC_TYPE_NUMERIC:
-      return SQL_NUMERIC;
-
-    case JDBC_TYPE_DECIMAL:
-      return SQL_DECIMAL;
-
-    case JDBC_TYPE_CHAR:
-    case JDBC_TYPE_NCHAR:
-      return SQL_WCHAR;
-
-    case JDBC_TYPE_VARCHAR:
-    case JDBC_TYPE_NVARCHAR:
-      return SQL_WVARCHAR;
-
-    case JDBC_TYPE_LONGVARCHAR:
-    case JDBC_TYPE_LONGNVARCHAR:
-      return SQL_WLONGVARCHAR;
-
-    case JDBC_TYPE_DATE:
-      return SQL_TYPE_DATE;
-
-    case JDBC_TYPE_TIME:
-      return SQL_TYPE_TIME;
-
-    case JDBC_TYPE_TIMESTAMP:
-      return SQL_TYPE_TIMESTAMP;
-
-    case JDBC_TYPE_LONGVARBINARY:
-      return SQL_LONGVARBINARY;
-
-    case JDBC_TYPE_NULL:
-      return SQL_TYPE_NULL;
-
-    case JDBC_TYPE_VARBINARY:
-      return SQL_VARBINARY;
-
-    case JDBC_TYPE_BINARY:
-    case JDBC_TYPE_BLOB:
-    case JDBC_TYPE_CLOB:
-    case JDBC_TYPE_ARRAY:
-    case JDBC_TYPE_STRUCT:
-    case JDBC_TYPE_JAVA_OBJECT:
-    case JDBC_TYPE_ROWID:
-    case JDBC_TYPE_NCLOB:
-    case JDBC_TYPE_SQLXML:
-    case JDBC_TYPE_REF_CURSOR:
-    default:
-      return SQL_BINARY;
-  }
+  // not implemented
+  return boost::none;
 }
 
 int16_t BinaryTypeNullability(int16_t) {

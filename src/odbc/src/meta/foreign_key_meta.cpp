@@ -20,7 +20,6 @@
 #include "ignite/odbc/impl/binary/binary_common.h"
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/common_types.h"
-#include "ignite/odbc/jni/java.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/type_traits.h"
@@ -44,7 +43,7 @@ const std::string PK_NAME = "PK_NAME";
 const std::string DEFERRABILITY = "DEFERRABILITY";
 
 void ForeignKeyMeta::Read(SharedPointer< ResultSet >& resultSet,
-                          JniErrorInfo& errInfo) {
+                          TSErrorInfo& errInfo) {
   boost::optional< int > intDataType;
   resultSet.Get()->GetString(PKTABLE_CAT, PKCatalogName, errInfo);
   resultSet.Get()->GetString(PKTABLE_SCHEM, PKSchemaName, errInfo);
@@ -70,13 +69,13 @@ void ReadForeignKeysColumnMetaVector(SharedPointer< ResultSet >& resultSet,
     return;
   }
 
-  JniErrorInfo errInfo;
+  TSErrorInfo errInfo;
   bool hasNext = false;
   int32_t prevPosition = 0;
-  JniErrorCode errCode;
+  TSErrorCode errCode;
   do {
     errCode = resultSet.Get()->Next(hasNext, errInfo);
-    if (!hasNext || errCode != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
+    if (!hasNext || errCode != TSErrorCode::TS_ERR_SUCCESS) {
       break;
     }
 

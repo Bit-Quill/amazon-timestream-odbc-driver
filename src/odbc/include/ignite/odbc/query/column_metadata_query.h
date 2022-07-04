@@ -18,7 +18,6 @@
 #ifndef _IGNITE_ODBC_QUERY_COLUMN_METADATA_QUERY
 #define _IGNITE_ODBC_QUERY_COLUMN_METADATA_QUERY
 
-#include "ignite/odbc/jni/java.h"
 #include "ignite/odbc/meta/column_meta.h"
 #include "ignite/odbc/query/query.h"
 

@@ -84,40 +84,11 @@ std::string GetOdbcErrorMessage(SQLSMALLINT handleType, SQLHANDLE handle,
   return res;
 }
 
-std::string GetTestConfigDir() {
-  using namespace ignite::odbc;
-
-  std::string cfgPath = common::GetEnv("IGNITE_NATIVE_TEST_ODBC_CONFIG_PATH");
-
-  if (!cfgPath.empty())
-    return cfgPath;
-
-  std::string home = jni::ResolveDocumentDbHome();
-
-  if (home.empty())
-    return home;
-
-  std::stringstream path;
-
-  path << home << common::Fs << "modules" << common::Fs << "platforms"
-       << common::Fs << "cpp" << common::Fs << "odbc-test" << common::Fs
-       << "config";
-
-  return path.str();
-}
-
 std::string AppendPath(const std::string& base, const std::string& toAdd) {
   std::stringstream stream;
 
   stream << base << ignite::odbc::common::Fs << toAdd;
 
   return stream.str();
-}
-
-void ClearLfs() {
-  std::string home = ignite::odbc::jni::ResolveDocumentDbHome();
-  std::string workDir = AppendPath(home, "work");
-
-  ignite::odbc::common::DeletePath(workDir);
 }
 }  // namespace ignite_test

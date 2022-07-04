@@ -27,23 +27,12 @@
 #include "ignite/odbc/config/connection_info.h"
 #include "ignite/odbc/diagnostic/diagnosable_adapter.h"
 #include "ignite/odbc/end_point.h"
-#include "ignite/odbc/jni/database_metadata.h"
-#include "ignite/odbc/jni/documentdb_connection.h"
-#include "ignite/odbc/jni/documentdb_connection_properties.h"
-#include "ignite/odbc/jni/documentdb_database_metadata.h"
-#include "ignite/odbc/jni/java.h"
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/parser.h"
 #include "ignite/odbc/streaming/streaming_context.h"
 #include "mongocxx/client.hpp"
 
 using ignite::odbc::common::concurrent::SharedPointer;
-using ignite::odbc::jni::DatabaseMetaData;
-using ignite::odbc::jni::DocumentDbConnection;
-using ignite::odbc::jni::DocumentDbConnectionProperties;
-using ignite::odbc::jni::DocumentDbDatabaseMetadata;
-using ignite::odbc::jni::java::GlobalJObject;
-using ignite::odbc::jni::java::JniContext;
 
 namespace ignite {
 namespace odbc {
@@ -123,29 +112,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
    * @return Pointer to valid instance on success and NULL on failure.
    */
   Statement* CreateStatement();
-
-  /**
-   * Gets the database metadata for the connection.
-   *
-   * @return SharedPointer to DatabaseMetaData.
-   */
-  SharedPointer< DatabaseMetaData > GetMetaData(IgniteError& err);
-
-  /**
-   * Gets the DocumentDB database metadata for the connection.
-   *
-   * @return SharedPointer to DocumentDbDatabaseMetadata.
-   */
-  SharedPointer< DocumentDbDatabaseMetadata > GetDatabaseMetadata(
-      IgniteError& err);
-
-  /**
-   * Gets the DocumentDB connection properties.
-   *
-   * @return SharedPointer to DocumentDbConnectionProperties.
-   */
-  SharedPointer< DocumentDbConnectionProperties > GetConnectionProperties(
-      IgniteError& err);
 
   /**
    * Get name of the assotiated schema.
@@ -419,35 +385,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
   std::string FormatMongoCppConnectionString(int32_t localSSHTunnelPort) const;
 
   /**
-   * Helper function to get internall SSH tunnel Port
-   *
-   * @param localSSHTunnelPort internal SSH tunnel port
-   * @param ctx java context
-   * @param err
-   * @return bool
-   */
-  bool GetInternalSSHTunnelPort(int32_t& localSSHTunnelPort,
-                                SharedPointer< jni::java::JniContext > ctx,
-                                IgniteError& err);
-
-  /**
-   * Creates JVM options
-   */
-  void SetJvmOptions(const std::string& cp);
-
-  /**
-   * Get the singleton instance of the JNI context for the connection.
-   *
-   * @return JNI context.
-   */
-  SharedPointer< JniContext > GetJniContext(JniErrorInfo& errInfo);
-
-  /**
-   * De-initializes the JVM options
-   */
-  void Deinit();
-
-  /**
    * Retrieve timeout from parameter.
    *
    * @param value Parameter.
@@ -478,15 +415,7 @@ class Connection : public diagnostic::DiagnosableAdapter {
   /** Connection info. */
   config::ConnectionInfo info_;
 
-  /** Java connection object */
-  SharedPointer< DocumentDbConnection > connection_;
-
-  SharedPointer< JniContext > jniContext_;
-
   std::shared_ptr< mongocxx::client > mongoClient_;
-
-  /** JVM options */
-  std::vector< char* > opts_;
 };
 }  // namespace odbc
 }  // namespace ignite

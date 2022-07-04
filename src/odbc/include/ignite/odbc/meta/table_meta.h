@@ -22,15 +22,18 @@
 
 #include <string>
 
+#include <ignite/odbc/common/concurrent.h>
+
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 
 #include "ignite/odbc/impl/binary/binary_reader_impl.h"
-#include "ignite/odbc/jni/result_set.h"
+#include "ignite/odbc/result_set.h"
 #include "ignite/odbc/utility.h"
+#include "ignite/odbc/ts_error.h"
 
-using ignite::odbc::jni::ResultSet;
-using ignite::odbc::jni::java::JniErrorInfo;
+using ignite::odbc::ResultSet;
+using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {
 namespace odbc {
@@ -100,7 +103,7 @@ class TableMeta {
    * Read using reader.
    * @param resultSet SharedPointer< ResultSet >.
    */
-  void Read(SharedPointer< ResultSet >& resultSet, JniErrorInfo& errInfo);
+  void Read(SharedPointer< ResultSet >& resultSet, TSErrorInfo& errInfo);
 
   /**
    * Get catalog name.

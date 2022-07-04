@@ -20,7 +20,6 @@
 #include "ignite/odbc/impl/binary/binary_common.h"
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/common_types.h"
-#include "ignite/odbc/jni/java.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/type_traits.h"
 
@@ -36,7 +35,7 @@ const std::string KEY_SEQ = "KEY_SEQ";
 const std::string PK_NAME = "PK_NAME";
 
 void PrimaryKeyMeta::Read(SharedPointer< ResultSet >& resultSet,
-                          JniErrorInfo& errInfo) {
+                          TSErrorInfo& errInfo) {
   resultSet.Get()->GetString(TABLE_CAT, catalog, errInfo);
   resultSet.Get()->GetString(TABLE_SCHEM, schema, errInfo);
   resultSet.Get()->GetString(TABLE_NAME, table, errInfo);
@@ -53,13 +52,13 @@ void ReadPrimaryKeysColumnMetaVector(SharedPointer< ResultSet >& resultSet,
     return;
   }
 
-  JniErrorInfo errInfo;
+  TSErrorInfo errInfo;
   bool hasNext = false;
   int32_t prevPosition = 0;
-  JniErrorCode errCode;
+  TSErrorCode errCode;
   do {
     errCode = resultSet.Get()->Next(hasNext, errInfo);
-    if (!hasNext || errCode != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
+    if (!hasNext || errCode != TSErrorCode::TS_ERR_SUCCESS) {
       break;
     }
 

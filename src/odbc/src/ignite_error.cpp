@@ -91,8 +91,7 @@ void IgniteError::SetError(const JniErrorCode jniCode, const char* jniCls,
       if (jniCls0.compare("java.lang.NoClassDefFoundError") == 0) {
         std::stringstream stream;
 
-        stream << "Java class is not found (did you set DOCUMENTDB_HOME "
-                  "environment variable?)";
+        stream << "Java class is not found";
 
         if (jniMsg)
           stream << ": " << jniMsg;
@@ -102,8 +101,7 @@ void IgniteError::SetError(const JniErrorCode jniCode, const char* jniCls,
       } else if (jniCls0.compare("java.lang.NoSuchMethodError") == 0) {
         std::stringstream stream;
 
-        stream << "Java method is not found (did you set DOCUMENTDB_HOME "
-                  "environment variable?)";
+        stream << "Java method is not found";
 
         if (jniMsg)
           stream << ": " << jniMsg;

@@ -103,34 +103,38 @@ ForeignKeysQuery::ForeignKeysQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKTABLE_CAT", JDBC_TYPE_VARCHAR,
+  // replace TS_INVALID_TYPE with correct type when implement
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKTABLE_CAT", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKTABLE_SCHEM", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKTABLE_SCHEM", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKTABLE_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKTABLE_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKCOLUMN_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PKCOLUMN_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKTABLE_CAT", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKTABLE_CAT", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKTABLE_SCHEM", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKTABLE_SCHEM", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKTABLE_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKTABLE_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKCOLUMN_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "FKCOLUMN_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "KEY_SEQ", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "KEY_SEQ", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "UPDATE_RULE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "UPDATE_RULE", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DELETE_RULE", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DELETE_RULE", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "FK_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "FK_NAME", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PK_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "PK_NAME", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DEFERRABILITY",
-                                   JDBC_TYPE_SMALLINT, Nullability::NO_NULL));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DEFERRABILITY", TS_INVALID_TYPE,
+                                   Nullability::NO_NULL));
 }
 
 ForeignKeysQuery::~ForeignKeysQuery() {
@@ -294,26 +298,8 @@ SqlResult::Type ForeignKeysQuery::NextResultSet() {
 }
 
 SqlResult::Type ForeignKeysQuery::MakeRequestGetForeignKeysMeta() {
-  IgniteError error;
-  SharedPointer< DatabaseMetaData > databaseMetaData =
-      connection.GetMetaData(error);
-  if (!databaseMetaData.IsValid()
-      || error.GetCode() != IgniteError::IGNITE_SUCCESS) {
-    diag.AddStatusRecord(error.GetText());
-    return SqlResult::AI_ERROR;
-  }
-
-  JniErrorInfo errInfo;
-  SharedPointer< ResultSet > resultSet =
-      databaseMetaData.Get()->GetImportedKeys(catalog, schema, table, errInfo);
-  if (!resultSet.IsValid()
-      || errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    diag.AddStatusRecord(errInfo.errMsg);
-    return SqlResult::AI_ERROR;
-  }
-
-  meta::ReadForeignKeysColumnMetaVector(resultSet, meta);
-
+  // not implemented
+  /* may be enabled later for reuse
   for (size_t i = 0; i < meta.size(); ++i) {
     LOG_DEBUG_MSG("\n[" << i << "] PKSchemaName:     "
                         << meta[i].GetPKSchemaName().get_value_or("") << "\n["
@@ -323,8 +309,8 @@ SqlResult::Type ForeignKeysQuery::MakeRequestGetForeignKeysMeta() {
                         << meta[i].GetPKColumnName().get_value_or("") << "\n["
                         << i << "] KeySeq:           " << meta[i].GetKeySeq());
   }
-
-  return SqlResult::AI_SUCCESS;
+  */
+  return SqlResult::AI_ERROR;
 }
 }  // namespace query
 }  // namespace odbc

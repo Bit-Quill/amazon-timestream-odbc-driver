@@ -259,34 +259,8 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << "user=" << testUsername << ';';
   const std::string& expectedStr = constructor.str();
 
-  std::stringstream jdbcConstructor;
-  jdbcConstructor
-      << "jdbc:documentdb://" << testUsername << ":" << testPassword << "@"
-      << testHostname << ':' << testServerPort << "/" << testDatabaseName << '?'
-      << "appName=" << testAppName
-      << "&defaultFetchSize=" << testDefaultFetchSize
-      << "&loginTimeoutSec=" << testLoginTimeoutSec
-      << "&readPreference=" << ReadPreference::ToJdbcString(testReadPreference)
-      << "&refreshSchema=" << BoolToStr(testRefreshSchemaFlag)
-      << "&replicaSet=" << testReplicaSet
-      << "&retryReads=" << BoolToStr(testRetryReads)
-      << "&scanLimit=" << testScanLimit
-      << "&scanMethod=" << ScanMethod::ToJdbcString(testScanMethod)
-      << "&schemaName=" << testSchemaName << "&sshHost=" << testSshHost
-      << "&sshKnownHostsFile=" << EncodeURIComponent(testSshKnownHostsFile)
-      << "&sshPrivateKeyFile=" << EncodeURIComponent(testSshPrivateKeyFile)
-      << "&sshPrivateKeyPassphrase=" << testSshPrivateKeyPassphrase
-      << "&sshStrictHostKeyChecking="
-      << BoolToStr(testSshStrictHostKeyCheckingFlag)
-      << "&sshUser=" << testSshUser << "&tls=" << BoolToStr(testTlsFlag)
-      << "&tlsAllowInvalidHostnames="
-      << BoolToStr(testTlsAllowInvalidHostnamesFlag)
-      << "&tlsCaFile=" << EncodeURIComponent(testTlsCaFile);
-  const std::string& expectedJdbcStr = jdbcConstructor.str();
-
   BOOST_CHECK_EQUAL(ignite::odbc::common::ToLower(cfg.ToConnectString()),
                     ignite::odbc::common::ToLower(expectedStr));
-  BOOST_CHECK_EQUAL(cfg.ToJdbcConnectionString(), expectedJdbcStr);
 }
 
 void CheckDsnConfig(const Configuration& cfg) {

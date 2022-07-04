@@ -60,21 +60,5 @@ std::string ScanMethod::ToString(Type val) {
       return "unknown";
   }
 }
-
-std::string ScanMethod::ToJdbcString(Type val) {
-  switch (val) {
-    case ScanMethod::Type::ID_FORWARD:
-      return "idForward";
-
-    case ScanMethod::Type::ID_REVERSE:
-      return "idReverse";
-
-    case ScanMethod::Type::ALL:
-      return "all";
-
-    default:
-      return "random";
-  }
-}
 }  // namespace odbc
 }  // namespace ignite

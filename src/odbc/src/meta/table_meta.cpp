@@ -27,7 +27,7 @@ const std::string TABLE_TYPE = "TABLE_TYPE";
 const std::string REMARKS = "REMARKS";
 
 void TableMeta::Read(SharedPointer< ResultSet >& resultSet,
-                     JniErrorInfo& errInfo) {
+                     TSErrorInfo& errInfo) {
   resultSet.Get()->GetString(TABLE_CAT, catalogName, errInfo);
   resultSet.Get()->GetString(TABLE_SCHEM, schemaName, errInfo);
   resultSet.Get()->GetString(TABLE_NAME, tableName, errInfo);
@@ -42,12 +42,12 @@ void ReadTableMetaVector(SharedPointer< ResultSet >& resultSet,
     return;
   }
 
-  JniErrorInfo errInfo;
+  TSErrorInfo errInfo;
   bool hasNext = false;
-  JniErrorCode errCode;
+  TSErrorCode errCode;
   do {
     errCode = resultSet.Get()->Next(hasNext, errInfo);
-    if (!hasNext || errCode != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
+    if (!hasNext || errCode != TSErrorCode::TS_ERR_SUCCESS) {
       break;
     }
 

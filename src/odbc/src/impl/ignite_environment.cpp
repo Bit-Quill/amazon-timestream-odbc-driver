@@ -390,22 +390,6 @@ const IgniteConfiguration& IgniteEnvironment::GetConfiguration() const {
   return *cfg;
 }
 
-JniHandlers IgniteEnvironment::GetJniHandlers(
-    SharedPointer< IgniteEnvironment >* target) {
-  JniHandlers hnds;
-
-  memset(&hnds, 0, sizeof(hnds));
-
-  hnds.target = target;
-
-  hnds.inLongOutLong = InLongOutLong;
-  hnds.inLongLongLongObjectOutLong = InLongLongLongObjectOutLong;
-
-  hnds.error = 0;
-
-  return hnds;
-}
-
 void IgniteEnvironment::SetContext(SharedPointer< JniContext > ctx) {
   this->ctx = ctx;
 }

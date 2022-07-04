@@ -96,18 +96,7 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
         src/diagnostic/diagnostic_record_storage.cpp
-        src/documentdb_column.cpp
-        src/documentdb_cursor.cpp
-        src/documentdb_row.cpp
-        src/jni/database_metadata.cpp
-        src/jni/documentdb_connection.cpp
-        src/jni/documentdb_connection_properties.cpp
-        src/jni/documentdb_database_metadata.cpp
-        src/jni/documentdb_mql_query_context.cpp
-        src/jni/documentdb_query_mapping_service.cpp
-        src/jni/jdbc_column_metadata.cpp
         src/jni/java.cpp
-        src/jni/result_set.cpp
         src/environment.cpp
         src/meta/column_meta.cpp
         src/meta/foreign_key_meta.cpp
@@ -148,7 +137,8 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/date.cpp
         src/guid.cpp
         src/time.cpp
-        src/timestamp.cpp)
+        src/timestamp.cpp
+        src/ts_error.cpp)
 
 if (WIN32)
     set(OS_INCLUDE os/win/include)

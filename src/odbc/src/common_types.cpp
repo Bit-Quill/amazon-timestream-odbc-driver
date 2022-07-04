@@ -160,7 +160,6 @@ SqlState::Type ResponseStatusToSqlState(int32_t status) {
     case ResponseStatus::CONCURRENT_UPDATE:
     case ResponseStatus::ENTRY_PROCESSING:
     case ResponseStatus::TABLE_DROP_FAILED:
-    case ResponseStatus::STMT_TYPE_MISMATCH:
     case ResponseStatus::UNKNOWN_ERROR:
     default:
       return SqlState::SHY000_GENERAL_ERROR;

@@ -73,17 +73,20 @@ PrimaryKeysQuery::PrimaryKeysQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", JDBC_TYPE_VARCHAR,
+  // replace TS_INVALID_TYPE with correct type when implement
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "KEY_SEQ", JDBC_TYPE_SMALLINT,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "KEY_SEQ", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PK_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "PK_NAME", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
 }
 
@@ -209,26 +212,8 @@ SqlResult::Type PrimaryKeysQuery::NextResultSet() {
 }
 
 SqlResult::Type PrimaryKeysQuery::MakeRequestGetPrimaryKeysMeta() {
-  IgniteError error;
-  SharedPointer< DatabaseMetaData > databaseMetaData =
-      connection.GetMetaData(error);
-  if (!databaseMetaData.IsValid()
-      || error.GetCode() != IgniteError::IGNITE_SUCCESS) {
-    diag.AddStatusRecord(error.GetText());
-    return SqlResult::AI_ERROR;
-  }
-
-  JniErrorInfo errInfo;
-  SharedPointer< ResultSet > resultSet =
-      databaseMetaData.Get()->GetPrimaryKeys(catalog, schema, table, errInfo);
-  if (!resultSet.IsValid()
-      || errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    diag.AddStatusRecord(errInfo.errMsg);
-    return SqlResult::AI_ERROR;
-  }
-
-  meta::ReadPrimaryKeysColumnMetaVector(resultSet, meta);
-
+  // not implemented
+  /* may be enabled later for reuse
   for (size_t i = 0; i < meta.size(); ++i) {
     LOG_DEBUG_MSG("\n[" << i << "] SchemaName:     "
                         << meta[i].GetSchemaName().get_value_or("") << "\n["
@@ -238,7 +223,9 @@ SqlResult::Type PrimaryKeysQuery::MakeRequestGetPrimaryKeysMeta() {
                         << meta[i].GetColumnName().get_value_or("") << "\n["
                         << i << "] ColumnType: not available");
   }
-  return SqlResult::AI_SUCCESS;
+  */
+
+  return SqlResult::AI_ERROR;
 }
 }  // namespace query
 }  // namespace odbc

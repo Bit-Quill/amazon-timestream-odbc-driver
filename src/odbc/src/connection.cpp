@@ -41,10 +41,6 @@
 #include "ignite/odbc/config/connection_string_parser.h"
 #include "ignite/odbc/dsn_config.h"
 #include "ignite/odbc/environment.h"
-#include "ignite/odbc/jni/database_metadata.h"
-#include "ignite/odbc/jni/documentdb_connection.h"
-#include "ignite/odbc/jni/java.h"
-#include "ignite/odbc/jni/utils.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
 #include "ignite/odbc/ssl_mode.h"
@@ -52,15 +48,10 @@
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
 
-using namespace ignite::odbc::jni::java;
 using namespace ignite::odbc::common;
 using namespace ignite::odbc::common::concurrent;
 using ignite::odbc::IgniteError;
-using ignite::odbc::jni::DatabaseMetaData;
-using ignite::odbc::jni::DocumentDbConnection;
-using ignite::odbc::jni::java::BuildJvmOptions;
-using ignite::odbc::jni::java::JniErrorCode;
-using ignite::odbc::jni::java::JniHandlers;
+
 
 // Uncomment for per-byte debug.
 //#define PER_BYTE_DEBUG
@@ -81,8 +72,6 @@ Connection::Connection(Environment* env) : env_(env), info_(config_) {
 
 Connection::~Connection() {
   Close();
-  jniContext_ = nullptr;
-  Deinit();
 }
 
 const config::ConnectionInfo& Connection::GetInfo() const {
@@ -151,37 +140,8 @@ void Connection::Establish(const config::Configuration cfg) {
 
 SqlResult::Type Connection::InternalEstablish(
     const config::Configuration& cfg) {
-  using ssl::SslMode;
-
-  config_ = cfg;
-
-  if (connection_.IsValid()) {
-    AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.");
-
-    return SqlResult::AI_ERROR;
-  }
-
-  try {
-    config_.Validate();
-  } catch (const OdbcError& err) {
-    AddStatusRecord(err);
-    return SqlResult::AI_ERROR;
-  }
-
-  IgniteError err;
-  bool connected = TryRestoreConnection(err);
-
-  if (!connected) {
-    std::string errMessage = "Failed to establish connection with the host.\n";
-    errMessage.append(err.GetText());
-    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMessage);
-
-    return SqlResult::AI_ERROR;
-  }
-
-  bool errors = GetDiagnosticRecords().GetStatusRecordsNumber() > 0;
-
-  return errors ? SqlResult::AI_SUCCESS_WITH_INFO : SqlResult::AI_SUCCESS;
+  // not implemented
+  return SqlResult::AI_ERROR;
 }
 
 void Connection::Release() {
@@ -193,31 +153,10 @@ void Connection::Deregister() {
 }
 
 SqlResult::Type Connection::InternalRelease() {
-  if (!connection_.IsValid()) {
-    AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.");
-
-    // It is important to return SUCCESS_WITH_INFO and not ERROR here, as if we
-    // return an error, Windows Driver Manager may decide that connection is not
-    // valid anymore which results in memory leak.
-    return SqlResult::AI_SUCCESS_WITH_INFO;
-  }
-
-  Close();
-
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_ERROR;
 }
 
 void Connection::Close() {
-  if (jniContext_.IsValid()) {
-    if (connection_.IsValid()) {
-      JniErrorInfo errInfo;
-      connection_.Get()->Close(errInfo);
-      if (errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-        // TODO: Determine if we need to error check the close.
-      }
-      connection_ = nullptr;
-    }
-  }
 }
 
 Statement* Connection::CreateStatement() {
@@ -226,63 +165,6 @@ Statement* Connection::CreateStatement() {
   IGNITE_ODBC_API_CALL(InternalCreateStatement(statement));
 
   return statement;
-}
-
-SharedPointer< DatabaseMetaData > Connection::GetMetaData(IgniteError& err) {
-  if (!connection_.IsValid()) {
-    err = IgniteError(IgniteError::IGNITE_ERR_ILLEGAL_STATE,
-                      "Must be connected.");
-    return nullptr;
-  }
-  JniErrorInfo errInfo;
-  auto databaseMetaData = connection_.Get()->GetMetaData(errInfo);
-  if (!databaseMetaData.IsValid()) {
-    std::string message = errInfo.errMsg;
-    err = IgniteError(IgniteError::IGNITE_ERR_JNI_GET_DATABASE_METADATA,
-                      message.c_str());
-    return nullptr;
-  }
-  return databaseMetaData;
-}
-
-SharedPointer< DocumentDbDatabaseMetadata > Connection::GetDatabaseMetadata(
-    IgniteError& err) {
-  if (!connection_.IsValid()) {
-    err = IgniteError(IgniteError::IGNITE_ERR_ILLEGAL_STATE,
-                      "Must be connected.");
-    return nullptr;
-  }
-  JniErrorInfo errInfo;
-  auto documentDbDatabaseMetaData =
-      connection_.Get()->GetDatabaseMetadata(errInfo);
-  if (!documentDbDatabaseMetaData.IsValid()) {
-    std::string message = errInfo.errMsg;
-    err = IgniteError(
-        IgniteError::IGNITE_ERR_JNI_GET_DOCUMENTDB_DATABASE_METADATA,
-        message.c_str());
-    return nullptr;
-  }
-  return documentDbDatabaseMetaData;
-}
-
-SharedPointer< DocumentDbConnectionProperties >
-Connection::GetConnectionProperties(IgniteError& err) {
-  if (!connection_.IsValid()) {
-    err = IgniteError(IgniteError::IGNITE_ERR_ILLEGAL_STATE,
-                      "Must be connected.");
-    return nullptr;
-  }
-  JniErrorInfo errInfo;
-  auto connectionProperties =
-      connection_.Get()->GetConnectionProperties(errInfo);
-  if (!connectionProperties.IsValid()) {
-    std::string message = errInfo.errMsg;
-    err = IgniteError(
-        IgniteError::IGNITE_ERR_JNI_GET_DOCUMENTDB_CONNECTION_PROPERTIES,
-        message.c_str());
-    return nullptr;
-  }
-  return connectionProperties;
 }
 
 SqlResult::Type Connection::InternalCreateStatement(Statement*& statement) {
@@ -401,14 +283,7 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
 
   switch (attr) {
     case SQL_ATTR_CONNECTION_DEAD: {
-      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
-
-      *val = connection_.Get() ? SQL_CD_FALSE : SQL_CD_TRUE;
-
-      if (valueLen)
-        *valueLen = SQL_IS_INTEGER;
-
-      break;
+      return SqlResult::AI_ERROR;
     }
 
     case SQL_ATTR_CONNECTION_TIMEOUT: {
@@ -559,87 +434,10 @@ SqlResult::Type Connection::MakeRequestHandshake() {
 }
 
 void Connection::EnsureConnected() {
-  if (connection_.IsValid())
-    return;
-
-  IgniteError err;
-  bool success = TryRestoreConnection(err);
-
-  if (!success) {
-    std::string errMessage =
-        "Failed to establish connection with any provided hosts\n";
-    errMessage.append(err.GetText());
-    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMessage);
-    throw OdbcError(SqlState::S08001_CANNOT_CONNECT, errMessage);
-  }
 }
 
 bool Connection::TryRestoreConnection(IgniteError& err) {
-  if (connection_.IsValid()) {
-    return true;
-  }
-
-  JniErrorInfo errInfo;
-  auto ctx = GetJniContext(errInfo);
-  if (errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    err = IgniteError(static_cast< int32_t >(errInfo.code),
-                      std::string(errInfo.errCls)
-                          .append(": ")
-                          .append(errInfo.errMsg)
-                          .c_str());
-    return false;
-  }
-  SharedPointer< DocumentDbConnection > conn = new DocumentDbConnection(ctx);
-  if (!conn.IsValid()
-      || conn.Get()->Open(config_, errInfo)
-             != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    std::string message = errInfo.errMsg;
-    err = IgniteError(IgniteError::IGNITE_ERR_SECURE_CONNECTION_FAILURE,
-                      message.c_str());
-  }
-  connection_ = conn;
-  bool connected = connection_.IsValid() && connection_.Get()->IsOpen()
-                   && errInfo.code == JniErrorCode::IGNITE_JNI_ERR_SUCCESS;
-
-  if (!connected) {
-    return connected;
-  }
-
-  int32_t localSSHTunnelPort = 0;
-  if (!GetInternalSSHTunnelPort(localSSHTunnelPort, ctx, err)) {
-    return false;
-  }
-
-  connected = ConnectCPPDocumentDB(localSSHTunnelPort, err);
-
-  return connected;
-}
-
-bool Connection::GetInternalSSHTunnelPort(int32_t& localSSHTunnelPort,
-                                          SharedPointer< JniContext > ctx,
-                                          odbc::IgniteError& err) {
-  bool isSSHTunnelActive;
-  JniErrorInfo errInfo;
-  JniErrorCode success =
-      connection_.Get()->IsSshTunnelActive(isSSHTunnelActive, errInfo);
-
-  if (success != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    err = IgniteError(odbc::IgniteError::IGNITE_ERR_JVM_INIT,
-                      errInfo.errMsg.c_str());
-    return false;
-  }
-
-  if (isSSHTunnelActive) {
-    JniErrorCode success =
-        connection_.Get()->GetSshLocalPort(localSSHTunnelPort, errInfo);
-    if (success != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-      err = IgniteError(odbc::IgniteError::IGNITE_ERR_JVM_INIT,
-                        errInfo.errMsg.c_str());
-      return false;
-    }
-  }
-
-  return true;
+  return false;
 }
 
 std::string Connection::FormatMongoCppConnectionString(
@@ -670,48 +468,6 @@ std::string Connection::FormatMongoCppConnectionString(
   // https://bitquill.atlassian.net/browse/AD-599
 
   return mongoConnectionString;
-}
-
-SharedPointer< JniContext > Connection::GetJniContext(JniErrorInfo& errInfo) {
-  if (!jniContext_.IsValid()) {
-    // Resolve DOCUMENTDB_HOME.
-    std::string home = jni::ResolveDocumentDbHome();
-
-    // Create classpath.
-    std::string cp = jni::CreateDocumentDbClasspath(std::string(), home);
-    if (cp.empty()) {
-      return nullptr;
-    }
-
-    // Set the JVM options.
-    SetJvmOptions(cp);
-
-    // Create the context
-    SharedPointer< JniContext > ctx(JniContext::Create(
-        &opts_[0], static_cast< int >(opts_.size()), JniHandlers(), errInfo));
-    jniContext_ = ctx;
-  }
-  return jniContext_;
-}
-
-/**
- * Create JVM options from configuration.
- *
- * @param cfg Configuration.
- * @param home Optional GG home.
- * @param cp Classpath.
- */
-void Connection::SetJvmOptions(const std::string& cp) {
-  Deinit();
-  BuildJvmOptions(cp, opts_);
-}
-
-/**
- * Deallocates all allocated data.
- */
-void Connection::Deinit() {
-  std::for_each(opts_.begin(), opts_.end(), ReleaseChars);
-  opts_.clear();
 }
 
 int32_t Connection::RetrieveTimeout(void* value) {

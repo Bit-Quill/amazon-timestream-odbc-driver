@@ -20,7 +20,6 @@
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/common_types.h"
 #include "ignite/odbc/impl/binary/binary_common.h"
-#include "ignite/odbc/jni/java.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/type_traits.h"
@@ -109,7 +108,7 @@ const std::string ORDINAL_POSITION = "ORDINAL_POSITION";
 const std::string IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
 
 void ColumnMeta::Read(SharedPointer< ResultSet >& resultSet,
-                      int32_t& prevPosition, JniErrorInfo& errInfo) {
+                      int32_t& prevPosition, TSErrorInfo& errInfo) {
   resultSet.Get()->GetString(TABLE_CAT, catalogName, errInfo);
   resultSet.Get()->GetString(TABLE_SCHEM, schemaName, errInfo);
   resultSet.Get()->GetString(TABLE_NAME, tableName, errInfo);
@@ -128,29 +127,9 @@ void ColumnMeta::Read(SharedPointer< ResultSet >& resultSet,
   resultSet.Get()->GetString(IS_AUTOINCREMENT, isAutoIncrement, errInfo);
 }
 
-void ColumnMeta::ReadJdbcMetadata(JdbcColumnMetadata& jdbcMetadata,
-                                  int32_t& prevPosition) {
-  catalogName = jdbcMetadata.GetCatalogName();
-  schemaName = jdbcMetadata.GetSchemaName();
-  tableName = jdbcMetadata.GetTableName();
-  columnName = jdbcMetadata.GetColumnName();
-  dataType = jdbcMetadata.GetColumnType();
-  nullability = jdbcMetadata.GetNullable();
-  ordinalPosition = jdbcMetadata.GetOrdinal();
-  if (!ordinalPosition) {
-    ordinalPosition = ++prevPosition;
-  } else {
-    prevPosition = *ordinalPosition;
-  }
-  isAutoIncrement = jdbcMetadata.IsAutoIncrement() ? "YES" : "NO";
-}
-
 bool isCharType(int16_t dataType) {
-  using namespace ignite::odbc::impl::binary;
-  return ((dataType == JDBC_TYPE_VARCHAR) || (dataType == JDBC_TYPE_CHAR)
-          || (dataType == JDBC_TYPE_NCHAR) || (dataType == JDBC_TYPE_NVARCHAR)
-          || (dataType == JDBC_TYPE_LONGVARCHAR)
-          || (dataType == JDBC_TYPE_LONGNVARCHAR));
+  // not implemented
+  return false;
 }
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
@@ -190,16 +169,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
     }
 
     case SQL_DESC_LITERAL_PREFIX: {
-      if (dataType) {
-        if (isCharType(*dataType))
-          value = "'";
-        else if ((*dataType == JDBC_TYPE_BINARY)
-                 || (*dataType == JDBC_TYPE_VARBINARY)
-                 || (*dataType == JDBC_TYPE_LONGVARBINARY))
-          value = "0x";
-      } else
-        value.clear();
-
+      // not implemented
       return true;
     }
 
@@ -344,39 +314,13 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
 
     case SQL_DESC_PRECISION:
     case SQL_COLUMN_PRECISION: {
-      if (dataType
-          && ((decimalDigits && *decimalDigits != -1)
-              && ((*dataType == JDBC_TYPE_TIME) || (*dataType == JDBC_TYPE_DATE)
-                  || (*dataType == JDBC_TYPE_TIMESTAMP)))) {
-        // return decimal digits for all datetime types and all interval
-        // types with a seconds component
-        value = *decimalDigits;
-      } else if (dataType && (!precision || *precision == -1)) {
-        if (boost::optional< int > val =
-                type_traits::BinaryTypeColumnSize(dataType))
-          value = *val;
-      } else if (precision)
-        value = *precision;
-
+      // not implemented
       break;
     }
 
     case SQL_DESC_SCALE:
     case SQL_COLUMN_SCALE: {
-      // scale value of -1 means value not available.
-      if (dataType
-          && ((decimalDigits && *decimalDigits != -1)
-              && ((*dataType == JDBC_TYPE_DECIMAL)
-                  || (*dataType == JDBC_TYPE_NUMERIC)))) {
-        // return decimal digits for all decimal and numeric types
-        value = *decimalDigits;
-      } else if (dataType && (!scale || *scale == -1)) {
-        if (boost::optional< int16_t > val =
-                type_traits::BinaryTypeDecimalDigits(dataType))
-          value = *val;
-      } else if (scale)
-        value = *scale;
-
+      // not implemented
       break;
     }
 
@@ -421,13 +365,13 @@ void ReadColumnMetaVector(SharedPointer< ResultSet >& resultSet,
     return;
   }
 
-  JniErrorInfo errInfo;
+  TSErrorInfo errInfo;
   bool hasNext = false;
   int32_t prevPosition = 0;
-  JniErrorCode errCode;
+  TSErrorCode errCode;
   do {
     errCode = resultSet.Get()->Next(hasNext, errInfo);
-    if (!hasNext || errCode != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
+    if (!hasNext || errCode != TSErrorCode::TS_ERR_SUCCESS) {
       break;
     }
 

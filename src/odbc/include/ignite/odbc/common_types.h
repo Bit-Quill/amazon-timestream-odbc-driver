@@ -332,9 +332,6 @@ struct ResponseStatus {
     /** Required table does not have a descriptor set. */
     NULL_TABLE_DESCRIPTOR = 3002,
 
-    /** Statement type does not match that declared by JDBC driver. */
-    STMT_TYPE_MISMATCH = 3003,
-
     /** DROP TABLE failed. */
     TABLE_DROP_FAILED = 3004,
 

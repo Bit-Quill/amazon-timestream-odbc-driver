@@ -15,41 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef _IGNITE_ODBC_JNI_RESULT_SET
-#define _IGNITE_ODBC_JNI_RESULT_SET
+#ifndef _IGNITE_ODBC_RESULT_SET
+#define _IGNITE_ODBC_RESULT_SET
 
-#include <ignite/odbc/common/concurrent.h>
-#include <ignite/odbc/jni/java.h>
+
+#include "ignite/odbc/ts_error.h"
 
 #include <string>
-
-using ignite::odbc::common::concurrent::SharedPointer;
-using ignite::odbc::jni::java::GlobalJObject;
-using ignite::odbc::jni::java::JniContext;
-using ignite::odbc::jni::java::JniErrorCode;
-using ignite::odbc::jni::java::JniErrorInfo;
+#include <boost/optional.hpp>
 
 namespace ignite {
 namespace odbc {
-namespace jni {
 /**
  * A wrapper class for the ResultSet java class.
  */
 class ResultSet {
-  friend class DatabaseMetaData;
+
+  /**
+   * Constructs a new instancee of ResultSet.
+   */
+  ResultSet() {}
 
  public:
   /**
    * Destructs the current object.
    */
-  ~ResultSet();
-
-  /**
-   * Closes the current ResultSet object.
-   *
-   * @return a JniErrorCode indicating success or failure.
-   */
-  JniErrorCode Close(JniErrorInfo& errInfo);
+  ~ResultSet() {}
 
   /**
    * Gets an indicator of whether the ResultSet is open.
@@ -57,16 +48,20 @@ class ResultSet {
    * @return true if open, false, otherwise.
    */
   bool IsOpen() {
-    return _resultSet.IsValid();
+    // not implemented
+    return false;
   }
 
   /**
    * Attempts to position the cursor to the next record in the result set.
    * If the cursor moves, the hasNext variable will be true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode Next(bool& hasNext, JniErrorInfo& errInfo);
+  TSErrorCode Next(bool& hasNext, TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 
   /**
    * Gets a value on the current row of the result set for the
@@ -74,11 +69,14 @@ class ResultSet {
    * is set. If the value is null, the wasNull will be set to
    * true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode GetString(const int columnIndex,
+  TSErrorCode GetString(const int columnIndex,
                          boost::optional< std::string >& value,
-                         JniErrorInfo& errInfo);
+                      TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 
   /**
    * Gets a value on the current row of the result set for the
@@ -86,11 +84,14 @@ class ResultSet {
    * is set. If the value is null, the wasNull will be set to
    * true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode GetString(const std::string& columnName,
+  TSErrorCode GetString(const std::string& columnName,
                          boost::optional< std::string >& value,
-                         JniErrorInfo& errInfo);
+                      TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 
   /**
    * Gets a value on the current row of the result set for the
@@ -98,10 +99,13 @@ class ResultSet {
    * is set. If the value is null, the wasNull will be set to
    * true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode GetInt(const int columnIndex, boost::optional< int >& value,
-                      JniErrorInfo& errInfo);
+  TSErrorCode GetInt(const int columnIndex, boost::optional< int >& value,
+                   TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 
   /**
    * Gets a value on the current row of the result set for the
@@ -109,10 +113,13 @@ class ResultSet {
    * is set. If the value is null, the wasNull will be set to
    * true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode GetInt(const std::string& columnName,
-                      boost::optional< int >& value, JniErrorInfo& errInfo);
+  TSErrorCode GetInt(const std::string& columnName, boost::optional< int >& value,
+                   TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 
   /**
    * Gets a value on the current row of the result set for the
@@ -120,11 +127,13 @@ class ResultSet {
    * is set. If the value is null, the wasNull will be set to
    * true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode GetSmallInt(const int columnIndex,
-                           boost::optional< int16_t >& value,
-                           JniErrorInfo& errInfo);
+  TSErrorCode GetSmallInt(const int columnIndex,
+                           boost::optional< int16_t >& value, TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 
   /**
    * Gets a value on the current row of the result set for the
@@ -132,27 +141,15 @@ class ResultSet {
    * is set. If the value is null, the wasNull will be set to
    * true, false, otherwise.
    *
-   * @return a JniErrorCode indicating success or failure.
+   * @return a TSErrorCode indicating success or failure.
    */
-  JniErrorCode GetSmallInt(const std::string& columnName,
-                           boost::optional< int16_t >& value,
-                           JniErrorInfo& errInfo);
-
- private:
-  /**
-   * Constructs a new instancee of ResultSet.
-   */
-  ResultSet(SharedPointer< JniContext >& jniContext,
-            SharedPointer< GlobalJObject >& resultSet);
-
-  /** The JNI context */
-  SharedPointer< JniContext > _jniContext;
-
-  /** The ResultSet Java object */
-  SharedPointer< GlobalJObject > _resultSet;
+  TSErrorCode GetSmallInt(const std::string& columnName,
+                           boost::optional< int16_t >& value, TSErrorInfo& errInfo) {
+    // not implemented
+    return TSErrorCode::TS_ERR_GENERIC;
+  }
 };
-}  // namespace jni
 }  // namespace odbc
 }  // namespace ignite
 
-#endif  // _IGNITE_ODBC_JNI_RESULT_SET
+#endif  // _IGNITE_ODBC_RESULT_SET

@@ -38,8 +38,6 @@ const char* JAVA_HOME = "JAVA_HOME";
 const char* JAVA_DLL1 = "\\jre\\bin\\server\\jvm.dll";
 const char* JAVA_DLL2 = "\\bin\\server\\jvm.dll";
 
-const char* DOCUMENTDB_HOME = "DOCUMENTDB_HOME";
-
 const char* IGNITE_NATIVE_TEST_CLASSPATH = "IGNITE_NATIVE_TEST_CLASSPATH";
 
 /** Excluded modules from test classpath. */
@@ -226,57 +224,6 @@ std::string ClasspathExploded(const std::string& path, bool down) {
   return res;
 }
 
-std::string CreateDocumentDbHomeClasspath(const std::string& home,
-                                          bool forceTest) {
-  std::string res;
-
-  // 1. Add exploded test directories.
-  if (forceTest) {
-    std::string examplesPath = home + "\\examples";
-    std::string examplesCp = ClasspathExploded(examplesPath, true);
-    res.append(examplesCp);
-
-    std::string modulesPath = home + "\\modules";
-    std::string modulesCp = ClasspathExploded(modulesPath, true);
-    res.append(modulesCp);
-  }
-
-  // 2. Add regular jars from "libs" folder excluding "optional".
-  std::string libsPath = home + "\\libs";
-
-  if (FileExists(libsPath)) {
-    res.append(ClasspathJars(libsPath));
-
-    // Append inner directories.
-    std::string libsSearchPath = libsPath + "\\*";
-
-    WIN32_FIND_DATAA libsFindData;
-
-    HANDLE libsHnd = FindFirstFileA(libsSearchPath.c_str(), &libsFindData);
-
-    if (libsHnd != INVALID_HANDLE_VALUE) {
-      do {
-        if (libsFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-          std::string libsChildPath = libsFindData.cFileName;
-
-          if (libsChildPath.compare(".") != 0
-              && libsChildPath.compare("..") != 0
-              && libsChildPath.compare("optional") != 0) {
-            std::string libsFolder = libsPath + "\\" + libsChildPath;
-
-            res.append(ClasspathJars(libsFolder));
-          }
-        }
-      } while (FindNextFileA(libsHnd, &libsFindData) != 0);
-
-      FindClose(libsHnd);
-    }
-  }
-
-  // 3. Return.
-  return res;
-}
-
 std::string FindJvmLibrary(const std::string& path) {
   // If path is provided explicitly, then check only it.
   if (!path.empty() && FileExists(path))
@@ -309,55 +256,6 @@ std::string NormalizeClasspath(const std::string& usrCp) {
     return usrCp;
 
   return usrCp + ';';
-}
-
-std::string CreateDocumentDbClasspath(const std::string& usrCp,
-                                      const std::string& home) {
-  // 1. Append user classpath if it exists.
-  std::string cp = NormalizeClasspath(usrCp);
-
-  // 2. Append home classpath
-  if (!home.empty()) {
-    std::string env = GetEnv(IGNITE_NATIVE_TEST_CLASSPATH, "false");
-
-    bool forceTest = ToLower(env) == "true";
-
-    std::string homeCp = CreateDocumentDbHomeClasspath(home, forceTest);
-
-    cp.append(homeCp);
-  }
-
-  // 3. Return.
-  return cp;
-}
-
-std::string ResolveDocumentDbHome(const std::string& path) {
-  // 1. Check passed argument.
-  if (IsValidDirectory(path))
-    return path;
-
-  // 2. Check environment variable.
-  std::string home = GetEnv(DOCUMENTDB_HOME);
-
-  if (IsValidDirectory(home))
-    return home;
-
-  // 3. Check current work dir.
-  DWORD curDirLen = GetCurrentDirectoryA(0, nullptr);
-
-  if (!curDirLen)
-    return std::string();
-
-  FixedSizeArray< char > curDir(curDirLen);
-
-  curDirLen = GetCurrentDirectoryA(curDir.GetSize(), curDir.GetData());
-
-  if (!curDirLen)
-    return std::string();
-
-  std::string curDirStr(curDir.GetData());
-
-  return ResolveIgniteHome0(curDirStr);
 }
 }  // namespace jni
 }  // namespace odbc

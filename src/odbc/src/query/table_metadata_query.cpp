@@ -24,8 +24,6 @@
 #include "ignite/odbc/connection.h"
 #include "ignite/odbc/ignite_error.h"
 #include "ignite/odbc/impl/binary/binary_common.h"
-#include "ignite/odbc/jni/database_metadata.h"
-#include "ignite/odbc/jni/result_set.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
 #include "ignite/odbc/odbc_error.h"
@@ -33,8 +31,6 @@
 
 using ignite::odbc::IgniteError;
 using ignite::odbc::common::concurrent::SharedPointer;
-using ignite::odbc::jni::DatabaseMetaData;
-using ignite::odbc::jni::java::JniErrorInfo;
 
 namespace {
 struct ResultColumn {
@@ -86,15 +82,17 @@ TableMetadataQuery::TableMetadataQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", JDBC_TYPE_VARCHAR,
+  // replace TS_INVALID_TYPE with correct type when implement
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_TYPE", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_TYPE", TS_INVALID_TYPE,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", JDBC_TYPE_VARCHAR,
+  columnsMeta.push_back(
+      ColumnMeta(sch, tbl, "REMARKS", TS_INVALID_TYPE,
                                    Nullability::NULLABLE));
 }
 
@@ -218,49 +216,17 @@ SqlResult::Type TableMetadataQuery::NextResultSet() {
 }
 
 SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
-  IgniteError error;
-  SharedPointer< DatabaseMetaData > databaseMetaData =
-      connection.GetMetaData(error);
-  if (!databaseMetaData.IsValid()
-      || error.GetCode() != IgniteError::IGNITE_SUCCESS) {
-    diag.AddStatusRecord(error.GetText());
-    return SqlResult::AI_ERROR;
-  }
-
-  boost::optional< std::vector< std::string > > types = boost::none;
-  if (tableType) {
-    std::vector< std::string > typesArr;
-    if (tableType->empty()) {
-      typesArr.emplace_back("TABLE");
-    } else {
-      std::stringstream ss(*tableType);
-      std::string singleTableType;
-      while (std::getline(ss, singleTableType, ',')) {
-        typesArr.push_back(dequote(trim(singleTableType)));
-      }
-    }
-    types = typesArr;
-  }
-
-  JniErrorInfo errInfo;
-  SharedPointer< ResultSet > resultSet =
-      databaseMetaData.Get()->GetTables(catalog, schema, table, types, errInfo);
-  if (!resultSet.IsValid()
-      || errInfo.code != JniErrorCode::IGNITE_JNI_ERR_SUCCESS) {
-    diag.AddStatusRecord(errInfo.errMsg);
-    return SqlResult::AI_ERROR;
-  }
-
-  meta::ReadTableMetaVector(resultSet, meta);
-
+  // not implemented
+  /* may be enabled later for reuse
   for (size_t i = 0; i < meta.size(); ++i) {
     LOG_MSG("\n[" << i << "] CatalogName: " << meta[i].GetCatalogName() << "\n["
                   << i << "] SchemaName:  " << meta[i].GetSchemaName() << "\n["
                   << i << "] TableName:   " << meta[i].GetTableName() << "\n["
                   << i << "] TableType:   " << meta[i].GetTableType());
   }
+  */
 
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_ERROR;
 }
 
 std::string TableMetadataQuery::ltrim(const std::string& s) {

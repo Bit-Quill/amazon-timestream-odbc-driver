@@ -764,12 +764,6 @@ class Configuration {
    */
   void Validate() const;
 
-  /**
-   * Formats the JDBC connection string from configuration values.
-   * @return the JDBC connection string.
-   */
-  std::string ToJdbcConnectionString() const;
-
  private:
   /**
    * Add key and value to the argument map.
@@ -788,19 +782,10 @@ class Configuration {
    * @param map Map.
    * @param key Key.
    * @param value Value.
-   * @param isJdbcFormat @c true if value should be added in format expected by
-   * JDBC connection string.
    */
   template < typename T >
   static void AddToMap(ArgumentMap& map, const std::string& key,
                        const SettableValue< T >& value, bool isJdbcFormat);
-
-  /**
-   * Get argument map.
-   *
-   * @param res Resulting argument map.
-   */
-  void ToJdbcOptionsMap(ArgumentMap& res) const;
 
   /** DSN. */
   SettableValue< std::string > dsn = DefaultValue::dsn;
@@ -918,7 +903,7 @@ void Configuration::AddToMap< bool >(ArgumentMap& map, const std::string& key,
 template <>
 void Configuration::AddToMap< ReadPreference::Type >(
     ArgumentMap& map, const std::string& key,
-    const SettableValue< ReadPreference::Type >& value, bool isJdbcFormat);
+    const SettableValue< ReadPreference::Type >& value);
 
 template <>
 void Configuration::AddToMap< LogLevel::Type >(
@@ -928,7 +913,7 @@ void Configuration::AddToMap< LogLevel::Type >(
 template <>
 void Configuration::AddToMap< ScanMethod::Type >(
     ArgumentMap& map, const std::string& key,
-    const SettableValue< ScanMethod::Type >& value, bool isJdbcFormat);
+    const SettableValue< ScanMethod::Type >& value);
 }  // namespace config
 }  // namespace odbc
 }  // namespace ignite

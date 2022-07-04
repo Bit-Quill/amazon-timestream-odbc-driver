@@ -382,16 +382,9 @@ struct OdbcTestSuite {
 };
 
 struct if_integration {
-  const std::string DOC_DB_ODBC_INTEGRATION_TEST =
-      "DOC_DB_ODBC_INTEGRATION_TEST";
-  const std::string DOCUMENTDB_ODBC_TEST_INTEGRATION_OFF = "0";
-  const std::string DOCUMENTDB_ODBC_TEST_INTEGRATION_FALSE = "false";
-
   boost::test_tools::assertion_result operator()(test_unit_id) const {
-    std::string runIntegrationTests = GetEnv(
-        DOC_DB_ODBC_INTEGRATION_TEST, DOCUMENTDB_ODBC_TEST_INTEGRATION_OFF);
-    return runIntegrationTests != DOCUMENTDB_ODBC_TEST_INTEGRATION_OFF
-           && runIntegrationTests != DOCUMENTDB_ODBC_TEST_INTEGRATION_FALSE;
+    // implement based on need
+    return false;
   }
 };
 }  // namespace odbc

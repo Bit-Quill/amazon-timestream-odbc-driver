@@ -24,16 +24,17 @@
 #include <boost/optional/optional_io.hpp>
 #include <string>
 
+#include <ignite/odbc/common/concurrent.h>
+
 #include "ignite/odbc/impl/binary/binary_reader_impl.h"
 #include "ignite/odbc/common_types.h"
-#include "ignite/odbc/jni/jdbc_column_metadata.h"
-#include "ignite/odbc/jni/result_set.h"
+#include "ignite/odbc/result_set.h"
 #include "ignite/odbc/protocol_version.h"
 #include "ignite/odbc/utility.h"
+#include "ignite/odbc/ts_error.h"
 
-using ignite::odbc::jni::JdbcColumnMetadata;
-using ignite::odbc::jni::ResultSet;
-using ignite::odbc::jni::java::JniErrorInfo;
+using ignite::odbc::ResultSet;
+using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {
 namespace odbc {
@@ -158,19 +159,10 @@ class ColumnMeta {
    * Read using reader.
    * @param resultSet SharedPointer< ResultSet >.
    * @param prevPosition the ordinal position of the previous column.
-   * @paran errInfo JniErrorInfo.
+   * @paran errInfo TSErrorInfo.
    */
   void Read(SharedPointer< ResultSet >& resultSet, int32_t& prevPosition,
-            JniErrorInfo& errInfo);
-
-  /**
-   * Read using reader.
-   * @param jdbcMetadata JdbcColumnMetadata.
-   * @param prevPosition the ordinal position of the previous column.
-   * @paran err IgniteError.
-   */
-  void ReadJdbcMetadata(JdbcColumnMetadata& jdbcMetadata,
-                        int32_t& prevPosition);
+            TSErrorInfo& errInfo);
 
   /**
    * Get catalog name.

@@ -32,8 +32,8 @@ namespace ignite {
 namespace odbc {
 namespace config {
 // Connection Settings
-const std::string Configuration::DefaultValue::dsn = "DocumentDB DSN";
-const std::string Configuration::DefaultValue::driver = "Amazon DocumentDB";
+const std::string Configuration::DefaultValue::dsn = "TimeStream DSN";
+const std::string Configuration::DefaultValue::driver = "Amazon TimeStream";
 const std::string Configuration::DefaultValue::database = "";
 const std::string Configuration::DefaultValue::hostname = "";
 const uint16_t Configuration::DefaultValue::port = 27017;
@@ -68,7 +68,7 @@ const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
 
 // Additional options
 const std::string Configuration::DefaultValue::appName =
-    "Amazon DocumentDB ODBC Driver";
+    "Amazon TimeStream ODBC Driver";
 const int32_t Configuration::DefaultValue::loginTimeoutSec = 0;
 const ReadPreference::Type Configuration::DefaultValue::readPreference =
     ReadPreference::Type::PRIMARY;
@@ -463,8 +463,7 @@ void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::password, password);
   AddToMap(res, ConnectionStringParser::Key::appName, appName);
   AddToMap(res, ConnectionStringParser::Key::loginTimeoutSec, loginTimeoutSec);
-  AddToMap(res, ConnectionStringParser::Key::readPreference, readPreference,
-           false);
+  AddToMap(res, ConnectionStringParser::Key::readPreference, readPreference);
   AddToMap(res, ConnectionStringParser::Key::replicaSet, replicaSet);
   AddToMap(res, ConnectionStringParser::Key::retryReads, retryReads);
   AddToMap(res, ConnectionStringParser::Key::tls, tls);
@@ -484,7 +483,7 @@ void Configuration::ToMap(ArgumentMap& res) const {
            sshKnownHostsFile);
   AddToMap(res, ConnectionStringParser::Key::logLevel, logLevel);
   AddToMap(res, ConnectionStringParser::Key::logPath, logPath);
-  AddToMap(res, ConnectionStringParser::Key::scanMethod, scanMethod, false);
+  AddToMap(res, ConnectionStringParser::Key::scanMethod, scanMethod);
   AddToMap(res, ConnectionStringParser::Key::scanLimit, scanLimit);
   AddToMap(res, ConnectionStringParser::Key::schemaName, schemaName);
   AddToMap(res, ConnectionStringParser::Key::refreshSchema, refreshSchema);
@@ -510,59 +509,6 @@ void Configuration::Validate() const {
                     "If using an internal SSH tunnel, all of ssh_host, "
                     "ssh_user, ssh_private_key_file are required to connect.");
   }
-}
-
-std::string Configuration::ToJdbcConnectionString() const {
-  std::string jdbcConnectionString;
-  jdbcConnectionString = "jdbc:documentdb:";
-  jdbcConnectionString.append("//" + EncodeURIComponent(GetUser()));
-  jdbcConnectionString.append(":" + EncodeURIComponent(GetPassword()));
-  jdbcConnectionString.append("@" + GetHostname());
-  jdbcConnectionString.append(":"
-                              + common::LexicalCast< std::string >(GetPort()));
-  jdbcConnectionString.append("/" + EncodeURIComponent(GetDatabase()));
-  // Always pass application name even when unset to override the JDBC default
-  // application name.
-  jdbcConnectionString.append("?appName="
-                              + EncodeURIComponent(GetApplicationName()));
-
-  config::Configuration::ArgumentMap arguments;
-  ToJdbcOptionsMap(arguments);
-  std::stringstream options;
-  for (config::Configuration::ArgumentMap::const_iterator it =
-           arguments.begin();
-       it != arguments.end(); ++it) {
-    const std::string& key = it->first;
-    const std::string& value = it->second;
-    if (key != "logLevel" && key != "logPath" && !value.empty())
-      options << '&' << key << '=' << EncodeURIComponent(value);
-  }
-  jdbcConnectionString.append(options.str());
-
-  return jdbcConnectionString;
-}
-
-void Configuration::ToJdbcOptionsMap(ArgumentMap& res) const {
-  AddToMap(res, "loginTimeoutSec", loginTimeoutSec);
-  AddToMap(res, "readPreference", readPreference, true);
-  AddToMap(res, "replicaSet", replicaSet);
-  AddToMap(res, "retryReads", retryReads);
-  AddToMap(res, "tls", tls);
-  AddToMap(res, "tlsAllowInvalidHostnames", tlsAllowInvalidHostnames);
-  AddToMap(res, "tlsCaFile", tlsCaFile);
-  AddToMap(res, "sshUser", sshUser);
-  AddToMap(res, "sshHost", sshHost);
-  AddToMap(res, "sshPrivateKeyFile", sshPrivateKeyFile);
-  AddToMap(res, "sshPrivateKeyPassphrase", sshPrivateKeyPassphrase);
-  AddToMap(res, "sshStrictHostKeyChecking", sshStrictHostKeyChecking);
-  AddToMap(res, "sshKnownHostsFile", sshKnownHostsFile);
-  AddToMap(res, "logLevel", logLevel);
-  AddToMap(res, "logPath", logPath);
-  AddToMap(res, "scanMethod", scanMethod, true);
-  AddToMap(res, "scanLimit", scanLimit);
-  AddToMap(res, "schemaName", schemaName);
-  AddToMap(res, "refreshSchema", refreshSchema);
-  AddToMap(res, "defaultFetchSize", defaultFetchSize);
 }
 
 template <>
@@ -595,11 +541,9 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
 
 template <>
 void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
-                             const SettableValue< ReadPreference::Type >& value,
-                             bool isJdbcFormat) {
-  if (value.IsSet())
-    map[key] = isJdbcFormat ? ReadPreference::ToJdbcString(value.GetValue())
-                            : ReadPreference::ToString(value.GetValue());
+                             const SettableValue< ReadPreference::Type >& value) {
+  if (value.IsSet()) 
+    map[key] = ReadPreference::ToString(value.GetValue());
 }
 
 template <>
@@ -611,11 +555,9 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
 
 template <>
 void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
-                             const SettableValue< ScanMethod::Type >& value,
-                             bool isJdbcFormat) {
+                             const SettableValue< ScanMethod::Type >& value) {
   if (value.IsSet())
-    map[key] = isJdbcFormat ? ScanMethod::ToJdbcString(value.GetValue())
-                            : ScanMethod::ToString(value.GetValue());
+    map[key] = ScanMethod::ToString(value.GetValue());
 }
 
 }  // namespace config
