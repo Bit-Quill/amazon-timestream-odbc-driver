@@ -15,7 +15,6 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
-  DOCUMENTDB_HOME: "${{github.workspace}}/build/odbc/bin"
   DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
   DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
   DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
@@ -70,59 +69,12 @@ jobs:
       if: success()
       run: |
         sudo apt update
-        sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libbson-dev libsasl2-dev lcov
-
-    - name: Cache DocumentDB JDBC JAR
-      id: cache-documentdb-jdbc-jar
-      uses: actions/cache@v3
-      with:
-        path: | 
-          cache/jar
-        key: cache-documentdb-jdbc-jar-${{env.JDBC_DRIVER_VERSION}}
-
-    - name: Download DocumentDB JDBC JAR
-      if: steps.cache-documentdb-jdbc-jar.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/jar
-        cd cache/jar
-        wget https://github.com/aws/amazon-documentdb-jdbc-driver/releases/download/v${{env.JDBC_DRIVER_VERSION}}/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar
-
-    - name: Install DocumentDB JDBC JAR
-      run: |
-        mkdir -p ${{env.ODBC_BIN_PATH}}/libs
-        cp cache/jar/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar ${{env.ODBC_BIN_PATH}}/libs
-
-    - name: build-and-install-mongocxx
-      run: |
-        wget https://github.com/mongodb/mongo-c-driver/releases/download/1.21.1/mongo-c-driver-1.21.1.tar.gz
-        tar xzf mongo-c-driver-1.21.1.tar.gz
-        cd mongo-c-driver-1.21.1
-        mkdir -p cmake-build
-        cd cmake-build
-        cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-        sudo make install
-        cd ../..
-        git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
-        cd mongo-cxx-driver/build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBSONCXX_POLY_USE_MNMLSTC=1 -DCMAKE_INSTALL_PREFIX=/usr/local
-        sudo make install
-    
-    - name: install-mongocxx
-      run: |
-        cd mongo-c-driver-1.21.1/cmake-build
-        cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-        sudo make
-        sudo make install
-        cd ../../
-        cd mongo-cxx-driver/build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBSONCXX_POLY_USE_MNMLSTC=1 -DCMAKE_INSTALL_PREFIX=/usr/local
-        sudo make
-        sudo make install
+        sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
 
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726
     
-    # generate compile_commands.json file for clang-tidy-check, requires mongocxx and boost dependencies
+    # generate compile_commands.json file for clang-tidy-check, requires boost dependencies
     # - name: generate-compile-commands-file
     #   run: |
     #    cmake "${{github.workspace}}/src" -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE="OFF" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON"
@@ -145,7 +97,7 @@ jobs:
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
 
-    # run tests with ssh if DOC_DB_ODBC_INTEGRATION_TEST is not 1
+    # run tests with ssh if DOC_DB_ODBC_INTEGRATION_TEST is 1
     - name: run-tests
       id: runtests
       run: |
@@ -208,59 +160,12 @@ jobs:
       if: success()
       run: |
         sudo apt update
-        sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libbson-dev libsasl2-dev lcov
-
-    - name: Cache DocumentDB JDBC JAR
-      id: cache-documentdb-jdbc-jar
-      uses: actions/cache@v3
-      with:
-        path: | 
-          cache/jar
-        key: cache-documentdb-jdbc-jar-${{env.JDBC_DRIVER_VERSION}}
-
-    - name: Download DocumentDB JDBC JAR
-      if: steps.cache-documentdb-jdbc-jar.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/jar
-        cd cache/jar
-        wget https://github.com/aws/amazon-documentdb-jdbc-driver/releases/download/v${{env.JDBC_DRIVER_VERSION}}/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar
-
-    - name: Install DocumentDB JDBC JAR
-      run: |
-        mkdir -p ${{env.ODBC_BIN_PATH}}/libs
-        cp cache/jar/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar ${{env.ODBC_BIN_PATH}}/libs
-
-    - name: build-and-install-mongocxx
-      run: |
-        wget https://github.com/mongodb/mongo-c-driver/releases/download/1.21.1/mongo-c-driver-1.21.1.tar.gz
-        tar xzf mongo-c-driver-1.21.1.tar.gz
-        cd mongo-c-driver-1.21.1
-        mkdir -p cmake-build
-        cd cmake-build
-        cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-        sudo make install
-        cd ../..
-        git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
-        cd mongo-cxx-driver/build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBSONCXX_POLY_USE_MNMLSTC=1 -DCMAKE_INSTALL_PREFIX=/usr/local
-        sudo make install
-    
-    - name: install-mongocxx
-      run: |
-        cd mongo-c-driver-1.21.1/cmake-build
-        cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-        sudo make
-        sudo make install
-        cd ../../
-        cd mongo-cxx-driver/build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBSONCXX_POLY_USE_MNMLSTC=1 -DCMAKE_INSTALL_PREFIX=/usr/local
-        sudo make
-        sudo make install
+        sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
 
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726
     
-    # generate compile_commands.json file for clang-tidy-check, requires mongocxx and boost dependencies
+    # generate compile_commands.json file for clang-tidy-check, requires boost dependencies
     # - name: generate-compile-commands-file
     #   run: |
     #    cmake "${{github.workspace}}/src" -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE="OFF" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_CORE="OFF" -DWITH_ODBC="ON"
@@ -283,7 +188,7 @@ jobs:
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
     
-    # run tests with ssh if DOC_DB_ODBC_INTEGRATION_TEST is not 1
+    # run tests with ssh if DOC_DB_ODBC_INTEGRATION_TEST is 1
     - name: run-tests
       id: runtests
       run: |
@@ -344,7 +249,7 @@ jobs:
     - name: build-image
       run: |
         cd docker/linux-environment
-        docker build -t documentdb-dev-linux . 
+        docker build -t timestream-dev-linux . 
 
 
 # TODO Linux build enhacements 

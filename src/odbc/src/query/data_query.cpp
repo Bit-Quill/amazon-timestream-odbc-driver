@@ -17,13 +17,6 @@
 
 #include "ignite/odbc/query/data_query.h"
 
-#include <bsoncxx/json.hpp>
-#include <mongocxx/collection.hpp>
-#include <mongocxx/database.hpp>
-#include <mongocxx/exception/exception.hpp>
-#include <mongocxx/options/aggregate.hpp>
-#include <mongocxx/pipeline.hpp>
-
 #include "ignite/odbc/connection.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
@@ -47,11 +40,6 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
 }
 
 DataQuery::~DataQuery() {
-  LOG_DEBUG_MSG("~DataQuery is called");
-
-  InternalClose();
-
-  LOG_DEBUG_MSG("~DataQuery exiting");
 }
 
 SqlResult::Type DataQuery::Execute() {

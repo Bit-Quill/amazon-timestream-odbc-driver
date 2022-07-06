@@ -30,7 +30,6 @@
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/parser.h"
 #include "ignite/odbc/streaming/streaming_context.h"
-#include "mongocxx/client.hpp"
 
 using ignite::odbc::common::concurrent::SharedPointer;
 
@@ -219,10 +218,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
    */
   void SetAttribute(int attr, void* value, SQLINTEGER valueLen);
 
-  inline std::shared_ptr< mongocxx::client >& GetMongoClient() {
-    return mongoClient_;
-  }
-
  private:
   IGNITE_NO_COPY_ASSIGNMENT(Connection);
 
@@ -347,13 +342,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
                                        SQLINTEGER valueLen);
 
   /**
-   * Perform handshake request.
-   *
-   * @return Operation result.
-   */
-  SqlResult::Type MakeRequestHandshake();
-
-  /**
    * Ensure there is a connection to the cluster.
    *
    * @throw OdbcError on failure.
@@ -367,22 +355,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
    * @return @c true on success and @c false otherwise.
    */
   bool TryRestoreConnection(IgniteError& err);
-
-  /**
-   * Connect to DocumentDB using Mongo cxx driver
-   *
-   * @param localSSHTunnelPort internal SSH tunnel port
-   * @param err
-   * @return @c true on success and @c false otherwise.
-   */
-  bool ConnectCPPDocumentDB(int32_t localSSHTunnelPort, IgniteError& err);
-
-  /**
-   * Formats the Mongo connection string from configuration values.
-   *
-   *  @return the JDBC connection string.
-   */
-  std::string FormatMongoCppConnectionString(int32_t localSSHTunnelPort) const;
 
   /**
    * Retrieve timeout from parameter.
@@ -414,8 +386,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
 
   /** Connection info. */
   config::ConnectionInfo info_;
-
-  std::shared_ptr< mongocxx::client > mongoClient_;
 };
 }  // namespace odbc
 }  // namespace ignite

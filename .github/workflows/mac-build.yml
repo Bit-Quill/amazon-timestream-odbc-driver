@@ -15,7 +15,6 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
-  DOCUMENTDB_HOME: "${{github.workspace}}/build/odbc/bin"
   DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
   DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
   DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
@@ -66,27 +65,6 @@ jobs:
         brew install cmake
         brew install openssl
         brew install boost
-        brew install mongo-cxx-driver
-
-    - name: Cache DocumentDB JDBC JAR
-      id: cache-documentdb-jdbc-jar
-      uses: actions/cache@v3
-      with:
-        path: | 
-          cache/jar
-        key: cache-documentdb-jdbc-jar-${{env.JDBC_DRIVER_VERSION}}
-
-    - name: Download DocumentDB JDBC JAR
-      if: steps.cache-documentdb-jdbc-jar.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/jar
-        cd cache/jar
-        wget https://github.com/aws/amazon-documentdb-jdbc-driver/releases/download/v${{env.JDBC_DRIVER_VERSION}}/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar
-
-    - name: Install DocumentDB JDBC JAR
-      run: |
-        mkdir -p ${{env.ODBC_BIN_PATH}}/libs
-        cp cache/jar/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar ${{env.ODBC_BIN_PATH}}/libs
 
     - name: configure-and-build-driver
       run: |
@@ -103,14 +81,6 @@ jobs:
       run: |
         chmod +x scripts/register_driver_unix.sh
         ./scripts/register_driver_unix.sh
-    - name: Setup MongoDB
-      run: |
-        chmod +x ./src/odbc-test/scripts/reinstall_mongodb_mac.sh
-        ./src/odbc-test/scripts/reinstall_mongodb_mac.sh
-    - name: Import test data
-      run: |
-        chmod +x ./src/odbc-test/scripts/import_test_data.sh
-        ./src/odbc-test/scripts/import_test_data.sh
     - name: run-tests
       id: runtests
       run: |

@@ -17,7 +17,6 @@ env:
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
   VCPKG_ROOT: "c:/vcpkg"
-  DOCUMENTDB_HOME: "${{github.workspace}}/build/odbc/bin/Release"
   DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
   DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
   DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
@@ -30,7 +29,6 @@ env:
   DOC_DB_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   DOC_DB_LOG_LEVEL: "debug"
   JDBC_DRIVER_VERSION: "1.2.4"
-  MONGO_IMPORT_COMMAND: "C:/ProgramData/chocolatey/lib/mongodb-database-tools/tools/mongodb-database-tools-windows-x86_64-100.5.2binmongoimport.exe"
 
 jobs:
   build-windows32:
@@ -91,28 +89,8 @@ jobs:
           ${{ env.VCPKG_ROOT }}
         key: ${{ runner.os }}-cache-dependencies-windows-32-v1
 
-    - name: Cache DocumentDB JDBC JAR
-      id: cache-documentdb-jdbc-jar
-      uses: actions/cache@v3
-      with:
-        path: | 
-          cache/jar
-        key: cache-documentdb-jdbc-jar-${{env.JDBC_DRIVER_VERSION}}
-
-    - name: Download DocumentDB JDBC JAR
-      if: steps.cache-documentdb-jdbc-jar.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/jar
-        cd cache/jar
-        Invoke-WebRequest https://github.com/aws/amazon-documentdb-jdbc-driver/releases/download/v${{env.JDBC_DRIVER_VERSION}}/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar -o documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar
-
-    - name: Install DocumentDB JDBC JAR
-      run: |
-        mkdir -p ${{env.ODBC_BIN_PATH}}/libs
-        cp cache/jar/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar ${{env.ODBC_BIN_PATH}}/libs
-
     - name: Install dependencies Windows
-      run: vcpkg integrate install; vcpkg install mongo-cxx-driver:x86-windows openssl:x86-windows boost-test:x86-windows boost-asio:x86-windows boost-chrono:x86-windows boost-interprocess:x86-windows boost-regex:x86-windows boost-system:x86-windows boost-thread:x86-windows
+      run: vcpkg integrate install; vcpkg install openssl:x86-windows boost-test:x86-windows boost-asio:x86-windows boost-chrono:x86-windows boost-interprocess:x86-windows boost-regex:x86-windows boost-system:x86-windows boost-thread:x86-windows
       env:
         VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
 
@@ -125,13 +103,6 @@ jobs:
     - name: register-driver
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\ignite.odbc.dll ${{env.ODBC_BIN_PATH}}\ignite.odbc.dll
-
-    - name: Setup MongoDB
-      run: |
-        ./src/odbc-test/scripts/reinstall_mongodb.ps1
-    - name: Import test data
-      run: |
-        ./src/odbc-test/scripts/import_test_data.ps1
 
     - name: run-tests
       id: runtests
@@ -239,28 +210,9 @@ jobs:
         path: | 
           ${{ env.VCPKG_ROOT }}
         key: ${{ runner.os }}-cache-dependencies-windows-64-v1
-
-    - name: Cache DocumentDB JDBC JAR
-      id: cache-documentdb-jdbc-jar
-      uses: actions/cache@v3
-      with:
-        path: | 
-          cache/jar
-        key: cache-documentdb-jdbc-jar-${{env.JDBC_DRIVER_VERSION}}
-
-    - name: Download DocumentDB JDBC JAR
-      if: steps.cache-documentdb-jdbc-jar.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/jar
-        cd cache/jar
-        Invoke-WebRequest https://github.com/aws/amazon-documentdb-jdbc-driver/releases/download/v${{env.JDBC_DRIVER_VERSION}}/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar -o documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar
-    - name: Install DocumentDB JDBC JAR
-      run: |
-        mkdir -p ${{env.ODBC_BIN_PATH}}/libs
-        cp cache/jar/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar ${{env.ODBC_BIN_PATH}}/libs
         
     - name: Install dependencies Windows
-      run: vcpkg integrate install; vcpkg install mongo-cxx-driver:x64-windows openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows
+      run: vcpkg integrate install; vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows
       env:
         VCPKG_ROOT: ${{env.VCPKG_ROOT}}
 
@@ -287,13 +239,6 @@ jobs:
     - name: register-driver
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\ignite.odbc.dll
-
-    - name: Setup MongoDB
-      run: |
-        ./src/odbc-test/scripts/reinstall_mongodb.ps1
-    - name: Import test data
-      run: |
-        ./src/odbc-test/scripts/import_test_data.ps1
 
     - name: run-tests
       run: |
@@ -383,28 +328,9 @@ jobs:
         path: | 
           ${{ env.VCPKG_ROOT }}
         key: ${{ runner.os }}-cache-dependencies-windows-64-v1
-    
-    - name: Cache DocumentDB JDBC JAR
-      id: cache-documentdb-jdbc-jar
-      uses: actions/cache@v3
-      with:
-        path: | 
-          cache/jar
-        key: cache-documentdb-jdbc-jar-${{env.JDBC_DRIVER_VERSION}}
-
-    - name: Download DocumentDB JDBC JAR
-      if: steps.cache-documentdb-jdbc-jar.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/jar
-        cd cache/jar
-        Invoke-WebRequest https://github.com/aws/amazon-documentdb-jdbc-driver/releases/download/v${{env.JDBC_DRIVER_VERSION}}/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar -o documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar
-    - name: Install DocumentDB JDBC JAR
-      run: |
-        mkdir -p ${{env.ODBC_BIN_PATH}}/libs
-        cp cache/jar/documentdb-jdbc-${{env.JDBC_DRIVER_VERSION}}-all.jar ${{env.ODBC_BIN_PATH}}/libs
   
     - name: Install dependencies Windows
-      run: vcpkg integrate install; vcpkg install mongo-cxx-driver:x64-windows openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows
+      run: vcpkg integrate install; vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows
       env:
         VCPKG_ROOT: ${{env.VCPKG_ROOT}}
 
@@ -418,19 +344,10 @@ jobs:
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_DEBUG_PATH}}\ignite.odbc.dll
 
-    - name: Setup MongoDB
-      run: |
-        ./src/odbc-test/scripts/reinstall_mongodb.ps1
-    - name: Import test data
-      run: |
-        ./src/odbc-test/scripts/import_test_data.ps1
-
     - name: run-tests
-      env:
-        DOCUMENTDB_HOME: "${{github.workspace}}/build/odbc/bin/Debug"
       run: |
         Start-Process -NoNewWindow ssh "-f -N -o UserKnownHostsFile=/temp -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}"
-        opencppcoverage --sources src --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules ignite-odbc-tests --excluded_modules mongoc --excluded_modules mongocxx --excluded_modules bson --excluded_modules bsoncxx --excluded_modules zlib -- ${{env.ODBC_DEBUG_PATH}}/ignite-odbc-tests.exe
+        opencppcoverage --sources src --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules ignite-odbc-tests --excluded_modules zlib -- ${{env.ODBC_DEBUG_PATH}}/ignite-odbc-tests.exe
 
     - name: upload-coverage
       if: always()

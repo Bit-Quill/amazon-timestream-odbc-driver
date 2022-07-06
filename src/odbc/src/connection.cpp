@@ -20,21 +20,10 @@
 #include <ignite/odbc/ignite_error.h>
 
 #include <algorithm>
-#include <bsoncxx/builder/basic/document.hpp>
-#include <bsoncxx/builder/stream/array.hpp>
-#include <bsoncxx/builder/stream/document.hpp>
-#include <bsoncxx/builder/stream/helpers.hpp>
-#include <bsoncxx/json.hpp>
-#include <bsoncxx/stdx/optional.hpp>
-#include <bsoncxx/stdx/string_view.hpp>
 #include <cstddef>
 #include <cstring>
-#include <mongocxx/client.hpp>
-#include <mongocxx/exception/exception.hpp>
-#include <mongocxx/uri.hpp>
 #include <sstream>
 
-#include "ignite/odbc/driver_instance.h"
 #include "ignite/odbc/common/concurrent.h"
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/config/configuration.h"
@@ -389,85 +378,13 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
   return SqlResult::AI_SUCCESS;
 }
 
-SqlResult::Type Connection::MakeRequestHandshake() {
-  HandshakeRequest req(config_);
-  HandshakeResponse rsp;
-
-  try {
-    // Workaround for some Linux systems that report connection on non-blocking
-    // sockets as successful but fail to establish real connection.
-    bool sent = InternalSyncMessage(req, rsp, loginTimeout_);
-
-    if (!sent) {
-      AddStatusRecord(
-          SqlState::S08001_CANNOT_CONNECT,
-          "Failed to get handshake response (Did you forget to enable SSL?).");
-
-      return SqlResult::AI_ERROR;
-    }
-  } catch (const OdbcError& err) {
-    AddStatusRecord(err);
-
-    return SqlResult::AI_ERROR;
-  } catch (const IgniteError& err) {
-    AddStatusRecord(SqlState::S08004_CONNECTION_REJECTED, err.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-
-  if (!rsp.IsAccepted()) {
-    LOG_MSG("Handshake message has been rejected.");
-
-    std::stringstream constructor;
-
-    constructor << "Node rejected handshake message. ";
-
-    if (!rsp.GetError().empty())
-      constructor << "Additional info: " << rsp.GetError() << " ";
-
-    AddStatusRecord(SqlState::S08004_CONNECTION_REJECTED, constructor.str());
-
-    return SqlResult::AI_ERROR;
-  }
-
-  return SqlResult::AI_SUCCESS;
-}
-
 void Connection::EnsureConnected() {
 }
 
 bool Connection::TryRestoreConnection(IgniteError& err) {
+  // not implemented
+
   return false;
-}
-
-std::string Connection::FormatMongoCppConnectionString(
-    int32_t localSSHTunnelPort) const {
-  std::string host = "localhost";
-  std::string port = std::to_string(localSSHTunnelPort);
-
-  // localSSHTunnelPort == 0 means that internal SSH tunnel option was not set
-  if (localSSHTunnelPort == 0) {
-    host = config_.GetHostname();
-    port = common::LexicalCast< std::string >(config_.GetPort());
-  }
-  std::string mongoConnectionString;
-
-  mongoConnectionString = "mongodb:";
-  mongoConnectionString.append("//" + config_.GetUser());
-  mongoConnectionString.append(":" + config_.GetPassword());
-  mongoConnectionString.append("@" + host);
-  mongoConnectionString.append(":" + port);
-  mongoConnectionString.append("/admin");
-  mongoConnectionString.append("?authMechanism=SCRAM-SHA-1");
-  if (config_.IsTls()) {
-    mongoConnectionString.append("&tlsAllowInvalidHostnames=true");
-  }
-
-  // tls configuration is handled using tls_options in connectionCPP
-  // TODO handle the other DSN configuration
-  // https://bitquill.atlassian.net/browse/AD-599
-
-  return mongoConnectionString;
 }
 
 int32_t Connection::RetrieveTimeout(void* value) {
@@ -486,53 +403,6 @@ int32_t Connection::RetrieveTimeout(void* value) {
   }
 
   return static_cast< int32_t >(uTimeout);
-}
-
-bool Connection::ConnectCPPDocumentDB(int32_t localSSHTunnelPort,
-                                      odbc::IgniteError& err) {
-  using bsoncxx::builder::basic::kvp;
-  using bsoncxx::builder::basic::make_document;
-
-  // Make sure that the DriverInstance is initialize
-  DriverInstance::getInstance().initialize();
-  try {
-    std::string mongoCPPConnectionString =
-        FormatMongoCppConnectionString(localSSHTunnelPort);
-    mongocxx::options::client client_options;
-    mongocxx::options::tls tls_options;
-    if (config_.IsTls()) {
-      // TO-DO Adapt to use certificates
-      // https://bitquill.atlassian.net/browse/AD-598
-      tls_options.allow_invalid_certificates(true);
-      client_options.tls_opts(tls_options);
-    }
-
-    mongoClient_ = std::make_shared< mongocxx::client >(
-        mongocxx::uri(mongoCPPConnectionString), client_options);
-    std::string database = config_.GetDatabase();
-    bsoncxx::builder::stream::document ping;
-    ping << "ping" << 1;
-    auto db = (*mongoClient_.get())[database];
-    auto result = db.run_command(ping.view());
-
-    if (result.view()["ok"].get_double() != 1) {
-      err = odbc::IgniteError(odbc::IgniteError::IGNITE_ERR_NETWORK_FAILURE,
-                              "Unable to ping DocumentDB.");
-      return false;
-    }
-
-    return true;
-  } catch (const mongocxx::exception& xcp) {
-    std::stringstream message;
-    message << "Unable to establish connection with DocumentDB."
-            << " code: " << xcp.code().value()
-            << " messagge: " << xcp.code().message()
-            << " cause: " << xcp.what();
-    err = odbc::IgniteError(
-        odbc::IgniteError::IGNITE_ERR_SECURE_CONNECTION_FAILURE,
-        message.str().c_str());
-    return false;
-  }
 }
 }  // namespace odbc
 }  // namespace ignite

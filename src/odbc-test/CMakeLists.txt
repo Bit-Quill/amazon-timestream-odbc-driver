@@ -24,8 +24,6 @@ if (WIN32)
 endif()
 
 find_package(Boost 1.53 REQUIRED COMPONENTS unit_test_framework chrono thread system regex)
-find_package(mongocxx REQUIRED)
-find_package(bsoncxx REQUIRED)
 
 find_package(ODBC REQUIRED)
 
@@ -35,7 +33,7 @@ include(UseJava)
 
 find_package(Threads REQUIRED)
 
-include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS} ${MONGOCXX_INCLUDE_DIRS} ${BSONCXX_INCLUDE_DIRS})
+include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS})
 include_directories(include ../odbc/include)
 if (WIN32)
     include_directories(../odbc/os/win/include)
@@ -115,7 +113,6 @@ set(SOURCES
          ../odbc/src/impl/ignite_environment.cpp
          ../odbc/src/impl/ignite_impl.cpp
          ../odbc/src/connection.cpp
-         ../odbc/src/driver_instance.cpp
          ../odbc/src/cursor.cpp
          ../odbc/src/diagnostic/diagnosable_adapter.cpp
          ../odbc/src/diagnostic/diagnostic_record_storage.cpp
@@ -187,18 +184,13 @@ endif()
 add_executable(${TARGET} ${SOURCES})
 
 target_link_libraries(${TARGET} ${ODBC_LIBRARIES})
-target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} mongo::mongocxx_shared ${JNI_LIBRARIES})
+target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${JNI_LIBRARIES})
 if (${CODE_COVERAGE}) 
     target_code_coverage(${TARGET} AUTO)
 endif()
 
 add_definitions(-DUNICODE=1)
 if (WIN32)
-    if (MSVC)
-        # On Windows, min() and max() are defined macro. This causes a colision with MONGOCXX library.
-        # See: http://www.suodenjoki.dk/us/archive/2010/min-max.htm
-        add_definitions(-DNOMINMAX)
-    endif()
     add_definitions(-DTARGET_MODULE_FULL_NAME="$<TARGET_FILE_NAME:${TARGET}>")
     if (MSVC_VERSION GREATER_EQUAL 1900)
         target_link_libraries(${TARGET} legacy_stdio_definitions odbccp32 shlwapi)

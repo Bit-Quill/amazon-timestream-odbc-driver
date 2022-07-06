@@ -20,8 +20,6 @@ project(ignite-odbc)
 set(TARGET ${PROJECT_NAME})
 
 find_package(ODBC REQUIRED)
-find_package(mongocxx REQUIRED)
-find_package(bsoncxx REQUIRED)
 find_package(Java REQUIRED)
 find_package(JNI REQUIRED)
 find_package(Boost REQUIRED)
@@ -31,7 +29,7 @@ if (${CODE_COVERAGE})
     add_code_coverage()    
 endif()
 
-include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS} ${MONGOCXX_INCLUDE_DIRS} ${BSONCXX_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 include_directories(include)
 
@@ -91,7 +89,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/impl/ignite_environment.cpp
         src/impl/ignite_impl.cpp
         src/connection.cpp
-        src/driver_instance.cpp
         src/cursor.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
@@ -174,16 +171,9 @@ set_target_properties(${TARGET} PROPERTIES VERSION ${CMAKE_PROJECT_VERSION})
 
 target_link_libraries(${TARGET} ${ODBC_LIBRARIES})
 target_link_libraries(${TARGET} ${JNI_LIBRARIES})
-target_link_libraries(${TARGET} mongo::mongocxx_shared) 
 
 add_definitions(-DUNICODE=1)
 if (WIN32)
-    if (MSVC)
-        # On Windows, min() and max() are defined macro. This causes a colision with MONGOCXX library.
-        # See: http://www.suodenjoki.dk/us/archive/2010/min-max.htm
-        add_definitions(-DNOMINMAX)
-    endif()
-
     target_link_libraries(${TARGET} odbccp32 shlwapi)
 
     add_definitions(-DTARGET_MODULE_FULL_NAME="$<TARGET_FILE_NAME:${TARGET}>")
