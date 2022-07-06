@@ -82,16 +82,16 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreInternalSSHTunnel, *disabled(),
-                     *precondition(if_integration())) {
+// TestConnectionRestoreInternalSSHTunnel has precondition `*precondition(if_integration())`
+BOOST_AUTO_TEST_CASE(TestConnectionRestoreInternalSSHTunnel, *disabled()) {
   std::string connectionString;
   CreateDsnConnectionStringForRemoteServer(connectionString);
   Connect(connectionString);
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreExternalSSHTunnel, *disabled(),
-                     *precondition(if_integration())) {
+// TestConnectionRestoreExternalSSHTunnel has precondition `*precondition(if_integration())`
+BOOST_AUTO_TEST_CASE(TestConnectionRestoreExternalSSHTunnel, *disabled()) {
   std::string connectionString;
   CreateDsnConnectionStringForRemoteServer(connectionString, false);
   Connect(connectionString);

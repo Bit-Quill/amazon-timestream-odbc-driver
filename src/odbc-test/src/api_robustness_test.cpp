@@ -135,6 +135,13 @@ SQLSMALLINT unsupportedSql[] = {SQL_INTERVAL_MONTH,
 
 BOOST_FIXTURE_TEST_SUITE(ApiRobustnessTestSuite, ApiRobustnessTestSuiteFixture)
 
+// TODO remove this fake test when we have new test added
+// https://bitquill.atlassian.net/browse/AT-1028
+// This test is added to prevent no test in the test tree errors from Boost.
+BOOST_AUTO_TEST_CASE(FakeTest) {
+  BOOST_CHECK_EQUAL(1, 1);
+}
+
 BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize, *disabled()) {
   // check that statement array size cannot be set to values other than 1
 
