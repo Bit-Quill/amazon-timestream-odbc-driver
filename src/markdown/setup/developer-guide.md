@@ -60,17 +60,18 @@ Example:
    2. Ensure to save Java `\bin` and `\server` directories to the User `PATH` variable. 
    Example: C:\Program Files\Java\jdk1.8.0_321\jre\bin\server
 5. Boost Test Framework and Mondodb Driver
-   1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows 
-6. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
+   1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query]:x64-windows" --recurse`
+6. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
+7. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
    2. Navigate to the `build\odbc\cmake` folder to use the generated solution file, `Ignite.C++.sln` to work on
    source code development and testing.
-7. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
+8. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
    ```
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ``` 
    Ensure that backslashes are used in your command. 
-8. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
+9. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
 
 ## MacOS
 
@@ -81,6 +82,7 @@ Example:
       - You may need to unlink `unixodbc` if you already have this installed. Use `brew unlink unixodbc`.
    4. `brew install boost`
    5. Install Java **JDK** (version 8+ - 17 recommended)  
+   6. `brew install aws-sdk-cpp`
       - This can be done through Homebrew using `brew install --cask temurin<version>`. 
       - Ensure to set `JAVA_HOME`. Make sure it is set to temurin. Other JDK package may cause test errors 
       such as `Unable to get initialized JVM` at run time.  
@@ -88,7 +90,7 @@ Example:
       - Ensure to save Java `/bin` and `/server` directories to the User `PATH` variable.  
       Example: /Library/Java/JavaVirtualMachines/jdk-17.0.2.jdk/Contents/Home/lib/server/
       /Library/Java/JavaVirtualMachines/jdk-17.0.2.jdk/Contents/Home/bin/
-   6. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
+   7. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
       - If you only have XCode Command Line Tools, use the LLVM included with XCode by modifying the PATH with `export PATH=/Library/Developer/CommandLineTools/usr/bin/:$PATH`. Ensure this XCode path comes first in $PATH. If error occurs, check that clang and llvm are under folder Library/Developer/CommandLineTools/usr/bin.
       - If you have XCode application, to ensure LLVM and CMake are compatible, use the LLVM included with XCode by modifying the PATH with `export PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH`.
 2. Run one of the build scripts to create an initial compilation.
@@ -114,7 +116,7 @@ Example:
    3. Run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
    4. You are ready to run the tests.
-   E.g. `cd /timestream-odbc/build/odbc/bin/ && ./timestream-odbc-tests  --catch_system_errors=false`
+   E.g. `./build/odbc/bin/timestream-odbc-tests --catch_system_errors=false`
 3. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
 
 #### Known issues
@@ -122,7 +124,7 @@ Example:
 If a windows host machine is used, it is possible to have an issue with end of line character in the *.sh files. 
 There are two ways to fix the issue.
    1. Ensure that your github is checking out the files as Unix-style https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
-   2. Alternatively you can convert the end-of-line using the following command `tr -d '\015' < build_linux_debug64.sh > build_linux_debug64_lf.sh and run the build_linux_debug64_lf.sh`
+   2. Alternatively you can convert the end-of-line using the following command `tr -d '\015' < build_linux_debug64.sh > build_linux_debug64_lf.sh` and run `./build_linux_debug64_lf.sh` to build.
       1. Note that the command will need to be executed for all scripts that you will run in the container (register_driver_unix.sh,env_variables_check.sh and any other that you might need).
 ### Using Ubuntu 64bit
 
@@ -149,14 +151,25 @@ There are two ways to fix the issue.
                                  lcov \
                                  git \
                                  unixodbc-dev \
-                                 valgrind 
+                                 valgrind \
+                                 zip \
+                                 unzip \
+                                 tar                            
 ```
-   2. Install Java if necessary ( correto 17 is recommended) Follow this (link)[https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/generic-linux-install.html] for instructions.
-   3. Set all necessary environment variables and run the following command to register the ODBC driver. 
+   2. Install VCPKG and install aws-sdk-cpp dependencies
+```
+           cd <odbc-repo> \
+           git clone https://github.com/Microsoft/vcpkg.git \
+           && ./vcpkg/bootstrap-vcpkg.sh \
+           && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse \
+           export VCPKG_ROOT=<odbc-repo>/vcpkg
+```
+   3. Install Java if necessary ( correto 17 is recommended) Follow this (link)[https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/generic-linux-install.html] for instructions.
+   4. Set all necessary environment variables and run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
-   4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
-   5. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   6. You are ready to run the tests.
+   5. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
+   6. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
+   7. You are ready to run the tests.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-tests --catch_system_errors=false`.
 ## Code Coverage
 

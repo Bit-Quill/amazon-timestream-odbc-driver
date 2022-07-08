@@ -26,9 +26,12 @@ endif()
 find_package(Boost 1.53 REQUIRED COMPONENTS unit_test_framework chrono thread system regex)
 
 find_package(ODBC REQUIRED)
-
+find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
 find_package(Java REQUIRED)
 find_package(JNI REQUIRED)
+if (UNIX AND NOT APPLE)
+    find_package(ZLIB REQUIRED)
+endif()
 include(UseJava)
 
 find_package(Threads REQUIRED)
@@ -185,6 +188,7 @@ add_executable(${TARGET} ${SOURCES})
 
 target_link_libraries(${TARGET} ${ODBC_LIBRARIES})
 target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${JNI_LIBRARIES})
+target_link_libraries(${TARGET} ${AWSSDK_LINK_LIBRARIES})
 if (${CODE_COVERAGE}) 
     target_code_coverage(${TARGET} AUTO)
 endif()

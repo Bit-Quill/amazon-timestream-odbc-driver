@@ -1,5 +1,7 @@
 # Build AWS SDK
 $CURRENT_DIR = Get-Location
+
+# WORKING_DIR would be the root to odbc repo
 $WORKING_DIR = $args[0]
 $CONFIGURATION = $args[1]
 $BITNESS = $args[2]

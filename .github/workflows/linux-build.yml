@@ -15,6 +15,7 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
+  VCPKG_ROOT: "${{github.workspace}}/vcpkg"
   DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
   DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
   DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
@@ -70,6 +71,12 @@ jobs:
       run: |
         sudo apt update
         sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
+   
+    - name: get-vcpkg-dependencies
+      run: |
+        git clone https://github.com/microsoft/vcpkg
+        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
 
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726
@@ -161,6 +168,12 @@ jobs:
       run: |
         sudo apt update
         sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
+
+    - name: get-vcpkg-dependencies
+      run: |
+        git clone https://github.com/microsoft/vcpkg
+        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
 
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726

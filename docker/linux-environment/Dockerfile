@@ -38,6 +38,10 @@ RUN apt-get -y update \
                           git \
                           unixodbc-dev \
                           gdb \
+                          curl \
+                          zip \
+                          unzip \
+                          tar \
     && rm -r /var/lib/apt/lists/*
 
 #installing dependecies for JDK
@@ -52,6 +56,12 @@ RUN  wget -O- https://apt.corretto.aws/corretto.key | apt-key add - \
      && apt-get install -y java-17-amazon-corretto-jdk \
      && rm -r /var/lib/apt/lists/*
 
+#install aws-sdk-dependencies
+RUN git clone https://github.com/Microsoft/vcpkg.git \
+    && ./vcpkg/bootstrap-vcpkg.sh \
+    && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
+
+ENV VCPKG_ROOT /documentdb-odbc/vcpkg
 ENV JAVA_HOME /usr/lib/jvm/java-17-amazon-corretto/
 ENV ODBC_LIB_PATH /timestream-odbc/build/odbc/lib/
 

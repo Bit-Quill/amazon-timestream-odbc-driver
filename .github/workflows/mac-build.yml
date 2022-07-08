@@ -65,6 +65,7 @@ jobs:
         brew install cmake
         brew install openssl
         brew install boost
+        brew install aws-sdk-cpp
 
     - name: configure-and-build-driver
       run: |

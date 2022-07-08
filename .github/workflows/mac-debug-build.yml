@@ -64,6 +64,7 @@ jobs:
         brew install cmake
         brew install openssl
         brew install boost
+        brew install aws-sdk-cpp
         pip3 install gcovr
 
 # if action `EnricoMi/publish-unit-test-result-action/composite@v1.30`

@@ -16,6 +16,7 @@
 *.cache
 *.log
 *.xml
+/vcpkg/
 bin32/*
 bin64/*
 lib32/*
