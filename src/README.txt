@@ -32,7 +32,7 @@ Files list:
 
  * ignite - executable to start standalone Ignite C++ node.
  * libignite.so - Ignite C++ API library.
- * libignite-odbc.so - Ignite ODBC driver.
+ * libtimestream-odbc.so - Amazon TimeStream ODBC driver
  * libignite-thin-client.so - Ignite C++ thin client library.
  
 Development:
@@ -56,7 +56,7 @@ Files list:
 
  * ignite.exe - executable to start standalone Ignite C++ node.
  * ignite.core.dll - Ignite C++ API library.
- * ignite.odbc.dll - Ignite ODBC driver.
+ * timestream.odbc.dll - Amazon TimeStream ODBC driver.
  * ignite.thin-client.dll - Ignite thin C++ client.
  
 Development:

@@ -662,7 +662,7 @@ int OdbcTestSuite::InsertTestBatch(int from, int to, int expectedToAffect,
 }
 
 void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
-  Connect("DRIVER={Amazon DocumentDB};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect("DRIVER={Amazon TimeStream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   // Inserting values.
   int inserted = InsertTestBatch(0, recordsNum, recordsNum);
@@ -722,7 +722,7 @@ void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
 }
 
 void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
-  Connect("DRIVER={Amazon DocumentDB};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect("DRIVER={Amazon TimeStream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   std::vector< SQLUSMALLINT > statuses(recordsNum, 42);
 
@@ -807,7 +807,7 @@ void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
 void OdbcTestSuite::CreateDsnConnectionStringForRemoteServer(
     std::string& connectionString, bool sshTunnel, const std::string& username,
     const std::string& miscOptions, const std::string databasename) const {
-  std::string user = common::GetEnv("DOC_DB_USER_NAME", "documentdb");
+  std::string user = common::GetEnv("DOC_DB_USER_NAME", "timestream");
   std::string password = common::GetEnv("DOC_DB_PASSWORD", "");
   std::string host =
       sshTunnel ? common::GetEnv("DOC_DB_HOST", "") : "localhost";
@@ -834,7 +834,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForRemoteServer(
   }
 
   connectionString =
-            "DRIVER={Amazon DocumentDB};"
+            "DRIVER={Amazon TimeStream};"
             "HOSTNAME=" + host + ":" + port + ";"
             "DATABASE=" + database + ";"
             "USER=" + user + ";"
@@ -860,7 +860,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForLocalServer(
     const std::string& portNum) const {
   std::string user = userName.size() > 0
                          ? userName
-                         : common::GetEnv("DOC_DB_USER_NAME", "documentdb");
+                         : common::GetEnv("DOC_DB_USER_NAME", "timestream");
   std::string password = common::GetEnv("DOC_DB_PASSWORD", "");
   std::string host = common::GetEnv("LOCAL_DATABASE_HOST", "localhost");
   std::string port = portNum;
@@ -869,7 +869,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForLocalServer(
   std::string logLevel = common::GetEnv("DOC_DB_LOG_LEVEL", "");
 
   connectionString =
-    "DRIVER={Amazon DocumentDB};"
+    "DRIVER={Amazon TimeStream};"
     "HOSTNAME=" + host + ":" + port + ";"
     "DATABASE=" + database + ";"
     "USER=" + user + ";"

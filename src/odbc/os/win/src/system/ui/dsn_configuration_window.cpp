@@ -33,7 +33,7 @@ namespace ui {
 DsnConfigurationWindow::DsnConfigurationWindow(Window* parent,
                                                config::Configuration& config)
     : CustomWindow(parent, L"IgniteConfigureDsn",
-                   L"Configure Amazon DocumentDB DSN"),
+                   L"Configure Amazon TimeStream DSN"),
       width(780),
       height(625),
       connectionSettingsGroupBox(),

@@ -36,7 +36,7 @@ To set these properties, use the connection string with the following format
 `<property-name>=<property-value>`. The user should **not** have a slash at the end of the log path. 
 
 For example: (Note: The capitalization does not matter.)
-- In Windows, append `LOG_PATH="C:\Users\Name\Desktop\DocumentDB ODBC Driver";LOG_LEVEL=DEBUG;` 
+- In Windows, append `LOG_PATH="C:\Users\Name\Desktop\TimeStream ODBC Driver";LOG_LEVEL=DEBUG;` 
 to your connection string.
     * You can also set the log path and log level from the configuration window in the Microsoft ODBC Administrator. 
     * Click on the drop menu for setting the log level

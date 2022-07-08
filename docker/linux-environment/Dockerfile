@@ -53,6 +53,6 @@ RUN  wget -O- https://apt.corretto.aws/corretto.key | apt-key add - \
      && rm -r /var/lib/apt/lists/*
 
 ENV JAVA_HOME /usr/lib/jvm/java-17-amazon-corretto/
-ENV ODBC_LIB_PATH /documentdb-odbc/build/odbc/lib/
+ENV ODBC_LIB_PATH /timestream-odbc/build/odbc/lib/
 
-WORKDIR /documentdb-odbc
+WORKDIR /timestream-odbc

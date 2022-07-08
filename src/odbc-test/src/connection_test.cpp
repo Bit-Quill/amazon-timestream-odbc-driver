@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#define BOOST_TEST_MODULE DocumentDBTest
+#define BOOST_TEST_MODULE TimeStreamTest
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties, *disabled()) {
   std::string connectionString =
-      "DRIVER={Amazon DocumentDB};"
+      "DRIVER={Amazon TimeStream};"
       "HOSTNAME=localhost;"
       "USER=user;"
       "PASSWORD=password;";
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestConnectionIncompleteSSHTunnelProperties, *disabled()) {
   std::string connectionString =
-      "DRIVER={Amazon DocumentDB};"
+      "DRIVER={Amazon TimeStream};"
       "HOSTNAME=host.com;"
       "DATABASE=test;"
       "USER=user;"

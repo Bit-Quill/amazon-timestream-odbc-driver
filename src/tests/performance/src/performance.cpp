@@ -21,7 +21,7 @@
  *
  * 0 command line arguments
  * - default mode:
- * - dsn = documentdb-perf-test
+ * - dsn = timestream-perf-test
  * - test plan file =
  *\build\odbc\cmake\tests\performance\Performance_Test_Plan.csv
  * - test results file = Performance_Test_Results.csv

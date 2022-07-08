@@ -67,7 +67,7 @@ Example:
    source code development and testing.
 7. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
    ```
-   .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\ignite.odbc.dll
+   .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ``` 
    Ensure that backslashes are used in your command. 
 8. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
@@ -94,10 +94,10 @@ Example:
 2. Run one of the build scripts to create an initial compilation.
    1. E.g.: `./build_mac_release64.sh`
    2. Navigate to the `build/odbc/lib` folder to use the generated files.
-3. Set the environment variable `ODBCINSTINI`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib/ignite-odbc-install.ini`.
+3. Set the environment variable `ODBCINSTINI`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib/timestream-odbc-install.ini`.
 4. Run the following command to register the ODBC driver. 
    `./scripts/register_driver_unix.sh`.
-5. Now you're ready to run the tests (e.g., `./build/odbc/bin/ignite-odbc-tests  --catch_system_errors=false`).
+5. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-tests  --catch_system_errors=false`).
 6. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
 
 ## Linux
@@ -114,7 +114,7 @@ Example:
    3. Run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
    4. You are ready to run the tests.
-   E.g. `cd /documentdb-odbc/build/odbc/bin/ && ./ignite-odbc-tests  --catch_system_errors=false`
+   E.g. `cd /timestream-odbc/build/odbc/bin/ && ./timestream-odbc-tests  --catch_system_errors=false`
 3. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
 
 #### Known issues
@@ -157,7 +157,7 @@ There are two ways to fix the issue.
    4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
    5. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
    6. You are ready to run the tests.
-      E.g. `/documentdb-odbc/build/odbc/bin/ignite-odbc-tests --catch_system_errors=false`.
+      E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-tests --catch_system_errors=false`.
 ## Code Coverage
 
 ### MacOS/Linux

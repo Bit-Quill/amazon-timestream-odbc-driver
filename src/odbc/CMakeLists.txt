@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-project(ignite-odbc)
+project(timestream-odbc)
 
 set(TARGET ${PROJECT_NAME})
 
@@ -182,7 +182,7 @@ if (WIN32)
         target_link_libraries(${TARGET} legacy_stdio_definitions)
     endif()
                 
-    set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "ignite.odbc")
+    set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "timestream.odbc")
 else()
     target_link_libraries(${TARGET})
 endif()
@@ -198,9 +198,9 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         message(FATAL_ERROR "WIX light.exe not found! Have you installed WIX Toolset or forgotten to add it to Path?")
     endif()
 
-    set(WIX_ODBC_LIBRARY_PATH ".\\ignite.odbc.dll")
+    set(WIX_ODBC_LIBRARY_PATH ".\\timestream.odbc.dll")
 
-    set(WIX_PROJECT_NAME "Amazon DocumentDB")
+    set(WIX_PROJECT_NAME "Amazon TimeStream")
     set(WIX_MANUFACTURER "Amazon Web Services")
     set(WIX_COPYRIGHT_COMMENT "Apache, Apache Ignite, the Apache feather and the Apache Ignite logo are trademarks of The Apache Software Foundation.")
 
@@ -212,7 +212,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_PROGRAM_FILES_FOLDER_ID "ProgramFiles64Folder")
         set(WIX_COMPONENT_IS_WIN64 "yes")
         set(WIX_PACKAGE_PLATFORM "x64")
-        set(WIX_INSTALLER_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/documentdb-odbc-amd64)
+        set(WIX_INSTALLER_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/timestream-odbc-amd64)
     elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(WIX_BIT_SUFFIX "32-bit")
         set(WIX_PRODUCT_ID "D39CBABA-1E21-4701-AA5C-91EDA07B383B")
@@ -221,13 +221,13 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_PROGRAM_FILES_FOLDER_ID "ProgramFilesFolder")
         set(WIX_COMPONENT_IS_WIN64 "no")
         set(WIX_PACKAGE_PLATFORM "x86")
-        set(WIX_INSTALLER_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/documentdb-odbc-x86)
+        set(WIX_INSTALLER_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/timestream-odbc-x86)
     endif()
 
     set(WIX_PRODUCT_NAME "${WIX_PROJECT_NAME} ODBC ${WIX_BIT_SUFFIX} Driver")
 
     configure_file(
-        "${CMAKE_CURRENT_LIST_DIR}/install/ignite-odbc.wxs.in"
+        "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc.wxs.in"
         "${WIX_INSTALLER_PREFIX}.wxs"
         @ONLY
     )

@@ -6,7 +6,7 @@ Performance test framework for testing ODBC driver
 2. Specify test plan input file
 3. Specify output file 
 4. Run executable and pass in command line arguments: dsn-name input-file output-file
-e.g. `performance.exe "documentdb-perf-test" "Performance_Test_Plan.csv" "Performance_Test_Results.csv"`
+e.g. `performance.exe "timestream-perf-test" "Performance_Test_Plan.csv" "Performance_Test_Results.csv"`
 e.g. output console:
 ```
 %%__PARSE__SYNC__START__%%
@@ -24,7 +24,7 @@ SQLExecDirect->SQLBindCol->SQLFetch Time dump: 62 ms, 64 ms, 64 ms, 65 ms, 66 ms
 5. If no command line arguments are passed, by default:
    1. input-file = `build\odbc\cmake\tests\performance\Performance_Test_Plan.csv`
    2. output-file = `build\odbc\bin\Debug\Performance_Test_Results.csv`
-   3. dsn-name = `documentdb-perf-test`
+   3. dsn-name = `timestream-perf-test`
 6. Instead of using command line, you can open executable file in Visual Studio and run executable in debug mode
    1. Executable is located at `build\odbc\bin\Debug`
 

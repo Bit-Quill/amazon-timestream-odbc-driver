@@ -36,23 +36,23 @@ To be able to build and install ODBC driver on Linux you first need to install
 ODBC Driver Manager. Apache Ignite ODBC driver has been tested with UnixODBC
 (http://www.unixodbc.org). 
 
-Once you have built and installed Ignite ODBC Driver i.e. libignite-odbc.so it
+Once you have built and installed Ignite ODBC Driver i.e. libtimestream-odbc.so it
 is most likely placed to /usr/local/lib. To install and be able to use Ignite
 ODBC driver you should perfrom the following steps:
 
 1. Ensure linker is able to locate all dependencies of the ODBC driver. You
    can check it using "ldd" command like this (assuming ODBC driver is located
    under /usr/local/lib):
-   $ ldd /usr/local/lib/libignite-odbc.so.
+   $ ldd /usr/local/lib/libtimestream-odbc.so.
    If there is unresolved links to other libraries you may want to add
    directories with these libraries to the LD_LIBRARY_PATH.
 
-2. Edit file $IGNITE_HOME/platforms/cpp/odbc/install/ignite-odbc-install.ini
+2. Edit file $IGNITE_HOME/platforms/cpp/odbc/install/timestream-odbc-install.ini
    and ensure that "Driver" parameter of the "Apache Ignite" section points
-   to the right location where libignite-odbc.so is located.
+   to the right location where libtimestream-odbc.so is located.
 
 3. To install Apache Ignite ODBC driver use the following command:
-   $ odbcinst -i -d -f $IGNITE_HOME/platforms/cpp/odbc/install/ignite-odbc-install.ini
+   $ odbcinst -i -d -f $IGNITE_HOME/platforms/cpp/odbc/install/timestream-odbc-install.ini
    To perform this command you most likely will need root privileges.
 
 Installing ODBC driver on Windows
@@ -67,8 +67,8 @@ There are two ways to install ODBC driver currently. The first one is to use
 32-bit or 64-bit installer. This is the most simple way and you are recommended
 to stick to it by default.
 
-32-bit installer : $IGNITE_HOME/platforms/cpp/bin/odbc/ignite-odbc-x86.msi
-64-bit installer : $IGNITE_HOME/platforms/cpp/bin/odbc/ignite-odbc-amd64.msi
+32-bit installer : $IGNITE_HOME/platforms/cpp/bin/odbc/timestream-odbc-x86.msi
+64-bit installer : $IGNITE_HOME/platforms/cpp/bin/odbc/timestream-odbc-amd64.msi
 
 However there is also another way to install driver manually using scripts. If
 you choose this method you should first choose a directory on your filesystem

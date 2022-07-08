@@ -1,4 +1,4 @@
-# Amazon DocumentDB ODBC Driver Setup
+# Amazon TimeStream ODBC Driver Setup
 
 - [Windows DSN](windows-dsn-configuration.md)
 - [MacOS DSN](macOS-dsn-configuration.md)

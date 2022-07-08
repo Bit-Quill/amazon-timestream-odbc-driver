@@ -45,8 +45,8 @@ const std::string kInputFile =
 const std::string kOutputFile = "Performance_Test_Results.csv";
 
 // Ensure DSN is setup on machine before running test
-// DSN name should be "documentdb-perf-test"
-const std::string kDsnDefault = "documentdb-perf-test";
+// DSN name should be "timestream-perf-test"
+const std::string kDsnDefault = "timestream-perf-test";
 
 // kTestQuery is not used in performance test
 const std::string kTestQuery =
@@ -192,7 +192,7 @@ class PerformanceTestRunner {
   static void ListDriversInstalled();
   static void ListDataSourcesInstalled();
 
-  // Test if connection to test database DSN=documentdb-perf-test can be
+  // Test if connection to test database DSN=timestream-perf-test can be
   // established and if query "SELECT * from performance.employer_employees
   // LIMIT 10000" can be executed
   static SQLRETURN TestDefaultDSN();
