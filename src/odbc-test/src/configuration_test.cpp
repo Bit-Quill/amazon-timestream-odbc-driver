@@ -196,11 +196,10 @@ void CheckInvalidBoolValue(const std::string& connectStr,
 
 void CheckConnectionConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetDriver(), testDriverName);
-  BOOST_CHECK_EQUAL(cfg.GetDatabase(), testDatabaseName);
   BOOST_CHECK_EQUAL(cfg.GetHostname(), testHostname);
   BOOST_CHECK_EQUAL(cfg.GetPort(), testServerPort);
-  BOOST_CHECK_EQUAL(cfg.GetUser(), testUsername);
-  BOOST_CHECK_EQUAL(cfg.GetPassword(), testPassword);
+  BOOST_CHECK_EQUAL(cfg.GetAccessKeyId(), testUsername);
+  BOOST_CHECK_EQUAL(cfg.GetSecretKey(), testPassword);
   BOOST_CHECK_EQUAL(cfg.GetApplicationName(), testAppName);
   BOOST_CHECK_EQUAL(cfg.GetLoginTimeoutSeconds(), testLoginTimeoutSec);
   BOOST_CHECK_EQUAL(cfg.GetReplicaSet(), testReplicaSet);
@@ -271,11 +270,10 @@ void CheckDsnConfig(const Configuration& cfg) {
   // path/level.
   BOOST_CHECK_EQUAL(cfg.GetDriver(), testDriverName);
   BOOST_CHECK_EQUAL(cfg.GetDsn(), testDsn);
-  BOOST_CHECK_EQUAL(cfg.GetDatabase(), Configuration::DefaultValue::database);
   BOOST_CHECK_EQUAL(cfg.GetHostname(), Configuration::DefaultValue::hostname);
   BOOST_CHECK_EQUAL(cfg.GetPort(), Configuration::DefaultValue::port);
-  BOOST_CHECK_EQUAL(cfg.GetUser(), Configuration::DefaultValue::user);
-  BOOST_CHECK_EQUAL(cfg.GetPassword(), Configuration::DefaultValue::password);
+  BOOST_CHECK_EQUAL(cfg.GetAccessKeyId(), Configuration::DefaultValue::accessKeyId);
+  BOOST_CHECK_EQUAL(cfg.GetSecretKey(), Configuration::DefaultValue::secretKey);
   BOOST_CHECK_EQUAL(cfg.GetApplicationName(),
                     Configuration::DefaultValue::appName);
   BOOST_CHECK_EQUAL(cfg.GetLoginTimeoutSeconds(),
@@ -315,11 +313,10 @@ BOOST_AUTO_TEST_SUITE(ConfigurationTestSuite)
 BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault, *disabled()) {
   BOOST_CHECK_NE(testDriverName, Configuration::DefaultValue::driver);
   BOOST_CHECK_NE(testDsn, Configuration::DefaultValue::dsn);
-  BOOST_CHECK_NE(testDatabaseName, Configuration::DefaultValue::database);
   BOOST_CHECK_NE(testHostname, Configuration::DefaultValue::hostname);
   BOOST_CHECK_NE(testServerPort, Configuration::DefaultValue::port);
-  BOOST_CHECK_NE(testUsername, Configuration::DefaultValue::user);
-  BOOST_CHECK_NE(testPassword, Configuration::DefaultValue::password);
+  BOOST_CHECK_NE(testUsername, Configuration::DefaultValue::accessKeyId);
+  BOOST_CHECK_NE(testPassword, Configuration::DefaultValue::secretKey);
   BOOST_CHECK_NE(testAppName, Configuration::DefaultValue::appName);
   BOOST_CHECK_NE(testLoginTimeoutSec,
                  Configuration::DefaultValue::loginTimeoutSec);
@@ -356,8 +353,7 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase, *disabled()) {
   std::stringstream constructor;
 
   constructor << "HOSTNAME=" << testHostname << ';' << "PORT=" << testServerPort
-              << ';' << "DATABASE=" << testDatabaseName << ';'
-              << "USER=" << testUsername << ';' << "PASSWORD=" << testPassword
+              << ';' << "ACCESS_KEY_ID=" << testUsername << ';' << "SECRET_KEY=" << testPassword
               << ';' << "APP_NAME=" << testAppName << ';'
               << "LOG_LEVEL=" << LogLevel::ToString(testLogLevel) << ';'
               << "LOG_PATH=" << testLogPath << ';'

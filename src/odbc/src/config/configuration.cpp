@@ -34,11 +34,12 @@ namespace config {
 // Connection Settings
 const std::string Configuration::DefaultValue::dsn = "TimeStream DSN";
 const std::string Configuration::DefaultValue::driver = "Amazon TimeStream";
-const std::string Configuration::DefaultValue::database = "";
 const std::string Configuration::DefaultValue::hostname = "";
 const uint16_t Configuration::DefaultValue::port = 27017;
-const std::string Configuration::DefaultValue::user = "";
-const std::string Configuration::DefaultValue::password = "";
+const std::string Configuration::DefaultValue::accessKeyId = "";
+const std::string Configuration::DefaultValue::secretKey = "";
+const std::string Configuration::DefaultValue::sessionToken = "";
+const std::string Configuration::DefaultValue::region = "";
 
 // SSL/TLS options
 const bool Configuration::DefaultValue::tls = true;
@@ -145,18 +146,6 @@ void Configuration::SetHostname(const std::string& host) {
 
 bool Configuration::IsHostnameSet() const {
   return hostname.IsSet();
-}
-
-const std::string& Configuration::GetDatabase() const {
-  return database.GetValue();
-}
-
-void Configuration::SetDatabase(const std::string& schema) {
-  this->database.SetValue(schema);
-}
-
-bool Configuration::IsDatabaseSet() const {
-  return database.IsSet();
 }
 
 const std::string& Configuration::GetApplicationName() const {
@@ -417,28 +406,44 @@ bool Configuration::IsRefreshSchemaSet() const {
   return refreshSchema.IsSet();
 }
 
-const std::string& Configuration::GetUser() const {
-  return user.GetValue();
+const std::string& Configuration::GetAccessKeyId() const {
+  return accessKeyId.GetValue();
 }
 
-void Configuration::SetUser(const std::string& username) {
-  this->user.SetValue(username);
+void Configuration::SetAccessKeyId(const std::string& accessKeyIdValue) {
+  this->accessKeyId.SetValue(accessKeyIdValue);
 }
 
-bool Configuration::IsUserSet() const {
-  return user.IsSet();
+bool Configuration::IsAccessKeyIdSet() const {
+  return accessKeyId.IsSet();
 }
 
-const std::string& Configuration::GetPassword() const {
-  return password.GetValue();
+const std::string& Configuration::GetSecretKey() const {
+  return secretKey.GetValue();
 }
 
-void Configuration::SetPassword(const std::string& pass) {
-  this->password.SetValue(pass);
+void Configuration::SetSecretKey(const std::string& pass) {
+  this->secretKey.SetValue(pass);
 }
 
-bool Configuration::IsPasswordSet() const {
-  return password.IsSet();
+bool Configuration::IsSecretKeySet() const {
+  return secretKey.IsSet();
+}
+
+const std::string& Configuration::GetSessionToken() const {
+  return sessionToken.GetValue();
+}
+
+void Configuration::SetSessionToken(const std::string& token) {
+  this->sessionToken.SetValue(token);
+}
+
+const std::string& Configuration::GetRegion()const {
+  return region.GetValue();
+}
+
+void Configuration::SetRegion(const std::string& value) {
+  this->region.SetValue(value);
 }
 
 int32_t Configuration::GetDefaultFetchSize() const {
@@ -456,11 +461,10 @@ bool Configuration::IsDefaultFetchSizeSet() const {
 void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::dsn, dsn);
   AddToMap(res, ConnectionStringParser::Key::driver, driver);
-  AddToMap(res, ConnectionStringParser::Key::database, database);
   AddToMap(res, ConnectionStringParser::Key::hostname, hostname);
   AddToMap(res, ConnectionStringParser::Key::port, port);
-  AddToMap(res, ConnectionStringParser::Key::user, user);
-  AddToMap(res, ConnectionStringParser::Key::password, password);
+  AddToMap(res, ConnectionStringParser::Key::accessKeyId, accessKeyId);
+  AddToMap(res, ConnectionStringParser::Key::secretKey, secretKey);
   AddToMap(res, ConnectionStringParser::Key::appName, appName);
   AddToMap(res, ConnectionStringParser::Key::loginTimeoutSec, loginTimeoutSec);
   AddToMap(res, ConnectionStringParser::Key::readPreference, readPreference);
@@ -493,21 +497,10 @@ void Configuration::ToMap(ArgumentMap& res) const {
 
 void Configuration::Validate() const {
   // Validate minimum required properties.
-  if (!IsHostnameSet() || !IsUserSet() || !IsPasswordSet()
-      || !IsDatabaseSet()) {
+  if (!IsAccessKeyIdSet() || !IsSecretKeySet()) {
     throw OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-        "Hostname, username, password, and database are required to connect.");
-  }
-
-  // Validate required SSH tunnel properties if needed.
-  bool sshTunnel = IsSshEnable() || IsSshHostSet() || IsSshUserSet()
-                   || IsSshPrivateKeyFileSet();
-  if (sshTunnel
-      && (!IsSshHostSet() || !IsSshUserSet() || !IsSshPrivateKeyFileSet())) {
-    throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-                    "If using an internal SSH tunnel, all of ssh_host, "
-                    "ssh_user, ssh_private_key_file are required to connect.");
+        "ACCESS_KEY_ID and SECRET_KEY are required to connect.");
   }
 }
 

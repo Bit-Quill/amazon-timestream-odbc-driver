@@ -357,19 +357,11 @@ struct OdbcTestSuite {
   /**
    * Creates the standard DSN connection string.
    */
-  void CreateDsnConnectionStringForRemoteServer(
-      std::string& connectionString, bool sshTunnel = true,
-      const std::string& username = std::string(),
-      const std::string& miscOptions = std::string(),
-      const std::string databasename = std::string()) const;
-
-  /**
-   * Creates the standard DSN connection string for use with local instance.
-   */
-  void CreateDsnConnectionStringForLocalServer(
-      std::string& connectionString, const std::string& databaseName = "",
-      const std::string& userName = "", const std::string& miscOptions = "",
-      const std::string& portNum = "27017") const;
+  void CreateDsnConnectionStringForAWS(
+      std::string& connectionString,
+      const std::string& keyId = std::string(),
+      const std::string& secret = std::string(),
+      const std::string& miscOptions = std::string()) const;
 
   /** ODBC Environment. */
   SQLHENV env;

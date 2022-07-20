@@ -37,10 +37,14 @@
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
 
+#include <aws/core/auth/AWSCredentials.h>
+#include <aws/timestream-query/model/QueryRequest.h>
+#include <aws/timestream-query/model/QueryResult.h>
+#include <aws/core/utils/logging/LogLevel.h>
+
 using namespace ignite::odbc::common;
 using namespace ignite::odbc::common::concurrent;
 using ignite::odbc::IgniteError;
-
 
 // Uncomment for per-byte debug.
 //#define PER_BYTE_DEBUG
@@ -55,12 +59,45 @@ struct OdbcProtocolHeader {
 
 namespace ignite {
 namespace odbc {
-Connection::Connection(Environment* env) : env_(env), info_(config_) {
-  // No-op
+
+std::mutex Connection::mutex_;
+bool Connection::awsSDKReady_ = false;
+std::atomic< int > Connection::refCount_(0);
+
+Connection::Connection(Environment* env)
+    : env_(env), info_(config_) {
+  // The AWS SDK for C++ must be initialized by calling Aws::InitAPI.
+  // It should only be initialized only once during the application running
+  // All Connections in different thread must wait before the InitAPI is finished.
+  if (!awsSDKReady_) {
+    // Use awsSDKReady_ and mutex_ to guarantee InitAPI is executed before all 
+    // Connection objects start to run.
+    std::lock_guard< std::mutex > lock(mutex_);
+    if (!awsSDKReady_) {
+      // TODO: make this loglevel configurable?:wq
+      // https://bitquill.atlassian.net/browse/AT-1054
+      options_.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Warn;
+
+      Aws::InitAPI(options_);
+      awsSDKReady_ = true;
+    }
+  }
+
+  // record the Connection object in an atomic counter
+  ++refCount_;
 }
 
 Connection::~Connection() {
   Close();
+
+  // Before the application terminates, the SDK must be shut down.
+  // It should be shutdown only once by the last Connection
+  // destructor during the application running. The atomic counter
+  // guarantees this.
+  if (0 == --refCount_) {
+    Aws::ShutdownAPI(options_);
+    awsSDKReady_ = false;
+  }
 }
 
 const config::ConnectionInfo& Connection::GetInfo() const {
@@ -129,8 +166,35 @@ void Connection::Establish(const config::Configuration cfg) {
 
 SqlResult::Type Connection::InternalEstablish(
     const config::Configuration& cfg) {
-  // not implemented
-  return SqlResult::AI_ERROR;
+  config_ = cfg;
+
+  if (client_) {
+    AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.");
+
+    return SqlResult::AI_ERROR;
+  }
+
+  try {
+    config_.Validate();
+  } catch (const OdbcError& err) {
+    AddStatusRecord(err);
+    return SqlResult::AI_ERROR;
+  }
+
+  IgniteError err;
+  bool connected = TryRestoreConnection(cfg, err);
+
+  if (!connected) {
+    std::string errMessage = "Failed to establish connection to TimeStream.\n";
+    errMessage.append(err.GetText());
+    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMessage);
+
+    return SqlResult::AI_ERROR;
+  }
+
+  bool errors = GetDiagnosticRecords().GetStatusRecordsNumber() > 0;
+
+  return errors ? SqlResult::AI_SUCCESS_WITH_INFO : SqlResult::AI_SUCCESS;
 }
 
 void Connection::Release() {
@@ -142,10 +206,24 @@ void Connection::Deregister() {
 }
 
 SqlResult::Type Connection::InternalRelease() {
-  return SqlResult::AI_ERROR;
+  if (!client_) {
+    AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.");
+
+    // It is important to return SUCCESS_WITH_INFO and not ERROR here, as if we
+    // return an error, Windows Driver Manager may decide that connection is not
+    // valid anymore which results in memory leak.
+    return SqlResult::AI_SUCCESS_WITH_INFO;
+  }
+
+  Close();
+
+  return SqlResult::AI_SUCCESS;
 }
 
 void Connection::Close() {
+  if (client_) {
+    client_.reset();
+  }
 }
 
 Statement* Connection::CreateStatement() {
@@ -169,7 +247,7 @@ SqlResult::Type Connection::InternalCreateStatement(Statement*& statement) {
 }
 
 const std::string& Connection::GetSchema() const {
-  return config_.GetDatabase();
+  return "";
 }
 
 const config::Configuration& Connection::GetConfiguration() const {
@@ -192,7 +270,7 @@ void Connection::TransactionCommit() {
 }
 
 SqlResult::Type Connection::InternalTransactionCommit() {
-  std::string schema = config_.GetDatabase();
+  std::string schema = ""; //TO-DO schema is not used now
 
   app::ParameterSet empty;
 
@@ -226,7 +304,7 @@ void Connection::TransactionRollback() {
 }
 
 SqlResult::Type Connection::InternalTransactionRollback() {
-  std::string schema = config_.GetDatabase();
+  std::string schema = ""; //TO-DO schema is not used now
 
   app::ParameterSet empty;
 
@@ -381,10 +459,40 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
 void Connection::EnsureConnected() {
 }
 
-bool Connection::TryRestoreConnection(IgniteError& err) {
-  // not implemented
+bool Connection::TryRestoreConnection(
+    const config::Configuration& cfg, IgniteError& err) {
+  Aws::Auth::AWSCredentials credentials;
+  credentials.SetAWSAccessKeyId(cfg.GetAccessKeyId());
+  credentials.SetAWSSecretKey(cfg.GetSecretKey());
+  credentials.SetSessionToken(cfg.GetSessionToken());
 
-  return false;
+  Aws::Client::ClientConfiguration clientCfg;
+  clientCfg.region = cfg.GetRegion();
+  clientCfg.enableEndpointDiscovery = true;
+
+  client_ = std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
+      credentials, clientCfg);
+
+  // try a simple query
+  Aws::TimestreamQuery::Model::QueryRequest queryRequest;
+  queryRequest.SetQueryString("SELECT 1");
+
+  Aws::TimestreamQuery::Model::QueryOutcome outcome =
+      client_->Query(queryRequest);
+  if (!outcome.IsSuccess()) {
+    auto error = outcome.GetError();
+    LOG_DEBUG_MSG("ERROR: " << error.GetExceptionName() << ": "
+                            << error.GetMessage());
+
+    err = IgniteError(ignite::odbc::IgniteError::IGNITE_ERR_TS_CONNECT,
+            std::string(error.GetExceptionName()).append(": ")
+            .append(error.GetMessage()).c_str());
+
+    Close();
+    return false;
+  }
+
+  return true;
 }
 
 int32_t Connection::RetrieveTimeout(void* value) {

@@ -49,20 +49,23 @@ class Configuration {
     /** Default value for Driver attribute. */
     static const std::string driver;
 
-    /** Default value for database attribute. */
-    static const std::string database;
-
     /** Default value for hostname attribute. */
     static const std::string hostname;
 
     /** Default value for port attribute. */
     static const uint16_t port;
 
-    /** Default value for user attribute. */
-    static const std::string user;
+    /** Default value for accessKeyId attribute. */
+    static const std::string accessKeyId;
 
-    /** Default value for password attribute. */
-    static const std::string password;
+    /** Default value for secretKey attribute. */
+    static const std::string secretKey;
+
+    /** Default value for sessionToken attribute. */
+    static const std::string sessionToken;
+
+    /** Default value for region attribute. */
+    static const std::string region;
 
     /** Default value for appName attribute. */
     static const std::string appName;
@@ -226,67 +229,74 @@ class Configuration {
   bool IsPortSet() const;
 
   /**
-   * Get database.
+   * Get accessKeyId.
    *
-   * @return Database.
+   * @return accessKeyId.
    */
-  const std::string& GetDatabase() const;
+  const std::string& GetAccessKeyId() const;
 
   /**
-   * Set schema.
+   * Set accessKeyId.
    *
-   * @param database Database name.
+   * @param accessKeyId accessKeyId.
    */
-  void SetDatabase(const std::string& databaseName);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsDatabaseSet() const;
-
-  /**
-   * Get user.
-   *
-   * @return User.
-   */
-  const std::string& GetUser() const;
-
-  /**
-   * Set user.
-   *
-   * @param user User.
-   */
-  void SetUser(const std::string& username);
+  void SetAccessKeyId(const std::string& accessKeyIdValue);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsUserSet() const;
+  bool IsAccessKeyIdSet() const;
 
   /**
-   * Get password.
+   * Get secretKey.
    *
-   * @return Password.
+   * @return secretKey.
    */
-  const std::string& GetPassword() const;
+  const std::string& GetSecretKey() const;
 
   /**
-   * Set password.
+   * Set secretKey.
    *
-   * @param pass Password.
+   * @param pass secretKey.
    */
-  void SetPassword(const std::string& pass);
+  void SetSecretKey(const std::string& pass);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsPasswordSet() const;
+  bool IsSecretKeySet() const;
+
+  /**
+   * Get sessionToken.
+   *
+   * @return sessionToken.
+   */
+  const std::string& GetSessionToken() const;
+
+  /**
+   * Set sessionToken.
+   *
+   * @param token sessionToken.
+   */
+  void SetSessionToken(const std::string& token);
+
+  /**
+   * Get sessionToken.
+   *
+   * @return sessionToken.
+   */
+  const std::string& GetRegion() const;
+
+  /**
+   * Set region.
+   *
+   * @param value region.
+   */
+  void SetRegion(const std::string& value);
 
   /**
    * Get application name.
@@ -478,7 +488,6 @@ class Configuration {
   bool IsSshEnableSet() const;
 
   /**
-   * Get password.
    * Get username for SSH host.
    *
    * @return SSH username.
@@ -793,20 +802,23 @@ class Configuration {
   /** Driver name. */
   SettableValue< std::string > driver = DefaultValue::driver;
 
-  /** Schema. */
-  SettableValue< std::string > database = DefaultValue::database;
-
   /** Hostname. */
   SettableValue< std::string > hostname = DefaultValue::hostname;
 
   /** Port. */
   SettableValue< uint16_t > port = DefaultValue::port;
 
-  /** User. */
-  SettableValue< std::string > user = DefaultValue::user;
+  /** accessKeyId. */
+  SettableValue< std::string > accessKeyId = DefaultValue::accessKeyId;
 
-  /** Password. */
-  SettableValue< std::string > password = DefaultValue::password;
+  /** secretKey. */
+  SettableValue< std::string > secretKey = DefaultValue::secretKey;
+
+  /** sessionToken. */
+  SettableValue< std::string > sessionToken = DefaultValue::sessionToken;
+
+  /** region. */
+  SettableValue< std::string > region = DefaultValue::region;
 
   /** Application name. */
   SettableValue< std::string > appName = DefaultValue::appName;

@@ -187,7 +187,7 @@ endif()
 add_executable(${TARGET} ${SOURCES})
 
 target_link_libraries(${TARGET} ${ODBC_LIBRARIES})
-target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${JNI_LIBRARIES})
+target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_LIBRARIES} ${JNI_LIBRARIES})
 target_link_libraries(${TARGET} ${AWSSDK_LINK_LIBRARIES})
 if (${CODE_COVERAGE}) 
     target_code_coverage(${TARGET} AUTO)

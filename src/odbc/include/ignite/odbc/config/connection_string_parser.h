@@ -39,9 +39,6 @@ class ConnectionStringParser {
     /** Connection attribute keyword for Driver attribute. */
     static const std::string driver;
 
-    /** Connection attribute keyword for database attribute. */
-    static const std::string database;
-
     /** Connection attribute keyword for hostname attribute. */
     static const std::string hostname;
 
@@ -49,10 +46,16 @@ class ConnectionStringParser {
     static const std::string port;
 
     /** Connection attribute keyword for username attribute. */
-    static const std::string user;
+    static const std::string accessKeyId;
 
     /** Connection attribute keyword for password attribute. */
-    static const std::string password;
+    static const std::string secretKey;
+
+    /** Connection attribute keyword for sessiontoken attribute. */
+    static const std::string sessionToken;
+
+    /** Connection attribute keyword for sessiontoken attribute. */
+    static const std::string region;
 
     /** Connection attribute keyword for appName attribute. */
     static const std::string appName;

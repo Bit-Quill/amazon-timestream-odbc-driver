@@ -29,6 +29,10 @@
 #include "odbc_test_suite.h"
 #include "test_utils.h"
 
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+#include <boost/bind.hpp>
+
 using boost::unit_test::precondition;
 using ignite::odbc::OdbcTestSuite;
 using ignite_test::GetOdbcErrorMessage;
@@ -41,70 +45,45 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
   using OdbcTestSuite::OdbcTestSuite;
 
   /**
-   * Execute the query and return an error code.
-   */
-  std::string ExecQueryAndReturnError() {
-    std::vector< SQLWCHAR > selectReq =
-        MakeSqlBuffer("select count(*) from TestType");
-
-    SQLRETURN ret = SQLExecDirect(stmt, selectReq.data(), SQL_NTS);
-
-    std::string err;
-
-    if (!SQL_SUCCEEDED(ret))
-      err = ExtractErrorCode(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-    return err;
-  }
-
-  /**
-   * Extract code from ODBC error message.
-   *
-   * @param err Error message.
-   * @return Error code.
-   */
-  static std::string ExtractErrorCode(const std::string& err) {
-    std::string code;
-
-    size_t idx = err.find(':');
-
-    if ((idx != std::string::npos) && (idx > 0))
-      code = err.substr(0, idx);
-
-    return code;
-  }
-
-  /**
    * Destructor.
    */
   ~ConnectionTestSuiteFixture() override = default;
+
+  void connect() {
+    std::string connectionString;
+    CreateDsnConnectionStringForAWS(connectionString);
+    Connect(connectionString);
+    Disconnect();
+  }
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
 
 // TestConnectionRestoreInternalSSHTunnel has precondition `*precondition(if_integration())`
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreInternalSSHTunnel, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestConnection) {
   std::string connectionString;
-  CreateDsnConnectionStringForRemoteServer(connectionString);
+  CreateDsnConnectionStringForAWS(connectionString);
   Connect(connectionString);
   Disconnect();
 }
 
-// TestConnectionRestoreExternalSSHTunnel has precondition `*precondition(if_integration())`
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreExternalSSHTunnel, *disabled()) {
-  std::string connectionString;
-  CreateDsnConnectionStringForRemoteServer(connectionString, false);
-  Connect(connectionString);
-  Disconnect();
+BOOST_AUTO_TEST_CASE(TestConnectionConcurrency) {
+  ConnectionTestSuiteFixture testConn[10];
+
+  // Create threads and add them to the thread group
+  boost::thread_group threads;
+
+  for (int i = 0; i < 10; i++) {
+    boost::thread* t = new boost::thread(
+        boost::bind(&ConnectionTestSuiteFixture::connect, testConn[i]));
+    threads.add_thread(t);
+  }
+
+  // Wait till the threads are finished
+  threads.join_all();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreLocalServer, *disabled()) {
-  std::string connectionString;
-  CreateDsnConnectionStringForLocalServer(connectionString);
-  Connect(connectionString);
-  Disconnect();
-}
-
+// TO-DO enable for misc options in future
 BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
   const std::string miscOptions =
       "APP_NAME=TestAppName;"
@@ -117,56 +96,41 @@ BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
       "REFRESH_SCHEMA=true;"
       "DEFAULT_FETCH_SIZE=1000;";
   std::string connectionString;
-  CreateDsnConnectionStringForLocalServer(connectionString, "", "",
+  CreateDsnConnectionStringForAWS(connectionString, "", "",
                                           miscOptions);
 
   Connect(connectionString);
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties, *disabled()) {
-  std::string connectionString =
-      "DRIVER={Amazon TimeStream};"
-      "HOSTNAME=localhost;"
-      "USER=user;"
-      "PASSWORD=password;";
-
-  ExpectConnectionReject(connectionString,
-                         "01S00: Hostname, username, password, and database "
-                         "are required to connect.");
-
-  Disconnect();
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectionIncompleteSSHTunnelProperties, *disabled()) {
-  std::string connectionString =
-      "DRIVER={Amazon TimeStream};"
-      "HOSTNAME=host.com;"
-      "DATABASE=test;"
-      "USER=user;"
-      "PASSWORD=password;"
-      "SSH_USER=sshUser;"
-      "SSH_HOST=sshHost;";
-
-  ExpectConnectionReject(
-      connectionString,
-      "01S00: If using an internal SSH tunnel, all of ssh_host, ssh_user, "
-      "ssh_private_key_file are required to connect.");
-
-  Disconnect();
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectionInvalidUser, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestConnectionOnlyConnect) {
   std::string connectionString;
-  CreateDsnConnectionStringForLocalServer(connectionString, "", "invaliduser");
+  CreateDsnConnectionStringForAWS(connectionString);
+  Connect(connectionString);
+}
+
+BOOST_AUTO_TEST_CASE(TestConnectionOnlyDisconnect) {
+  Disconnect();
+}
+
+BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
+  std::string connectionString =
+      "DRIVER={Amazon TimeStream};"
+      "ACCESS_KEY_ID=key;";
 
   ExpectConnectionReject(
       connectionString,
-      "08001: Failed to establish connection with the host.\n"
-      "Invalid username or password or user is not authorized on database "
-      "'odbc-test'. "
-      "Please check your settings. Authorization failed for user 'invaliduser' "
-      "on database 'admin' with mechanism");
+      "01S00: ACCESS_KEY_ID and SECRET_KEY are required to connect.");
+
+  Disconnect();
+}
+
+BOOST_AUTO_TEST_CASE(TestConnectionInvalidUser) {
+  std::string connectionString;
+  CreateDsnConnectionStringForAWS(connectionString, "", "invaliduser");
+
+  ExpectConnectionReject(
+      connectionString, "08001: Failed to establish connection to TimeStream.\nINVALID_ENDPOINT: Failed to discover");
 
   Disconnect();
 }

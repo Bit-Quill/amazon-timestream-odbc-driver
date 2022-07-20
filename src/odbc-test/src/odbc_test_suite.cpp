@@ -155,7 +155,7 @@ void OdbcTestSuite::Disconnect() {
   if (dbc) {
     // Disconneting from the server.
     SQLDisconnect(dbc);
-
+    
     // Releasing allocated handles.
     SQLFreeHandle(SQL_HANDLE_DBC, dbc);
     dbc = nullptr;
@@ -804,83 +804,34 @@ void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
   BOOST_CHECK_EQUAL(recordsNum, selectedRecordsNum);
 }
 
-void OdbcTestSuite::CreateDsnConnectionStringForRemoteServer(
-    std::string& connectionString, bool sshTunnel, const std::string& username,
-    const std::string& miscOptions, const std::string databasename) const {
-  std::string user = common::GetEnv("DOC_DB_USER_NAME", "timestream");
-  std::string password = common::GetEnv("DOC_DB_PASSWORD", "");
-  std::string host =
-      sshTunnel ? common::GetEnv("DOC_DB_HOST", "") : "localhost";
-  std::string sshUserAtHost = common::GetEnv("DOC_DB_USER", "");
-  std::string sshPrivKeyFile = common::GetEnv("DOC_DB_PRIV_KEY_FILE", "");
-  std::string port = sshTunnel ? common::GetEnv("DOC_DB_REMOTE_PORT", "27017")
-                               : common::GetEnv("DOC_DB_LOCAL_PORT", "27019");
+void OdbcTestSuite::CreateDsnConnectionStringForAWS(
+    std::string& connectionString, const std::string& keyId, const std::string& secret,
+    const std::string& miscOptions) const {
+  std::string accessKeyId = 
+      common::GetEnv("AWS_ACCESS_KEY_ID", "***REMOVED***");
+  std::string secretKey = common::GetEnv(
+      "AWS_SECRET_ACCESS_KEY", "***REMOVED***");
+  std::string sessionToken = common::GetEnv("AWS_SESSION_TOKEN", "");
 
-  if (!username.empty()) {
-    user = username;
-  }
-  std::string database = "test";
-  if (!databasename.empty()) {
-    database = databasename;
-  }
+  std::string region = common::GetEnv(
+      "AWS_REGION", "us-west-2");
 
-  std::string sshUser;
-  std::string sshTunnelHost;
-  size_t indexOfAt = sshUserAtHost.find_first_of('@');
-  if (indexOfAt != std::string::npos
-      && sshUserAtHost.size() > (indexOfAt + 1)) {
-    sshUser = sshUserAtHost.substr(0, indexOfAt);
-    sshTunnelHost = sshUserAtHost.substr(indexOfAt + 1);
+  if (!keyId.empty()) {
+    accessKeyId = keyId;
+  }
+  if (!secret.empty()) {
+    accessKeyId = secret;
   }
 
   connectionString =
             "DRIVER={Amazon TimeStream};"
-            "HOSTNAME=" + host + ":" + port + ";"
-            "DATABASE=" + database + ";"
-            "USER=" + user + ";"
-            "PASSWORD=" + password + ";"
-            "TLS=true;"
-            "TLS_ALLOW_INVALID_HOSTNAMES=true;";
-
-  if (sshTunnel && !sshUserAtHost.empty() && !sshPrivKeyFile.empty()
-      && !sshUser.empty() && !sshTunnelHost.empty()) {
-    connectionString.append("SSH_USER=" + sshUser + ';');
-    connectionString.append("SSH_HOST=" + sshTunnelHost + ';');
-    connectionString.append("SSH_PRIVATE_KEY_FILE=" + sshPrivKeyFile + ';');
-    connectionString.append("SSH_STRICT_HOST_KEY_CHECKING=false;");
-  }
+            "ACCESS_KEY_ID=" + accessKeyId + ";"
+            "SECRET_KEY=" + secretKey + ";"
+            "SESSION_TOKEN=" + sessionToken + ";"
+            "REGION=" + region + ";";
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
-}
-
-void OdbcTestSuite::CreateDsnConnectionStringForLocalServer(
-    std::string& connectionString, const std::string& databaseName,
-    const std::string& userName, const std::string& miscOptions,
-    const std::string& portNum) const {
-  std::string user = userName.size() > 0
-                         ? userName
-                         : common::GetEnv("DOC_DB_USER_NAME", "timestream");
-  std::string password = common::GetEnv("DOC_DB_PASSWORD", "");
-  std::string host = common::GetEnv("LOCAL_DATABASE_HOST", "localhost");
-  std::string port = portNum;
-  std::string database = databaseName.size() > 0 ? databaseName : "odbc-test";
-  std::string logPath = common::GetEnv("DOC_DB_LOG_PATH", "");
-  std::string logLevel = common::GetEnv("DOC_DB_LOG_LEVEL", "");
-
-  connectionString =
-    "DRIVER={Amazon TimeStream};"
-    "HOSTNAME=" + host + ":" + port + ";"
-    "DATABASE=" + database + ";"
-    "USER=" + user + ";"
-    "PASSWORD=" + password + ";"
-    "TLS=false;"
-    "LOG_PATH=" + logPath + ";"
-    "LOG_LEVEL=" + logLevel + ";";
-
-  if (miscOptions.size() > 0) {
-    connectionString.append(miscOptions);
-  }
 }
 }  // namespace odbc
 }  // namespace ignite

@@ -92,7 +92,7 @@ struct ApiRobustnessTestSuiteFixture : public odbc::OdbcTestSuite {
 
   void connectToLocalServer(const std::string& databaseName) {
     std::string dsnConnectionString;
-    CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
 
     Connect(dsnConnectionString);
   }
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize, *disabled()) {
   // check that statement array size cannot be set to values other than 1
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -191,14 +191,14 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize, *disabled()) {
 // only enable for Windows and Linux as it crashes on Mac
 // with iODBC, traced by AD-820
 // https://bitquill.atlassian.net/browse/AD-820
-BOOST_AUTO_TEST_CASE(TestSQLDriverConnect, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
   Prepare();
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   std::vector< SQLWCHAR > connectStr(dsnConnectionString.begin(),
                                      dsnConnectionString.end());
 

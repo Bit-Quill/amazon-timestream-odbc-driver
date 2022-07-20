@@ -123,23 +123,17 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   if (port.IsSet() && !config.IsPortSet())
     config.SetPort(static_cast< uint16_t >(port.GetValue()));
 
-  SettableValue< std::string > database =
-      ReadDsnString(dsn, ConnectionStringParser::Key::database);
+  SettableValue< std::string > accessKeyId =
+      ReadDsnString(dsn, ConnectionStringParser::Key::accessKeyId);
 
-  if (database.IsSet() && !config.IsDatabaseSet())
-    config.SetDatabase(database.GetValue());
+  if (accessKeyId.IsSet() && !config.IsAccessKeyIdSet())
+    config.SetAccessKeyId(accessKeyId.GetValue());
 
-  SettableValue< std::string > user =
-      ReadDsnString(dsn, ConnectionStringParser::Key::user);
+  SettableValue< std::string > secretKey =
+      ReadDsnString(dsn, ConnectionStringParser::Key::secretKey);
 
-  if (user.IsSet() && !config.IsUserSet())
-    config.SetUser(user.GetValue());
-
-  SettableValue< std::string > password =
-      ReadDsnString(dsn, ConnectionStringParser::Key::password);
-
-  if (password.IsSet() && !config.IsPasswordSet())
-    config.SetPassword(password.GetValue());
+  if (secretKey.IsSet() && !config.IsSecretKeySet())
+    config.SetSecretKey(secretKey.GetValue());
 
   SettableValue< std::string > appName =
       ReadDsnString(dsn, ConnectionStringParser::Key::appName);

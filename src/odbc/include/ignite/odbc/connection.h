@@ -31,6 +31,9 @@
 #include "ignite/odbc/parser.h"
 #include "ignite/odbc/streaming/streaming_context.h"
 
+#include <aws/core/Aws.h>
+#include <aws/timestream-query/TimestreamQueryClient.h>
+
 using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {
@@ -353,7 +356,7 @@ class Connection : public diagnostic::DiagnosableAdapter {
    * @throw IgniteError on failure.
    * @return @c true on success and @c false otherwise.
    */
-  bool TryRestoreConnection(IgniteError& err);
+  bool TryRestoreConnection(const config::Configuration& cfg, IgniteError& err);
 
   /**
    * Retrieve timeout from parameter.
@@ -385,6 +388,21 @@ class Connection : public diagnostic::DiagnosableAdapter {
 
   /** Connection info. */
   config::ConnectionInfo info_;
+
+  /** Timestream query client. */
+  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > client_;
+
+  /** Aws SDK options. */
+  Aws::SDKOptions options_;
+
+  /** mutex for exclusive access */
+  static std::mutex mutex_;
+
+  /** Aws SDK has been initialization flag */
+  static bool awsSDKReady_;
+
+  /** This class object count */
+  static std::atomic< int > refCount_;
 };
 }  // namespace odbc
 }  // namespace ignite

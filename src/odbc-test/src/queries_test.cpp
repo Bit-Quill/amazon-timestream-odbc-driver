@@ -70,7 +70,7 @@ struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
    */
   void connectToLocalServer(std::string databaseName) {
     std::string dsnConnectionString;
-    CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
 
     Connect(dsnConnectionString);
   }
@@ -193,7 +193,7 @@ BOOST_FIXTURE_TEST_SUITE(QueriesTestSuite, QueriesTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request =
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request =
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
@@ -522,7 +522,7 @@ BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
@@ -1070,7 +1070,7 @@ BOOST_AUTO_TEST_CASE(TestLoginTimeout, *disabled()) {
   Prepare();
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, "odbc-test");
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT,
                                     reinterpret_cast< SQLPOINTER >(1), 0);
@@ -1099,8 +1099,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionTimeoutFail, *disabled()) {
 
   std::string dsnConnectionString;
   // pass a wrong port number to make the connect action timeout
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, "", "", "",
-                                          "27018");
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   // The connection timeout value is set but not applied when driver connects
   SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
                                     reinterpret_cast< SQLPOINTER >(5), 0);
@@ -1295,7 +1294,7 @@ BOOST_AUTO_TEST_CASE(TestManyCursorsTwoSelects2, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request =
@@ -1328,7 +1327,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
@@ -1363,7 +1362,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar, *disabl
 
 BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataNarrowChar, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(

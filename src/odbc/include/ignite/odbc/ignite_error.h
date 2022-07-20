@@ -141,6 +141,9 @@ class IGNITE_IMPORT_EXPORT IgniteError : public std::exception {
   /** JNI error: getting database metadata */
   static const int IGNITE_ERR_JNI_GET_DATABASE_METADATA = 101;
 
+  /** Failed to connect to Timestream */
+  static const int IGNITE_ERR_TS_CONNECT = 102;
+
   /** Memory operation error. */
   static const int IGNITE_ERR_MEMORY = 1001;
 

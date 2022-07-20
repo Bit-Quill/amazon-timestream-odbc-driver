@@ -28,11 +28,12 @@ namespace odbc {
 namespace config {
 const std::string ConnectionStringParser::Key::dsn = "dsn";
 const std::string ConnectionStringParser::Key::driver = "driver";
-const std::string ConnectionStringParser::Key::database = "database";
 const std::string ConnectionStringParser::Key::hostname = "hostname";
 const std::string ConnectionStringParser::Key::port = "port";
-const std::string ConnectionStringParser::Key::user = "user";
-const std::string ConnectionStringParser::Key::password = "password";
+const std::string ConnectionStringParser::Key::accessKeyId = "access_key_id";
+const std::string ConnectionStringParser::Key::secretKey = "secret_key";
+const std::string ConnectionStringParser::Key::sessionToken = "session_token";
+const std::string ConnectionStringParser::Key::region = "region";
 const std::string ConnectionStringParser::Key::appName = "app_name";
 const std::string ConnectionStringParser::Key::loginTimeoutSec =
     "login_timeout_sec";
@@ -141,8 +142,6 @@ void ConnectionStringParser::HandleAttributePair(
 
   if (lKey == Key::dsn) {
     cfg.SetDsn(value);
-  } else if (lKey == Key::database) {
-    cfg.SetDatabase(value);
   } else if (lKey == Key::hostname) {
     EndPoint endpoint;
 
@@ -478,22 +477,38 @@ void ConnectionStringParser::HandleAttributePair(
     cfg.SetDefaultFetchSize(static_cast< int32_t >(numValue));
   } else if (lKey == Key::driver) {
     cfg.SetDriver(value);
-  } else if (lKey == Key::user || lKey == Key::uid) {
-    if (!cfg.GetUser().empty() && diag) {
+  } else if (lKey == Key::accessKeyId) {
+    if (!cfg.GetAccessKeyId().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing USER (have you specified it several times?");
+          "Re-writing ACCESS_KEY_ID (have you specified it several times?");
     }
 
-    cfg.SetUser(value);
-  } else if (lKey == Key::password || lKey == Key::pwd) {
-    if (!cfg.GetPassword().empty() && diag) {
+    cfg.SetAccessKeyId(value);
+  } else if (lKey == Key::secretKey) {
+    if (!cfg.GetSecretKey().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing PASSWORD (have you specified it several times?");
+          "Re-writing SECRET_KEY (have you specified it several times?");
     }
 
-    cfg.SetPassword(value);
+    cfg.SetSecretKey(value);
+  } else if (lKey == Key::sessionToken) {
+    if (!cfg.GetSessionToken().empty() && diag) {
+      diag->AddStatusRecord(
+          SqlState::S01S02_OPTION_VALUE_CHANGED,
+          "Re-writing SESSION_TOKEN (have you specified it several times?");
+    }
+
+    cfg.SetSessionToken(value);
+  } else if (lKey == Key::region) {
+    if (!cfg.GetRegion().empty() && diag) {
+      diag->AddStatusRecord(
+          SqlState::S01S02_OPTION_VALUE_CHANGED,
+          "Re-writing REGION (have you specified it several times?");
+    }
+
+    cfg.SetRegion(value);
   } else if (diag) {
     std::stringstream stream;
 

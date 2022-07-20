@@ -65,7 +65,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
    */
   void connectToLocalServer(std::string databaseName) {
     std::string dsnConnectionString;
-    CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
 
     Connect(dsnConnectionString);
   }
@@ -1051,8 +1051,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescTableName, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestColAttributeDescType, *disabled()) {
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1231,7 +1230,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithGetTypeInfo, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOne, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1253,7 +1252,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneFromLocalServer, *disabled()
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1273,7 +1272,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneWithTableTypes, *disabled())
       MakeSqlBuffer("TABLE,VIEW");  // Test that VIEW type is ignored by JDBC
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1288,11 +1287,11 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneWithTableTypes, *disabled())
 
 BOOST_AUTO_TEST_CASE(TestDataTypes, *disabled()) {
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
+  std::string databaseName = ""; //TO-DO set its value
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > schemaName = MakeSqlBuffer(databaseName);
@@ -1440,7 +1439,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOneForQuotedTypes, *disabled())
       MakeSqlBuffer("'TABLE' , 'VIEW'");  // Test that quoted values are handled
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1459,7 +1458,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNoneForUnsupportedTableType, *d
   std::vector< SQLWCHAR > tableTypes = MakeSqlBuffer("VIEW");
 
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1474,7 +1473,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNoneForUnsupportedTableType, *d
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNone, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1507,7 +1506,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNone, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsMany, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1553,8 +1552,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsOneFromLocalServer, *disabled(
   std::vector< SQLWCHAR > column = MakeSqlBuffer("fieldString");
 
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1578,7 +1576,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsOneFromLocalServer, *disabled(
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsNone, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1624,7 +1622,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsNone, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsReturnsMany, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1669,8 +1667,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsOneFromLocalServer, *disab
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
 
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1689,8 +1686,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsNone, *disabled()) {
   std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
 
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1730,8 +1726,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsOneFromLocalServer, *disab
       MakeSqlBuffer("meta_queries_test_002_with_array_array");
 
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1776,8 +1771,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsNone, *disabled()) {
       MakeSqlBuffer("meta_queries_test_002_with_array_array");
 
   std::string dsnConnectionString;
-  std::string databaseName("odbc-test");
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString, databaseName);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
 
   Connect(dsnConnectionString);
 
@@ -1815,7 +1809,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsNone, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols, *disabled()) {
   std::string dsnConnectionString;
-  CreateDsnConnectionStringForLocalServer(dsnConnectionString);
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
 
   std::vector< SQLWCHAR > empty = {0};

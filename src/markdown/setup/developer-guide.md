@@ -9,21 +9,30 @@ C/C++ usage and formatting.
 `VS-C++-Settings-Export.vssettings` file also found at root of repository.
 
 ### Environment Variables for Testing Accounts/Secrets 
+- To use IAM accessKeyId and secretKey to access AWS TimeStream, you need to specify the following environment variables.
+   - `AWS_ACCESS_KEY_ID` = `<AWS Access Key ID>`
 
+   - `AWS_SECRET_ACCESS_KEY` = `<AWS Secret Access Key>`
 
-[`Optional`] Log configurations
+   - `AWS_SESSION_TOKEN` = `<Session Token>`, if your account is enabled with MFA
 
-Set these 2 variables only if you would like to set a custom log path or log level for connection tests; it is completely optional.
-1. `DOC_DB_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\TimeStream ODBC Driver"`)
+- [ Optional ] Log configurations
 
-   The user needs to ensure that the directory mentioned in the log file path does exist, or driver will ignore user's passed value and create the log file in the default log path. Do **not** include a slash at the end of the log path.
+  Set these 2 variables only if you would like to set a custom log path or log level for connection tests; it is completely optional.
+    1. `DOC_DB_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\TimeStream ODBC Driver"`)
 
-   The log path indicates the path to store the log file. The log file name has `docdb_odbc_YYYYMMDD.log` format, 
-   where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
+    The user needs to ensure that the directory mentioned in the log file path does exist, or driver will ignore user's passed value and create the log file in the default log path. Do **not** include a slash at the end of the log path.
 
-2. `DOC_DB_LOG_LEVEL`=`<log_level>`. The default is `error` level. (Choose from `debug`, `info`, `error`, `off`)
+    The log path indicates the path to store the log file. The log file name has `docdb_odbc_YYYYMMDD.log` format, 
+    where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
 
-   More details about logging in [`src\markdown\troubleshooting-guide.md`](src/markdown/troubleshooting-guide.md).
+    2. `DOC_DB_LOG_LEVEL`=`<log_level>`. The default is `error` level. (Choose from `debug`, `info`, `error`, `off`)
+
+    More details about logging in [`src\markdown\troubleshooting-guide.md`](src/markdown/troubleshooting-guide.md).
+
+- AWS Logs
+
+  This ODBC driver uses AWS logs beside its own logging. Please see how AWS Logs work in their [official document](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/logging.html). The logs will be stored inthe executable directory following the default naming pattern of `aws_sdk_<date>.log`. 
 
 ### Running an SSH tunnel for Testing
 By default, remote integration tests are not run. To enable remote integration tests, 
