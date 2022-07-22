@@ -220,6 +220,34 @@ class Connection : public diagnostic::DiagnosableAdapter {
    */
   void SetAttribute(int attr, void* value, SQLINTEGER valueLen);
 
+ protected:
+  /**
+   * Constructor.
+   */
+  Connection(Environment* env);
+
+  /**
+   * Create TimestreamQueryClient object.
+   *
+   * @param credentials AWS IAM credentials.
+   * @param clientCfg AWS client configuration.
+   * @param cfg connection configuration.
+   * @return a shared_ptr to created TimestreamQueryClient object.
+   */
+  virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > 
+      CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
+          const Aws::Client::ClientConfiguration& clientCfg,
+          const config::Configuration& cfg); 
+
+  /**
+   * Create statement associated with the connection.
+   * Internal call.
+   *
+   * @param statement Pointer to valid instance on success or NULL on failure.
+   * @return Operation result.
+   */
+  virtual SqlResult::Type InternalCreateStatement(Statement*& statement);
+
  private:
   IGNITE_NO_COPY_ASSIGNMENT(Connection);
 
@@ -294,15 +322,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
                                   void* buf, short buflen, short* reslen);
 
   /**
-   * Create statement associated with the connection.
-   * Internal call.
-   *
-   * @param statement Pointer to valid instance on success and NULL on failure.
-   * @return Operation result.
-   */
-  SqlResult::Type InternalCreateStatement(Statement*& statement);
-
-  /**
    * Perform transaction commit on all the associated connections.
    * Internal call.
    *
@@ -365,11 +384,6 @@ class Connection : public diagnostic::DiagnosableAdapter {
    * @return Timeout.
    */
   int32_t RetrieveTimeout(void* value);
-
-  /**
-   * Constructor.
-   */
-  Connection(Environment* env);
 
   /** Parent. */
   Environment* env_;

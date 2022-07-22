@@ -85,9 +85,7 @@ class Environment : public diagnostic::DiagnosableAdapter {
    */
   void GetAttribute(int32_t attr, app::ApplicationDataBuffer& buffer);
 
- private:
-  IGNITE_NO_COPY_ASSIGNMENT(Environment);
-
+ protected:
   /**
    * Create connection associated with the environment.
    * Internal call.
@@ -95,7 +93,13 @@ class Environment : public diagnostic::DiagnosableAdapter {
    * @return Pointer to valid instance on success or NULL on failure.
    * @return Operation result.
    */
-  SqlResult::Type InternalCreateConnection(Connection*& connection);
+  virtual SqlResult::Type InternalCreateConnection(Connection*& connection);
+
+  /** Assotiated connections. */
+  ConnectionSet connections;
+
+ private:
+  IGNITE_NO_COPY_ASSIGNMENT(Environment);
 
   /**
    * Perform transaction commit on all the associated connections.
@@ -134,9 +138,6 @@ class Environment : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalGetAttribute(int32_t attr,
                                        app::ApplicationDataBuffer& buffer);
-
-  /** Assotiated connections. */
-  ConnectionSet connections;
 
   /** ODBC version. */
   int32_t odbcVersion;

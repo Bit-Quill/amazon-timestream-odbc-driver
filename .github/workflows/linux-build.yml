@@ -24,8 +24,6 @@ env:
   DOC_DB_LOCAL_PORT: 27019
   DOC_DB_REMOTE_PORT: 27017
   DOC_DB_PRIV_KEY_FILE: ~/certs/docdb-sshtunnel.pem
-#  Re-enable integration tests after we enable integration tests on odbc
-#  DOC_DB_ODBC_INTEGRATION_TEST: 1
   DOC_DB_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   DOC_DB_LOG_LEVEL: "debug"
   JDBC_DRIVER_VERSION: "1.2.4"
@@ -104,30 +102,54 @@ jobs:
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
 
-    # run tests with ssh if DOC_DB_ODBC_INTEGRATION_TEST is 1
-    - name: run-tests
-      id: runtests
+    # run unit tests
+    - name: run-unit-tests
+      id: rununittests
       run: |
         mkdir -p "${{env.DOC_DB_LOG_PATH}}"
-        ${{ env.DOC_DB_ODBC_INTEGRATION_TEST != 1 }} || ssh -f -N -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}
-        ./build/odbc/bin/timestream-odbc-tests --catch_system_errors=false
+        ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
 
-    - name: upload-test-report
+    - name: upload-unit-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
         check_name: "Ubuntu 20.04 Build Unit Test Results Check"
         comment_title: "Ubuntu 20.04 Build Unit Test Results"
+        files: ./odbc_unit_test_result.xml
+
+    - name: upload-odbc-unit-test-file
+      if: always() && (steps.rununittests.outcome == 'failure')
+      uses: actions/upload-artifact@v2
+      with:
+        name: odbc-unit-test-results
+        path: |
+          ./odbc_unit_test_result.xml
+          ./build/odbc/logs/docdb_odbc_*.log 
+          ./aws_sdk_*.log
+
+    # run odbc tests
+    - name: run-odbc-tests
+      id: runodbctests
+      run: |
+        ./build/odbc/bin/timestream-odbc-tests --catch_system_errors=false
+
+    - name: upload-odbc-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      with:
+        check_name: "Ubuntu 20.04 Build Integration Test Results Check"
+        comment_title: "Ubuntu 20.04 Build Integration Test Results"
         files: ./odbc_test_result.xml
 
-    - name: upload-test-file
-      if: always() && (steps.runtests.outcome == 'failure')
+    - name: upload-odbc-test-file
+      if: always() && (steps.runodbctests.outcome == 'failure')
       uses: actions/upload-artifact@v2
       with:
         name: odbc-test-results
         path: |
           ./odbc_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log
+          ./build/odbc/logs/docdb_odbc_*.log 
+          ./aws_sdk_*.log
 
   build-linux64-debug:
     runs-on: ubuntu-20.04
@@ -201,14 +223,38 @@ jobs:
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
     
-    # run tests with ssh if DOC_DB_ODBC_INTEGRATION_TEST is 1
-    - name: run-tests
-      id: runtests
+    # run unit tests
+    - name: run-unit-tests
+      id: rununittests
       run: |
         mkdir -p "${{env.DOC_DB_LOG_PATH}}"
-        ${{ env.DOC_DB_ODBC_INTEGRATION_TEST != 1 }} || ssh -f -N -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}
+        ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
+  
+  
+    - name: upload-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      with:
+        check_name: "Ubuntu 20.04 Debug Build Unit Test Results Check"
+        comment_title: "Ubuntu 20.04 Debug Build Unit Test Results"
+        files: ./odbc_unit_test_result.xml
+
+    - name: upload-unit-test-file
+      if: always() && (steps.rununittests.outcome == 'failure')
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-unit-test-results-linux-debug
+        path: |
+          ./odbc_unit_test_result.xml
+          ./build/odbc/logs/docdb_odbc_*.log 
+          ./aws_sdk_*.log
+
+    # run odbc tests
+    - name: run-odbc-tests
+      id: runodbctests
+      run: |
         ./build/odbc/bin/timestream-odbc-tests --catch_system_errors=false
-        gcovr --exclude-directories cmake-build64/odbc-test/CMakeFiles/timestream-odbc-tests.dir$ --cobertura --output coverage.cobertura.xml
+        gcovr --exclude-directories cmake-build64/odbc-test/CMakeFiles/timestream-odbc-tests.dir$ --exclude-directories cmake-build64/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
 
     - name: Code Coverage Summary Report
       uses: irongut/CodeCoverageSummary@v1.2.0
@@ -221,7 +267,7 @@ jobs:
 
     - name: Add Header for Code Coverage Summary Report
       run: |
-        echo "## Ubuntu 20.04 Debug Build Unit Test Results Check" > coverage-cobertura.md
+        echo "## Ubuntu 20.04 Debug Build Test Results Check" > coverage-cobertura.md
         cat code-coverage-results.md >> coverage-cobertura.md
     
     - name: Add Coverage PR Comment
@@ -232,22 +278,23 @@ jobs:
         recreate: true
         path: coverage-cobertura.md
   
-    - name: upload-test-report
+    - name: upload-odbc-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
-        check_name: "Ubuntu 20.04 Debug Build Unit Test Results Check"
-        comment_title: "Ubuntu 20.04 Debug Build Unit Test Results"
+        check_name: "Ubuntu 20.04 Debug Build Integration Test Results Check"
+        comment_title: "Ubuntu 20.04 Debug Build Integration Test Results"
         files: ./odbc_test_result.xml
 
-    - name: upload-test-file
-      if: always() && (steps.runtests.outcome == 'failure')
+    - name: upload-odbc-test-file
+      if: always() && (steps.runodbctests.outcome == 'failure')
       uses: actions/upload-artifact@v3
       with:
         name: odbc-test-results-linux-debug
         path: |
           ./odbc_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log   
+          ./build/odbc/logs/docdb_odbc_*.log 
+          ./aws_sdk_*.log   
 
     - name: upload-coverage
       if: always()

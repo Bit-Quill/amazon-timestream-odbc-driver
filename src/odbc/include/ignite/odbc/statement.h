@@ -358,6 +358,15 @@ class Statement : public diagnostic::DiagnosableAdapter {
   void DescribeParam(int16_t paramNum, int16_t* dataType, SqlUlen* paramSize,
                      int16_t* decimalDigits, int16_t* nullable);
 
+ protected:
+  /**
+   * Constructor.
+   * Called by friend classes.
+   *
+   * @param parent Connection associated with the statement.
+   */
+  Statement(Connection& parent);
+
  private:
   IGNITE_NO_COPY_ASSIGNMENT(Statement);
 
@@ -689,14 +698,6 @@ class Statement : public diagnostic::DiagnosableAdapter {
    * @return Operation result.
    */
   uint16_t SqlResultToRowResult(SqlResult::Type value);
-
-  /**
-   * Constructor.
-   * Called by friend classes.
-   *
-   * @param parent Connection associated with the statement.
-   */
-  Statement(Connection& parent);
 
   /** Connection associated with the statement. */
   Connection& connection;

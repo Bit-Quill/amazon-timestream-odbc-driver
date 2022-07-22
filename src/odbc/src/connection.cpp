@@ -470,8 +470,8 @@ bool Connection::TryRestoreConnection(
   clientCfg.region = cfg.GetRegion();
   clientCfg.enableEndpointDiscovery = true;
 
-  client_ = std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
-      credentials, clientCfg);
+
+  client_ = CreateTSQueryClient(credentials, clientCfg, cfg);
 
   // try a simple query
   Aws::TimestreamQuery::Model::QueryRequest queryRequest;
@@ -511,6 +511,15 @@ int32_t Connection::RetrieveTimeout(void* value) {
   }
 
   return static_cast< int32_t >(uTimeout);
+}
+
+std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
+Connection::CreateTSQueryClient(
+    const Aws::Auth::AWSCredentials& credentials, 
+    const Aws::Client::ClientConfiguration& clientCfg,
+    const config::Configuration& cfg) {
+  return std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
+      credentials, clientCfg);  
 }
 }  // namespace odbc
 }  // namespace ignite
