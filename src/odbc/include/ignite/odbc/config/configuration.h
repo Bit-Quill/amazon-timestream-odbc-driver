@@ -24,11 +24,11 @@
 #include <string>
 
 #include "ignite/odbc/config/settable_value.h"
+#include "ignite/odbc/cred_prov_class.h"
 #include "ignite/odbc/diagnostic/diagnosable.h"
+#include "ignite/odbc/idp_name.h"
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/log_level.h"
-#include "ignite/odbc/read_preference.h"
-#include "ignite/odbc/scan_method.h"
 
 namespace ignite {
 namespace odbc {
@@ -49,12 +49,6 @@ class Configuration {
     /** Default value for Driver attribute. */
     static const std::string driver;
 
-    /** Default value for hostname attribute. */
-    static const std::string hostname;
-
-    /** Default value for port attribute. */
-    static const uint16_t port;
-
     /** Default value for accessKeyId attribute. */
     static const std::string accessKeyId;
 
@@ -64,74 +58,68 @@ class Configuration {
     /** Default value for sessionToken attribute. */
     static const std::string sessionToken;
 
+    /** Default value for enableMetadataPreparedStatement attribute. */
+    static const bool enableMetadataPreparedStatement;
+
+    /** Default value for credProvClass attribute. */
+    static const CredProvClass::Type credProvClass;
+
+    /** Default value for cusCredFile attribute. */
+    static const std::string cusCredFile;
+
+    /** Default value for reqTimeout attribute. */
+    static const int32_t reqTimeout;
+
+    /** Default value for socketTimeout attribute. */
+    static const int32_t socketTimeout;
+
+    /** Default value for maxRetryCount attribute. */
+    static const int32_t maxRetryCount;
+
+    /** Default value for maxConnections attribute. */
+    static const int32_t maxConnections;
+
+    /** Default value for endpoint attribute. */
+    static const std::string endpoint;
+
     /** Default value for region attribute. */
     static const std::string region;
 
-    /** Default value for appName attribute. */
-    static const std::string appName;
+    /** Default value for idpName attribute. */
+    static const IdpName::Type idpName;
 
-    /** Default value for loginTimeoutSec attribute. */
-    static const int32_t loginTimeoutSec;
+    /** Default value for idpHost attribute. */
+    static const std::string idpHost;
 
-    /** Default value for readPreference attribute. */
-    static const ReadPreference::Type readPreference;
+    /** Default value for idpUserName attribute. */
+    static const std::string idpUserName;
 
-    /** Default value for replicaSet attribute. */
-    static const std::string replicaSet;
+    /** Default value for idpPassword attribute. */
+    static const std::string idpPassword;
 
-    /** Default value for retryReads attribute. */
-    static const bool retryReads;
+    /** Default value for idpArn attribute. */
+    static const std::string idpArn;
 
-    /** Default value for tls attribute. */
-    static const bool tls;
+    /** Default value for oktaAppId attribute. */
+    static const std::string oktaAppId;
 
-    /** Default value for tlsAllowInvalidHostnames attribute. */
-    static const bool tlsAllowInvalidHostnames;
+    /** Default value for roleArn attribute. */
+    static const std::string roleArn;
 
-    /** Default value for tlsCaFile attribute. */
-    static const std::string tlsCaFile;
+    /** Default value for aadAppId attribute. */
+    static const std::string aadAppId;
 
-    /** Default value for sshEnable attribute. */
-    static const bool sshEnable;
+    /** Default value for aadClientSecret attribute. */
+    static const std::string aadClientSecret;
 
-    /** Default value for sshUser attribute. */
-    static const std::string sshUser;
-
-    /** Default value for sshHost attribute. */
-    static const std::string sshHost;
-
-    /** Default value for sshPrivateKeyFile attribute. */
-    static const std::string sshPrivateKeyFile;
-
-    /** Default value for sshPrivateKeyPassphrase attribute. */
-    static const std::string sshPrivateKeyPassphrase;
-
-    /** Default value for sshStrictHostKeyChecking attribute. */
-    static const bool sshStrictHostKeyChecking;
-
-    /** Default value for sshKnownHostsFile attribute. */
-    static const std::string sshKnownHostsFile;
+    /** Default value for aadTenant attribute. */
+    static const std::string aadTenant;
 
     /** Default value for logLevel attribute. */
     static const LogLevel::Type logLevel;
 
     /** Default value for logPath attribute. */
     static const std::string logPath;
-
-    /** Default value for scanMethod attribute. */
-    static const ScanMethod::Type scanMethod;
-
-    /** Default value for scanLimit attribute. */
-    static const int32_t scanLimit;
-
-    /** Default value for schemaName attribute. */
-    static const std::string schemaName;
-
-    /** Default value for refreshSchema attribute. */
-    static const bool refreshSchema;
-
-    /** Default value for defaultFetchSize attribute. */
-    static const int32_t defaultFetchSize;
   };
 
   /**
@@ -185,48 +173,6 @@ class Configuration {
    * @param driver Driver.
    */
   void SetDriver(const std::string& driverName);
-
-  /**
-   * Get server host.
-   *
-   * @return Server host.
-   */
-  const std::string& GetHostname() const;
-
-  /**
-   * Set server host.
-   *
-   * @param server Server host.
-   */
-  void SetHostname(const std::string& host);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsHostnameSet() const;
-
-  /**
-   * Get server port.
-   *
-   * @return Server port.
-   */
-  uint16_t GetPort() const;
-
-  /**
-   * Set server port.
-   *
-   * @param portNumber Server port.
-   */
-  void SetPort(uint16_t portNumber);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsPortSet() const;
 
   /**
    * Get accessKeyId.
@@ -285,9 +231,184 @@ class Configuration {
   void SetSessionToken(const std::string& token);
 
   /**
-   * Get sessionToken.
+   * Check if the value set.
    *
-   * @return sessionToken.
+   * @return @true if the value set.
+   */
+  bool IsSessionTokenSet() const;
+
+  /**
+   * Get enable metadata prepared statement flag.
+   *
+   * @return @true if metadata prepared statement enabled.
+   */
+  bool IsEnableMetadataPreparedStatement() const;
+
+  /**
+   * Set enable metadata prepared statement.
+   *
+   * @param val Value to set.
+   */
+  void SetEnableMetadataPreparedStatement(bool val);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsEnableMetadataPreparedStatementSet() const;
+
+  /**
+   * Get AWS Credentials Provider Class name.
+   *
+   * @return className AWS Credentials Provider Class name.
+   */
+  const CredProvClass::Type GetCredProvClass() const;
+
+  /**
+   * Set AWS Credentials Provider Class name.
+   *
+   * @param className AWS Credentials Provider Class name.
+   */
+  void SetCredProvClass(const CredProvClass::Type className);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsCredProvClassSet() const;
+
+  /**
+   * Get path to Custom Credentials File file.
+   *
+   * @return path to Custom Credentials File file.
+   */
+  const std::string& GetCusCredFile() const;
+
+  /**
+   * Set path to Custom Credentials File file.
+   *
+   * @param path Path to Custom Credentials File file.
+   */
+  void SetCusCredFile(const std::string& path);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsCusCredFileSet() const;
+
+  /**
+   * Get request timeout in milliseconds.
+   *
+   * @return ms Request timeout.
+   */
+  int32_t GetReqTimeout() const;
+
+  /**
+   * Set request timeout in milliseconds.
+   *
+   * @param ms Request timeout.
+   */
+  void SetReqTimeout(int32_t ms);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsReqTimeoutSet() const;
+
+  /**
+   * Get socket timeout in milliseconds.
+   *
+   * @return ms Socket timeout.
+   */
+  int32_t GetSocketTimeout() const;
+
+  /**
+   * Set socket timeout in milliseconds.
+   *
+   * @param ms Socket timeout.
+   */
+  void SetSocketTimeout(int32_t ms);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsSocketTimeoutSet() const;
+
+  /**
+   * Get maximum # of retry attempts.
+   *
+   * @return count Maximum # of retry attempts.
+   */
+  int32_t GetMaxRetryCount() const;
+
+  /**
+   * Set maximum # of retry attempts.
+   *
+   * @param count Maximum # of retry attempts.
+   */
+  void SetMaxRetryCount(int32_t count);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsMaxRetryCountSet() const;
+
+  /**
+   * Get maximum # of connections.
+   *
+   * @return count Maximum # of connections.
+   */
+  int32_t GetMaxConnections() const;
+
+  /**
+   * Set maximum # of connections.
+   *
+   * @param count Maximum # of connections.
+   */
+  void SetMaxConnections(int32_t count);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsMaxConnectionsSet() const;
+
+  /**
+   * Get endpoint.
+   *
+   * @return value Endpoint.
+   */
+  const std::string& GetEndpoint() const;
+
+  /**
+   * Set endpoint.
+   *
+   * @param value Endpoint.
+   */
+  void SetEndpoint(const std::string& value);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsEndpointSet() const;
+
+  /**
+   * Get region.
+   *
+   * @return value Region.
    */
   const std::string& GetRegion() const;
 
@@ -299,319 +420,221 @@ class Configuration {
   void SetRegion(const std::string& value);
 
   /**
-   * Get application name.
+   * Check if the value set.
    *
-   * @return Application name.
+   * @return @true if the value set.
    */
-  const std::string& GetApplicationName() const;
+  bool IsRegionSet() const;
 
   /**
-   * Set application name.
+   * Get idpName.
    *
-   * @param name Application name.
+   * @return value IdpName.
    */
-  void SetApplicationName(const std::string& name);
+  IdpName::Type GetIdpName() const;
+
+  /**
+   * Set idpName.
+   *
+   * @param value IdpName.
+   */
+  void SetIdpName(const IdpName::Type value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsApplicationNameSet() const;
+  bool IsIdpNameSet() const;
 
   /**
-   * Get login timeout in seconds.
+   * Get idpHost.
    *
-   * @return Login timeout in seconds.
+   * @return value IdpHost.
    */
-  int32_t GetLoginTimeoutSeconds() const;
+  const std::string& GetIdpHost() const;
 
   /**
-   * Set login timeout in seconds.
+   * Set idpHost.
    *
-   * @param seconds Login timeout in seconds.
+   * @param value IdpHost.
    */
-  void SetLoginTimeoutSeconds(int32_t seconds);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsLoginTimeoutSecondsSet() const;
-
-  /**
-   * Get read preference.
-   *
-   * @return Read preference.
-   */
-  ReadPreference::Type GetReadPreference() const;
-
-  /**
-   * Set read preference.
-   *
-   * @param preference Read preference.
-   */
-  void SetReadPreference(const ReadPreference::Type preference);
+  void SetIdpHost(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsReadPreferenceSet() const;
+  bool IsIdpHostSet() const;
 
   /**
-   * Get replica set name.
+   * Get idpUserName.
    *
-   * @return Replica set name.
+   * @return value IdpUserName.
    */
-  const std::string& GetReplicaSet() const;
+  const std::string& GetIdpUserName() const;
 
   /**
-   * Set replica set name.
+   * Set idpUserName.
    *
-   * @param name Replica set name.
+   * @param value IdpUserName.
    */
-  void SetReplicaSet(const std::string& name);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsReplicaSetSet() const;
-
-  /**
-   * Get retry reads flag.
-   *
-   * @return @true if retry reads enabled.
-   */
-  bool IsRetryReads() const;
-
-  /**
-   * Set retry reads.
-   *
-   * @param val Value to set.
-   */
-  void SetRetryReads(bool val);
+  void SetIdpUserName(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsRetryReadsSet() const;
+  bool IsIdpUserNameSet() const;
 
   /**
-   * Get TLS flag.
+   * Get idpPassword.
    *
-   * @return @true if TLS is enabled.
+   * @return value IdpPassword.
    */
-  bool IsTls() const;
+  const std::string& GetIdpPassword() const;
 
   /**
-   * Set TLS flag.
+   * Set idpPassword.
    *
-   * @param val Value to set.
+   * @param value IdpPassword.
    */
-  void SetTls(bool val);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsTlsSet() const;
-
-  /**
-   * Get TLS allow invalid hostnames flag.
-   *
-   * @return @true if invalid hostnames are allowed with TLS.
-   */
-  bool IsTlsAllowInvalidHostnames() const;
-
-  /**
-   * Set TLS allow invaid hostnames flag.
-   *
-   * @param val Value to set.
-   */
-  void SetTlsAllowInvalidHostnames(bool val);
+  void SetIdpPassword(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsTlsAllowInvalidHostnamesSet() const;
+  bool IsIdpPasswordSet() const;
 
   /**
-   * Get path to TLS CA file.
+   * Get idpArn.
    *
-   * @return path to TLS CA file.
+   * @return value IdpArn.
    */
-  const std::string& GetTlsCaFile() const;
+  const std::string& GetIdpArn() const;
 
   /**
-   * Set path to TLS CA file.
+   * Set idpArn.
    *
-   * @param path Path to TLS CA file.
+   * @param value IdpArn.
    */
-  void SetTlsCaFile(const std::string& path);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsTlsCaFileSet() const;
-
-  /**
-   * Get SSH enable flag.
-   *
-   * @return @true if SSH is enabled.
-   */
-  bool IsSshEnable() const;
-
-  /**
-   * Set ssh enable.
-   *
-   * @param bool ssh enable.
-   */
-  void SetSshEnable(bool val);
-
-  /**
-   * Check if the ssh enable value set.
-   *
-   * @return @true if the ssh enable value set.
-   */
-  bool IsSshEnableSet() const;
-
-  /**
-   * Get username for SSH host.
-   *
-   * @return SSH username.
-   */
-  const std::string& GetSshUser() const;
-
-  /**
-   * Set username for SSH host.
-   *
-   * @param username SSH username.
-   */
-  void SetSshUser(const std::string& username);
+  void SetIdpArn(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsSshUserSet() const;
+  bool IsIdpArnSet() const;
 
   /**
-   * Get hostname for SSH host.
+   * Get oktaAppId.
    *
-   * @return SSH hostname.
+   * @return value OktaAppId.
    */
-  const std::string& GetSshHost() const;
+  const std::string& GetOktaAppId() const;
 
   /**
-   * Set SSH hostname.
+   * Set oktaAppId.
    *
-   * @param host SSH hostname.
+   * @param value OktaAppId.
    */
-  void SetSshHost(const std::string& host);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsSshHostSet() const;
-
-  /**
-   * Get path to private key file for SSH host.
-   *
-   * @return Path to private key file for SSH host.
-   */
-  const std::string& GetSshPrivateKeyFile() const;
-
-  /**
-   * Set path to private key file.
-   *
-   * @param path Path to private key file for SSH host.
-   */
-  void SetSshPrivateKeyFile(const std::string& path);
+  void SetOktaAppId(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsSshPrivateKeyFileSet() const;
+  bool IsOktaAppIdSet() const;
 
   /**
-   * Get SSH private key passphrase.
+   * Get roleArn.
    *
-   * @return SSH private key passphrase.
+   * @return value RoleArn.
    */
-  const std::string& GetSshPrivateKeyPassphrase() const;
+  const std::string& GetRoleArn() const;
 
   /**
-   * Set SSH private key file passphrase.
+   * Set roleArn.
    *
-   * @param passphrase SSH private key file passphrase.
+   * @param value RoleArn.
    */
-  void SetSshPrivateKeyPassphrase(const std::string& passphrase);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsSshPrivateKeyPassphraseSet() const;
-
-  /**
-   * Get SSH strict host key checking flag.
-   *
-   * @return @true if strict host key checking is enabled.
-   */
-  bool IsSshStrictHostKeyChecking() const;
-
-  /**
-   * Set strict host key checking flag.
-   *
-   * @param val Value to set.
-   */
-  void SetSshStrictHostKeyChecking(bool val);
+  void SetRoleArn(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsSshStrictHostKeyCheckingSet() const;
+  bool IsRoleArnSet() const;
 
   /**
-   * Get path to SSH known hosts file.
+   * Get aadAppId.
    *
-   * @return Path to SSH known hosts file.
+   * @return value AadAppId.
    */
-  const std::string& GetSshKnownHostsFile() const;
+  const std::string& GetAadAppId() const;
 
   /**
-   * Set path to SSH known hosts file.
+   * Set aadAppId.
    *
-   * @param path Path to SSH known hosts file.
+   * @param value AadAppId.
    */
-  void SetSshKnownHostsFile(const std::string& path);
+  void SetAadAppId(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsSshKnownHostsFileSet() const;
+  bool IsAadAppIdSet() const;
+
+  /**
+   * Get aadClientSecret.
+   *
+   * @return value AadClientSecret.
+   */
+  const std::string& GetAadClientSecret() const;
+
+  /**
+   * Set aadClientSecret.
+   *
+   * @param value AadClientSecret.
+   */
+  void SetAadClientSecret(const std::string& value);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsAadClientSecretSet() const;
+
+  /**
+   * Get aadTenant.
+   *
+   * @return value AadTenant.
+   */
+  const std::string& GetAadTenant() const;
+
+  /**
+   * Set aadTenant.
+   *
+   * @param value AadTenant.
+   */
+  void SetAadTenant(const std::string& value);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsAadTenantSet() const;
 
   /**
    * Get log level.
@@ -656,111 +679,6 @@ class Configuration {
   bool IsLogPathSet() const;
 
   /**
-   * Get scan method.
-   *
-   * @return Scan method.
-   */
-  ScanMethod::Type GetScanMethod() const;
-
-  /**
-   * Set scan method.
-   *
-   * @param method Scan method.
-   */
-  void SetScanMethod(const ScanMethod::Type method);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsScanMethodSet() const;
-
-  /**
-   * Get scan limit in # of documents.
-   *
-   * @return Scan limit.
-   */
-  int32_t GetScanLimit() const;
-
-  /**
-   * Set scan limit in # of documents.
-   *
-   * @param limit Scan limit in # of documents.
-   */
-  void SetScanLimit(int32_t limit);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsScanLimitSet() const;
-
-  /**
-   * Get schema name to save.
-   *
-   * @return Schema name.
-   */
-  const std::string& GetSchemaName() const;
-
-  /**
-   * Set schema name to save.
-   *
-   * @param name Schema name.
-   */
-  void SetSchemaName(const std::string& name);
-
-  /**
-   * Check if schema name set.
-   *
-   * @return @true if schema name set.
-   */
-  bool IsSchemaNameSet() const;
-
-  /**
-   * Get refresh schema flag.
-   *
-   * @return @true if refreshing schema is enabled.
-   */
-  bool IsRefreshSchema() const;
-
-  /**
-   * Set refresh schema flag.
-   *
-   * @return @true if the value set.
-   */
-  void SetRefreshSchema(bool val);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsRefreshSchemaSet() const;
-
-  /**
-   * Get default fetch size.
-   *
-   * @return Default fetch size.
-   */
-  int32_t GetDefaultFetchSize() const;
-
-  /**
-   * Set default fetch size.
-   *
-   * @param size Default fetch size.
-   */
-  void SetDefaultFetchSize(int32_t size);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsDefaultFetchSizeSet() const;
-
-  /**
    * Get argument map.
    *
    * @param res Resulting argument map.
@@ -802,95 +720,78 @@ class Configuration {
   /** Driver name. */
   SettableValue< std::string > driver = DefaultValue::driver;
 
-  /** Hostname. */
-  SettableValue< std::string > hostname = DefaultValue::hostname;
-
-  /** Port. */
-  SettableValue< uint16_t > port = DefaultValue::port;
-
-  /** accessKeyId. */
+  /** Access Key Id. */
   SettableValue< std::string > accessKeyId = DefaultValue::accessKeyId;
 
-  /** secretKey. */
+  /** Secret Key. */
   SettableValue< std::string > secretKey = DefaultValue::secretKey;
 
-  /** sessionToken. */
+  /** Session Token. */
   SettableValue< std::string > sessionToken = DefaultValue::sessionToken;
 
-  /** region. */
+  /** Enable metadata prepared statement flag. */
+  SettableValue< bool > enableMetadataPreparedStatement = DefaultValue::enableMetadataPreparedStatement;
+
+  /** AWS Credentials Provider class name. */
+  SettableValue< CredProvClass::Type > credProvClass =
+      DefaultValue::credProvClass;
+
+  /** Custom Credentials file path. */
+  SettableValue< std::string > cusCredFile = DefaultValue::cusCredFile;
+
+  /** Request timeout in milliseconds.  */
+  SettableValue< int32_t > reqTimeout = DefaultValue::reqTimeout;
+
+  /** Socket timeout in milliseconds.  */
+  SettableValue< int32_t > socketTimeout = DefaultValue::socketTimeout;
+
+  /** Max Retry Count.  */
+  SettableValue< int32_t > maxRetryCount = DefaultValue::maxRetryCount;
+
+  /** Max Connections.  */
+  SettableValue< int32_t > maxConnections = DefaultValue::maxConnections;
+
+  /** Endpoint. */
+  SettableValue< std::string > endpoint = DefaultValue::endpoint;
+
+  /** Region. */
   SettableValue< std::string > region = DefaultValue::region;
 
-  /** Application name. */
-  SettableValue< std::string > appName = DefaultValue::appName;
+  /** Idp Name. */
+  SettableValue< IdpName::Type > idpName = DefaultValue::idpName;
 
-  /** Login timeout in seconds.  */
-  SettableValue< int32_t > loginTimeoutSec = DefaultValue::loginTimeoutSec;
+  /** Idp Host. */
+  SettableValue< std::string > idpHost = DefaultValue::idpHost;
 
-  /** Read pereference. */
-  SettableValue< ReadPreference::Type > readPreference =
-      DefaultValue::readPreference;
+  /** Idp User Name. */
+  SettableValue< std::string > idpUserName = DefaultValue::idpUserName;
 
-  /** Replica set name. */
-  SettableValue< std::string > replicaSet = DefaultValue::replicaSet;
+  /** Idp Password. */
+  SettableValue< std::string > idpPassword = DefaultValue::idpPassword;
 
-  /** Retry reads flag. */
-  SettableValue< bool > retryReads = DefaultValue::retryReads;
+  /** Idp ARN. */
+  SettableValue< std::string > idpArn = DefaultValue::idpArn;
 
-  /** Enable SSL/TLS. */
-  SettableValue< bool > tls = DefaultValue::tls;
+  /** Okta Application ID. */
+  SettableValue< std::string > oktaAppId = DefaultValue::oktaAppId;
 
-  /** Flag for if invalid hostnames for the TLS certificate are allowed. */
-  SettableValue< bool > tlsAllowInvalidHostnames =
-      DefaultValue::tlsAllowInvalidHostnames;
+  /** Role ARN. */
+  SettableValue< std::string > roleArn = DefaultValue::roleArn;
 
-  /** SSL/TLS certificate authority file path. */
-  SettableValue< std::string > tlsCaFile = DefaultValue::tlsCaFile;
+  /** Azure AD Application ID. */
+  SettableValue< std::string > aadAppId = DefaultValue::aadAppId;
 
-  /** The SSH enable option for the internal SSH tunnel. */
-  SettableValue< bool > sshEnable = DefaultValue::sshEnable;
+  /** Azure AD Client Secret. */
+  SettableValue< std::string > aadClientSecret = DefaultValue::aadClientSecret;
 
-  /** The SSH host username for the internal SSH tunnel. */
-  SettableValue< std::string > sshUser = DefaultValue::sshUser;
-
-  /** The SSH host host name for the internal SSH tunnel. */
-  SettableValue< std::string > sshHost = DefaultValue::sshHost;
-
-  /** The SSH host private key file path for the internal SSH tunnel. */
-  SettableValue< std::string > sshPrivateKeyFile =
-      DefaultValue::sshPrivateKeyFile;
-
-  /** The SSH host private key file passphrase for the internal SSH tunnel. */
-  SettableValue< std::string > sshPrivateKeyPassphrase =
-      DefaultValue::sshPrivateKeyPassphrase;
-
-  /** Strict host key checking flag for the internal SSH tunnel. */
-  SettableValue< bool > sshStrictHostKeyChecking =
-      DefaultValue::sshStrictHostKeyChecking;
-
-  /** The known hosts file path for the internal SSH tunnel. */
-  SettableValue< std::string > sshKnownHostsFile =
-      DefaultValue::sshKnownHostsFile;
+  /** Azure AD Tenant. */
+  SettableValue< std::string > aadTenant = DefaultValue::aadTenant;
 
   /** The log level for the log file. */
   SettableValue< LogLevel::Type > logLevel = DefaultValue::logLevel;
 
   /** The logging file path. */
   SettableValue< std::string > logPath = DefaultValue::logPath;
-
-  /** Scan method. */
-  SettableValue< ScanMethod::Type > scanMethod = DefaultValue::scanMethod;
-
-  /** Scan limit. */
-  SettableValue< int32_t > scanLimit = DefaultValue::scanLimit;
-
-  /** Schema name. */
-  SettableValue< std::string > schemaName = DefaultValue::schemaName;
-
-  /** Refresh schema flag. */
-  SettableValue< bool > refreshSchema = DefaultValue::refreshSchema;
-
-  /** Default fetch size. */
-  SettableValue< int32_t > defaultFetchSize = DefaultValue::defaultFetchSize;
 };
 
 template <>
@@ -913,19 +814,19 @@ void Configuration::AddToMap< bool >(ArgumentMap& map, const std::string& key,
                                      const SettableValue< bool >& value);
 
 template <>
-void Configuration::AddToMap< ReadPreference::Type >(
+void Configuration::AddToMap< CredProvClass::Type >(
     ArgumentMap& map, const std::string& key,
-    const SettableValue< ReadPreference::Type >& value);
+    const SettableValue< CredProvClass::Type >& value);
+
+template <>
+void Configuration::AddToMap< IdpName::Type >(
+    ArgumentMap& map, const std::string& key,
+    const SettableValue< IdpName::Type >& value);
 
 template <>
 void Configuration::AddToMap< LogLevel::Type >(
     ArgumentMap& map, const std::string& key,
     const SettableValue< LogLevel::Type >& value);
-
-template <>
-void Configuration::AddToMap< ScanMethod::Type >(
-    ArgumentMap& map, const std::string& key,
-    const SettableValue< ScanMethod::Type >& value);
 }  // namespace config
 }  // namespace odbc
 }  // namespace ignite

@@ -1,100 +1,84 @@
 # Connection String Syntax and Options
-`DRIVER={Amazon TimeStream};HOSTNAME=<host>:<port>;DATABASE=<database>;USER=<user>;PASSWORD=<password>;<option>=<value>;`
+`DRIVER={Amazon Timestream};<option>=<value>;`
 
 ### Driver
 `Driver:` Required: the driver for this ODBC driver.
 
-### Parameters
-| Property | Description | Default |
-|--------|-------------|---------------|
-| `DATABASE` (required) | The name of the database the ODBC driver will connect to. | `NONE`
-| `HOSTNAME` (required) | The hostname or IP address of the TimeStream server or cluster. | `NONE`
-| `PORT` (optional) | The port number the TimeStream server or cluster is listening on. | `27017`
-| `USER` (optional) | The username of the authorized user. While the username is optional on the connection string, it is still required either via the connection string, or the properties. | `NONE`
-| `PASSWORD` (optional) | The password of the authorized user. While the password is optional on the connection string, it is still required either via the connection string, or the properties. | `NONE`
-| `OPTION` (optional) | One of the connection string options listed below. | `NONE`
-| `VALUE` (optional) | The associated value for the option. | `NONE`
+### Driver Configuration Option
 
-### Options
 | Option | Description | Default |
 |--------|-------------|---------------|
-| `APP_NAME` | (string) Sets the logical name of the application. | `Amazon TimeStream ODBC Driver {version}`
-| `LOGIN_TIMEOUT_SEC` | (int) How long a connection can take to be opened before timing out (in seconds). Alias for connectTimeoutMS but using seconds. | `NONE`
-| `READ_PREFERENCE` | (enum/string) The read preference for this connection. Allowed values: `primary`, `primaryPreferred`, `secondary`, `secondaryPreferred` or `nearest`. | `primary`
-| `REPLICA_SET` | (string) Name of replica set to connect to. For now, passing a name other than `rs0` will log a warning. | `NONE`
-| `RETRY_READS` | (true/false) If true, the driver will retry supported read operations if they fail due to a network error. | `true`
-| `TLS` | (true/false) If true, use TLS encryption when communicating with the TimeStream server. | `true`
-| `TLS_ALLOW_INVALID_HOSTNAMES` | (true/false) If true, invalid host names for the TLS certificate are allowed. This is useful when using an internal SSH tunnel to a TimeStream server. | `false`
-| `TLS_CA_FILE` | (string) The path to the trusted Certificate Authority (CA) `.pem` file. If the path starts with the tilde character (`~`), it will be replaced with the user's home directory. Ensure to use only forward slash characters (`/`) in the path or URL encode the path. Providing the trusted Certificate Authority (CA) `.pem` file is optional as the current Amazon RDS root CA is used by default when the `tls` option is set to `true`. This embedded certificate is set to expire on 2024-08-22. For example, to provide a new trusted Certificate Authority (CA) `.pem` file that is located in the current user's `Downloads` subdirectory of their home directory, use the following: `TLS_CA_FILE=~/Downloads/rds-ca-2019-root.pem`. | `NONE`
-| `SSH_USER` | (string) The username for the internal SSH tunnel. If provided, options `sshHost` and `sshPrivateKeyFile` must also be provided, otherwise this option is ignored. | `NONE`
-| `SSH_HOST` | (string) The host name for the internal SSH tunnel. Optionally the SSH tunnel port number can be provided using the syntax `<ssh-host>:<port>`. The default port is `22`. If provided, options `SSH_USER` and `sshPrivateKeyFile` must also be provided, otherwise this option is ignored. | `NONE`
-| `SSH_PRIVATE_KEY_FILE` | (string) The path to the private key file for the internal SSH tunnel. If the path starts with the tilde character (`~`), it will be replaced with the user's home directory. If the path is relative, the absolute path will try to be resolved by searching in the user's home directory (`~`), the `.documentdb` folder under the user's home directory or in the same directory as the driver JAR file. If the file cannot be found, a connection error will occur. If provided, options `SSH_USER` and `SSH_HOST` must also be provided, otherwise this option is ignored. | `NONE`
-| `SSH_PRIVATE_KEY_PASSPHRASE` | (string) If the SSH tunnel private key file, `SSH_PRIVATE_KEY_FILE`, is passphrase protected, provide the passphrase using this option. If provided, options `SSH_USER`, `SSH_HOST` and `SSH_PRIVATE_KEY_FILE` must also be provided, otherwise this option is ignored. | `NONE`
-| `SSH_STRICT_HOST_KEY_CHECKING` | (true/false) If true, the 'known_hosts' file is checked to ensure the target host is trusted when creating the internal SSH tunnel. If false, the target host is not checked. Disabling this option is less secure as it can lead to a ["man-in-the-middle" attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack). If provided, options `sshUser`, `sshHost` and `SSH_PRIVATE_KEYFILE` must also be provided, otherwise this option is ignored. | `true`
-| `SSH_KNOWN_HOSTS_FILE` | (string) The path to the 'known_hosts' file used for checking the target host for the SSH tunnel when option `SSH_STRICT_HOST_KEY_CHECKING` is `true`. The `known_hosts` file can be populated using the `ssh-keyscan` [tool](https://github.com/aws/amazon-documentdb-jdbc-driver/blob/develop/src/markdown/setup/maintain_known_hosts.md). If provided, options `SSH_USER`, `SSH_HOST` and `SSH_PRIVATE_KEY_FILE` must also be provided, otherwise this option is ignored. | `~/.ssh/known_hosts`
-| `SCAN_METHOD` | (enum/string) The scanning (sampling) method to use when discovering collection metadata for determining table schema. Possible values include the following: 1) `RANDOM` - the sample documents are returned in _random_ order, 2) `ID_FORWARD` - the sample documents are returned in order of id, 3) `ID_REVERSE` - the sample documents are returned in reverse order of id or 4) `ALL` - sample all the documents in the collection. | `RANDOM`
-| `SCAN_LIMIT` | (int) The number of documents to sample. The value must be a positive integer. If `SCAN_METHOD` is set to `all`, this option is ignored. | `1000`
-| `SCHEMA_NAME` | (string) The name of the SQL mapping schema for the database. | `_default`.  
-| `DEFAULT_FETCH_SIZE` | (int) The default fetch size (in records) when retrieving results from Amazon TimeStream. It is the number of records to retrieve in a single batch. The maximum number of records retrieved in a single batch may also be limited by the overall memory size of the result. | `2000`
-| `REFERESH_SCHEMA` | (true/false) If true, generates (refreshes) the SQL schema with each connection. It creates a new version, leaving any existing versions in place. _Caution: use only when necessary to update schema as it can adversely affect performance._  | `false`
+| `ENABLE_METADATA_PREPARED_STATEMENT` | Enables Timestream ODBC driver to return metadata for PreparedStatements, but this will incur an additional cost with Timestream when retrieving the metadata. | `false` |
+
+### Connection Options
+
+| Option | Description | Default |
+|--------|-------------|---------------|
+| `REQUEST_TIMEOUT` | The time in milliseconds the AWS SDK will wait for a query request before timing out. Non-positive value disables request timeout. | `0`
+| `SOCKET_TIMEOUT` | The time in milliseconds the AWS SDK will wait for data to be transferred over an open connection before timing out. Value must be non-negative. A value of 0 disables socket timeout.| `50000`
+| `MAX_RETRY_COUNT` | The maximum number of retry attempts for retryable errors with 5XX error codes in the SDK. The value must be non-negative.| `0`
+| `MAX_CONNECTIONS` | The maximum number of allowed concurrently opened HTTP connections to the Timestream service. The value must be positive.| `50`
+
+### Endpoint Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------------|
+| `ENDPOINT` | The endpoint for the Timestream service. | `NONE`
+| `REGION` | The signing region for the Timestream service endpoint. The signing region can be specified without an endpoint, but must be specified if a custom endpoint is given.| `NONE` |
+
+### Basic Authentication Options
+
+| Option | Description | Default |
+|--------|-------------|---------------|
+| `ACCESS_KEY_ID` | The AWS user access key id. | `NONE` |
+| `SECRET_KEY` | The AWS user secret access key. | `NONE` |
+| `SESSION_TOKEN` | The temporary session token required to access a database with multi-factor authentication (MFA) enabled. | `NONE` |
+
+### Credentials Provider Options
+
+| Option | Description | Default |
+|--------|-------------|---------------|
+| `AWS_CREDENTIALS_PROVIDER_CLASS` | One of `PropertiesFileCredentialsProvider` or `InstanceProfileCredentialsProvider` to use for authentication. | `NONE`
+| `CUSTOM_CREDENTIALS_FILE` | The path to a properties file containing AWS security credentials `ACCESS_KEY_ID` and`SECRET_KEY`. This is only required if `AWS_CREDENTIALS_PROVIDER_CLASS` is specified as `PropertiesFileCredentialsProvider`.| `NONE` |
+
+### SAML-Based Authentication Options for Okta
+
+| Option | Description | Default |
+|--------|-------------|---------------|
+| `IDP_NAME` | The Identity Provider (IdP) name to use for SAML-based authentication. One of `Okta` or `AzureAD`. | `NONE`
+| `IDP_HOST` | The hostname of the specified IdP. | `NONE`
+| `IDP_USER_NAME` | The user name for the specified IdP account. | `NONE`
+| `IDP_PASSWORD` | The password for the specified IdP account. | `NONE`
+| `OKTA_APP_ID` | The unique Okta-provided ID associated with the Timestream application. A place to find the AppId is in the entityID field provided in the application metadata. An example entityID=`"http://www.okta.com//<IdpAppID>"`| `NONE`
+| `ROLE_ARN` | The Amazon Resource Name (ARN) of the role that the caller is assuming. | `NONE`
+| `IDP_ARN` | The Amazon Resource Name (ARN) of the SAML provider in IAM that describes the IdP. | `NONE`
+
+### SAML-Based Authentication Options for Azure Active Directory
+
+| Option | Description | Default |
+|--------|-------------|---------------|
+| `IDP_NAME` | The Identity Provider (IdP) name to use for SAML-based authentication. One of `Okta` or `AzureAD` | `NONE`
+| `IDP_USER_NAME` | The user name for the specified IdP account. | `NONE`
+| `IDP_PASSWORD` | The password for the specified IdP account. | `NONE`
+| `AAD_APP_ID` | The unique id of the registered application on Azure AD. | `NONE`
+| `AAD_CLIENT_SECRET` | The client secret associated with the registered application on Azure AD used to authorize fetching tokens. | `NONE`
+| `AAD_TENANT` | The Azure AD Tenant ID. | `NONE`
+| `IDP_ARN` | The Amazon Resource Name (ARN) of the SAML provider in IAM that describes the IdP. | `NONE`
+
 
 ## Examples
 
-### Connecting to an Amazon TimeStream Cluster
+### Connecting to an Amazon Timestream Cluster
 
 ```
-DRIVER={Amazon TimeStream};HOSTNAME=localhost;DATABASE=customer;TLSALLOWINVALIDHOSTNAMES=true;
+DRIVER={Amazon Timestream};ACCESS_KEY_ID=accessKeyId;SECRET_KEY=secretKey;SESSION_TOKEN=sessionToken;REGION=us-east-2;
 ```
 
-#### Notes:
+#### Notes
 
-1. An external [SSH tunnel](setup.md#using-an-ssh-tunnel-to-connect-to-amazon-documentdb) is being used where the local 
-port is `27017` (`27017` is default).
-2. The Amazon TimeStream database name is `customer`.
-3. The Amazon TimeStream is TLS-enabled (`tls=true` is default)
-4. User and password values are passed to the ODBC driver using **Properties**.
-
-### Connecting to an Amazon TimeStream Cluster on Non-Default Port
-
+1. AccessKeyId is `accessKeyId` and SecretKey is `secretKey`.
+2. Session token is `sessionToken`. Example of session token: 
 ```
-DRIVER={Amazon TimeStream};HOSTNAME=localhost:27017;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true;
+"IQoJb3JpZ2luX2VjEBMaCXVzLXdlc3QtMiJHMEUCIARrHq+wiFok7WeX29yXaaoK4kyq1ytlXMp2j5S+DQ7IAiEAq1DNnhCJD31FN6et4pOjJ/RTkibtqr99n1cMZs+ejzoq7wEITBADGgw1MTgwNDc0OTkyMDkiDNZL+IGSOKLyaDZIKSrMAejzccsRaVIpnkpEvi20gGgnyZ9jtHntA3U7pt4qUbeNDn5rVgjh/FPPx+zfPGYxdbP5ASEl9PXRcaYHznaLGqODv3umRUC5B4Vz3s7hgxgcJstydFwlIAOpaiMZbQ/qXCVauoT2VVr9cD2z/gn/8jk7Ue+BnBxYO41arKCzKoPxCL1DVbc9/eWdKOgxZZGKBkp7bD3uMJzcoJdRaBRLdiXR930PzZNMrbcVf5munnHNjXhFwa7SdYBRvX1cpMvgtb7XbqkBt3G5RE7NDjD/3rGWBjqYAd8JqapgYongooSXlNKM7FwZpvKa6YK3863p/05SckxWaQ2EtlQe29R4dCFwZRxPWoiOAM9sOREKX60b+kFOdssuEFagDu150+UAnRAYmjlMUjJYtoqLVpQ0fcij12OF+6nqX+3nDnjgq2HqfnZ8wAU/Y5mV5uhgbLRyJICfOQoNbU7PxaQ2NtxQclWBwwmSiNFgpgTdMVln"
 ```
-
-#### Notes:
-
-1. An external [SSH tunnel](setup.md#using-an-ssh-tunnel-to-connect-to-amazon-documentdb) is being used where the local 
-port is `27117`.
-1. The Amazon TimeStream database name is `customer`.
-1. The Amazon TimeStream is TLS-enabled (`tls=true` is default).
-1. User and password values are passed to the ODBC driver using **Properties**.
-
-### Connecting to an Amazon TimeStream Cluster using an Internal SSH tunnel
-
-```
-DRIVER={Amazon TimeStream};HOSTNAME=localhost:27017;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true;SSH_USER=ec2-user;SSH_HOST=ec2-254-254-254-254.compute.amazonaws.com;SSH_PRIVATE_KEY_FILE=~/.ssh/ec2-privkey.pem
-```
-
-#### Notes:
-
-1. TimeStream cluster host is `docdb-production.docdb.amazonaws.com` (using default port `27017`).
-2. The Amazon TimeStream database name is `customer`.
-3. The Amazon TimeStream is TLS-enabled (`tls=true` is default).
-4. An internal SSH tunnel will be created using the user `ec2-user`,
-   host `ec2-254-254-254-254.compute.amazonaws.com`, and private key file `~/.ssh/ec2-privkey.pem`.
-6. User and password values are passed to the ODBC driver using **Properties**.
-
-### Change the Scanning Method when Connecting to an Amazon TimeStream Cluster
-
-```
-DRIVER={Amazon TimeStream};HOSTNAME=localhost:27017;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true;SCAN_METHOD=ID_FORWARD;SCAN_LIMIT=5000
-```
-
-#### Notes:
-
-1. An external [SSH tunnel](setup.md#using-an-ssh-tunnel-to-connect-to-amazon-documentdb) is being used where the 
-local port is `27017` (`27017` is default).
-2. The Amazon TimeStream database name is `customer`.
-3. The Amazon TimeStream is TLS-enabled (`tls=true` is default).
-4. User and password values are passed to the ODBC driver using **Properties**.
-5. The scan method `ID_FORWARD` will order the result using the `_id` column in the collection.
-6. The scan limit `5000` will limit the number of scanned documents to 5000.
+3. Region is `us-east-2`. 

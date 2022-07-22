@@ -14,26 +14,19 @@
  *
  */
 
-#ifndef _IGNITE_ODBC_READ_PREFERENCE
-#define _IGNITE_ODBC_READ_PREFERENCE
+#ifndef _IGNITE_ODBC_CRED_PROV_CLASS
+#define _IGNITE_ODBC_CRED_PROV_CLASS
 
 #include <string>
 
 namespace ignite {
 namespace odbc {
-/** Read Preference enum. */
-struct ReadPreference {
-  enum class Type {
-    PRIMARY,
-    PRIMARY_PREFERRED,
-    SECONDARY,
-    SECONDARY_PREFERRED,
-    NEAREST,
-    UNKNOWN
-  };
+/** AWS Credentials Provider Class enum. */
+struct CredProvClass {
+  enum class Type { NONE, PROP_FILE_CRED_PROV, INST_PROF_CRED_PROV, UNKNOWN };
 
   /**
-   * Convert preference from string.
+   * Convert AWS Credentials Provider Class from string.
    *
    * @param val String value.
    * @param dflt Default value to return on error.
@@ -42,7 +35,7 @@ struct ReadPreference {
   static Type FromString(const std::string& val, Type dflt = Type::UNKNOWN);
 
   /**
-   * Convert preference to string.
+   * Convert AWS Credentials Provider Class to string.
    *
    * @param val Value to convert.
    * @return String value.
@@ -51,5 +44,4 @@ struct ReadPreference {
 };
 }  // namespace odbc
 }  // namespace ignite
-
-#endif  //_IGNITE_ODBC_READ_PREFERENCE
+#endif  //_IGNITE_ODBC_CRED_PROV_CLASS

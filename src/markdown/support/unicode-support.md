@@ -1,6 +1,6 @@
 ﻿# 1. Unicode Support
 
-The TimeStream ODBC Driver supports the Unicode ODBC interface. It does not support the non-Unicode interface.
+The Timestream ODBC Driver supports the Unicode ODBC interface. It does not support the non-Unicode interface.
 
 ## 1.1. Unicode encoding at ODBC Layer
 
@@ -25,7 +25,7 @@ graph TD
     D -- char* UTF-8 --> E(JNI API)
     D -- char* UTF-8 --> F(MongoCXX API)
     end
-    E -- char* UTF-8 --> G[(TimeStream Server)]
+    E -- char* UTF-8 --> G[(Timestream Server)]
     F -- char* UTF-8 --> G
 ```
 

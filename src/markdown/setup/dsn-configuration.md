@@ -1,4 +1,4 @@
-# Amazon TimeStream ODBC Driver Setup
+# Amazon Timestream ODBC Driver Setup
 
 - [Windows DSN](windows-dsn-configuration.md)
 - [MacOS DSN](macOS-dsn-configuration.md)

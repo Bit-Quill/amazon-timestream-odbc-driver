@@ -48,7 +48,7 @@ SqlResult::Type BatchQuery::Execute() {
   if (executed)
     Close();
 
-  int32_t maxPageSize = connection.GetConfiguration().GetDefaultFetchSize();
+  int32_t maxPageSize = 2000; // default fetch size
   int32_t rowNum = params.GetParamSetSize();
   SqlResult::Type res;
 

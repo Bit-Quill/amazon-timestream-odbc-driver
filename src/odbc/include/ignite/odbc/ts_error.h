@@ -30,7 +30,7 @@ enum class TSErrorCode {
 
 
 /**
- * TimeStream error information.
+ * Timestream error information.
  */
 struct IGNITE_IMPORT_EXPORT TSErrorInfo {
   TSErrorCode code;

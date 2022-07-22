@@ -185,7 +185,7 @@ SqlResult::Type Connection::InternalEstablish(
   bool connected = TryRestoreConnection(cfg, err);
 
   if (!connected) {
-    std::string errMessage = "Failed to establish connection to TimeStream.\n";
+    std::string errMessage = "Failed to establish connection to Timestream.\n";
     errMessage.append(err.GetText());
     AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMessage);
 

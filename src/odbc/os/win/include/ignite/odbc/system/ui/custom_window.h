@@ -19,6 +19,7 @@
 #define _IGNITE_ODBC_SYSTEM_UI_CUSTOM_WINDOW
 
 #include "ignite/odbc/system/ui/window.h"
+#include <commctrl.h>
 
 namespace ignite {
 namespace odbc {
@@ -85,7 +86,7 @@ class CustomWindow : public Window {
    * @param sizeY Size by Y coordinate.
    * @param title Title.
    * @param id ID to be assigned to the created window.
-   * @return Auto pointer containing new window.
+   * @return Unique pointer containing new window.
    */
   std::unique_ptr< Window > CreateGroupBox(int posX, int posY, int sizeX,
                                            int sizeY, const std::wstring& title,
@@ -100,7 +101,7 @@ class CustomWindow : public Window {
    * @param sizeY Size by Y coordinate.
    * @param title Title.
    * @param id ID to be assigned to the created window.
-   * @return Auto pointer containing new window.
+   * @return Unique pointer containing new window.
    */
   std::unique_ptr< Window > CreateLabel(int posX, int posY, int sizeX,
                                         int sizeY, const std::wstring& title,
@@ -115,7 +116,7 @@ class CustomWindow : public Window {
    * @param sizeY Size by Y coordinate.
    * @param title Title.
    * @param id ID to be assigned to the created window.
-   * @return Auto pointer containing new window.
+   * @return Unique pointer containing new window.
    */
   std::unique_ptr< Window > CreateEdit(int posX, int posY, int sizeX, int sizeY,
                                        const std::wstring& title, int id,
@@ -130,7 +131,7 @@ class CustomWindow : public Window {
    * @param sizeY Size by Y coordinate.
    * @param title Title.
    * @param id ID to be assigned to the created window.
-   * @return Auto pointer containing new window.
+   * @return Unique pointer containing new window.
    */
   std::unique_ptr< Window > CreateButton(int posX, int posY, int sizeX,
                                          int sizeY, const std::wstring& title,
@@ -145,7 +146,7 @@ class CustomWindow : public Window {
    * @param sizeY Size by Y coordinate.
    * @param title Title.
    * @param id ID to be assigned to the created window.
-   * @return Auto pointer containing new window.
+   * @return Unique pointer containing new window.
    */
   std::unique_ptr< Window > CreateCheckBox(int posX, int posY, int sizeX,
                                            int sizeY, const std::wstring& title,
@@ -160,11 +161,23 @@ class CustomWindow : public Window {
    * @param sizeY Size by Y coordinate.
    * @param title Title.
    * @param id ID to be assigned to the created window.
-   * @return Auto pointer containing new window.
+   * @return Unique pointer containing new window.
    */
   std::unique_ptr< Window > CreateComboBox(int posX, int posY, int sizeX,
                                            int sizeY, const std::wstring& title,
                                            int id);
+
+  /**
+   * Create child Balloon.
+   *
+   * @param title Title.
+   * @param text Text.
+   * @param icon Icon
+   * @return Unique pointer containing EDITBALLOONTIP object.
+   */
+  std::unique_ptr< EDITBALLOONTIP > CreateBalloon(const wchar_t* title,
+                                                  const wchar_t* text,
+                                                  int icon);
 
  private:
   IGNITE_NO_COPY_ASSIGNMENT(CustomWindow)

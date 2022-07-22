@@ -17,6 +17,7 @@
 
 #include "ignite/odbc/system/ui/custom_window.h"
 
+#include <commctrl.h>
 #include <Windowsx.h>
 
 namespace ignite {
@@ -175,6 +176,19 @@ std::unique_ptr< Window > CustomWindow::CreateComboBox(
 
   return child;
 }
+
+std::unique_ptr<EDITBALLOONTIP> CustomWindow::CreateBalloon(
+   const wchar_t* title, const wchar_t* text,
+    int icon) {
+  std::unique_ptr< EDITBALLOONTIP > child(new EDITBALLOONTIP());
+  child->cbStruct = sizeof(EDITBALLOONTIP);
+  child->pszTitle = title;
+  child->pszText = text;
+  child->ttiIcon = icon;
+
+  return child;
+}
+
 }  // namespace ui
 }  // namespace system
 }  // namespace odbc

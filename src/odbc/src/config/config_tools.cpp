@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+// TODO remove config_tools.cpp
+// https://bitquill.atlassian.net/browse/AT-1052
+
 #include <ignite/odbc/common/utils.h>
 #include <ignite/odbc/config/config_tools.h>
 #include <ignite/odbc/config/configuration.h>
@@ -87,7 +90,6 @@ bool ParseSingleAddress(const std::string& value, EndPoint& endPoint,
 
   if (colonNum == 0) {
     endPoint.host = value;
-    endPoint.port = Configuration::DefaultValue::port;
 
     return true;
   }

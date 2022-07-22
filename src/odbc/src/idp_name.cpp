@@ -14,47 +14,39 @@
  *
  */
 
-#include "ignite/odbc/scan_method.h"
+#include "ignite/odbc/idp_name.h"
 
 #include <ignite/odbc/common/utils.h>
 
 namespace ignite {
 namespace odbc {
-ScanMethod::Type ScanMethod::FromString(const std::string& val, Type dflt) {
+IdpName::Type IdpName::FromString(const std::string& val, Type dflt) {
   std::string lowerVal = common::ToLower(val);
 
   common::StripSurroundingWhitespaces(lowerVal);
 
-  common::SpaceToUnderscore(lowerVal);
+  if (lowerVal == "none")
+    return IdpName::Type::NONE;
 
-  if (lowerVal == "random")
-    return ScanMethod::Type::RANDOM;
+  if (lowerVal == "okta")
+    return IdpName::Type::OKTA;
 
-  if (lowerVal == "id_forward")
-    return ScanMethod::Type::ID_FORWARD;
-
-  if (lowerVal == "id_reverse")
-    return ScanMethod::Type::ID_REVERSE;
-
-  if (lowerVal == "all")
-    return ScanMethod::Type::ALL;
+  if (lowerVal == "azuread")
+    return IdpName::Type::AAD;
 
   return dflt;
 }
 
-std::string ScanMethod::ToString(Type val) {
+std::string IdpName::ToString(Type val) {
   switch (val) {
-    case ScanMethod::Type::ID_FORWARD:
-      return "id_forward";
+    case IdpName::Type::OKTA:
+      return "okta";
 
-    case ScanMethod::Type::ID_REVERSE:
-      return "id_reverse";
+    case IdpName::Type::AAD:
+      return "azuread";
 
-    case ScanMethod::Type::ALL:
-      return "all";
-
-    case ScanMethod::Type::RANDOM:
-      return "random";
+    case IdpName::Type::NONE:
+      return "none";
 
     default:
       return "unknown";

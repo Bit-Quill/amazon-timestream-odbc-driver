@@ -4,7 +4,7 @@
 
 //https://bitquill.atlassian.net/browse/AD-682
 
-Table of statement attributes supported by the Amazon TimeStream ODBC driver.\
+Table of statement attributes supported by the Amazon Timestream ODBC driver.\
 Related function: `SQLSetStmtAttr`
 | Statement attribute | Default | Support Value Change|
 |--------|------|-------|

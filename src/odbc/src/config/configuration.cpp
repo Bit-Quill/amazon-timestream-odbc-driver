@@ -23,6 +23,8 @@
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/config/connection_string_parser.h"
+#include "ignite/odbc/cred_prov_class.h"
+#include "ignite/odbc/idp_name.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/utility.h"
 
@@ -31,51 +33,45 @@ using ignite::odbc::common::EncodeURIComponent;
 namespace ignite {
 namespace odbc {
 namespace config {
-// Connection Settings
-const std::string Configuration::DefaultValue::dsn = "TimeStream DSN";
-const std::string Configuration::DefaultValue::driver = "Amazon TimeStream";
-const std::string Configuration::DefaultValue::hostname = "";
-const uint16_t Configuration::DefaultValue::port = 27017;
+// Connection (Basic Authentication) Settings
+const std::string Configuration::DefaultValue::dsn = "Timestream DSN";
+const std::string Configuration::DefaultValue::driver = "Amazon Timestream";
 const std::string Configuration::DefaultValue::accessKeyId = "";
 const std::string Configuration::DefaultValue::secretKey = "";
 const std::string Configuration::DefaultValue::sessionToken = "";
+const bool Configuration::DefaultValue::enableMetadataPreparedStatement = false;
+
+// Credential Providers Options
+const CredProvClass::Type Configuration::DefaultValue::credProvClass =
+    CredProvClass::Type::NONE;
+const std::string Configuration::DefaultValue::cusCredFile = "";
+
+// Connection Options
+const int32_t Configuration::DefaultValue::reqTimeout = 0;
+const int32_t Configuration::DefaultValue::socketTimeout = 50000;
+const int32_t Configuration::DefaultValue::maxRetryCount = 0;
+const int32_t Configuration::DefaultValue::maxConnections = 50;
+
+// Endpoint Options
+const std::string Configuration::DefaultValue::endpoint = "";
 const std::string Configuration::DefaultValue::region = "";
 
-// SSL/TLS options
-const bool Configuration::DefaultValue::tls = true;
-const bool Configuration::DefaultValue::tlsAllowInvalidHostnames = false;
-const std::string Configuration::DefaultValue::tlsCaFile = "";
+// Advance Authentication Settings
+const IdpName::Type Configuration::DefaultValue::idpName = IdpName::Type::NONE;
+const std::string Configuration::DefaultValue::idpHost = "";
+const std::string Configuration::DefaultValue::idpUserName = "";
+const std::string Configuration::DefaultValue::idpPassword = "";
+const std::string Configuration::DefaultValue::idpArn = "";
+const std::string Configuration::DefaultValue::oktaAppId = "";
+const std::string Configuration::DefaultValue::roleArn = "";
+const std::string Configuration::DefaultValue::aadAppId = "";
+const std::string Configuration::DefaultValue::aadClientSecret = "";
+const std::string Configuration::DefaultValue::aadTenant = "";
 
-// Schema Generation and Discovery options
-const ScanMethod::Type Configuration::DefaultValue::scanMethod =
-    ScanMethod::Type::RANDOM;
-const int32_t Configuration::DefaultValue::scanLimit = 1000;
-const std::string Configuration::DefaultValue::schemaName = "_default";
-const bool Configuration::DefaultValue::refreshSchema = false;
-
-// Internal SSH Tunnel options
-const bool Configuration::DefaultValue::sshEnable = false;
-const std::string Configuration::DefaultValue::sshUser = "";
-const std::string Configuration::DefaultValue::sshHost = "";
-const std::string Configuration::DefaultValue::sshPrivateKeyFile = "";
-const std::string Configuration::DefaultValue::sshPrivateKeyPassphrase = "";
-const bool Configuration::DefaultValue::sshStrictHostKeyChecking = true;
-const std::string Configuration::DefaultValue::sshKnownHostsFile = "";
-
-// Logging Configuration options
+// Logging Configuration Options
 const LogLevel::Type Configuration::DefaultValue::logLevel =
     LogLevel::Type::ERROR_LEVEL;
 const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
-
-// Additional options
-const std::string Configuration::DefaultValue::appName =
-    "Amazon TimeStream ODBC Driver";
-const int32_t Configuration::DefaultValue::loginTimeoutSec = 0;
-const ReadPreference::Type Configuration::DefaultValue::readPreference =
-    ReadPreference::Type::PRIMARY;
-const std::string Configuration::DefaultValue::replicaSet = "";
-const bool Configuration::DefaultValue::retryReads = true;
-const int32_t Configuration::DefaultValue::defaultFetchSize = 2000;
 
 std::string Configuration::ToConnectString() const {
   ArgumentMap arguments;
@@ -101,18 +97,6 @@ std::string Configuration::ToConnectString() const {
   return connect_string_buffer.str();
 }
 
-uint16_t Configuration::GetPort() const {
-  return port.GetValue();
-}
-
-void Configuration::SetPort(uint16_t portNumber) {
-  this->port.SetValue(portNumber);
-}
-
-bool Configuration::IsPortSet() const {
-  return port.IsSet();
-}
-
 const std::string& Configuration::GetDsn(const std::string& dflt) const {
   if (!dsn.IsSet())
     return dflt;
@@ -136,196 +120,220 @@ void Configuration::SetDriver(const std::string& driverName) {
   this->driver.SetValue(driverName);
 }
 
-const std::string& Configuration::GetHostname() const {
-  return hostname.GetValue();
+const CredProvClass::Type Configuration::GetCredProvClass() const {
+  return credProvClass.GetValue();
 }
 
-void Configuration::SetHostname(const std::string& host) {
-  this->hostname.SetValue(host);
+void Configuration::SetCredProvClass(const CredProvClass::Type className) {
+  this->credProvClass.SetValue(className);
 }
 
-bool Configuration::IsHostnameSet() const {
-  return hostname.IsSet();
+bool Configuration::IsCredProvClassSet() const {
+  return credProvClass.IsSet();
 }
 
-const std::string& Configuration::GetApplicationName() const {
-  return appName.GetValue();
+const std::string& Configuration::GetCusCredFile() const {
+  return cusCredFile.GetValue();
 }
 
-void Configuration::SetApplicationName(const std::string& name) {
-  this->appName.SetValue(name);
+void Configuration::SetCusCredFile(const std::string& path) {
+  this->cusCredFile.SetValue(path);
 }
 
-bool Configuration::IsApplicationNameSet() const {
-  return appName.IsSet();
+bool Configuration::IsCusCredFileSet() const {
+  return cusCredFile.IsSet();
 }
 
-int32_t Configuration::GetLoginTimeoutSeconds() const {
-  return loginTimeoutSec.GetValue();
+int32_t Configuration::GetReqTimeout() const {
+  return reqTimeout.GetValue();
 }
 
-void Configuration::SetLoginTimeoutSeconds(int32_t seconds) {
-  this->loginTimeoutSec.SetValue(seconds);
+void Configuration::SetReqTimeout(int32_t ms) {
+  this->reqTimeout.SetValue(ms);
 }
 
-bool Configuration::IsLoginTimeoutSecondsSet() const {
-  return loginTimeoutSec.IsSet();
+bool Configuration::IsReqTimeoutSet() const {
+  return reqTimeout.IsSet();
 }
 
-ReadPreference::Type Configuration::GetReadPreference() const {
-  return readPreference.GetValue();
+int32_t Configuration::GetSocketTimeout() const {
+  return socketTimeout.GetValue();
 }
 
-void Configuration::SetReadPreference(const ReadPreference::Type preference) {
-  this->readPreference.SetValue(preference);
+void Configuration::SetSocketTimeout(int32_t ms) {
+  this->socketTimeout.SetValue(ms);
 }
 
-bool Configuration::IsReadPreferenceSet() const {
-  return readPreference.IsSet();
+bool Configuration::IsSocketTimeoutSet() const {
+  return socketTimeout.IsSet();
 }
 
-const std::string& Configuration::GetReplicaSet() const {
-  return replicaSet.GetValue();
+int32_t Configuration::GetMaxRetryCount() const {
+  return maxRetryCount.GetValue();
 }
 
-void Configuration::SetReplicaSet(const std::string& name) {
-  this->replicaSet.SetValue(name);
+void Configuration::SetMaxRetryCount(int32_t count) {
+  this->maxRetryCount.SetValue(count);
 }
 
-bool Configuration::IsReplicaSetSet() const {
-  return replicaSet.IsSet();
+bool Configuration::IsMaxRetryCountSet() const {
+  return maxRetryCount.IsSet();
 }
 
-bool Configuration::IsRetryReads() const {
-  return retryReads.GetValue();
+int32_t Configuration::GetMaxConnections() const {
+  return maxConnections.GetValue();
 }
 
-void Configuration::SetRetryReads(bool val) {
-  this->retryReads.SetValue(val);
+void Configuration::SetMaxConnections(int32_t count) {
+  this->maxConnections.SetValue(count);
 }
 
-bool Configuration::IsRetryReadsSet() const {
-  return retryReads.IsSet();
+bool Configuration::IsMaxConnectionsSet() const {
+  return maxConnections.IsSet();
 }
 
-bool Configuration::IsTls() const {
-  return tls.GetValue();
+const std::string& Configuration::GetEndpoint() const {
+  return endpoint.GetValue();
 }
 
-void Configuration::SetTls(bool val) {
-  this->tls.SetValue(val);
+void Configuration::SetEndpoint(const std::string& value) {
+  this->endpoint.SetValue(value);
 }
 
-bool Configuration::IsTlsSet() const {
-  return tls.IsSet();
+bool Configuration::IsEndpointSet() const {
+  return endpoint.IsSet();
 }
 
-bool Configuration::IsTlsAllowInvalidHostnames() const {
-  return tlsAllowInvalidHostnames.GetValue();
+const std::string& Configuration::GetRegion() const {
+  return region.GetValue();
 }
 
-void Configuration::SetTlsAllowInvalidHostnames(bool val) {
-  this->tlsAllowInvalidHostnames.SetValue(val);
+void Configuration::SetRegion(const std::string& value) {
+  this->region.SetValue(value);
 }
 
-bool Configuration::IsTlsAllowInvalidHostnamesSet() const {
-  return tlsAllowInvalidHostnames.IsSet();
+bool Configuration::IsRegionSet() const {
+  return region.IsSet();
 }
 
-const std::string& Configuration::GetTlsCaFile() const {
-  return tlsCaFile.GetValue();
+IdpName::Type Configuration::GetIdpName() const {
+  return idpName.GetValue();
 }
 
-void Configuration::SetTlsCaFile(const std::string& path) {
-  this->tlsCaFile.SetValue(path);
+void Configuration::SetIdpName(const IdpName::Type value) {
+  this->idpName.SetValue(value);
 }
 
-bool Configuration::IsTlsCaFileSet() const {
-  return tlsCaFile.IsSet();
+bool Configuration::IsIdpNameSet() const {
+  return idpName.IsSet();
 }
 
-bool Configuration::IsSshEnable() const {
-  return sshEnable.GetValue();
+const std::string& Configuration::GetIdpHost() const {
+  return idpHost.GetValue();
 }
 
-void Configuration::SetSshEnable(bool val) {
-  this->sshEnable.SetValue(val);
+void Configuration::SetIdpHost(const std::string& value) {
+  this->idpHost.SetValue(value);
 }
 
-bool Configuration::IsSshEnableSet() const {
-  return sshEnable.IsSet();
+bool Configuration::IsIdpHostSet() const {
+  return idpHost.IsSet();
 }
 
-const std::string& Configuration::GetSshUser() const {
-  return sshUser.GetValue();
+const std::string& Configuration::GetIdpUserName() const {
+  return idpUserName.GetValue();
 }
 
-void Configuration::SetSshUser(const std::string& username) {
-  this->sshUser.SetValue(username);
+void Configuration::SetIdpUserName(const std::string& value) {
+  this->idpUserName.SetValue(value);
 }
 
-bool Configuration::IsSshUserSet() const {
-  return sshUser.IsSet();
+bool Configuration::IsIdpUserNameSet() const {
+  return idpUserName.IsSet();
 }
 
-const std::string& Configuration::GetSshHost() const {
-  return sshHost.GetValue();
+const std::string& Configuration::GetIdpPassword() const {
+  return idpPassword.GetValue();
 }
 
-void Configuration::SetSshHost(const std::string& host) {
-  this->sshHost.SetValue(host);
+void Configuration::SetIdpPassword(const std::string& value) {
+  this->idpPassword.SetValue(value);
 }
 
-bool Configuration::IsSshHostSet() const {
-  return sshHost.IsSet();
+bool Configuration::IsIdpPasswordSet() const {
+  return idpPassword.IsSet();
 }
 
-const std::string& Configuration::GetSshPrivateKeyFile() const {
-  return sshPrivateKeyFile.GetValue();
+const std::string& Configuration::GetIdpArn() const {
+  return idpArn.GetValue();
 }
 
-void Configuration::SetSshPrivateKeyFile(const std::string& path) {
-  this->sshPrivateKeyFile.SetValue(path);
+void Configuration::SetIdpArn(const std::string& value) {
+  this->idpArn.SetValue(value);
 }
 
-bool Configuration::IsSshPrivateKeyFileSet() const {
-  return sshPrivateKeyFile.IsSet();
+bool Configuration::IsIdpArnSet() const {
+  return idpArn.IsSet();
 }
 
-const std::string& Configuration::GetSshPrivateKeyPassphrase() const {
-  return sshPrivateKeyPassphrase.GetValue();
+const std::string& Configuration::GetOktaAppId() const {
+  return oktaAppId.GetValue();
 }
 
-void Configuration::SetSshPrivateKeyPassphrase(const std::string& passphrase) {
-  this->sshPrivateKeyPassphrase.SetValue(passphrase);
+void Configuration::SetOktaAppId(const std::string& value) {
+  this->oktaAppId.SetValue(value);
 }
 
-bool Configuration::IsSshPrivateKeyPassphraseSet() const {
-  return sshPrivateKeyPassphrase.IsSet();
+bool Configuration::IsOktaAppIdSet() const {
+  return oktaAppId.IsSet();
 }
 
-bool Configuration::IsSshStrictHostKeyChecking() const {
-  return sshStrictHostKeyChecking.GetValue();
+const std::string& Configuration::GetRoleArn() const {
+  return roleArn.GetValue();
 }
 
-void Configuration::SetSshStrictHostKeyChecking(bool val) {
-  this->sshStrictHostKeyChecking.SetValue(val);
+void Configuration::SetRoleArn(const std::string& value) {
+  this->roleArn.SetValue(value);
 }
 
-bool Configuration::IsSshStrictHostKeyCheckingSet() const {
-  return sshStrictHostKeyChecking.IsSet();
+bool Configuration::IsRoleArnSet() const {
+  return roleArn.IsSet();
 }
 
-const std::string& Configuration::GetSshKnownHostsFile() const {
-  return sshKnownHostsFile.GetValue();
+const std::string& Configuration::GetAadAppId() const {
+  return aadAppId.GetValue();
 }
 
-void Configuration::SetSshKnownHostsFile(const std::string& path) {
-  this->sshKnownHostsFile.SetValue(path);
+void Configuration::SetAadAppId(const std::string& value) {
+  this->aadAppId.SetValue(value);
 }
 
-bool Configuration::IsSshKnownHostsFileSet() const {
-  return sshKnownHostsFile.IsSet();
+bool Configuration::IsAadAppIdSet() const {
+  return aadAppId.IsSet();
+}
+
+const std::string& Configuration::GetAadClientSecret() const {
+  return aadClientSecret.GetValue();
+}
+
+void Configuration::SetAadClientSecret(const std::string& value) {
+  this->aadClientSecret.SetValue(value);
+}
+
+bool Configuration::IsAadClientSecretSet() const {
+  return aadClientSecret.IsSet();
+}
+
+const std::string& Configuration::GetAadTenant() const {
+  return aadTenant.GetValue();
+}
+
+void Configuration::SetAadTenant(const std::string& value) {
+  this->aadTenant.SetValue(value);
+}
+
+bool Configuration::IsAadTenantSet() const {
+  return aadTenant.IsSet();
 }
 
 LogLevel::Type Configuration::GetLogLevel() const {
@@ -356,54 +364,6 @@ void Configuration::SetLogPath(const std::string& path) {
 
 bool Configuration::IsLogPathSet() const {
   return logPath.IsSet();
-}
-
-ScanMethod::Type Configuration::GetScanMethod() const {
-  return scanMethod.GetValue();
-}
-
-void Configuration::SetScanMethod(const ScanMethod::Type method) {
-  this->scanMethod.SetValue(method);
-}
-
-bool Configuration::IsScanMethodSet() const {
-  return scanMethod.IsSet();
-}
-
-int32_t Configuration::GetScanLimit() const {
-  return scanLimit.GetValue();
-}
-
-void Configuration::SetScanLimit(int32_t limit) {
-  this->scanLimit.SetValue(limit);
-}
-
-bool Configuration::IsScanLimitSet() const {
-  return scanLimit.IsSet();
-}
-
-const std::string& Configuration::GetSchemaName() const {
-  return schemaName.GetValue();
-}
-
-void Configuration::SetSchemaName(const std::string& name) {
-  this->schemaName.SetValue(name);
-}
-
-bool Configuration::IsSchemaNameSet() const {
-  return schemaName.IsSet();
-}
-
-bool Configuration::IsRefreshSchema() const {
-  return refreshSchema.GetValue();
-}
-
-void Configuration::SetRefreshSchema(bool val) {
-  this->refreshSchema.SetValue(val);
-}
-
-bool Configuration::IsRefreshSchemaSet() const {
-  return refreshSchema.IsSet();
 }
 
 const std::string& Configuration::GetAccessKeyId() const {
@@ -438,61 +398,49 @@ void Configuration::SetSessionToken(const std::string& token) {
   this->sessionToken.SetValue(token);
 }
 
-const std::string& Configuration::GetRegion()const {
-  return region.GetValue();
+bool Configuration::IsSessionTokenSet() const {
+  return sessionToken.IsSet();
 }
 
-void Configuration::SetRegion(const std::string& value) {
-  this->region.SetValue(value);
+bool Configuration::IsEnableMetadataPreparedStatement() const {
+  return enableMetadataPreparedStatement.GetValue();
 }
 
-int32_t Configuration::GetDefaultFetchSize() const {
-  return defaultFetchSize.GetValue();
+void Configuration::SetEnableMetadataPreparedStatement(bool val) {
+  this->enableMetadataPreparedStatement.SetValue(val);
 }
 
-void Configuration::SetDefaultFetchSize(int32_t size) {
-  this->defaultFetchSize.SetValue(size);
-}
-
-bool Configuration::IsDefaultFetchSizeSet() const {
-  return defaultFetchSize.IsSet();
+bool Configuration::IsEnableMetadataPreparedStatementSet() const {
+  return enableMetadataPreparedStatement.IsSet();
 }
 
 void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::dsn, dsn);
   AddToMap(res, ConnectionStringParser::Key::driver, driver);
-  AddToMap(res, ConnectionStringParser::Key::hostname, hostname);
-  AddToMap(res, ConnectionStringParser::Key::port, port);
   AddToMap(res, ConnectionStringParser::Key::accessKeyId, accessKeyId);
   AddToMap(res, ConnectionStringParser::Key::secretKey, secretKey);
-  AddToMap(res, ConnectionStringParser::Key::appName, appName);
-  AddToMap(res, ConnectionStringParser::Key::loginTimeoutSec, loginTimeoutSec);
-  AddToMap(res, ConnectionStringParser::Key::readPreference, readPreference);
-  AddToMap(res, ConnectionStringParser::Key::replicaSet, replicaSet);
-  AddToMap(res, ConnectionStringParser::Key::retryReads, retryReads);
-  AddToMap(res, ConnectionStringParser::Key::tls, tls);
-  AddToMap(res, ConnectionStringParser::Key::tlsAllowInvalidHostnames,
-           tlsAllowInvalidHostnames);
-  AddToMap(res, ConnectionStringParser::Key::tlsCaFile, tlsCaFile);
-  AddToMap(res, ConnectionStringParser::Key::sshEnable, sshEnable);
-  AddToMap(res, ConnectionStringParser::Key::sshUser, sshUser);
-  AddToMap(res, ConnectionStringParser::Key::sshHost, sshHost);
-  AddToMap(res, ConnectionStringParser::Key::sshPrivateKeyFile,
-           sshPrivateKeyFile);
-  AddToMap(res, ConnectionStringParser::Key::sshPrivateKeyPassphrase,
-           sshPrivateKeyPassphrase);
-  AddToMap(res, ConnectionStringParser::Key::sshStrictHostKeyChecking,
-           sshStrictHostKeyChecking);
-  AddToMap(res, ConnectionStringParser::Key::sshKnownHostsFile,
-           sshKnownHostsFile);
+  AddToMap(res, ConnectionStringParser::Key::sessionToken, sessionToken);
+  AddToMap(res, ConnectionStringParser::Key::enableMetadataPreparedStatement, enableMetadataPreparedStatement);
+  AddToMap(res, ConnectionStringParser::Key::credProvClass, credProvClass);
+  AddToMap(res, ConnectionStringParser::Key::cusCredFile, cusCredFile);
+  AddToMap(res, ConnectionStringParser::Key::reqTimeout, reqTimeout);
+  AddToMap(res, ConnectionStringParser::Key::socketTimeout, socketTimeout);
+  AddToMap(res, ConnectionStringParser::Key::maxRetryCount, maxRetryCount);
+  AddToMap(res, ConnectionStringParser::Key::maxConnections, maxConnections);
+  AddToMap(res, ConnectionStringParser::Key::endpoint, endpoint);
+  AddToMap(res, ConnectionStringParser::Key::region, region);
+  AddToMap(res, ConnectionStringParser::Key::idpName, idpName);
+  AddToMap(res, ConnectionStringParser::Key::idpHost, idpHost);
+  AddToMap(res, ConnectionStringParser::Key::idpUserName, idpUserName);
+  AddToMap(res, ConnectionStringParser::Key::idpPassword, idpPassword);
+  AddToMap(res, ConnectionStringParser::Key::idpArn, idpArn);
+  AddToMap(res, ConnectionStringParser::Key::oktaAppId, oktaAppId);
+  AddToMap(res, ConnectionStringParser::Key::roleArn, roleArn);
+  AddToMap(res, ConnectionStringParser::Key::aadAppId, aadAppId);
+  AddToMap(res, ConnectionStringParser::Key::aadClientSecret, aadClientSecret);
+  AddToMap(res, ConnectionStringParser::Key::aadTenant, aadTenant);
   AddToMap(res, ConnectionStringParser::Key::logLevel, logLevel);
   AddToMap(res, ConnectionStringParser::Key::logPath, logPath);
-  AddToMap(res, ConnectionStringParser::Key::scanMethod, scanMethod);
-  AddToMap(res, ConnectionStringParser::Key::scanLimit, scanLimit);
-  AddToMap(res, ConnectionStringParser::Key::schemaName, schemaName);
-  AddToMap(res, ConnectionStringParser::Key::refreshSchema, refreshSchema);
-  AddToMap(res, ConnectionStringParser::Key::defaultFetchSize,
-           defaultFetchSize);
 }
 
 void Configuration::Validate() const {
@@ -534,9 +482,16 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
 
 template <>
 void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
-                             const SettableValue< ReadPreference::Type >& value) {
-  if (value.IsSet()) 
-    map[key] = ReadPreference::ToString(value.GetValue());
+                             const SettableValue< CredProvClass::Type >& value) {
+  if (value.IsSet())
+    map[key] = CredProvClass::ToString(value.GetValue());
+}
+
+template <>
+void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
+                             const SettableValue< IdpName::Type >& value) {
+  if (value.IsSet())
+    map[key] = IdpName::ToString(value.GetValue());
 }
 
 template <>
@@ -545,14 +500,6 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
   if (value.IsSet())
     map[key] = LogLevel::ToString(value.GetValue());
 }
-
-template <>
-void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
-                             const SettableValue< ScanMethod::Type >& value) {
-  if (value.IsSet())
-    map[key] = ScanMethod::ToString(value.GetValue());
-}
-
 }  // namespace config
 }  // namespace odbc
 }  // namespace ignite

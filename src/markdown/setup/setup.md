@@ -1,25 +1,25 @@
-# Amazon TimeStream ODBC Driver Setup
+# Amazon Timestream ODBC Driver Setup
 
 ## Topics
 - [Prerequisites](#prerequisites)  
-    - [TimeStream Account]
+    - [Timestream Account]
     - [JRE or JDK](#jre-or-jdk) 
-    - [TimeStream ODBC Driver](#timestream-odbc-driver)
+    - [Timestream ODBC Driver](#timestream-odbc-driver)
 - [Specifying the Amazon RDS Certificate Authority Certificate File](#specifying-the-amazon-rds-certificate-authority-certificate-file) 
-- [Using an SSH Tunnel to Connect to Amazon TimeStream](#using-an-ssh-tunnel-to-connect-to-amazon-timestream)
+- [Using an SSH Tunnel to Connect to Amazon Timestream](#using-an-ssh-tunnel-to-connect-to-amazon-timestream)
 - [Driver Setup in BI Applications](#driver-setup-in-bi-applications)
     
 ## Prerequisites
 
-### TimeStream Cluster
-If you don't already have an Amazon TimeStream cluster, there are a number of ways to 
+### Timestream Cluster
+If you don't already have an Amazon Timestream cluster, there are a number of ways to 
 [get started](https://docs.aws.amazon.com/timestream/latest/developerguide/get-started-guide.html). 
 
-Note that TimeStream is a Virtual Private Cloud (VPC) only service. 
+Note that Timestream is a Virtual Private Cloud (VPC) only service. 
 If you will be connecting from a local machine outside the cluster's VPC, you will need to 
 create an SSH connection to an Amazon EC2 instance. In this case, launch your cluster using the instructions in 
 [Connect with EC2](https://docs.aws.amazon.com/timestream/latest/developerguide/connect-ec2.html). 
-See [Using an SSH Tunnel to Connect to Amazon TimeStream](#using-an-ssh-tunnel-to-connect-to-amazon-timestream) 
+See [Using an SSH Tunnel to Connect to Amazon Timestream](#using-an-ssh-tunnel-to-connect-to-amazon-timestream) 
 for more information on SSH tunneling and when you might need it.
 
 ### JRE or JDK
@@ -27,36 +27,36 @@ Depending on your BI application, you may need to ensure a 64-bit JRE or JDK ins
 or later is installed on your computer. You can download the Java SE Runtime Environment 8 
 [here](https://www.oracle.com/ca-en/java/technologies/javase-jre8-downloads.html).  
 
-### TimeStream ODBC Driver
-Download the TimeStream ODBC driver [here](https://github.com/aws/amazon-timestream-odbc-driver/releases). Choose the proper installer
+### Timestream ODBC Driver
+Download the Timestream ODBC driver [here](https://github.com/aws/amazon-timestream-odbc-driver/releases). Choose the proper installer
 (e.g., `timestream-odbc-1.0.0.msi`).
 
 ## Specifying the Amazon RDS Certificate Authority Certificate File
 If you are connecting to a TLS-enabled cluster, you may want to specify the Amazon RDS Certificate Authority certificate 
 on your connection string. By default, an Amazon RDS Certificate Authority root certificate has been embedded in the 
-ODBC driver which should work when connecting to Amazon TimeStream clusters using SSL/TLS encryption. However, 
+ODBC driver which should work when connecting to Amazon Timestream clusters using SSL/TLS encryption. However, 
 if you want to provide a new Amazon RDS Certificate Authority root certificate, follow the directions below:
 1. [Download the root CA certificate](https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem)
 2. It is recommended to relocate the file to your user's home directory: `$HOME` for Windows or `~` for MacOS/Linux.
 3. Add the `TLS_CA_FILE` option to your [ODBC connection string](connection-string.md). For example: 
    
     ~~~
-    DRIVER={Amazon TimeStream};HOSTNAME=localhost:27017;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true;TLS_CA_FILE=rds-ca-2019-root.pem
+    DRIVER={Amazon Timestream};HOSTNAME=localhost:27017;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true;TLS_CA_FILE=rds-ca-2019-root.pem
     ~~~
 
 To determine whether your cluster is TLS-enabled, you can 
 [check the value of your cluster's `tls` parameter](https://docs.aws.amazon.com/timestream/latest/developerguide/connect_programmatically.html#connect_programmatically-determine_tls_value).
 
-## Using an SSH Tunnel to Connect to Amazon TimeStream
-Amazon TimeStream (with MongoDB compatibility) clusters are deployed within an Amazon Virtual Private Cloud (Amazon VPC). 
+## Using an SSH Tunnel to Connect to Amazon Timestream
+Amazon Timestream (with MongoDB compatibility) clusters are deployed within an Amazon Virtual Private Cloud (Amazon VPC). 
 They can be accessed directly by Amazon EC2 instances or other AWS services that are deployed in the same Amazon VPC. 
-Additionally, Amazon TimeStream can be accessed by EC2 instances 
+Additionally, Amazon Timestream can be accessed by EC2 instances 
 or other AWS services in different VPCs in the same AWS Region or other Regions via VPC peering.
 
-However, suppose that your use case requires that you (or your application) access your Amazon TimeStream resources 
+However, suppose that your use case requires that you (or your application) access your Amazon Timestream resources 
 from outside the cluster's VPC. This will be the case for most users not running their application 
-on a VM in the same VPC as the TimeStream cluster. When connecting from outside the VPC, 
-you can use SSH tunneling (also known as  _port forwarding_) to access your Amazon TimeStream resources.
+on a VM in the same VPC as the Timestream cluster. When connecting from outside the VPC, 
+you can use SSH tunneling (also known as  _port forwarding_) to access your Amazon Timestream resources.
 
 There are two options to create an SSH tunnel:
 1. Internally, using the [SSH tunnel options](connection-string.md) (minimally, `sshUser`, `sshHost`, and 
@@ -65,18 +65,18 @@ There are two options to create an SSH tunnel:
 the documentation on [Connecting from Outside an Amazon VPC](https://docs.aws.amazon.com/timestream/latest/developerguide/connect-from-outside-a-vpc.html)
 
 ### The ODBC Connection String When Using an SSH Tunnel
-To create an SSH tunnel, you need an Amazon EC2 instance running in the same Amazon VPC as your Amazon TimeStream 
+To create an SSH tunnel, you need an Amazon EC2 instance running in the same Amazon VPC as your Amazon Timestream 
 cluster. You can either use an existing EC2 instance in the same VPC as your cluster or create one. Connecting from 
 outside the Amazon VPC using an SSH tunnel will have the following impact on the [ODBC connection string](connection-string.md):
 1. If your cluster has Transport Layer Security (TLS) enabled, you will need to add the `tlsAllowInvalidHostNames=true` 
 option.
 2. For external SSH, since the SSH tunnel is running on your local computer, the host name must be set to `localhost`.
 3. For external SSH, if your local port (`-L <local-port>:<cluster-host>:<remote-port>`) configured for the SSH tunnel is not the default
-port (27017) for Amazon TimeStream, ensure the connection string host setting for your SSH tunnel is properly set in the
+port (27017) for Amazon Timestream, ensure the connection string host setting for your SSH tunnel is properly set in the
 [ODBC connection string](connection-string.md).
 4. The `REPLICA_SET` option is not supported when using an SSH tunnel.
 
-### Using an External SSH Tunnel to Connect to Amazon TimeStream
+### Using an External SSH Tunnel to Connect to Amazon Timestream
 Start an SSH port-forwarding tunnel to the cluster with the following command:
 
 ~~~
@@ -104,11 +104,11 @@ Example: Given the following
     ssh -i ~/.ssh/ec2Access.pem -N -L 27117:sample-cluster.node.us-east-1.docdb.amazonaws.com:27017 ubuntu@ec2-34-229-221-164.compute-1.amazonaws.com
     ~~~
 
-    The [ODBC connection string](connection-string.md) for connecting to the TLS-enabled Amazon TimeStream cluster with 
+    The [ODBC connection string](connection-string.md) for connecting to the TLS-enabled Amazon Timestream cluster with 
     `<database-name>` = `customer` would look like:
 
     ~~~
-   DRIVER={Amazon TimeStream};HOSTNAME=localhost:27117;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true
+   DRIVER={Amazon Timestream};HOSTNAME=localhost:27117;DATABASE=customer;TLS_ALLOW_INVALID_HOSTNAMES=true
     ~~~
 
 For further information on SSH tunneling , please refer to the documentation on

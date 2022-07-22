@@ -34,64 +34,63 @@ class DsnConfigurationWindow : public CustomWindow {
    */
   struct ChildId {
     enum Type {
-      CONNECTION_SETTINGS_GROUP_BOX = 100,
-      SSH_SETTINGS_GROUP_BOX,
+      BASIC_AUTH_SETTINGS_GROUP_BOX = 100,
+      ADVANCE_AUTH_SETTINGS_GROUP_BOX,
       LOG_SETTINGS_GROUP_BOX,
-      TLS_SETTINGS_GROUP_BOX,
-      SCHEMA_SETTINGS_GROUP_BOX,
-      ADDITIONAL_SETTINGS_GROUP_BOX,
+      CRED_PROVIDER_GROUP_BOX,
+      ENDPOINT_OPTIONS_GROUP_BOX,
+      CONNECTION_SETTINGS_GROUP_BOX,
       NAME_EDIT,
       NAME_LABEL,
-      SSH_ENABLE_CHECK_BOX,
-      SSH_USER_EDIT,
-      SSH_USER_LABEL,
-      SSH_HOST_EDIT,
-      SSH_HOST_LABEL,
-      SSH_PRIVATE_KEY_FILE_EDIT,
-      SSH_PRIVATE_KEY_FILE_LABEL,
-      SSH_PRIVATE_KEY_PASSPHRASE_EDIT,
-      SSH_PRIVATE_KEY_PASSPHRASE_LABEL,
-      SSH_STRICT_HOST_KEY_CHECKING_CHECK_BOX,
-      SSH_KNOWN_HOSTS_FILE_EDIT,
-      SSH_KNOWN_HOSTS_FILE_LABEL,
-      LOG_LEVEL_LABEL,
+      IDP_NAME_LABEL,
+      IDP_NAME_COMBO_BOX,
+      IDP_HOST_EDIT,
+      IDP_HOST_LABEL,
+      IDP_USER_NAME_EDIT,
+      IDP_USER_NAME_LABEL,
+      IDP_PASSWORD_EDIT,
+      IDP_PASSWORD_LABEL,
+      IDP_ARN_EDIT,
+      IDP_ARN_LABEL,
+      OKTA_APP_ID_EDIT,
+      OKTA_APP_ID_LABEL,
+      ROLE_ARN_EDIT,
+      ROLE_ARN_LABEL,
+      AAD_APP_ID_EDIT,
+      AAD_APP_ID_LABEL,
+      AAD_CLIENT_SECRET_EDIT,
+      AAD_CLIENT_SECRET_LABEL,
+      AAD_TENANT_EDIT,
+      AAD_TENANT_LABEL,
       LOG_LEVEL_COMBO_BOX,
-      LOG_PATH_LABEL,
+      LOG_LEVEL_LABEL,
       LOG_PATH_EDIT,
-      APP_NAME_EDIT,
-      APP_NAME_LABEL,
-      LOGIN_TIMEOUT_SEC_EDIT,
-      LOGIN_TIMEOUT_SEC_LABEL,
-      READ_PREFERENCE_LABEL,
-      READ_PREFERENCE_COMBO_BOX,
-      REPLICA_SET_EDIT,
-      REPLICA_SET_LABEL,
-      RETRY_READS_CHECK_BOX,
-      DEFAULT_FETCH_SIZE_EDIT,
-      DEFAULT_FETCH_SIZE_LABEL,
-      SCAN_METHOD_COMBO_BOX,
-      SCAN_METHOD_LABEL,
-      SCAN_LIMIT_EDIT,
-      SCAN_LIMIT_LABEL,
-      SCHEMA_EDIT,
-      SCHEMA_LABEL,
-      REFRESH_SCHEMA_CHECK_BOX,
-      TLS_CHECK_BOX,
-      TLS_ALLOW_INVALID_HOSTNAMES_CHECK_BOX,
-      TLS_CA_FILE_EDIT,
-      TLS_CA_FILE_LABEL,
+      LOG_PATH_LABEL,
+      REQ_TIMEOUT_EDIT,
+      REQ_TIMEOUT_LABEL,
+      SOCKET_TIMEOUT_EDIT,
+      SOCKET_TIMEOUT_LABEL,
+      MAX_RETRY_COUNT_CLIENT_EDIT,
+      MAX_RETRY_COUNT_CLIENT_LABEL,
+      MAX_CONNECTIONS_EDIT,
+      MAX_CONNECTIONS_LABEL,
+      ENDPOINT_EDIT,
+      ENDPOINT_LABEL,
+      REGION_EDIT,
+      REGION_LABEL,
+      CRED_PROV_CLASS_COMBO_BOX,
+      CRED_PROV_CLASS_LABEL,
+      CUS_CRED_FILE_EDIT,
+      CUS_CRED_FILE_LABEL,
       DRIVER_LABEL,
       DRIVER_EDIT,
-      DATABASE_LABEL,
-      DATABASE_EDIT,
-      HOST_NAME_LABEL,
-      HOST_NAME_EDIT,
-      PORT_LABEL,
-      PORT_EDIT,
-      USER_LABEL,
-      USER_EDIT,
-      PASSWORD_LABEL,
-      PASSWORD_EDIT,
+      ACCESS_KEY_ID_LABEL,
+      ACCESS_KEY_ID_EDIT,
+      SECRET_ACCESS_KEY_LABEL,
+      SECRET_ACCESS_KEY_EDIT,
+      SESSION_TOKEN_LABEL,
+      SESSION_TOKEN_EDIT,
+      ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX,
       OK_BUTTON,
       CANCEL_BUTTON
     };
@@ -145,6 +144,26 @@ class DsnConfigurationWindow : public CustomWindow {
   IGNITE_NO_COPY_ASSIGNMENT(DsnConfigurationWindow)
 
   /**
+   * Disable / Enable the cusCredFileEdit field
+   * based on value of credProvClass.
+   * If credProvClass equals "Properties File Credentials Provider,"
+   * cusCredFileEdit field is enabled, else it is diabled.
+   */
+  void DsnConfigurationWindow::EnableCusCredFileField() const;
+
+  /**
+   * Disable / Enable the fields in advance authentication options UI group 
+   * based on value of IdpName.
+   * IdpName field is always enabled.
+   * When "None" is selected for IdpName, all fields are disabled.
+   * When "Okta" is selected for IdpName, AzureAD-specific fields are disabled,
+   * and the rest are enabled. 
+   * When "AzureAD" is selected for IdpName, Okta-specific fields are disabled, 
+   * and the rest are enabled.
+   */
+  void DsnConfigurationWindow::EnableAdvanceAuthFields() const;
+
+  /**
    * Retrieves current values from the children and stores
    * them to the specified configuration.
    *
@@ -153,20 +172,20 @@ class DsnConfigurationWindow : public CustomWindow {
   void RetrieveParameters(config::Configuration& cfg) const;
 
   /**
-   * Retrieves current values from the connection UI group and
+   * Retrieves current values from the basic authentication UI group and
    * stores them to the specified configuration.
    *
    * @param cfg Configuration.
    */
-  void RetrieveConnectionParameters(config::Configuration& cfg) const;
+  void RetrieveBasicAuthParameters(config::Configuration& cfg) const;
 
   /**
-   * Retrieves current values from the SSH tunnel UI group and
+   * Retrieves current values from the advance authentication options UI group and
    * stores them to the specified configuration.
    *
    * @param cfg Configuration.
    */
-  void RetrieveSshParameters(config::Configuration& cfg) const;
+  void RetrieveAdvanceAuthParameters(config::Configuration& cfg) const;
 
   /**
    * Retrieves current values from the log configuration UI group and
@@ -177,48 +196,48 @@ class DsnConfigurationWindow : public CustomWindow {
   void RetrieveLogParameters(config::Configuration& cfg) const;
 
   /**
-   * Retrieves current values from the TLS/SSL UI group and
+   * Retrieves current values from the AWS Credentials Provider Options UI group and
    * stores them to the specified configuration.
    *
    * @param cfg Configuration.
    */
-  void RetrieveTlsParameters(config::Configuration& cfg) const;
+  void RetrieveCredentialsProvidersParameters(config::Configuration& cfg) const;
 
   /**
-   * Retrieves current values from the schema generation UI group and
+   * Retrieves current values from the Connection UI group and
    * stores them to the specified configuration.
    *
    * @param cfg Configuration.
    */
-  void RetrieveSchemaParameters(config::Configuration& cfg) const;
+  void RetrieveConnectionParameters(config::Configuration& cfg) const;
 
   /**
-   * Retrieves current values from the additional UI group and
+   * Retrieves current values from the Endpoint Configuration UI group and
    * stores them to the specified configuration.
    *
    * @param cfg Configuration.
    */
-  void RetrieveAdditionalParameters(config::Configuration& cfg) const;
+  void RetrieveEndpointConfigParameters(config::Configuration& cfg) const;
 
   /**
-   * Create connection settings group box.
+   * Create basic authentication settings group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateConnectionSettingsGroup(int posX, int posY, int sizeX);
+  int CreateBasicAuthSettingsGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create internal SSH tunnel settings group box.
+   * Create advance authentication options group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateSshSettingsGroup(int posX, int posY, int sizeX);
+  int CreateAdvanceAuthSettingsGroup(int posX, int posY, int sizeX);
 
   /**
    * Create logging configuration settings group box.
@@ -231,34 +250,34 @@ class DsnConfigurationWindow : public CustomWindow {
   int CreateLogSettingsGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create TLS/SSL settings group box.
+   * Create AWS Credentials Provider Options settings group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateTlsSettingsGroup(int posX, int posY, int sizeX);
+  int CreateCredentialsProvidersGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create schema generation settings group box.
+   * Create Connection settings group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateSchemaSettingsGroup(int posX, int posY, int sizeX);
+  int CreateConnctionSettingsGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create additional settings group box.
+   * Create endpoint configuration options group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateAdditionalSettingsGroup(int posX, int posY, int sizeX);
+  int CreateEndpointConfigOptionsGroup(int posX, int posY, int sizeX);
 
   /** Window width. */
   int width;
@@ -267,85 +286,133 @@ class DsnConfigurationWindow : public CustomWindow {
   int height;
 
   /** Connection settings group box. */
-  std::unique_ptr< Window > connectionSettingsGroupBox;
+  std::unique_ptr< Window > basicAuthSettingsGroupBox;
 
   /** SSH settings group box. */
-  std::unique_ptr< Window > sshSettingsGroupBox;
+  std::unique_ptr< Window > advanceAuthSettingsGroupBox;
 
   /** Log settings group box. */
   std::unique_ptr< Window > logSettingsGroupBox;
 
-  /** TLS settings group box. */
-  std::unique_ptr< Window > tlsSettingsGroupBox;
+  /** AWS credentials provider options group box. */
+  std::unique_ptr< Window > credProviderSettingsGroupBox;
 
-  /** Schema generation and discovery settings group box. */
-  std::unique_ptr< Window > schemaSettingsGroupBox;
+  /** Connection Options group box. */
+  std::unique_ptr< Window > connctionSettingsGroupBox;
 
-  /** Additional settings group box. */
-  std::unique_ptr< Window > additionalSettingsGroupBox;
+  /** Endpoint Configuration Options group box. */
+  std::unique_ptr< Window > endpointConfigOptionsGroupBox;
 
-  /** DSN name edit field label. */
+  /** DSN name field label. */
   std::unique_ptr< Window > nameLabel;
 
   /** DSN name edit field. */
   std::unique_ptr< Window > nameEdit;
 
-  /** Scan method ComboBox **/
-  std::unique_ptr< Window > scanMethodComboBox;
+  /** DSN name balloon. */
+  std::unique_ptr< EDITBALLOONTIP > nameBalloon;
 
-  /** Scan method label. */
-  std::unique_ptr< Window > scanMethodLabel;
+  /** Request timeout field label. */
+  std::unique_ptr< Window > reqTimeoutLabel;
 
-  /** Scan limit field label. */
-  std::unique_ptr< Window > scanLimitLabel;
+  /** Request timeout edit. */
+  std::unique_ptr< Window > reqTimeoutEdit;
 
-  /** Scan limit field. */
-  std::unique_ptr< Window > scanLimitEdit;
+  /** Socket timeout field label. */
+  std::unique_ptr< Window > socketTimeoutLabel;
 
-  /** DSN schema edit field label. */
-  std::unique_ptr< Window > schemaLabel;
+  /** Socket timeout edit. */
+  std::unique_ptr< Window > socketTimeoutEdit;
 
-  /** DSN schema edit field. */
-  std::unique_ptr< Window > schemaEdit;
+  /** Max retry count client field label. */
+  std::unique_ptr< Window > maxRetryCountClientLabel;
 
-  /** Refresh DSN schema checkBox. */
-  std::unique_ptr< Window > refreshSchemaCheckBox;
+  /** Max retry count client edit. */
+  std::unique_ptr< Window > maxRetryCountClientEdit;
 
-  /** SSH enable checkBox. */
-  std::unique_ptr< Window > sshEnableCheckBox;
+  /** Max connections field label. */
+  std::unique_ptr< Window > maxConnectionsLabel;
 
-  /** SSH user edit. */
-  std::unique_ptr< Window > sshUserEdit;
+  /** Max connections edit. */
+  std::unique_ptr< Window > maxConnectionsEdit;
 
-  /** SSH user label. */
-  std::unique_ptr< Window > sshUserLabel;
+  /** Max connections balloon. */
+  std::unique_ptr< EDITBALLOONTIP > maxConnectionsBalloon;
 
-  /** SSH host edit. */
-  std::unique_ptr< Window > sshHostEdit;
+  /** Endpoint label. */
+  std::unique_ptr< Window > endpointLabel;
 
-  /** SSH host label. */
-  std::unique_ptr< Window > sshHostLabel;
+  /** Endpoint edit. */
+  std::unique_ptr< Window > endpointEdit;
 
-  /** SSH private key file edit. */
-  std::unique_ptr< Window > sshPrivateKeyFileEdit;
+  /** Region label. */
+  std::unique_ptr< Window > regionLabel;
 
-  /** SSH private key file label. */
-  std::unique_ptr< Window > sshPrivateKeyFileLabel;
+  /** Region edit. */
+  std::unique_ptr< Window > regionEdit;
 
-  /** SSH private key passphrase edit. */
-  std::unique_ptr< Window > sshPrivateKeyPassphraseEdit;
+  /** Region balloon. */
+  std::unique_ptr< EDITBALLOONTIP > regionBalloon;
 
-  /** SSH private key passphrase label. */
-  std::unique_ptr< Window > sshPrivateKeyPassphraseLabel;
+  /** Idp Name ComboBox **/
+  std::unique_ptr< Window > idpNameComboBox;
 
-  /** SSH strict host key checking checkBox. */
-  std::unique_ptr< Window > sshStrictHostKeyCheckingCheckBox;
+  /** Idp Name label. */
+  std::unique_ptr< Window > idpNameLabel;
 
-  /** SSH known host file edit. */
-  std::unique_ptr< Window > sshKnownHostsFileEdit;
+  /** Idp Host edit. */
+  std::unique_ptr< Window > idpHostEdit;
 
-  /** SSH know host file label. */
-  std::unique_ptr< Window > sshKnownHostsFileLabel;
+  /** Idp Host label. */
+  std::unique_ptr< Window > idpHostLabel;
+
+  /** Idp User Name edit. */
+  std::unique_ptr< Window > idpUserNameEdit;
+
+  /** Idp User Name label. */
+  std::unique_ptr< Window > idpUserNameLabel;
+
+  /** Idp Password edit. */
+  std::unique_ptr< Window > idpPasswordEdit;
+
+  /** Idp Password label. */
+  std::unique_ptr< Window > idpPasswordLabel;
+
+  /** Idp ARN edit. */
+  std::unique_ptr< Window > idpArnEdit;
+
+  /** Idp ARN label. */
+  std::unique_ptr< Window > idpArnLabel;
+
+  /** Okta Application Id edit. */
+  std::unique_ptr< Window > oktaAppIdEdit;
+
+  /** Okta Application Id label. */
+  std::unique_ptr< Window > oktaAppIdLabel;
+
+  /** Role ARN edit. */
+  std::unique_ptr< Window > roleArnEdit;
+
+  /** Role ARN label. */
+  std::unique_ptr< Window > roleArnLabel;
+
+  /** AAD Application Id edit. */
+  std::unique_ptr< Window > aadAppIdEdit;
+
+  /** AAD Application Id label. */
+  std::unique_ptr< Window > aadAppIdLabel;
+
+  /** AAD Client Secret edit. */
+  std::unique_ptr< Window > aadClientSecretEdit;
+
+  /** AAD Client Secret label. */
+  std::unique_ptr< Window > aadClientSecretLabel;
+
+  /** AAD Tenant edit. */
+  std::unique_ptr< Window > aadTenantEdit;
+
+  /** AAD Tenant label. */
+  std::unique_ptr< Window > aadTenantLabel;
 
   /** Log Level ComboBox **/
   std::unique_ptr< Window > logLevelComboBox;
@@ -359,86 +426,44 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Log Path label. */
   std::unique_ptr< Window > logPathLabel;
 
-  /** Application name edit. */
-  std::unique_ptr< Window > appNameEdit;
-
-  /** Application name label. */
-  std::unique_ptr< Window > appNameLabel;
-
-  /** Login Timeout (seconds) edit. */
-  std::unique_ptr< Window > loginTimeoutSecEdit;
-
-  /** Login Timeout (seconds) label. */
-  std::unique_ptr< Window > loginTimeoutSecLabel;
-
-  /** Read Preference ComboBox **/
-  std::unique_ptr< Window > readPreferenceComboBox;
-
-  /** Read preference label. */
-  std::unique_ptr< Window > readPreferenceLabel;
-
-  /** Replica set edit. */
-  std::unique_ptr< Window > replicaSetEdit;
-
-  /** Replica set label. */
-  std::unique_ptr< Window > replicaSetLabel;
-
-  /** Retry reads checkBox. */
-  std::unique_ptr< Window > retryReadsCheckBox;
-
-  /** Default fetch size edit. */
-  std::unique_ptr< Window > defaultFetchSizeEdit;
-
-  /** Default fetch size label. */
-  std::unique_ptr< Window > defaultFetchSizeLabel;
-
   /** Ok button. */
   std::unique_ptr< Window > okButton;
 
   /** Cancel button. */
   std::unique_ptr< Window > cancelButton;
 
-  /** TLS encryption checkBox. */
-  std::unique_ptr< Window > tlsCheckBox;
+  /** AWS credentials provider class label. */
+  std::unique_ptr< Window > credProvClassLabel;
 
-  /** TLS allow invalid hostnames checkBox. */
-  std::unique_ptr< Window > tlsAllowInvalidHostnamesCheckBox;
+  /** AWS credentials provider class comboBox. */
+  std::unique_ptr< Window > credProvClassComboBox;
 
-  /** TLS certificate authority file label. */
-  std::unique_ptr< Window > tlsCaFileLabel;
+  /** Custom credentials file label. */
+  std::unique_ptr< Window > cusCredFileLabel;
 
-  /** TLS certificate authority file edit. */
-  std::unique_ptr< Window > tlsCaFileEdit;
+  /** Custom credentials file edit. */
+  std::unique_ptr< Window > cusCredFileEdit;
 
-  /** Database label. */
-  std::unique_ptr< Window > databaseLabel;
+  /** Access key Id label. */
+  std::unique_ptr< Window > accessKeyIdLabel;
 
-  /** Database edit. */
-  std::unique_ptr< Window > databaseEdit;
+  /** Access key Id edit. */
+  std::unique_ptr< Window > accessKeyIdEdit;
 
-  /** Hostname label. */
-  std::unique_ptr< Window > hostnameLabel;
+  /** Secret Access Key label. */
+  std::unique_ptr< Window > secretAccessKeyLabel;
 
-  /** Hostname edit. */
-  std::unique_ptr< Window > hostnameEdit;
+  /** Secret Access Key edit. */
+  std::unique_ptr< Window > secretAccessKeyEdit;
 
-  /** Port label. */
-  std::unique_ptr< Window > portLabel;
+  /** Session Token label. */
+  std::unique_ptr< Window > sessionTokenLabel;
 
-  /** Port edit. */
-  std::unique_ptr< Window > portEdit;
+  /** Session Token edit. */
+  std::unique_ptr< Window > sessionTokenEdit;
 
-  /** User label. */
-  std::unique_ptr< Window > userLabel;
-
-  /** User edit. */
-  std::unique_ptr< Window > userEdit;
-
-  /** Password label. */
-  std::unique_ptr< Window > passwordLabel;
-
-  /** Password edit. */
-  std::unique_ptr< Window > passwordEdit;
+  /** Enable Metadata Prepared Statement checkbox. */
+  std::unique_ptr< Window > enableMetadataPrepStmtCheckbox;
 
   /** Configuration. */
   config::Configuration& config;
@@ -448,6 +473,15 @@ class DsnConfigurationWindow : public CustomWindow {
 
   /** Flag indicating whether the configuration window has been created. */
   bool created;
+
+  /** Flag indicating whether the DSN name balloon has been shown. */
+  bool shownNameBalloon;
+
+  /** Flag indicating whether the max connections balloon has been shown. */
+  bool shownMaxConBalloon;
+
+  /** Flag indicating whether the region balloon has been shown. */
+  bool shownRegBalloon;
 };
 }  // namespace ui
 }  // namespace system

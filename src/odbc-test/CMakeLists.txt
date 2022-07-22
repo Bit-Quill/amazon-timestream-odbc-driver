@@ -74,6 +74,7 @@ set(SOURCES
          ../odbc/src/app/parameter.cpp
          ../odbc/src/app/parameter_set.cpp
          ../odbc/src/column.cpp
+         ../odbc/src/cred_prov_class.cpp
          ../odbc/src/common/big_integer.cpp
          ../odbc/src/common/bits.cpp
          ../odbc/src/common/concurrent.cpp
@@ -122,6 +123,7 @@ set(SOURCES
          ../odbc/src/diagnostic/diagnostic_record.cpp
          ../odbc/src/dsn_config.cpp
          ../odbc/src/environment.cpp
+         ../odbc/src/idp_name.cpp
          ../odbc/src/ignite_error.cpp
          ../odbc/src/jni/java.cpp
          ../odbc/src/log.cpp
@@ -145,16 +147,13 @@ set(SOURCES
          ../odbc/src/sql/sql_set_streaming_command.cpp
          ../odbc/src/sql/sql_utils.cpp
          ../odbc/src/log_level.cpp
-         ../odbc/src/read_preference.cpp
          ../odbc/src/result_page.cpp
          ../odbc/src/row.cpp
-         ../odbc/src/scan_method.cpp
          ../odbc/src/statement.cpp
          ../odbc/src/streaming/streaming_batch.cpp
          ../odbc/src/streaming/streaming_context.cpp
          ../odbc/src/type_traits.cpp
          ../odbc/src/utility.cpp
-         ../odbc/src/scan_method.cpp
          ../odbc/src/date.cpp
          ../odbc/src/guid.cpp
          ../odbc/src/time.cpp

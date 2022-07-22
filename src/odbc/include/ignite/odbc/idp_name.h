@@ -14,19 +14,19 @@
  *
  */
 
-#ifndef _IGNITE_ODBC_SCAN_METHOD
-#define _IGNITE_ODBC_SCAN_METHOD
+#ifndef _IGNITE_ODBC_IDP_NAME
+#define _IGNITE_ODBC_IDP_NAME
 
 #include <string>
 
 namespace ignite {
 namespace odbc {
-/** Scan method enum. */
-struct ScanMethod {
-  enum class Type { RANDOM, ID_FORWARD, ID_REVERSE, ALL, UNKNOWN };
+/** Idp name enum. */
+struct IdpName {
+  enum class Type { NONE, OKTA, AAD, UNKNOWN };
 
   /**
-   * Convert scan method from string.
+   * Convert Idp name from string.
    *
    * @param val String value.
    * @param dflt Default value to return on error.
@@ -35,7 +35,7 @@ struct ScanMethod {
   static Type FromString(const std::string& val, Type dflt = Type::UNKNOWN);
 
   /**
-   * Convert method to string.
+   * Convert Idp name to string.
    *
    * @param val Value to convert.
    * @return String value.
@@ -44,4 +44,4 @@ struct ScanMethod {
 };
 }  // namespace odbc
 }  // namespace ignite
-#endif  //_IGNITE_ODBC_SCAN_METHOD
+#endif  //_IGNITE_ODBC_IDP_NAME

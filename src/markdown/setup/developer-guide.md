@@ -9,7 +9,7 @@ C/C++ usage and formatting.
 `VS-C++-Settings-Export.vssettings` file also found at root of repository.
 
 ### Environment Variables for Testing Accounts/Secrets 
-- To use IAM accessKeyId and secretKey to access AWS TimeStream, you need to specify the following environment variables.
+- To use IAM accessKeyId and secretKey to access AWS Timestream, you need to specify the following environment variables.
    - `AWS_ACCESS_KEY_ID` = `<AWS Access Key ID>`
 
    - `AWS_SECRET_ACCESS_KEY` = `<AWS Secret Access Key>`
@@ -19,7 +19,7 @@ C/C++ usage and formatting.
 - [ Optional ] Log configurations
 
   Set these 2 variables only if you would like to set a custom log path or log level for connection tests; it is completely optional.
-    1. `DOC_DB_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\TimeStream ODBC Driver"`)
+    1. `DOC_DB_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\Timestream ODBC Driver"`)
 
     The user needs to ensure that the directory mentioned in the log file path does exist, or driver will ignore user's passed value and create the log file in the default log path. Do **not** include a slash at the end of the log path.
 

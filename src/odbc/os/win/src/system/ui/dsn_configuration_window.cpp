@@ -19,12 +19,16 @@
 
 #include <Shlwapi.h>
 #include <Windowsx.h>
+#include <commctrl.h>
 
 #include "ignite/odbc/config/config_tools.h"
+#include "ignite/odbc/cred_prov_class.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/log_level.h"
-#include "ignite/odbc/read_preference.h"
-#include "ignite/odbc/scan_method.h"
+#include "ignite/odbc/idp_name.h"
+
+// TODO Add ComboBox for AWS log level configuration
+// https://bitquill.atlassian.net/browse/AT-1054
 
 namespace ignite {
 namespace odbc {
@@ -33,62 +37,66 @@ namespace ui {
 DsnConfigurationWindow::DsnConfigurationWindow(Window* parent,
                                                config::Configuration& config)
     : CustomWindow(parent, L"IgniteConfigureDsn",
-                   L"Configure Amazon TimeStream DSN"),
+                   L"Configure Amazon Timestream DSN"),
       width(780),
-      height(625),
-      connectionSettingsGroupBox(),
-      tlsSettingsGroupBox(),
-      tlsCheckBox(),
-      additionalSettingsGroupBox(),
+      height(520),
+      basicAuthSettingsGroupBox(),
+      credProviderSettingsGroupBox(),
+      connctionSettingsGroupBox(),
+      advanceAuthSettingsGroupBox(),
       nameLabel(),
       nameEdit(),
-      scanMethodLabel(),
-      scanMethodComboBox(),
-      scanLimitLabel(),
-      scanLimitEdit(),
-      schemaLabel(),
-      schemaEdit(),
-      refreshSchemaCheckBox(),
-      sshEnableCheckBox(),
-      sshUserLabel(),
-      sshUserEdit(),
-      sshHostLabel(),
-      sshHostEdit(),
-      sshPrivateKeyFileLabel(),
-      sshPrivateKeyFileEdit(),
-      sshPrivateKeyPassphraseLabel(),
-      sshPrivateKeyPassphraseEdit(),
-      sshStrictHostKeyCheckingCheckBox(),
-      sshKnownHostsFileLabel(),
-      sshKnownHostsFileEdit(),
-      logLevelLabel(),
+      credProvClassLabel(),
+      credProvClassComboBox(),
+      cusCredFileLabel(),
+      cusCredFileEdit(),
+      reqTimeoutLabel(),
+      reqTimeoutEdit(),
+      socketTimeoutLabel(),
+      socketTimeoutEdit(),
+      maxRetryCountClientLabel(),
+      maxRetryCountClientEdit(),
+      maxConnectionsLabel(),
+      maxConnectionsEdit(),
+      idpNameLabel(),
+      idpNameComboBox(),
+      idpHostLabel(),
+      idpHostEdit(),
+      idpUserNameLabel(),
+      idpUserNameEdit(),
+      idpPasswordLabel(),
+      idpPasswordEdit(),
+      idpArnLabel(),
+      idpArnEdit(),
+      oktaAppIdLabel(),
+      oktaAppIdEdit(),
+      roleArnLabel(),
+      roleArnEdit(),
+      aadAppIdEdit(),
+      aadAppIdLabel(),
+      aadClientSecretEdit(),
+      aadClientSecretLabel(),
+      aadTenantEdit(),
+      aadTenantLabel(),
       logLevelComboBox(),
-      logPathLabel(),
+      logLevelLabel(),
       logPathEdit(),
-      appNameLabel(),
-      appNameEdit(),
-      readPreferenceLabel(),
-      readPreferenceComboBox(),
-      replicaSetLabel(),
-      replicaSetEdit(),
-      retryReadsCheckBox(),
-      defaultFetchSizeLabel(),
-      defaultFetchSizeEdit(),
-      databaseLabel(),
-      databaseEdit(),
-      hostnameLabel(),
-      hostnameEdit(),
-      portLabel(),
-      portEdit(),
-      userLabel(),
-      userEdit(),
-      passwordLabel(),
-      passwordEdit(),
+      logPathLabel(),
+      accessKeyIdLabel(),
+      accessKeyIdEdit(),
+      secretAccessKeyLabel(),
+      secretAccessKeyEdit(),
+      sessionTokenLabel(),
+      sessionTokenEdit(),
+      enableMetadataPrepStmtCheckbox(),
       okButton(),
       cancelButton(),
       config(config),
       accepted(false),
-      created(false) {
+      created(false),
+      shownNameBalloon(false),
+      shownMaxConBalloon(false),
+      shownRegBalloon(false) {
   // No-op.
 }
 
@@ -133,21 +141,19 @@ void DsnConfigurationWindow::OnCreate() {
   // create left column group settings
   groupPosYLeft +=
       INTERVAL
-      + CreateConnectionSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
+      + CreateBasicAuthSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
   groupPosYLeft +=
-      INTERVAL + CreateTlsSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
+      INTERVAL + CreateCredentialsProvidersGroup(MARGIN, groupPosYLeft, groupSizeY);
   groupPosYLeft +=
-      INTERVAL + CreateSchemaSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
+      INTERVAL + CreateConnctionSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
   groupPosYLeft +=
-      INTERVAL + CreateSshSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
+      INTERVAL
+      + CreateEndpointConfigOptionsGroup(MARGIN, groupPosYLeft, groupSizeY);
   // create right column group settings
   groupPosYRight +=
-      INTERVAL + CreateSshSettingsGroup(posXRight, groupPosYRight, groupSizeY);
+      INTERVAL + CreateAdvanceAuthSettingsGroup(posXRight, groupPosYRight, groupSizeY);
   groupPosYRight +=
       INTERVAL + CreateLogSettingsGroup(posXRight, groupPosYRight, groupSizeY);
-  groupPosYRight +=
-      INTERVAL
-      + CreateAdditionalSettingsGroup(posXRight, groupPosYRight, groupSizeY);
 
   int cancelPosX = width - MARGIN - BUTTON_WIDTH;
   int okPosX = cancelPosX - INTERVAL - BUTTON_WIDTH;
@@ -160,71 +166,51 @@ void DsnConfigurationWindow::OnCreate() {
   // check whether the required fields are filled. If not, Ok button is
   // disabled.
   created = true;
-  okButton->SetEnabled(nameEdit->HasText() && userEdit->HasText()
-                       && passwordEdit->HasText() && databaseEdit->HasText()
-                       && hostnameEdit->HasText() && portEdit->HasText());
+  okButton->SetEnabled(nameEdit->HasText());
 }
 
-int DsnConfigurationWindow::CreateConnectionSettingsGroup(int posX, int posY,
+void DsnConfigurationWindow::EnableCusCredFileField() const {
+  // get value of credProvClass 
+  std::wstring credProvClassWStr;
+  credProvClassComboBox->GetText(credProvClassWStr);
+  std::string credProvClassStr = utility::ToUtf8(credProvClassWStr);
+  CredProvClass::Type credProvClass =
+      CredProvClass::FromString(credProvClassStr, CredProvClass::Type::UNKNOWN);
+
+  cusCredFileEdit->SetEnabled(credProvClass
+                              == CredProvClass::Type::PROP_FILE_CRED_PROV);
+}
+
+void DsnConfigurationWindow::EnableAdvanceAuthFields() const {
+  // get value of idpName
+  std::wstring idpNameWStr;
+  idpNameComboBox->GetText(idpNameWStr);
+  std::string idpNameStr = utility::ToUtf8(idpNameWStr);
+  IdpName::Type idpName =
+      IdpName::FromString(idpNameStr, IdpName::Type::UNKNOWN);
+  // If idpName is not none/unknown, idpNameNEqNone is true. 
+  bool idpNameNEqNone = idpName != IdpName::Type::UNKNOWN && idpName != IdpName::Type::NONE;
+  bool ipdNameOkta = idpName == IdpName::Type::OKTA;
+  bool ipdNameAAD = idpName == IdpName::Type::AAD;
+
+  // enable/disable generic advance authenication fields
+  idpHostEdit->SetEnabled(idpNameNEqNone);
+  idpUserNameEdit->SetEnabled(idpNameNEqNone);
+  idpPasswordEdit->SetEnabled(idpNameNEqNone);
+  idpArnEdit->SetEnabled(idpNameNEqNone);
+  
+  // enable/disable Okta-related fields 
+  oktaAppIdEdit->SetEnabled(ipdNameOkta);
+  roleArnEdit->SetEnabled(ipdNameOkta);
+
+  // enable/disable AAD-related fields 
+  aadAppIdEdit->SetEnabled(ipdNameAAD);
+  aadClientSecretEdit->SetEnabled(ipdNameAAD);
+  aadTenantEdit->SetEnabled(ipdNameAAD);
+}
+
+int DsnConfigurationWindow::CreateBasicAuthSettingsGroup(int posX, int posY,
                                                           int sizeX) {
-  enum { LABEL_WIDTH = 100 };
-
-  int labelPosX = posX + INTERVAL;
-
-  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
-  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
-
-  int rowPos = posY + 2 * INTERVAL;
-
-  std::wstring wVal = utility::FromUtf8(config.GetDsn());
-  nameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                          L"Data Source Name*:", ChildId::NAME_LABEL);
-  nameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                        ChildId::NAME_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = utility::FromUtf8(config.GetHostname());
-  hostnameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                              L"Hostname*:", ChildId::HOST_NAME_LABEL);
-  hostnameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                            ChildId::HOST_NAME_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = std::to_wstring(config.GetPort());
-  portLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT, L"Port*:",
-                          ChildId::PORT_LABEL);
-  portEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                        ChildId::PORT_EDIT, ES_NUMBER);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = utility::FromUtf8(config.GetAccessKeyId());
-  userLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                          L"User* :", ChildId::USER_LABEL);
-  userEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                        ChildId::USER_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = utility::FromUtf8(config.GetSecretKey());
-  passwordLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                              L"Password*:", ChildId::PASSWORD_LABEL);
-  passwordEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                            ChildId::USER_EDIT, ES_PASSWORD);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  connectionSettingsGroupBox =
-      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Connection Settings",
-                     ChildId::CONNECTION_SETTINGS_GROUP_BOX);
-
-  return rowPos - posY;
-}
-
-int DsnConfigurationWindow::CreateSshSettingsGroup(int posX, int posY,
-                                                   int sizeX) {
   enum { LABEL_WIDTH = 120 };
 
   int labelPosX = posX + INTERVAL;
@@ -236,81 +222,171 @@ int DsnConfigurationWindow::CreateSshSettingsGroup(int posX, int posY,
 
   int checkBoxSize = sizeX - 2 * MARGIN;
 
-  sshEnableCheckBox = CreateCheckBox(
-      labelPosX, rowPos, checkBoxSize, ROW_HEIGHT, L"Enable SSH Tunnel",
-      ChildId::SSH_ENABLE_CHECK_BOX, config.IsSshEnable());
+  std::wstring wVal = utility::FromUtf8(config.GetDsn());
+  nameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                          L"Data Source Name*:", ChildId::NAME_LABEL);
+  nameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                        ChildId::NAME_EDIT);
+  nameBalloon = CreateBalloon(
+      L"Required Field",
+      L"DSN name is a required field.", TTI_ERROR);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+  
+  wVal = utility::FromUtf8(config.GetAccessKeyId());
+  accessKeyIdLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                          L"Access Key ID:", ChildId::ACCESS_KEY_ID_LABEL);
+  accessKeyIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                        ChildId::ACCESS_KEY_ID_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  std::wstring wVal = utility::FromUtf8(config.GetSshUser());
-  sshUserLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                             L"SSH User:", ChildId::SSH_USER_LABEL);
-  sshUserEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                           ChildId::SSH_USER_EDIT);
+  wVal = utility::FromUtf8(config.GetSecretKey());
+  secretAccessKeyLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                              L"Secret Access Key:", ChildId::SECRET_ACCESS_KEY_LABEL);
+  secretAccessKeyEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                            ChildId::SECRET_ACCESS_KEY_EDIT, ES_PASSWORD);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetSshHost());
-  sshHostLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                             L"SSH Hostname:", ChildId::SSH_HOST_LABEL);
-  sshHostEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                           ChildId::SSH_HOST_EDIT);
+  wVal = utility::FromUtf8(config.GetSessionToken());
+  sessionTokenLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                              L"Session Token:", ChildId::SESSION_TOKEN_LABEL);
+  sessionTokenEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                            ChildId::SESSION_TOKEN_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetSshPrivateKeyFile());
-  sshPrivateKeyFileLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
-                                       ROW_HEIGHT, L"SSH Private Key File:",
-                                       ChildId::SSH_PRIVATE_KEY_FILE_LABEL);
-  sshPrivateKeyFileEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT,
-                                     wVal, ChildId::SSH_PRIVATE_KEY_FILE_EDIT);
+  enableMetadataPrepStmtCheckbox = CreateCheckBox(
+     labelPosX, rowPos, checkBoxSize, ROW_HEIGHT, L"Enable Metadata Prepared Statement",
+                     ChildId::ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX,
+                     config.IsEnableMetadataPreparedStatement());
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetSshPrivateKeyPassphrase());
-  // ssh private key passphrase label requires double the row height due to the
-  // long label.
-  sshPrivateKeyPassphraseLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT * 2,
-                  L"SSH Private Key File Passphrase:",
-                  ChildId::SSH_PRIVATE_KEY_PASSPHRASE_LABEL);
-  sshPrivateKeyPassphraseEdit =
+  basicAuthSettingsGroupBox =
+      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Basic Authentication Options",
+                     ChildId::BASIC_AUTH_SETTINGS_GROUP_BOX);
+
+  return rowPos - posY;
+}
+
+int DsnConfigurationWindow::CreateAdvanceAuthSettingsGroup(int posX, int posY,
+                                                   int sizeX) {
+  enum { LABEL_WIDTH = 120 };
+
+  int labelPosX = posX + INTERVAL;
+
+  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
+  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
+
+  int rowPos = posY + 2 * INTERVAL;
+
+  IdpName::Type idpName = config.GetIdpName();
+  idpNameLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Idp Name:", ChildId::IDP_NAME_LABEL);
+  idpNameComboBox =
+      CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT, L"",
+                     ChildId::IDP_NAME_COMBO_BOX);
+
+  // the order of add string needs to match the definition of the idp name .h file
+  idpNameComboBox->AddString(L"None");
+  idpNameComboBox->AddString(L"Okta");
+  idpNameComboBox->AddString(L"AzureAD");
+
+  idpNameComboBox->SetSelection(static_cast< int >(idpName));  // set default
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  std::wstring wVal = utility::FromUtf8(config.GetIdpHost());
+  idpHostLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                             L"Idp Host:", ChildId::IDP_HOST_LABEL);
+  idpHostEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                           ChildId::IDP_HOST_EDIT);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetIdpUserName());
+  idpUserNameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                             L"Idp User Name:", ChildId::IDP_USER_NAME_LABEL);
+  idpUserNameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                           ChildId::IDP_USER_NAME_EDIT);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetIdpPassword());
+  idpPasswordLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
+                                       ROW_HEIGHT, L"Idp Password:",
+                                       ChildId::IDP_PASSWORD_LABEL);
+  idpPasswordEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT,
+                                     wVal, ChildId::IDP_PASSWORD_EDIT, ES_PASSWORD);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetIdpArn());
+  idpArnLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Idp ARN:",
+                  ChildId::IDP_ARN_LABEL);
+  idpArnEdit =
       CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::SSH_PRIVATE_KEY_PASSPHRASE_EDIT, ES_PASSWORD);
+                 ChildId::IDP_ARN_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  // SSH Strict Host Key Check check box needs to have editSizeX as size because
-  // the string is long
-  sshStrictHostKeyCheckingCheckBox = CreateCheckBox(
-      labelPosX, rowPos, checkBoxSize, ROW_HEIGHT,
-      L"SSH Strict Host Key Check (disabling option is less secure)",
-      ChildId::SSH_STRICT_HOST_KEY_CHECKING_CHECK_BOX,
-      config.IsSshStrictHostKeyChecking());
+  // Okta Only fields
+  wVal = utility::FromUtf8(config.GetOktaAppId());
+  oktaAppIdLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
+                                       ROW_HEIGHT, L"Okta Application ID:",
+                                       ChildId::OKTA_APP_ID_LABEL);
+  oktaAppIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT,
+                                     wVal, ChildId::OKTA_APP_ID_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetSshKnownHostsFile());
-  sshKnownHostsFileLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
-                                       ROW_HEIGHT, L"SSH Known Hosts File:",
-                                       ChildId::SSH_KNOWN_HOSTS_FILE_LABEL);
-  sshKnownHostsFileEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT,
-                                     wVal, ChildId::SSH_KNOWN_HOSTS_FILE_EDIT);
+  wVal = utility::FromUtf8(config.GetRoleArn());
+  roleArnLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Role ARN:", ChildId::ROLE_ARN_LABEL);
+  roleArnEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                             ChildId::ROLE_ARN_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  sshSettingsGroupBox = CreateGroupBox(posX, posY, sizeX, rowPos - posY,
-                                       L"Internal SSH Tunnel Settings",
-                                       ChildId::SSH_SETTINGS_GROUP_BOX);
+  // AAD specific fields
+  wVal = utility::FromUtf8(config.GetAadAppId());
+  aadAppIdLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                             L"AAD Application ID:", ChildId::AAD_APP_ID_LABEL);
+  aadAppIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                           ChildId::AAD_APP_ID_EDIT);
 
-  sshUserEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-  sshHostEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-  sshPrivateKeyFileEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-  sshPrivateKeyPassphraseEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-  sshStrictHostKeyCheckingCheckBox->SetEnabled(sshEnableCheckBox->IsChecked());
-  sshKnownHostsFileEdit->SetEnabled(
-      sshEnableCheckBox->IsChecked()
-      && sshStrictHostKeyCheckingCheckBox->IsChecked());
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetAadClientSecret());
+  aadClientSecretLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"AAD Client Secret:", ChildId::AAD_CLIENT_SECRET_LABEL);
+  aadClientSecretEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                            ChildId::AAD_CLIENT_SECRET_EDIT, ES_PASSWORD);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetAadTenant());
+  aadTenantLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"AAD Tenant:", ChildId::AAD_TENANT_LABEL);
+  aadTenantEdit =
+      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                 ChildId::AAD_TENANT_EDIT);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  advanceAuthSettingsGroupBox = CreateGroupBox(posX, posY, sizeX, rowPos - posY,
+                                       L"Advance Authentication Options",
+                                       ChildId::ADVANCE_AUTH_SETTINGS_GROUP_BOX);
+
+  EnableAdvanceAuthFields();
 
   return rowPos - posY;
 }
@@ -322,6 +398,7 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
   int labelPosX = posX + INTERVAL;
   int pathSizeX = sizeX - 2 * INTERVAL;
   int comboSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
+  int comboPosX = labelPosX + LABEL_WIDTH + INTERVAL;
   int editPosX = labelPosX;
 
   int rowPos = posY + 2 * INTERVAL;
@@ -330,7 +407,7 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
 
   logLevelLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
                               L"Log Level:", ChildId::LOG_LEVEL_LABEL);
-  logLevelComboBox = CreateComboBox(editPosX, rowPos, comboSizeX, ROW_HEIGHT,
+  logLevelComboBox = CreateComboBox(comboPosX, rowPos, comboSizeX, ROW_HEIGHT,
                                     L"", ChildId::LOG_LEVEL_COMBO_BOX);
 
   logLevelComboBox->AddString(L"Debug");
@@ -372,9 +449,9 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
   return rowPos - posY;
 }
 
-int DsnConfigurationWindow::CreateTlsSettingsGroup(int posX, int posY,
+int DsnConfigurationWindow::CreateCredentialsProvidersGroup(int posX, int posY,
                                                    int sizeX) {
-  enum { LABEL_WIDTH = 100 };
+  enum { LABEL_WIDTH = 160 };
 
   int labelPosX = posX + INTERVAL;
 
@@ -383,190 +460,134 @@ int DsnConfigurationWindow::CreateTlsSettingsGroup(int posX, int posY,
 
   int rowPos = posY + 2 * INTERVAL;
 
-  int checkBoxSize = sizeX - 2 * MARGIN;
-
-  tlsCheckBox =
-      CreateCheckBox(labelPosX, rowPos, checkBoxSize, ROW_HEIGHT, L"Enable TLS",
-                     ChildId::TLS_CHECK_BOX, config.IsTls());
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  tlsAllowInvalidHostnamesCheckBox = CreateCheckBox(
-      labelPosX, rowPos, checkBoxSize, ROW_HEIGHT,
-      L"Allow Invalid Hostnames (enabling option is less secure)",
-      ChildId::TLS_ALLOW_INVALID_HOSTNAMES_CHECK_BOX,
-      config.IsTlsAllowInvalidHostnames());
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  std::wstring wVal = utility::FromUtf8(config.GetTlsCaFile());
-  tlsCaFileLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                               L"TLS CA File:", ChildId::TLS_CA_FILE_LABEL);
-  tlsCaFileEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                             ChildId::TLS_CA_FILE_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  tlsSettingsGroupBox =
-      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"TLS/SSL Settings",
-                     ChildId::TLS_SETTINGS_GROUP_BOX);
-
-  tlsAllowInvalidHostnamesCheckBox->SetEnabled(tlsCheckBox->IsChecked());
-  tlsCaFileEdit->SetEnabled(tlsCheckBox->IsChecked());
-
-  return rowPos - posY;
-}
-
-int DsnConfigurationWindow::CreateSchemaSettingsGroup(int posX, int posY,
-                                                      int sizeX) {
-  enum { LABEL_WIDTH = 100 };
-
-  int labelPosX = posX + INTERVAL;
-
-  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
-  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
-
-  int rowPos = posY + 2 * INTERVAL;
-
-  int checkBoxSize = sizeX - 2 * MARGIN;
-
-  ScanMethod::Type scanMethod = config.GetScanMethod();
-
-  scanMethodLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                                L"Scan Method:", ChildId::SCAN_METHOD_LABEL);
-  scanMethodComboBox = CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT,
-                                      L"", ChildId::SCAN_METHOD_COMBO_BOX);
-
-  scanMethodComboBox->AddString(L"Random");
-  scanMethodComboBox->AddString(L"ID Forward");
-  scanMethodComboBox->AddString(L"ID Reverse");
-  scanMethodComboBox->AddString(L"All");
-
-  scanMethodComboBox->SetSelection(
-      static_cast< int >(scanMethod));  // set default
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  std::wstring wVal = std::to_wstring(config.GetScanLimit());
-  scanLimitLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                               L"Scan Limit:", ChildId::SCAN_LIMIT_LABEL);
-  scanLimitEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                             ChildId::SCAN_LIMIT_EDIT, ES_NUMBER);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = utility::FromUtf8(config.GetSchemaName());
-  schemaLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                            L"Schema Name:", ChildId::SCHEMA_LABEL);
-  schemaEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                          ChildId::SCHEMA_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  refreshSchemaCheckBox = CreateCheckBox(
-      labelPosX, rowPos, checkBoxSize, ROW_HEIGHT,
-      L"Refresh Schema (Caution: use temporarily to update schema)",
-      ChildId::REFRESH_SCHEMA_CHECK_BOX, config.IsRefreshSchema());
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  schemaSettingsGroupBox = CreateGroupBox(posX, posY, sizeX, rowPos - posY,
-                                          L"Schema Generation Settings",
-                                          ChildId::SCHEMA_SETTINGS_GROUP_BOX);
-
-  std::wstring scanMethodWStr;
-  scanMethodComboBox->GetText(scanMethodWStr);
-  if (ScanMethod::FromString(utility::ToUtf8(scanMethodWStr),
-                             ScanMethod::Type::UNKNOWN)
-      == ScanMethod::Type::ALL) {
-    scanLimitEdit->SetEnabled(false);
-  } else {
-    scanLimitEdit->SetEnabled(true);
-  }
-
-  return rowPos - posY;
-}
-
-int DsnConfigurationWindow::CreateAdditionalSettingsGroup(int posX, int posY,
-                                                          int sizeX) {
-  enum { LABEL_WIDTH = 120 };  // same as SSH settings
-
-  int labelPosX = posX + INTERVAL;
-
-  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
-  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
-
-  int checkBoxSize = (sizeX - 3 * INTERVAL) / 2;
-
-  int rowPos = posY + 2 * INTERVAL;
-
-  retryReadsCheckBox = CreateCheckBox(
-      labelPosX, rowPos, checkBoxSize, ROW_HEIGHT, L"Retry Reads",
-      ChildId::RETRY_READS_CHECK_BOX, config.IsRetryReads());
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  ReadPreference::Type readPreference = config.GetReadPreference();
-
-  readPreferenceLabel =
+  credProvClassLabel =
       CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Read preference:", ChildId::READ_PREFERENCE_LABEL);
-  readPreferenceComboBox =
+                  L"AWS Credentials Provider Class:", ChildId::CRED_PROV_CLASS_LABEL);
+  credProvClassComboBox =
       CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT, L"",
-                     ChildId::READ_PREFERENCE_COMBO_BOX);
+                     ChildId::CRED_PROV_CLASS_COMBO_BOX);
 
-  readPreferenceComboBox->AddString(L"Primary");
-  readPreferenceComboBox->AddString(L"Primary Preferred");
-  readPreferenceComboBox->AddString(L"Secondary");
-  readPreferenceComboBox->AddString(L"Secondary Preferred");
-  readPreferenceComboBox->AddString(L"Nearest");
+  // the order of add string needs to match the definition of the cred_prov_class.h
+  // file
+  credProvClassComboBox->AddString(L"None");
+  credProvClassComboBox->AddString(L"PropertiesFileCredentialsProvider");
+  credProvClassComboBox->AddString(L"InstanceProfileCredentialsProvider");
 
-  readPreferenceComboBox->SetSelection(
-      static_cast< int >(readPreference));  // set default
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  std::wstring wVal = utility::FromUtf8(config.GetApplicationName());
-  appNameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                             L"Application Name:", ChildId::APP_NAME_LABEL);
-  appNameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                           ChildId::APP_NAME_EDIT);
+  CredProvClass::Type className = config.GetCredProvClass();
+  credProvClassComboBox->SetSelection(
+      static_cast< int >(className));  // set default
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = std::to_wstring(config.GetLoginTimeoutSeconds());
-  loginTimeoutSecLabel =
+  std::wstring wVal = utility::FromUtf8(config.GetCusCredFile());
+  cusCredFileLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                               L"Custom Credentials File:", ChildId::CUS_CRED_FILE_LABEL);
+  cusCredFileEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                             ChildId::CUS_CRED_FILE_EDIT);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  credProviderSettingsGroupBox =
+      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Credentials Provider Options",
+                     ChildId::CRED_PROVIDER_GROUP_BOX);
+
+  EnableCusCredFileField();
+
+  return rowPos - posY;
+}
+
+int DsnConfigurationWindow::CreateConnctionSettingsGroup(int posX, int posY,
+                                                      int sizeX) {
+  enum { LABEL_WIDTH = 120 };
+
+  int labelPosX = posX + INTERVAL;
+
+  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
+  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
+
+  int rowPos = posY + 2 * INTERVAL;
+
+  std::wstring wVal = std::to_wstring(config.GetReqTimeout());
+  reqTimeoutLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                               L"Request Timeout:", ChildId::REQ_TIMEOUT_LABEL);
+  reqTimeoutEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                             ChildId::REQ_TIMEOUT_EDIT, ES_NUMBER);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = std::to_wstring(config.GetSocketTimeout());
+  socketTimeoutLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                            L"Socket Timeout:", ChildId::SOCKET_TIMEOUT_LABEL);
+  socketTimeoutEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                          ChildId::SOCKET_TIMEOUT_EDIT, ES_NUMBER);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = std::to_wstring(config.GetMaxRetryCount());
+  maxRetryCountClientLabel =
       CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Login Timeout (s):", ChildId::LOGIN_TIMEOUT_SEC_LABEL);
-
-  loginTimeoutSecEdit =
+                  L"Max retry count client:", ChildId::MAX_RETRY_COUNT_CLIENT_LABEL);
+  maxRetryCountClientEdit =
       CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::LOGIN_TIMEOUT_SEC_EDIT, ES_NUMBER);
+                 ChildId::MAX_RETRY_COUNT_CLIENT_EDIT, ES_NUMBER);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetReplicaSet());
-  replicaSetLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                                L"Replica Set:", ChildId::REPLICA_SET_LABEL);
-  replicaSetEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                              ChildId::REPLICA_SET_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = std::to_wstring(config.GetDefaultFetchSize());
-  defaultFetchSizeLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT, L"Fetch Size:",
-                  ChildId::DEFAULT_FETCH_SIZE_LABEL);
-
-  defaultFetchSizeEdit =
+  wVal = std::to_wstring(config.GetMaxConnections());
+  maxConnectionsLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
+                                         ROW_HEIGHT, L"Max connections:",
+                                         ChildId::MAX_CONNECTIONS_LABEL);
+  maxConnectionsEdit =
       CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::DEFAULT_FETCH_SIZE_EDIT, ES_NUMBER);
+                 ChildId::MAX_CONNECTIONS_EDIT, ES_NUMBER);
+  maxConnectionsBalloon =
+      CreateBalloon(L"Positive Number Only",
+                    L"Number of connections must be a positive number.",
+                    TTI_ERROR);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  additionalSettingsGroupBox =
-      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Additional Settings",
-                     ChildId::ADDITIONAL_SETTINGS_GROUP_BOX);
+  connctionSettingsGroupBox = CreateGroupBox(posX, posY, sizeX, rowPos - posY,
+                                          L"Connection Options",
+                                          ChildId::CONNECTION_SETTINGS_GROUP_BOX);
+
+  return rowPos - posY;
+}
+
+int DsnConfigurationWindow::CreateEndpointConfigOptionsGroup(int posX, int posY,
+                                                            int sizeX) {
+  enum { LABEL_WIDTH = 120 };
+
+  int labelPosX = posX + INTERVAL;
+
+  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
+  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
+
+  int rowPos = posY + 2 * INTERVAL;
+
+  std::wstring wVal = utility::FromUtf8(config.GetEndpoint());
+  endpointLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                                   L"Endpoint:",
+                                   ChildId::ENDPOINT_LABEL);
+  endpointEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                                 ChildId::ENDPOINT_EDIT);
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetRegion());
+  regionLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Region:", ChildId::REGION_LABEL);
+  regionEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                               ChildId::REGION_EDIT);
+  regionBalloon = CreateBalloon(
+      L"Required Field",
+      L"Must enter the region if custom endpoint is provided.", TTI_WARNING);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+ endpointConfigOptionsGroupBox = CreateGroupBox(
+      posX, posY, sizeX, rowPos - posY, L"Endpoint Configuration Options",
+      ChildId::ENDPOINT_OPTIONS_GROUP_BOX);
 
   return rowPos - posY;
 }
@@ -598,57 +619,74 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
           break;
         }
 
-        case ChildId::NAME_EDIT:
-        case ChildId::HOST_NAME_EDIT:
-        case ChildId::PORT_EDIT:
-        case ChildId::DATABASE_EDIT:
-        case ChildId::USER_EDIT:
-        case ChildId::PASSWORD_EDIT: {
+        case ChildId::NAME_EDIT: {
           // Check if window has been created.
           if (created) {
-            okButton->SetEnabled(nameEdit->HasText() && userEdit->HasText()
-                                 && passwordEdit->HasText());
+            okButton->SetEnabled(
+                nameEdit->HasText());
+
+            if (!shownNameBalloon && !nameEdit->HasText()) {
+              Edit_ShowBalloonTip(nameEdit->GetHandle(), nameBalloon.get());
+              shownNameBalloon = true;
+            } else {
+              Edit_HideBalloonTip(nameEdit->GetHandle());
+              shownNameBalloon = false;
+            }
           }
           break;
         }
 
-        case ChildId::SSH_ENABLE_CHECK_BOX: {
-          sshEnableCheckBox->SetChecked(!sshEnableCheckBox->IsChecked());
-          sshUserEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-          sshHostEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-          sshPrivateKeyFileEdit->SetEnabled(sshEnableCheckBox->IsChecked());
-          sshPrivateKeyPassphraseEdit->SetEnabled(
-              sshEnableCheckBox->IsChecked());
-          sshStrictHostKeyCheckingCheckBox->SetEnabled(
-              sshEnableCheckBox->IsChecked());
-          sshKnownHostsFileEdit->SetEnabled(
-              sshEnableCheckBox->IsChecked()
-              && sshStrictHostKeyCheckingCheckBox->IsChecked());
-
+        case ChildId::ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX: {
+          enableMetadataPrepStmtCheckbox->SetChecked(
+              !enableMetadataPrepStmtCheckbox->IsChecked());
           break;
         }
 
-        case ChildId::SSH_STRICT_HOST_KEY_CHECKING_CHECK_BOX: {
-          sshStrictHostKeyCheckingCheckBox->SetChecked(
-              !sshStrictHostKeyCheckingCheckBox->IsChecked());
-          sshKnownHostsFileEdit->SetEnabled(
-              sshEnableCheckBox->IsChecked()
-              && sshStrictHostKeyCheckingCheckBox->IsChecked());
-          break;
-        }
-
-        case ChildId::TLS_CHECK_BOX: {
-          tlsCheckBox->SetChecked(!tlsCheckBox->IsChecked());
-          tlsAllowInvalidHostnamesCheckBox->SetEnabled(
-              tlsCheckBox->IsChecked());
-          tlsCaFileEdit->SetEnabled(tlsCheckBox->IsChecked());
+        case ChildId::CRED_PROV_CLASS_COMBO_BOX: {
+          EnableCusCredFileField();
 
           break;
         }
+                                            
+        case ChildId::MAX_CONNECTIONS_EDIT: {
+          if (created) {
+            std::wstring maxConWStr;
+            maxConnectionsEdit->GetText(maxConWStr);
 
-        case ChildId::TLS_ALLOW_INVALID_HOSTNAMES_CHECK_BOX: {
-          tlsAllowInvalidHostnamesCheckBox->SetChecked(
-              !tlsAllowInvalidHostnamesCheckBox->IsChecked());
+            std::string maxConStr = utility::ToUtf8(maxConWStr);
+
+            int16_t maxCon = common::LexicalCast< int16_t >(maxConStr);
+
+            if (!shownRegBalloon && maxCon <= 0) {
+              Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
+                                      maxConnectionsBalloon.get());
+              shownRegBalloon = true;
+            } else {
+              Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
+              shownRegBalloon = false;
+            }
+          }
+            break;
+        }
+
+        case ChildId::REGION_EDIT: {
+          if (created) {
+            // The balloon will be triggered one time when user is on the Region edit field
+
+            if (!shownRegBalloon && !regionEdit->HasText() && endpointEdit->HasText()) {
+              Edit_ShowBalloonTip(regionEdit->GetHandle(),
+                                  regionBalloon.get());
+              shownRegBalloon = true;
+            } else {
+              Edit_HideBalloonTip(regionEdit->GetHandle());
+              shownRegBalloon = false;
+            }
+          }
+          break;
+        }
+
+        case ChildId::IDP_NAME_COMBO_BOX: {
+          EnableAdvanceAuthFields();
 
           break;
         }
@@ -663,31 +701,6 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
           } else {
             logPathEdit->SetEnabled(true);
           }
-          break;
-        }
-
-        case ChildId::SCAN_METHOD_COMBO_BOX: {
-          std::wstring scanMethodWStr;
-          scanMethodComboBox->GetText(scanMethodWStr);
-          if (ScanMethod::FromString(utility::ToUtf8(scanMethodWStr),
-                                     ScanMethod::Type::UNKNOWN)
-              == ScanMethod::Type::ALL) {
-            scanLimitEdit->SetEnabled(false);
-          } else {
-            scanLimitEdit->SetEnabled(true);
-          }
-          break;
-        }
-
-        case ChildId::REFRESH_SCHEMA_CHECK_BOX: {
-          refreshSchemaCheckBox->SetChecked(
-              !refreshSchemaCheckBox->IsChecked());
-          break;
-        }
-
-        case ChildId::RETRY_READS_CHECK_BOX: {
-          retryReadsCheckBox->SetChecked(!retryReadsCheckBox->IsChecked());
-
           break;
         }
 
@@ -714,97 +727,131 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 void DsnConfigurationWindow::RetrieveParameters(
     config::Configuration& cfg) const {
   RetrieveLogParameters(cfg);
+  RetrieveBasicAuthParameters(cfg);
+  RetrieveCredentialsProvidersParameters(cfg);
+  RetrieveAdvanceAuthParameters(cfg);
   RetrieveConnectionParameters(cfg);
-  RetrieveSshParameters(cfg);
-  RetrieveTlsParameters(cfg);
-  RetrieveSchemaParameters(cfg);
-  RetrieveAdditionalParameters(cfg);
+  RetrieveEndpointConfigParameters(cfg);
 }
 
-void DsnConfigurationWindow::RetrieveConnectionParameters(
+void DsnConfigurationWindow::RetrieveBasicAuthParameters(
     config::Configuration& cfg) const {
+  bool enableMetadataPrepStmt =
+      enableMetadataPrepStmtCheckbox->IsChecked();
+
   std::wstring dsnWStr;
-  std::wstring hostnameWStr;
-  std::wstring portWStr;
-  std::wstring databaseWStr;
-  std::wstring userWStr;
-  std::wstring passwordWStr;
+  std::wstring accessKeyIdWStr;
+  std::wstring secretKeyWStr;
+  std::wstring sessionTokenWStr;
 
   nameEdit->GetText(dsnWStr);
   std::string dsnStr = utility::ToUtf8(dsnWStr);
   common::StripSurroundingWhitespaces(dsnStr);
-  // Stripping of whitespaces off the schema skipped intentionally
 
-  hostnameEdit->GetText(hostnameWStr);
-  portEdit->GetText(portWStr);
-  databaseEdit->GetText(databaseWStr);
-  userEdit->GetText(userWStr);
-  passwordEdit->GetText(passwordWStr);
+  accessKeyIdEdit->GetText(accessKeyIdWStr);
+  secretAccessKeyEdit->GetText(secretKeyWStr);
+  sessionTokenEdit->GetText(sessionTokenWStr);
 
-  std::string hostnameStr = utility::ToUtf8(hostnameWStr);
-  std::string portStr = utility::ToUtf8(portWStr);
-  std::string userStr = utility::ToUtf8(userWStr);
-  std::string passwordStr = utility::ToUtf8(passwordWStr);
-
-  int16_t port = common::LexicalCast< int16_t >(portStr);
-
-  if (port <= 0)
-    port = config.GetPort();
-
-  LOG_MSG("Retrieving arguments:");
-  LOG_MSG("DSN:      " << dsnStr);
-  LOG_MSG("Hostname: " << hostnameStr);
-  LOG_MSG("Port:     " << portStr);
-
-  // username and password intentionally not logged for security reasons
+  std::string accessKeyIdStr = utility::ToUtf8(accessKeyIdWStr);
+  std::string secretKeyStr = utility::ToUtf8(secretKeyWStr);
+  std::string sessionTokenStr = utility::ToUtf8(sessionTokenWStr);
 
   cfg.SetDsn(dsnStr);
-  cfg.SetPort(port);
-  cfg.SetHostname(hostnameStr);
-  cfg.SetAccessKeyId(userStr);
-  cfg.SetSecretKey(passwordStr);
+  cfg.SetAccessKeyId(accessKeyIdStr);
+  cfg.SetSecretKey(secretKeyStr);
+  cfg.SetSessionToken(sessionTokenStr);
+  cfg.SetEnableMetadataPreparedStatement(enableMetadataPrepStmt);
+
+  LOG_INFO_MSG("Retrieving arguments:");
+  LOG_INFO_MSG("DSN:                             " << dsnStr);
+  LOG_INFO_MSG("Session Token:                   " << sessionTokenStr);
+  LOG_INFO_MSG("Enable Metadata Preprepard Statement: "
+               << (enableMetadataPrepStmt ? "true" : "false"));
+  // username and password intentionally not logged for security reasons
 }
 
-void DsnConfigurationWindow::RetrieveSshParameters(
+void DsnConfigurationWindow::RetrieveCredentialsProvidersParameters(
     config::Configuration& cfg) const {
-  bool sshEnable = sshEnableCheckBox->IsChecked();
-  bool sshStrictHostKeyChecking = sshStrictHostKeyCheckingCheckBox->IsChecked();
+  std::wstring credProvClassWStr;
+  std::wstring cusCredFileWStr;
 
-  std::wstring sshUserWStr;
-  std::wstring sshHostWStr;
-  std::wstring sshPrivateKeyFileWStr;
-  std::wstring sshPrivateKeyPassphraseWStr;
-  std::wstring sshKnownHostsFileWStr;
+  credProvClassComboBox->GetText(credProvClassWStr);
+  cusCredFileEdit->GetText(cusCredFileWStr);
 
-  sshUserEdit->GetText(sshUserWStr);
-  sshHostEdit->GetText(sshHostWStr);
-  sshPrivateKeyFileEdit->GetText(sshPrivateKeyFileWStr);
-  sshPrivateKeyPassphraseEdit->GetText(sshPrivateKeyPassphraseWStr);
-  sshKnownHostsFileEdit->GetText(sshKnownHostsFileWStr);
+  std::string credProvClassStr = utility::ToUtf8(credProvClassWStr);
+  std::string cusCredFileStr = utility::ToUtf8(cusCredFileWStr);
 
-  std::string sshUserStr = utility::ToUtf8(sshUserWStr);
-  std::string sshHostStr = utility::ToUtf8(sshHostWStr);
-  std::string sshPrivateKeyFileStr = utility::ToUtf8(sshPrivateKeyFileWStr);
-  std::string sshPrivateKeyPassphraseStr =
-      utility::ToUtf8(sshPrivateKeyPassphraseWStr);
-  std::string sshKnownHostsFileStr = utility::ToUtf8(sshKnownHostsFileWStr);
+  CredProvClass::Type className =
+      CredProvClass::FromString(credProvClassStr, CredProvClass::Type::UNKNOWN);
 
-  LOG_MSG("Retrieving arguments:");
-  LOG_MSG("SSH enable:                    " << (sshEnable ? "true" : "false"));
-  LOG_MSG("SSH user:                      " << sshUserStr);
-  LOG_MSG("SSH host:                      " << sshHostStr);
-  LOG_MSG("SSH private key file:          " << sshPrivateKeyFileStr);
-  LOG_MSG("SSH strict host key checking:  "
-          << (sshStrictHostKeyChecking ? "true" : "false"));
-  LOG_MSG("SSH known hosts file:          " << sshKnownHostsFileStr);
+  cfg.SetCredProvClass(className);
+  cfg.SetCusCredFile(cusCredFileStr);
 
-  cfg.SetSshEnable(sshEnable);
-  cfg.SetSshUser(sshUserStr);
-  cfg.SetSshHost(sshHostStr);
-  cfg.SetSshPrivateKeyFile(sshPrivateKeyFileStr);
-  cfg.SetSshPrivateKeyPassphrase(sshPrivateKeyPassphraseStr);
-  cfg.SetSshStrictHostKeyChecking(sshStrictHostKeyChecking);
-  cfg.SetSshKnownHostsFile(sshKnownHostsFileStr);
+  LOG_INFO_MSG("AWS Credentials Provider Class: " << credProvClassStr);
+  LOG_DEBUG_MSG("CredProvClass::Type className: " << static_cast< int >(className));
+  LOG_INFO_MSG("Custum Credentials File: " << cusCredFileStr);
+}
+
+void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
+    config::Configuration& cfg) const {
+  std::wstring idpNameWStr;
+  std::wstring idpHostWStr;
+  std::wstring idpUserNameWStr;
+  std::wstring idpPasswordWStr;
+  std::wstring idpArnWStr;
+  std::wstring oktaAppIdWStr;
+  std::wstring roleArnWStr;
+  std::wstring aadAppIdWStr;
+  std::wstring aadClientSecretWStr;
+  std::wstring aadTenantWStr;
+
+  idpNameComboBox->GetText(idpNameWStr);
+  idpHostEdit->GetText(idpHostWStr);
+  idpUserNameEdit->GetText(idpUserNameWStr);
+  idpPasswordEdit->GetText(idpPasswordWStr);
+  idpArnEdit->GetText(idpArnWStr);
+  oktaAppIdEdit->GetText(oktaAppIdWStr);
+  roleArnEdit->GetText(roleArnWStr);
+  aadAppIdEdit->GetText(aadAppIdWStr);
+  aadClientSecretEdit->GetText(aadClientSecretWStr);
+  aadTenantEdit->GetText(aadTenantWStr);
+
+  std::string idpNameStr = utility::ToUtf8(idpNameWStr);
+  std::string idpHostStr = utility::ToUtf8(idpHostWStr);
+  std::string idpUserNameStr = utility::ToUtf8(idpUserNameWStr);
+  std::string idpPasswordStr = utility::ToUtf8(idpPasswordWStr);
+  std::string idpArnStr = utility::ToUtf8(idpArnWStr);
+  std::string oktaAppIdStr = utility::ToUtf8(oktaAppIdWStr);
+  std::string roleArnStr = utility::ToUtf8(roleArnWStr);
+  std::string aadAppIdStr = utility::ToUtf8(aadAppIdWStr);
+  std::string aadClientSecretStr = utility::ToUtf8(aadClientSecretWStr);
+  std::string aadTenantStr = utility::ToUtf8(aadTenantWStr);
+
+  IdpName::Type idpName =
+      IdpName::FromString(idpNameStr, IdpName::Type::UNKNOWN);
+
+  cfg.SetIdpName(idpName);
+  cfg.SetIdpHost(idpHostStr);
+  cfg.SetIdpUserName(idpUserNameStr);
+  cfg.SetIdpPassword(idpPasswordStr);
+  cfg.SetIdpArn(idpArnStr);
+  cfg.SetOktaAppId(oktaAppIdStr);
+  cfg.SetRoleArn(roleArnStr);
+  cfg.SetAadAppId(aadAppIdStr);
+  cfg.SetAadClientSecret(aadClientSecretStr);
+  cfg.SetAadTenant(aadTenantStr);
+
+  LOG_INFO_MSG("Idp Name:    " << idpNameStr);
+  LOG_DEBUG_MSG(
+      "IdpName::Type idpName: " << static_cast< int >(idpName));
+  LOG_INFO_MSG("Idp Host:     " << idpHostStr);
+  LOG_INFO_MSG("Idp User Name:     " << idpUserNameStr);
+  LOG_INFO_MSG("Idp ARN:     " << idpArnStr);
+  LOG_INFO_MSG("Okta Application ID:     " << oktaAppIdStr);
+  LOG_INFO_MSG("Role ARN:     " << roleArnStr);
+  LOG_INFO_MSG("Azure AD Application Id:     " << aadAppIdStr);
+  LOG_INFO_MSG("Azure AD Tenant:     " << aadTenantStr);
+  // Idp password and AAD client secret not logged intentionally
 }
 
 // RetrieveLogParameters is a special case. We want to get the log level and
@@ -828,111 +875,69 @@ void DsnConfigurationWindow::RetrieveLogParameters(
   cfg.SetLogLevel(logLevel);
   cfg.SetLogPath(logPathStr);
 
-  LOG_MSG("Log level:    " << logLevelStr);
-  LOG_MSG("Log path:     " << logPathStr);
+  LOG_INFO_MSG("Log level:    " << logLevelStr);
+  LOG_DEBUG_MSG(
+      "LogLevel::Type logLevel: " << static_cast< int >(logLevel));
+  LOG_INFO_MSG("Log path:     " << logPathStr);
 }
 
-void DsnConfigurationWindow::RetrieveTlsParameters(
+void DsnConfigurationWindow::RetrieveConnectionParameters(
     config::Configuration& cfg) const {
-  bool tls = tlsCheckBox->IsChecked();
-  bool tlsAllowInvalidHostnames = tlsAllowInvalidHostnamesCheckBox->IsChecked();
-  std::wstring tlsCaWStr;
+  std::wstring reqTimeoutWStr;
+  std::wstring socketTimeoutWStr;
+  std::wstring maxRetryCountWStr;
+  std::wstring maxConWStr;
 
-  tlsCaFileEdit->GetText(tlsCaWStr);
+  reqTimeoutEdit->GetText(reqTimeoutWStr);
+  socketTimeoutEdit->GetText(socketTimeoutWStr);
+  maxRetryCountClientEdit->GetText(maxRetryCountWStr);
+  maxConnectionsEdit->GetText(maxConWStr);
 
-  std::string tlsCaStr = utility::ToUtf8(tlsCaWStr);
+  std::string reqTimeoutStr = utility::ToUtf8(reqTimeoutWStr);
+  std::string socketTimeoutStr = utility::ToUtf8(socketTimeoutWStr);
+  std::string maxRetryCountStr = utility::ToUtf8(maxRetryCountWStr);
+  std::string maxConStr = utility::ToUtf8(maxConWStr);
 
-  LOG_MSG(
-      "TLS/SSL Encryption:                       " << (tls ? "true" : "false"));
-  LOG_MSG("TLS Allow Invalid Hostnames:              "
-          << (tlsAllowInvalidHostnames ? "true" : "false"));
-  LOG_MSG("TLS CA (Certificate Authority) File: " << tlsCaStr);
+  int32_t reqTimeout = common::LexicalCast< int32_t >(reqTimeoutStr);
+  int32_t socketTimeout = common::LexicalCast< int32_t >(socketTimeoutStr);
+  int32_t maxRetryCount = common::LexicalCast< int32_t >(maxRetryCountStr);
+  int32_t maxCon = common::LexicalCast< int32_t >(maxConStr);
 
-  cfg.SetTls(tls);
-  cfg.SetTlsAllowInvalidHostnames(tlsAllowInvalidHostnames);
-  cfg.SetTlsCaFile(tlsCaStr);
+  if (maxCon <= 0)
+    throw IgniteError(IgniteError::IGNITE_ERR_GENERIC,
+                      "[Max Connections] Number of connections must be a positive number.");
+
+  cfg.SetReqTimeout(reqTimeout);
+  cfg.SetSocketTimeout(socketTimeout);
+  cfg.SetMaxRetryCount(maxRetryCount);
+  cfg.SetMaxConnections(maxCon);
+
+  LOG_INFO_MSG("Request timeout (ms): " << reqTimeout);
+  LOG_INFO_MSG("Socket timeout (ms):  " << socketTimeout);
+  LOG_INFO_MSG("Max retry count:      " << maxRetryCount);
+  LOG_INFO_MSG("Max connections:      " << maxCon);
 }
 
-void DsnConfigurationWindow::RetrieveSchemaParameters(
+void DsnConfigurationWindow::RetrieveEndpointConfigParameters(
     config::Configuration& cfg) const {
-  std::wstring scanMethodWStr;
-  std::wstring scanLimitWStr;
-  std::wstring schemaWStr;
-  bool refreshSchema = refreshSchemaCheckBox->IsChecked();
+  if (!regionEdit->HasText() && endpointEdit->HasText())
+    throw IgniteError(IgniteError::IGNITE_ERR_GENERIC,
+                      "[Region] Must enter the region if custom endpoint is provided.");
 
-  scanMethodComboBox->GetText(scanMethodWStr);
-  scanLimitEdit->GetText(scanLimitWStr);
-  schemaEdit->GetText(schemaWStr);
+  std::wstring endpointWStr;
+  std::wstring regionWStr;
 
-  std::string scanMethodStr = utility::ToUtf8(scanMethodWStr);
-  std::string scanLimitStr = utility::ToUtf8(scanLimitWStr);
-  std::string schemaStr = utility::ToUtf8(schemaWStr);
+  endpointEdit->GetText(endpointWStr);
+  regionEdit->GetText(regionWStr);
 
-  int32_t scanLimit = common::LexicalCast< int32_t >(scanLimitStr);
+  std::string endpointStr = utility::ToUtf8(endpointWStr);
+  std::string regionStr = utility::ToUtf8(regionWStr);
 
-  if (scanLimit <= 0)
-    scanLimit = config.GetScanLimit();
+  cfg.SetEndpoint(endpointStr);
+  cfg.SetRegion(regionStr);
 
-  LOG_MSG("Scan method:    " << scanMethodStr);
-  LOG_MSG("Scan limit      " << scanLimit);
-  LOG_MSG("Schema:         " << schemaStr);
-  LOG_MSG("Refresh schema: " << (refreshSchema ? "true" : "false"));
-
-  ScanMethod::Type scanMethod =
-      ScanMethod::FromString(scanMethodStr, ScanMethod::Type::UNKNOWN);
-
-  cfg.SetScanMethod(scanMethod);
-  cfg.SetSchemaName(schemaStr);
-  cfg.SetScanLimit(scanLimit);
-  cfg.SetRefreshSchema(refreshSchema);
-}
-
-void DsnConfigurationWindow::RetrieveAdditionalParameters(
-    config::Configuration& cfg) const {
-  std::wstring readPreferenceWStr;
-  std::wstring appNameWStr;
-  std::wstring replicaSetWStr;
-  std::wstring loginTimeoutSecWStr;
-  std::wstring fetchSizeWStr;
-
-  readPreferenceComboBox->GetText(readPreferenceWStr);
-  appNameEdit->GetText(appNameWStr);
-  replicaSetEdit->GetText(replicaSetWStr);
-  bool retryReads = retryReadsCheckBox->IsChecked();
-  loginTimeoutSecEdit->GetText(loginTimeoutSecWStr);
-  defaultFetchSizeEdit->GetText(fetchSizeWStr);
-
-  std::string readPreferenceStr = utility::ToUtf8(readPreferenceWStr);
-  std::string appNameStr = utility::ToUtf8(appNameWStr);
-  std::string replicaSetStr = utility::ToUtf8(replicaSetWStr);
-  std::string loginTimeoutSecStr = utility::ToUtf8(loginTimeoutSecWStr);
-  std::string fetchSizeStr = utility::ToUtf8(fetchSizeWStr);
-
-  int32_t loginTimeoutSec = common::LexicalCast< int32_t >(loginTimeoutSecStr);
-  if (loginTimeoutSec <= 0)
-    loginTimeoutSec = config.GetLoginTimeoutSeconds();
-
-  int32_t fetchSize = common::LexicalCast< int32_t >(fetchSizeStr);
-  if (fetchSize <= 0)
-    fetchSize = config.GetDefaultFetchSize();
-
-  LOG_MSG("Retrieving arguments:");
-  LOG_MSG("Retry reads:              " << (retryReads ? "true" : "false"));
-  LOG_MSG("Read preference:          " << readPreferenceStr);
-  LOG_MSG("App name:                 " << appNameStr);
-  LOG_MSG("Login timeout (seconds):  " << loginTimeoutSecStr);
-  LOG_MSG("Replica Set:              " << replicaSetStr);
-  LOG_MSG("Fetch size:               " << fetchSize);
-
-  ReadPreference::Type readPreference = ReadPreference::FromString(
-      readPreferenceStr, ReadPreference::Type::UNKNOWN);
-
-  cfg.SetReadPreference(readPreference);
-  cfg.SetRetryReads(retryReads);
-  cfg.SetApplicationName(appNameStr);
-  cfg.SetLoginTimeoutSeconds(loginTimeoutSec);
-  cfg.SetReplicaSet(replicaSetStr);
-  cfg.SetDefaultFetchSize(fetchSize);
+  LOG_INFO_MSG("Endpoint:    " << endpointStr);
+  LOG_INFO_MSG("Region:      " << regionStr);
 }
 }  // namespace ui
 }  // namespace system

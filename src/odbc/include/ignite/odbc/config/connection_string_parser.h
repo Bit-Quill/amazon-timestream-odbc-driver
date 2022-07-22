@@ -39,12 +39,6 @@ class ConnectionStringParser {
     /** Connection attribute keyword for Driver attribute. */
     static const std::string driver;
 
-    /** Connection attribute keyword for hostname attribute. */
-    static const std::string hostname;
-
-    /** Connection attribute keyword for port attribute. */
-    static const std::string port;
-
     /** Connection attribute keyword for username attribute. */
     static const std::string accessKeyId;
 
@@ -54,92 +48,68 @@ class ConnectionStringParser {
     /** Connection attribute keyword for sessiontoken attribute. */
     static const std::string sessionToken;
 
-    /** Connection attribute keyword for sessiontoken attribute. */
+    /** Connection attribute keyword for enableMetadataPreparedStatement attribute. */
+    static const std::string enableMetadataPreparedStatement;
+
+    /** Connection attribute keyword for credProvClass attribute. */
+    static const std::string credProvClass;
+
+    /** Connection attribute keyword for cusCredFile attribute. */
+    static const std::string cusCredFile;
+
+    /** Connection attribute keyword for reqTimeout attribute. */
+    static const std::string reqTimeout;
+
+    /** Connection attribute keyword for socketTimeout attribute. */
+    static const std::string socketTimeout;
+
+    /** Connection attribute keyword for maxRetryCount attribute. */
+    static const std::string maxRetryCount;
+
+    /** Connection attribute keyword for maxConnections attribute. */
+    static const std::string maxConnections;
+
+    /** Connection attribute keyword for endpoint attribute. */
+    static const std::string endpoint;
+
+    /** Connection attribute keyword for region attribute. */
     static const std::string region;
 
-    /** Connection attribute keyword for appName attribute. */
-    static const std::string appName;
+    /** Connection attribute keyword for idpName attribute. */
+    static const std::string idpName;
 
-    /** Connection attribute keyword for loginTimeoutSec attribute. */
-    static const std::string loginTimeoutSec;
+    /** Connection attribute keyword for idpHost attribute. */
+    static const std::string idpHost;
 
-    /** Connection attribute keyword for readPreference attribute. */
-    static const std::string readPreference;
+    /** Connection attribute keyword for idpUserName attribute. */
+    static const std::string idpUserName;
 
-    /** Connection attribute keyword for replicaSet attribute. */
-    static const std::string replicaSet;
+    /** Connection attribute keyword for idpPassword attribute. */
+    static const std::string idpPassword;
 
-    /** Connection attribute keyword for retryReads attribute. */
-    static const std::string retryReads;
+    /** Connection attribute keyword for idpArn attribute. */
+    static const std::string idpArn;
 
-    /** Connection attribute keyword for tls attribute. */
-    static const std::string tls;
+    /** Connection attribute keyword for oktaAppId attribute. */
+    static const std::string oktaAppId;
 
-    /** Connection attribute keyword for tlsAllowInvalidHostnames attribute. */
-    static const std::string tlsAllowInvalidHostnames;
+    /** Connection attribute keyword for roleArn attribute. */
+    static const std::string roleArn;
 
-    /** Connection attribute keyword for tlsCaFile attribute. */
-    static const std::string tlsCaFile;
+    /** Connection attribute keyword for aadAppId attribute. */
+    static const std::string aadAppId;
 
-    /** Connection attribute keyword for sshEnable attribute. */
-    static const std::string sshEnable;
+    /** Connection attribute keyword for aadClientSecret attribute. */
+    static const std::string aadClientSecret;
 
-    /** Connection attribute keyword for sshUser attribute. */
-    static const std::string sshUser;
-
-    /** Connection attribute keyword for sshHost attribute. */
-    static const std::string sshHost;
-
-    /** Connection attribute keyword for sshPrivateKeyFile attribute. */
-    static const std::string sshPrivateKeyFile;
-
-    /** Connection attribute keyword for sshPrivateKeyPassphrase attribute. */
-    static const std::string sshPrivateKeyPassphrase;
-
-    /** Connection attribute keyword for sshStrictHostKeyChecking attribute. */
-    static const std::string sshStrictHostKeyChecking;
-
-    /** Connection attribute keyword for sshKnownHostsFile attribute. */
-    static const std::string sshKnownHostsFile;
+    /** Connection attribute keyword for aadTenant attribute. */
+    static const std::string aadTenant;
 
     /** Connection attribute keyword for log level. */
     static const std::string logLevel;
 
     /** Connection attribute keyword for log path. */
     static const std::string logPath;
-
-    /** Connection attribute keyword for scanMethod attribute. */
-    static const std::string scanMethod;
-
-    /** Connection attribute keyword for scanLimit attribute. */
-    static const std::string scanLimit;
-
-    /** Connection attribute keyword for schemaName attribute. */
-    static const std::string schemaName;
-
-    /** Connection attribute keyword for refreshSchema attribute. */
-    static const std::string refreshSchema;
-
-    /** Connection attribute keyword for defaultFetchSize attribute. */
-    static const std::string defaultFetchSize;
-
-    /** Connection attribute keyword for sslMode attribute. */
-    static const std::string sslMode;
-
-    /** Connection attribute keyword for sslKeyFile attribute. */
-    static const std::string sslKeyFile;
-
-    /** Connection attribute keyword for sslCertFile attribute. */
-    static const std::string sslCertFile;
-
-    /** Connection attribute keyword for sslCaFile attribute. */
-    static const std::string sslCaFile;
-
-    /** Connection attribute keyword for username attribute. */
-    static const std::string uid;
-
-    /** Connection attribute keyword for password attribute. */
-    static const std::string pwd;
   };
 
   /**

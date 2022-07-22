@@ -1,1 +1,1 @@
-# Amazon TimeStream ODBC Driver
+# Amazon Timestream ODBC Driver

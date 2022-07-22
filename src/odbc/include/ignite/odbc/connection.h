@@ -175,7 +175,7 @@ class Connection : public diagnostic::DiagnosableAdapter {
    */
   template < typename ReqT, typename RspT >
   void SyncMessage(const ReqT& req, RspT& rsp) {
-    // TODO: Should be needed for TimeStream
+    // TODO: Should be needed for Timestream
   }
 
   /**

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#define BOOST_TEST_MODULE TimeStreamTest
+#define BOOST_TEST_MODULE TimestreamTest
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -84,17 +84,11 @@ BOOST_AUTO_TEST_CASE(TestConnectionConcurrency) {
 }
 
 // TO-DO enable for misc options in future
+// https://bitquill.atlassian.net/browse/AT-1056
 BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
+  // TODO add misc options
   const std::string miscOptions =
-      "APP_NAME=TestAppName;"
-      "LOGIN_TIMEOUT_SEC=30;"
-      "READ_PREFERENCE=primary_preferred;"
-      "RETRY_READS=false;"
-      "SCAN_METHOD=id_forward;"
-      "SCAN_LIMIT=100;"
-      "SCHEMA_NAME=test;"
-      "REFRESH_SCHEMA=true;"
-      "DEFAULT_FETCH_SIZE=1000;";
+      "APP_NAME=TestAppName;";
   std::string connectionString;
   CreateDsnConnectionStringForAWS(connectionString, "", "",
                                           miscOptions);
@@ -115,7 +109,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionOnlyDisconnect) {
 
 BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
   std::string connectionString =
-      "DRIVER={Amazon TimeStream};"
+      "DRIVER={Amazon Timestream};"
       "ACCESS_KEY_ID=key;";
 
   ExpectConnectionReject(
@@ -130,7 +124,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionInvalidUser) {
   CreateDsnConnectionStringForAWS(connectionString, "", "invaliduser");
 
   ExpectConnectionReject(
-      connectionString, "08001: Failed to establish connection to TimeStream.\nINVALID_ENDPOINT: Failed to discover");
+      connectionString, "08001: Failed to establish connection to Timestream.\nINVALID_ENDPOINT: Failed to discover");
 
   Disconnect();
 }

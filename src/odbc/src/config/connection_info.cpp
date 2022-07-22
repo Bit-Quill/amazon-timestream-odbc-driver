@@ -591,10 +591,10 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 
   // Driver name.
 #ifdef SQL_DRIVER_NAME
-  strParams[SQL_DRIVER_NAME] = "Amazon TimeStream";
+  strParams[SQL_DRIVER_NAME] = "Amazon Timestream";
 #endif  // SQL_DRIVER_NAME
 #ifdef SQL_DBMS_NAME
-  strParams[SQL_DBMS_NAME] = "Amazon TimeStream";
+  strParams[SQL_DBMS_NAME] = "Amazon Timestream";
 #endif  // SQL_DBMS_NAME
 
   // ODBC version.
@@ -839,7 +839,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // A character string with the actual data source-specific server name; useful
   // when a data source name is used during SQLConnect, SQLDriverConnect, and
   // SQLBrowseConnect.
-  strParams[SQL_SERVER_NAME] = "Amazon TimeStream";
+  strParams[SQL_SERVER_NAME] = "Amazon Timestream";
 #endif  // SQL_SERVER_NAME
 
 #ifdef SQL_USER_NAME

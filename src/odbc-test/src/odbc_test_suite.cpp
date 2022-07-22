@@ -662,7 +662,7 @@ int OdbcTestSuite::InsertTestBatch(int from, int to, int expectedToAffect,
 }
 
 void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
-  Connect("DRIVER={Amazon TimeStream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect("DRIVER={Amazon Timestream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   // Inserting values.
   int inserted = InsertTestBatch(0, recordsNum, recordsNum);
@@ -722,7 +722,7 @@ void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
 }
 
 void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
-  Connect("DRIVER={Amazon TimeStream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect("DRIVER={Amazon Timestream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   std::vector< SQLUSMALLINT > statuses(recordsNum, 42);
 
@@ -824,7 +824,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
   }
 
   connectionString =
-            "DRIVER={Amazon TimeStream};"
+            "DRIVER={Amazon Timestream};"
             "ACCESS_KEY_ID=" + accessKeyId + ";"
             "SECRET_KEY=" + secretKey + ";"
             "SESSION_TOKEN=" + sessionToken + ";"
