@@ -38,65 +38,72 @@ DsnConfigurationWindow::DsnConfigurationWindow(Window* parent,
                                                config::Configuration& config)
     : CustomWindow(parent, L"IgniteConfigureDsn",
                    L"Configure Amazon Timestream DSN"),
-      width(780),
-      height(520),
-      basicAuthSettingsGroupBox(),
-      credProviderSettingsGroupBox(),
-      connctionSettingsGroupBox(),
-      advanceAuthSettingsGroupBox(),
-      nameLabel(),
+      width(450),
+      height(455),
       nameEdit(),
-      credProvClassLabel(),
+      nameLabel(),
+      nameBalloon(),
+      endpointEdit(),
+      endpointLabel(),
+      regionEdit(),
+      regionLabel(),
+      regionBalloon(),
+      enableMetadataPrepStmtCheckbox(),
+      tabs(),
+      accessKeyIdEdit(),
+      accessKeyIdLabel(),
+      secretAccessKeyEdit(),
+      secretAccessKeyLabel(),
+      sessionTokenEdit(),
+      sessionTokenLabel(),
       credProvClassComboBox(),
-      cusCredFileLabel(),
+      credProvClassLabel(),
       cusCredFileEdit(),
-      reqTimeoutLabel(),
-      reqTimeoutEdit(),
-      socketTimeoutLabel(),
-      socketTimeoutEdit(),
-      maxRetryCountClientLabel(),
-      maxRetryCountClientEdit(),
-      maxConnectionsLabel(),
-      maxConnectionsEdit(),
-      idpNameLabel(),
+      cusCredFileLabel(),
+      cusCredFileBalloon(),
       idpNameComboBox(),
-      idpHostLabel(),
+      idpNameLabel(),
       idpHostEdit(),
-      idpUserNameLabel(),
+      idpHostLabel(),
       idpUserNameEdit(),
-      idpPasswordLabel(),
+      idpUserNameLabel(),
       idpPasswordEdit(),
-      idpArnLabel(),
+      idpPasswordLabel(),
       idpArnEdit(),
-      oktaAppIdLabel(),
+      idpArnLabel(),
       oktaAppIdEdit(),
-      roleArnLabel(),
+      oktaAppIdLabel(),
       roleArnEdit(),
+      roleArnLabel(),
       aadAppIdEdit(),
       aadAppIdLabel(),
       aadClientSecretEdit(),
       aadClientSecretLabel(),
       aadTenantEdit(),
       aadTenantLabel(),
+      reqTimeoutEdit(),
+      reqTimeoutLabel(),
+      socketTimeoutEdit(),
+      socketTimeoutLabel(),
+      maxRetryCountClientEdit(),
+      maxRetryCountClientLabel(),
+      maxConnectionsEdit(),
+      maxConnectionsLabel(),
+      maxConnectionsBalloon(),
       logLevelComboBox(),
       logLevelLabel(),
       logPathEdit(),
       logPathLabel(),
-      accessKeyIdLabel(),
-      accessKeyIdEdit(),
-      secretAccessKeyLabel(),
-      secretAccessKeyEdit(),
-      sessionTokenLabel(),
-      sessionTokenEdit(),
-      enableMetadataPrepStmtCheckbox(),
       okButton(),
       cancelButton(),
       config(config),
       accepted(false),
       created(false),
       shownNameBalloon(false),
+      shownRegBalloon(false),
+      shownCusCredFileBalloon(false),
       shownMaxConBalloon(false),
-      shownRegBalloon(false) {
+      preSel(TabIndex::Type::BASIC_AUTH) {
   // No-op.
 }
 
@@ -134,33 +141,33 @@ void DsnConfigurationWindow::Create() {
 
 void DsnConfigurationWindow::OnCreate() {
   int groupPosYLeft = MARGIN;
-  int groupSizeY = width / 2 - 2 * MARGIN;
-  int posXRight = width / 2 + MARGIN;
-  int groupPosYRight = MARGIN;
+  int tabGroupPosY = groupPosYLeft;
+  int groupSizeY = width - 2 * MARGIN;
 
-  // create left column group settings
+  // create column group settings
+  tabGroupPosY += +CreateBasicSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
+  CreateBasicAuthSettingsGroup(MARGIN, tabGroupPosY, groupSizeY);
+  CreateConnectionSettingsGroup(MARGIN, tabGroupPosY, groupSizeY);
+
+  // Advance Authentication group is the tallest UI group, so the positions of
+  // Ok button and Cancel button will be right below the end of Advance Auth
   groupPosYLeft +=
-      INTERVAL
-      + CreateBasicAuthSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
-  groupPosYLeft +=
-      INTERVAL + CreateCredentialsProvidersGroup(MARGIN, groupPosYLeft, groupSizeY);
-  groupPosYLeft +=
-      INTERVAL + CreateConnctionSettingsGroup(MARGIN, groupPosYLeft, groupSizeY);
-  groupPosYLeft +=
-      INTERVAL
-      + CreateEndpointConfigOptionsGroup(MARGIN, groupPosYLeft, groupSizeY);
-  // create right column group settings
-  groupPosYRight +=
-      INTERVAL + CreateAdvanceAuthSettingsGroup(posXRight, groupPosYRight, groupSizeY);
-  groupPosYRight +=
-      INTERVAL + CreateLogSettingsGroup(posXRight, groupPosYRight, groupSizeY);
+      tabGroupPosY
+      + CreateAdvanceAuthSettingsGroup(MARGIN, tabGroupPosY, groupSizeY);
+  CreateLogSettingsGroup(MARGIN, tabGroupPosY, groupSizeY);
+
+  // Hide all tab window except Basic Authentication UI.
+  // Basic Authentication UI tab is selected by default.
+  ShowAdvanceAuth(false);
+  ShowConnectionSettings(false);
+  ShowLogSettings(false);
 
   int cancelPosX = width - MARGIN - BUTTON_WIDTH;
   int okPosX = cancelPosX - INTERVAL - BUTTON_WIDTH;
 
-  okButton = CreateButton(okPosX, groupPosYRight, BUTTON_WIDTH, BUTTON_HEIGHT,
+  okButton = CreateButton(okPosX, groupPosYLeft, BUTTON_WIDTH, BUTTON_HEIGHT,
                           L"Ok", ChildId::OK_BUTTON);
-  cancelButton = CreateButton(cancelPosX, groupPosYRight, BUTTON_WIDTH,
+  cancelButton = CreateButton(cancelPosX, groupPosYLeft, BUTTON_WIDTH,
                               BUTTON_HEIGHT, L"Cancel", ChildId::CANCEL_BUTTON);
 
   // check whether the required fields are filled. If not, Ok button is
@@ -169,56 +176,228 @@ void DsnConfigurationWindow::OnCreate() {
   okButton->SetEnabled(nameEdit->HasText());
 }
 
-void DsnConfigurationWindow::EnableCusCredFileField() const {
-  // get value of credProvClass 
+void DsnConfigurationWindow::ShowBasicAuth(bool visble) const {
+  ShowWindow(accessKeyIdEdit->GetHandle(), visble);
+  ShowWindow(accessKeyIdLabel->GetHandle(), visble);
+  ShowWindow(secretAccessKeyEdit->GetHandle(), visble);
+  ShowWindow(secretAccessKeyLabel->GetHandle(), visble);
+  ShowWindow(sessionTokenEdit->GetHandle(), visble);
+  ShowWindow(sessionTokenLabel->GetHandle(), visble);
+  ShowWindow(credProvClassComboBox->GetHandle(), visble);
+  ShowWindow(credProvClassLabel->GetHandle(), visble);
+  ShowWindow(cusCredFileEdit->GetHandle(), visble);
+  ShowWindow(cusCredFileLabel->GetHandle(), visble);
+}
+
+void DsnConfigurationWindow::ShowAdvanceAuth(bool visble) const {
+  ShowWindow(idpNameComboBox->GetHandle(), visble);
+  ShowWindow(idpNameLabel->GetHandle(), visble);
+  if (visble) {
+    // Show fields in Advance Authentication based on selection of idpName
+    OnIdpNameChanged();
+  } else {
+    ShowWindow(idpHostEdit->GetHandle(), visble);
+    ShowWindow(idpHostLabel->GetHandle(), visble);
+    ShowWindow(idpUserNameEdit->GetHandle(), visble);
+    ShowWindow(idpUserNameLabel->GetHandle(), visble);
+    ShowWindow(idpPasswordEdit->GetHandle(), visble);
+    ShowWindow(idpPasswordLabel->GetHandle(), visble);
+    ShowWindow(idpArnEdit->GetHandle(), visble);
+    ShowWindow(idpArnLabel->GetHandle(), visble);
+    ShowWindow(oktaAppIdEdit->GetHandle(), visble);
+    ShowWindow(oktaAppIdLabel->GetHandle(), visble);
+    ShowWindow(roleArnEdit->GetHandle(), visble);
+    ShowWindow(roleArnLabel->GetHandle(), visble);
+    ShowWindow(aadAppIdEdit->GetHandle(), visble);
+    ShowWindow(aadAppIdLabel->GetHandle(), visble);
+    ShowWindow(aadClientSecretEdit->GetHandle(), visble);
+    ShowWindow(aadClientSecretLabel->GetHandle(), visble);
+    ShowWindow(aadTenantEdit->GetHandle(), visble);
+    ShowWindow(aadTenantLabel->GetHandle(), visble);
+  }
+}
+
+void DsnConfigurationWindow::ShowConnectionSettings(bool visble) const {
+  ShowWindow(reqTimeoutEdit->GetHandle(), visble);
+  ShowWindow(reqTimeoutLabel->GetHandle(), visble);
+  ShowWindow(socketTimeoutEdit->GetHandle(), visble);
+  ShowWindow(socketTimeoutLabel->GetHandle(), visble);
+  ShowWindow(maxRetryCountClientEdit->GetHandle(), visble);
+  ShowWindow(maxRetryCountClientLabel->GetHandle(), visble);
+  ShowWindow(maxConnectionsEdit->GetHandle(), visble);
+  ShowWindow(maxConnectionsLabel->GetHandle(), visble);
+}
+
+void DsnConfigurationWindow::ShowLogSettings(bool visble) const {
+  ShowWindow(logLevelComboBox->GetHandle(), visble);
+  ShowWindow(logLevelLabel->GetHandle(), visble);
+  ShowWindow(logPathEdit->GetHandle(), visble);
+  ShowWindow(logPathLabel->GetHandle(), visble);
+}
+
+void DsnConfigurationWindow::OnSelChanged(TabIndex::Type idx) {
+  if (preSel == idx) {
+    LOG_DEBUG_MSG(
+        "Tab index unchanged but OnSelChanged is triggered. Tab window will "
+        "not change");
+    return;
+  }
+
+  // hide previous tab selection
+  switch (preSel) {
+    case TabIndex::Type::BASIC_AUTH:
+      ShowBasicAuth(false);
+
+      break;
+    case TabIndex::Type::ADVANCE_AUTH:
+      ShowAdvanceAuth(false);
+
+      break;
+    case TabIndex::Type::CONNECTION_SETTINGS:
+      ShowConnectionSettings(false);
+
+      break;
+    case TabIndex::Type::LOG_SETTINGS:
+      ShowLogSettings(false);
+
+      break;
+    default:
+      // log wrong preSel value
+      LOG_DEBUG_MSG("wrong preSel value: "
+                    << preSel << ", this should not happen. Suggest to debug.");
+  }
+
+  // show current tab selection
+  switch (idx) {
+    case TabIndex::Type::BASIC_AUTH:
+      ShowBasicAuth(true);
+
+      break;
+    case TabIndex::Type::ADVANCE_AUTH:
+      ShowAdvanceAuth(true);
+
+      break;
+    case TabIndex::Type::CONNECTION_SETTINGS:
+      ShowConnectionSettings(true);
+
+      break;
+    case TabIndex::Type::LOG_SETTINGS:
+      ShowLogSettings(true);
+
+      break;
+    default:
+      // log wrong index value
+      LOG_DEBUG_MSG("wrong idx value: "
+                    << idx << ", this should not happen. Suggest to debug.");
+  }
+
+  // Hide all balloons when tabs switch
+  Edit_HideBalloonTip(nameEdit->GetHandle());
+  shownNameBalloon = false;
+  Edit_HideBalloonTip(regionEdit->GetHandle());
+  shownRegBalloon = false;
+  Edit_HideBalloonTip(cusCredFileEdit->GetHandle());
+  shownCusCredFileBalloon = false;
+  Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
+  shownMaxConBalloon = false;
+
+  // save the previously selected index
+  preSel = idx;
+}
+
+void DsnConfigurationWindow::OnCredProvClassChanged() const {
+  // get value of credProvClass
   std::wstring credProvClassWStr;
   credProvClassComboBox->GetText(credProvClassWStr);
   std::string credProvClassStr = utility::ToUtf8(credProvClassWStr);
   CredProvClass::Type credProvClass =
       CredProvClass::FromString(credProvClassStr, CredProvClass::Type::UNKNOWN);
+  bool credProvClassNotSelected =
+      credProvClass != CredProvClass::Type::PROP_FILE_CRED_PROV
+      && credProvClass != CredProvClass::Type::INST_PROF_CRED_PROV;
 
   cusCredFileEdit->SetEnabled(credProvClass
                               == CredProvClass::Type::PROP_FILE_CRED_PROV);
+
+  // when PropertiesFileCredentialsProvider or
+  // Instanceprofilecredentialsprovider are selected as credentials provider
+  // class, the access key ID, secret access key and session token fields will
+  // be disabled
+  accessKeyIdEdit->SetEnabled(credProvClassNotSelected);
+  secretAccessKeyEdit->SetEnabled(credProvClassNotSelected);
+  sessionTokenEdit->SetEnabled(credProvClassNotSelected);
 }
 
-void DsnConfigurationWindow::EnableAdvanceAuthFields() const {
+void DsnConfigurationWindow::OnIdpNameChanged() const {
   // get value of idpName
   std::wstring idpNameWStr;
   idpNameComboBox->GetText(idpNameWStr);
   std::string idpNameStr = utility::ToUtf8(idpNameWStr);
   IdpName::Type idpName =
       IdpName::FromString(idpNameStr, IdpName::Type::UNKNOWN);
-  // If idpName is not none/unknown, idpNameNEqNone is true. 
-  bool idpNameNEqNone = idpName != IdpName::Type::UNKNOWN && idpName != IdpName::Type::NONE;
+  // If idpName is not none/unknown, idpNameNEqNone is true.
+  bool idpNameNEqNone =
+      idpName != IdpName::Type::UNKNOWN && idpName != IdpName::Type::NONE;
   bool ipdNameOkta = idpName == IdpName::Type::OKTA;
   bool ipdNameAAD = idpName == IdpName::Type::AAD;
+
+  // when Okta or AAD are selected for IdpName, the access key ID, secret
+  // access key and session token fields will be disabled
+  accessKeyIdEdit->SetEnabled(!idpNameNEqNone);
+  secretAccessKeyEdit->SetEnabled(!idpNameNEqNone);
+  sessionTokenEdit->SetEnabled(!idpNameNEqNone);
 
   // enable/disable generic advance authenication fields
   idpHostEdit->SetEnabled(idpNameNEqNone);
   idpUserNameEdit->SetEnabled(idpNameNEqNone);
   idpPasswordEdit->SetEnabled(idpNameNEqNone);
   idpArnEdit->SetEnabled(idpNameNEqNone);
-  
-  // enable/disable Okta-related fields 
+
+  // hide/show generic advance authenication fields
+  ShowWindow(idpHostLabel->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpHostEdit->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpUserNameEdit->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpUserNameLabel->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpPasswordEdit->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpPasswordLabel->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpArnEdit->GetHandle(), idpNameNEqNone);
+  ShowWindow(idpArnLabel->GetHandle(), idpNameNEqNone);
+
+  // enable/disable Okta-related fields
   oktaAppIdEdit->SetEnabled(ipdNameOkta);
   roleArnEdit->SetEnabled(ipdNameOkta);
 
-  // enable/disable AAD-related fields 
+  // hide/show Okta-related fields
+  ShowWindow(oktaAppIdEdit->GetHandle(), ipdNameOkta);
+  ShowWindow(oktaAppIdLabel->GetHandle(), ipdNameOkta);
+  ShowWindow(roleArnEdit->GetHandle(), ipdNameOkta);
+  ShowWindow(roleArnLabel->GetHandle(), ipdNameOkta);
+
+  // enable/disable AAD-related fields
   aadAppIdEdit->SetEnabled(ipdNameAAD);
   aadClientSecretEdit->SetEnabled(ipdNameAAD);
   aadTenantEdit->SetEnabled(ipdNameAAD);
+
+  // hide/show AAD-related fields
+  ShowWindow(aadAppIdEdit->GetHandle(), ipdNameAAD);
+  ShowWindow(aadAppIdLabel->GetHandle(), ipdNameAAD);
+  ShowWindow(aadClientSecretEdit->GetHandle(), ipdNameAAD);
+  ShowWindow(aadClientSecretLabel->GetHandle(), ipdNameAAD);
+  ShowWindow(aadTenantEdit->GetHandle(), ipdNameAAD);
+  ShowWindow(aadTenantLabel->GetHandle(), ipdNameAAD);
 }
 
-int DsnConfigurationWindow::CreateBasicAuthSettingsGroup(int posX, int posY,
-                                                          int sizeX) {
+int DsnConfigurationWindow::CreateBasicSettingsGroup(int posX, int posY,
+                                                     int sizeX) {
   enum { LABEL_WIDTH = 120 };
 
   int labelPosX = posX + INTERVAL;
 
+  int tabSizeX = sizeX - 2 * INTERVAL;
   int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
   int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
 
-  int rowPos = posY + 2 * INTERVAL;
+  int rowPos = posY + INTERVAL;
 
   int checkBoxSize = sizeX - 2 * MARGIN;
 
@@ -227,52 +406,132 @@ int DsnConfigurationWindow::CreateBasicAuthSettingsGroup(int posX, int posY,
                           L"Data Source Name*:", ChildId::NAME_LABEL);
   nameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
                         ChildId::NAME_EDIT);
-  nameBalloon = CreateBalloon(
+  nameBalloon = CreateBalloon(L"Required Field",
+                              L"DSN name is a required field.", TTI_ERROR);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetEndpoint());
+  endpointLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                              L"Endpoint:", ChildId::ENDPOINT_LABEL);
+  endpointEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                            ChildId::ENDPOINT_EDIT);
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetRegion());
+  regionLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                            L"Region:", ChildId::REGION_LABEL);
+  regionEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                          ChildId::REGION_EDIT);
+  regionBalloon = CreateBalloon(
       L"Required Field",
-      L"DSN name is a required field.", TTI_ERROR);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-  
-  wVal = utility::FromUtf8(config.GetAccessKeyId());
-  accessKeyIdLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                          L"Access Key ID:", ChildId::ACCESS_KEY_ID_LABEL);
-  accessKeyIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                        ChildId::ACCESS_KEY_ID_EDIT);
+      L"Must enter the region if custom endpoint is provided.", TTI_WARNING);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetSecretKey());
-  secretAccessKeyLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                              L"Secret Access Key:", ChildId::SECRET_ACCESS_KEY_LABEL);
-  secretAccessKeyEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                            ChildId::SECRET_ACCESS_KEY_EDIT, ES_PASSWORD);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = utility::FromUtf8(config.GetSessionToken());
-  sessionTokenLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                              L"Session Token:", ChildId::SESSION_TOKEN_LABEL);
-  sessionTokenEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                            ChildId::SESSION_TOKEN_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  enableMetadataPrepStmtCheckbox = CreateCheckBox(
-     labelPosX, rowPos, checkBoxSize, ROW_HEIGHT, L"Enable Metadata Prepared Statement",
+  enableMetadataPrepStmtCheckbox =
+      CreateCheckBox(labelPosX, rowPos, checkBoxSize, ROW_HEIGHT,
+                     L"Enable Metadata Prepared Statement",
                      ChildId::ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX,
                      config.IsEnableMetadataPreparedStatement());
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  basicAuthSettingsGroupBox =
-      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Basic Authentication Options",
-                     ChildId::BASIC_AUTH_SETTINGS_GROUP_BOX);
+  tabs = CreateTab(labelPosX, rowPos, tabSizeX, ROW_HEIGHT, L"Tabs",
+                   ChildId::TABS);
+
+  tabs->AddTab(TabIndex::Type::BASIC_AUTH, L"Basic Authenication");
+  tabs->AddTab(TabIndex::Type::ADVANCE_AUTH, L"Advance Authenication");
+  tabs->AddTab(TabIndex::Type::CONNECTION_SETTINGS, L"Connection Options");
+  tabs->AddTab(TabIndex::Type::LOG_SETTINGS, L"Log Settings");
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  return rowPos - posY;
+}
+
+int DsnConfigurationWindow::CreateBasicAuthSettingsGroup(int posX, int posY,
+                                                         int sizeX) {
+  enum { LABEL_WIDTH = 160 };
+
+  int labelPosX = posX + INTERVAL;
+
+  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
+  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
+
+  int rowPos = posY;
+
+  int checkBoxSize = sizeX - 2 * MARGIN;
+
+  std::wstring wVal = utility::FromUtf8(config.GetAccessKeyId());
+  accessKeyIdLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT, L"Access Key ID:",
+                  ChildId::ACCESS_KEY_ID_LABEL);
+  accessKeyIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                               ChildId::ACCESS_KEY_ID_EDIT);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetSecretKey());
+  secretAccessKeyLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Secret Access Key:", ChildId::SECRET_ACCESS_KEY_LABEL);
+  secretAccessKeyEdit =
+      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                 ChildId::SECRET_ACCESS_KEY_EDIT, ES_PASSWORD);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetSessionToken());
+  sessionTokenLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT, L"Session Token:",
+                  ChildId::SESSION_TOKEN_LABEL);
+  sessionTokenEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                                ChildId::SESSION_TOKEN_EDIT);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  credProvClassLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                                   L"AWS Credentials Provider Class:",
+                                   ChildId::CRED_PROV_CLASS_LABEL);
+  credProvClassComboBox =
+      CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT, L"",
+                     ChildId::CRED_PROV_CLASS_COMBO_BOX);
+
+  // the order of add string needs to match the definition of the
+  // cred_prov_class.h file
+  credProvClassComboBox->AddString(L"None");
+  credProvClassComboBox->AddString(L"PropertiesFileCredentialsProvider");
+  credProvClassComboBox->AddString(L"InstanceProfileCredentialsProvider");
+
+  CredProvClass::Type className = config.GetCredProvClass();
+  credProvClassComboBox->SetCBSelection(
+      static_cast< int >(className));  // set default
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = utility::FromUtf8(config.GetCusCredFile());
+  cusCredFileLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Custom Credentials File:", ChildId::CUS_CRED_FILE_LABEL);
+  cusCredFileEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                               ChildId::CUS_CRED_FILE_EDIT);
+  cusCredFileBalloon =
+      CreateBalloon(L"Required Field",
+                    L"Must enter path to custom credentials file if "
+                    L"PropertiesFileCredentialsProvider is selected as "
+                    L"credentials provider class.",
+                    TTI_WARNING);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  OnCredProvClassChanged();
 
   return rowPos - posY;
 }
 
 int DsnConfigurationWindow::CreateAdvanceAuthSettingsGroup(int posX, int posY,
-                                                   int sizeX) {
+                                                           int sizeX) {
   enum { LABEL_WIDTH = 120 };
 
   int labelPosX = posX + INTERVAL;
@@ -280,22 +539,21 @@ int DsnConfigurationWindow::CreateAdvanceAuthSettingsGroup(int posX, int posY,
   int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
   int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
 
-  int rowPos = posY + 2 * INTERVAL;
+  int rowPos = posY;
 
   IdpName::Type idpName = config.GetIdpName();
-  idpNameLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Idp Name:", ChildId::IDP_NAME_LABEL);
-  idpNameComboBox =
-      CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT, L"",
-                     ChildId::IDP_NAME_COMBO_BOX);
+  idpNameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                             L"Idp Name:", ChildId::IDP_NAME_LABEL);
+  idpNameComboBox = CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT, L"",
+                                   ChildId::IDP_NAME_COMBO_BOX);
 
-  // the order of add string needs to match the definition of the idp name .h file
+  // the order of add string needs to match the definition of the idp name .h
+  // file
   idpNameComboBox->AddString(L"None");
   idpNameComboBox->AddString(L"Okta");
   idpNameComboBox->AddString(L"AzureAD");
 
-  idpNameComboBox->SetSelection(static_cast< int >(idpName));  // set default
+  idpNameComboBox->SetCBSelection(static_cast< int >(idpName));  // set default
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
@@ -308,58 +566,59 @@ int DsnConfigurationWindow::CreateAdvanceAuthSettingsGroup(int posX, int posY,
   rowPos += INTERVAL + ROW_HEIGHT;
 
   wVal = utility::FromUtf8(config.GetIdpUserName());
-  idpUserNameLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                             L"Idp User Name:", ChildId::IDP_USER_NAME_LABEL);
+  idpUserNameLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT, L"Idp User Name:",
+                  ChildId::IDP_USER_NAME_LABEL);
   idpUserNameEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                           ChildId::IDP_USER_NAME_EDIT);
+                               ChildId::IDP_USER_NAME_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
   wVal = utility::FromUtf8(config.GetIdpPassword());
-  idpPasswordLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
-                                       ROW_HEIGHT, L"Idp Password:",
-                                       ChildId::IDP_PASSWORD_LABEL);
-  idpPasswordEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT,
-                                     wVal, ChildId::IDP_PASSWORD_EDIT, ES_PASSWORD);
+  idpPasswordLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                                 L"Idp Password:", ChildId::IDP_PASSWORD_LABEL);
+  idpPasswordEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                               ChildId::IDP_PASSWORD_EDIT, ES_PASSWORD);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
   wVal = utility::FromUtf8(config.GetIdpArn());
-  idpArnLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Idp ARN:",
-                  ChildId::IDP_ARN_LABEL);
-  idpArnEdit =
-      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::IDP_ARN_EDIT);
+  idpArnLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                            L"Idp ARN:", ChildId::IDP_ARN_LABEL);
+  idpArnEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                          ChildId::IDP_ARN_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
+  int arnRowPos = rowPos;
+
   // Okta Only fields
   wVal = utility::FromUtf8(config.GetOktaAppId());
-  oktaAppIdLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
-                                       ROW_HEIGHT, L"Okta Application ID:",
-                                       ChildId::OKTA_APP_ID_LABEL);
-  oktaAppIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT,
-                                     wVal, ChildId::OKTA_APP_ID_EDIT);
+  oktaAppIdLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Okta Application ID:", ChildId::OKTA_APP_ID_LABEL);
+  oktaAppIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                             ChildId::OKTA_APP_ID_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
   wVal = utility::FromUtf8(config.GetRoleArn());
-  roleArnLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Role ARN:", ChildId::ROLE_ARN_LABEL);
+  roleArnLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                             L"Role ARN:", ChildId::ROLE_ARN_LABEL);
   roleArnEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                             ChildId::ROLE_ARN_EDIT);
+                           ChildId::ROLE_ARN_EDIT);
 
-  rowPos += INTERVAL + ROW_HEIGHT;
+  // retrieve y position value from Idp ARN field
+  // so that AAD specific fields can be put right after Idp ARN field.
+  rowPos = arnRowPos;
 
   // AAD specific fields
   wVal = utility::FromUtf8(config.GetAadAppId());
-  aadAppIdLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                             L"AAD Application ID:", ChildId::AAD_APP_ID_LABEL);
+  aadAppIdLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"AAD Application ID:", ChildId::AAD_APP_ID_LABEL);
   aadAppIdEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                           ChildId::AAD_APP_ID_EDIT);
+                            ChildId::AAD_APP_ID_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
@@ -367,26 +626,75 @@ int DsnConfigurationWindow::CreateAdvanceAuthSettingsGroup(int posX, int posY,
   aadClientSecretLabel =
       CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
                   L"AAD Client Secret:", ChildId::AAD_CLIENT_SECRET_LABEL);
-  aadClientSecretEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                            ChildId::AAD_CLIENT_SECRET_EDIT, ES_PASSWORD);
+  aadClientSecretEdit =
+      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                 ChildId::AAD_CLIENT_SECRET_EDIT, ES_PASSWORD);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
   wVal = utility::FromUtf8(config.GetAadTenant());
-  aadTenantLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"AAD Tenant:", ChildId::AAD_TENANT_LABEL);
-  aadTenantEdit =
-      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::AAD_TENANT_EDIT);
+  aadTenantLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                               L"AAD Tenant:", ChildId::AAD_TENANT_LABEL);
+  aadTenantEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                             ChildId::AAD_TENANT_EDIT);
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  advanceAuthSettingsGroupBox = CreateGroupBox(posX, posY, sizeX, rowPos - posY,
-                                       L"Advance Authentication Options",
-                                       ChildId::ADVANCE_AUTH_SETTINGS_GROUP_BOX);
+  OnIdpNameChanged();
 
-  EnableAdvanceAuthFields();
+  return rowPos - posY;
+}
+
+int DsnConfigurationWindow::CreateConnectionSettingsGroup(int posX, int posY,
+                                                          int sizeX) {
+  enum { LABEL_WIDTH = 120 };
+
+  int labelPosX = posX + INTERVAL;
+
+  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
+  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
+
+  int rowPos = posY;
+
+  std::wstring wVal = std::to_wstring(config.GetReqTimeout());
+  reqTimeoutLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Request Timeout:", ChildId::REQ_TIMEOUT_LABEL);
+  reqTimeoutEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                              ChildId::REQ_TIMEOUT_EDIT, ES_NUMBER);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = std::to_wstring(config.GetSocketTimeout());
+  socketTimeoutLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Socket Timeout:", ChildId::SOCKET_TIMEOUT_LABEL);
+  socketTimeoutEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                                 ChildId::SOCKET_TIMEOUT_EDIT, ES_NUMBER);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = std::to_wstring(config.GetMaxRetryCount());
+  maxRetryCountClientLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
+                                         ROW_HEIGHT, L"Max retry count client:",
+                                         ChildId::MAX_RETRY_COUNT_CLIENT_LABEL);
+  maxRetryCountClientEdit =
+      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                 ChildId::MAX_RETRY_COUNT_CLIENT_EDIT, ES_NUMBER);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
+
+  wVal = std::to_wstring(config.GetMaxConnections());
+  maxConnectionsLabel =
+      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
+                  L"Max connections:", ChildId::MAX_CONNECTIONS_LABEL);
+  maxConnectionsEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
+                                  ChildId::MAX_CONNECTIONS_EDIT, ES_NUMBER);
+  maxConnectionsBalloon = CreateBalloon(
+      L"Positive Number Only",
+      L"Number of connections must be a positive number.", TTI_ERROR);
+
+  rowPos += INTERVAL + ROW_HEIGHT;
 
   return rowPos - posY;
 }
@@ -401,7 +709,7 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
   int comboPosX = labelPosX + LABEL_WIDTH + INTERVAL;
   int editPosX = labelPosX;
 
-  int rowPos = posY + 2 * INTERVAL;
+  int rowPos = posY;
 
   LogLevel::Type logLevel = config.GetLogLevel();
 
@@ -415,7 +723,8 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
   logLevelComboBox->AddString(L"Error");
   logLevelComboBox->AddString(L"Off");
 
-  logLevelComboBox->SetSelection(static_cast< int >(logLevel));  // set default
+  logLevelComboBox->SetCBSelection(
+      static_cast< int >(logLevel));  // set default
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
@@ -432,10 +741,6 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  logSettingsGroupBox =
-      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Log Settings",
-                     ChildId::LOG_SETTINGS_GROUP_BOX);
-
   std::wstring logLevelWStr;
   logLevelComboBox->GetText(logLevelWStr);
   if (LogLevel::FromString(utility::ToUtf8(logLevelWStr),
@@ -445,149 +750,6 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
   } else {
     logPathEdit->SetEnabled(true);
   }
-
-  return rowPos - posY;
-}
-
-int DsnConfigurationWindow::CreateCredentialsProvidersGroup(int posX, int posY,
-                                                   int sizeX) {
-  enum { LABEL_WIDTH = 160 };
-
-  int labelPosX = posX + INTERVAL;
-
-  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
-  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
-
-  int rowPos = posY + 2 * INTERVAL;
-
-  credProvClassLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"AWS Credentials Provider Class:", ChildId::CRED_PROV_CLASS_LABEL);
-  credProvClassComboBox =
-      CreateComboBox(editPosX, rowPos, editSizeX, ROW_HEIGHT, L"",
-                     ChildId::CRED_PROV_CLASS_COMBO_BOX);
-
-  // the order of add string needs to match the definition of the cred_prov_class.h
-  // file
-  credProvClassComboBox->AddString(L"None");
-  credProvClassComboBox->AddString(L"PropertiesFileCredentialsProvider");
-  credProvClassComboBox->AddString(L"InstanceProfileCredentialsProvider");
-
-  CredProvClass::Type className = config.GetCredProvClass();
-  credProvClassComboBox->SetSelection(
-      static_cast< int >(className));  // set default
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  std::wstring wVal = utility::FromUtf8(config.GetCusCredFile());
-  cusCredFileLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                               L"Custom Credentials File:", ChildId::CUS_CRED_FILE_LABEL);
-  cusCredFileEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                             ChildId::CUS_CRED_FILE_EDIT);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  credProviderSettingsGroupBox =
-      CreateGroupBox(posX, posY, sizeX, rowPos - posY, L"Credentials Provider Options",
-                     ChildId::CRED_PROVIDER_GROUP_BOX);
-
-  EnableCusCredFileField();
-
-  return rowPos - posY;
-}
-
-int DsnConfigurationWindow::CreateConnctionSettingsGroup(int posX, int posY,
-                                                      int sizeX) {
-  enum { LABEL_WIDTH = 120 };
-
-  int labelPosX = posX + INTERVAL;
-
-  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
-  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
-
-  int rowPos = posY + 2 * INTERVAL;
-
-  std::wstring wVal = std::to_wstring(config.GetReqTimeout());
-  reqTimeoutLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                               L"Request Timeout:", ChildId::REQ_TIMEOUT_LABEL);
-  reqTimeoutEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                             ChildId::REQ_TIMEOUT_EDIT, ES_NUMBER);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = std::to_wstring(config.GetSocketTimeout());
-  socketTimeoutLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                            L"Socket Timeout:", ChildId::SOCKET_TIMEOUT_LABEL);
-  socketTimeoutEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                          ChildId::SOCKET_TIMEOUT_EDIT, ES_NUMBER);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = std::to_wstring(config.GetMaxRetryCount());
-  maxRetryCountClientLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Max retry count client:", ChildId::MAX_RETRY_COUNT_CLIENT_LABEL);
-  maxRetryCountClientEdit =
-      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::MAX_RETRY_COUNT_CLIENT_EDIT, ES_NUMBER);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = std::to_wstring(config.GetMaxConnections());
-  maxConnectionsLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
-                                         ROW_HEIGHT, L"Max connections:",
-                                         ChildId::MAX_CONNECTIONS_LABEL);
-  maxConnectionsEdit =
-      CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                 ChildId::MAX_CONNECTIONS_EDIT, ES_NUMBER);
-  maxConnectionsBalloon =
-      CreateBalloon(L"Positive Number Only",
-                    L"Number of connections must be a positive number.",
-                    TTI_ERROR);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  connctionSettingsGroupBox = CreateGroupBox(posX, posY, sizeX, rowPos - posY,
-                                          L"Connection Options",
-                                          ChildId::CONNECTION_SETTINGS_GROUP_BOX);
-
-  return rowPos - posY;
-}
-
-int DsnConfigurationWindow::CreateEndpointConfigOptionsGroup(int posX, int posY,
-                                                            int sizeX) {
-  enum { LABEL_WIDTH = 120 };
-
-  int labelPosX = posX + INTERVAL;
-
-  int editSizeX = sizeX - LABEL_WIDTH - 3 * INTERVAL;
-  int editPosX = labelPosX + LABEL_WIDTH + INTERVAL;
-
-  int rowPos = posY + 2 * INTERVAL;
-
-  std::wstring wVal = utility::FromUtf8(config.GetEndpoint());
-  endpointLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                                   L"Endpoint:",
-                                   ChildId::ENDPOINT_LABEL);
-  endpointEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                                 ChildId::ENDPOINT_EDIT);
-  rowPos += INTERVAL + ROW_HEIGHT;
-
-  wVal = utility::FromUtf8(config.GetRegion());
-  regionLabel =
-      CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
-                  L"Region:", ChildId::REGION_LABEL);
-  regionEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
-                               ChildId::REGION_EDIT);
-  regionBalloon = CreateBalloon(
-      L"Required Field",
-      L"Must enter the region if custom endpoint is provided.", TTI_WARNING);
-
-  rowPos += INTERVAL + ROW_HEIGHT;
-
- endpointConfigOptionsGroupBox = CreateGroupBox(
-      posX, posY, sizeX, rowPos - posY, L"Endpoint Configuration Options",
-      ChildId::ENDPOINT_OPTIONS_GROUP_BOX);
 
   return rowPos - posY;
 }
@@ -622,8 +784,7 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         case ChildId::NAME_EDIT: {
           // Check if window has been created.
           if (created) {
-            okButton->SetEnabled(
-                nameEdit->HasText());
+            okButton->SetEnabled(nameEdit->HasText());
 
             if (!shownNameBalloon && !nameEdit->HasText()) {
               Edit_ShowBalloonTip(nameEdit->GetHandle(), nameBalloon.get());
@@ -642,40 +803,14 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
           break;
         }
 
-        case ChildId::CRED_PROV_CLASS_COMBO_BOX: {
-          EnableCusCredFileField();
-
-          break;
-        }
-                                            
-        case ChildId::MAX_CONNECTIONS_EDIT: {
-          if (created) {
-            std::wstring maxConWStr;
-            maxConnectionsEdit->GetText(maxConWStr);
-
-            std::string maxConStr = utility::ToUtf8(maxConWStr);
-
-            int16_t maxCon = common::LexicalCast< int16_t >(maxConStr);
-
-            if (!shownRegBalloon && maxCon <= 0) {
-              Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
-                                      maxConnectionsBalloon.get());
-              shownRegBalloon = true;
-            } else {
-              Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
-              shownRegBalloon = false;
-            }
-          }
-            break;
-        }
-
         case ChildId::REGION_EDIT: {
           if (created) {
-            // The balloon will be triggered one time when user is on the Region edit field
+            // The balloon will be triggered one time when user is on the Region
+            // edit field
 
-            if (!shownRegBalloon && !regionEdit->HasText() && endpointEdit->HasText()) {
-              Edit_ShowBalloonTip(regionEdit->GetHandle(),
-                                  regionBalloon.get());
+            if (!shownRegBalloon && !regionEdit->HasText()
+                && endpointEdit->HasText()) {
+              Edit_ShowBalloonTip(regionEdit->GetHandle(), regionBalloon.get());
               shownRegBalloon = true;
             } else {
               Edit_HideBalloonTip(regionEdit->GetHandle());
@@ -685,8 +820,58 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
           break;
         }
 
+        case ChildId::CRED_PROV_CLASS_COMBO_BOX: {
+          OnCredProvClassChanged();
+
+          break;
+        }
+
+        case ChildId::CUS_CRED_FILE_EDIT: {
+          if (created) {
+            std::wstring credProvClassWStr;
+            credProvClassComboBox->GetText(credProvClassWStr);
+            std::string credProvClassStr = utility::ToUtf8(credProvClassWStr);
+            CredProvClass::Type className = CredProvClass::FromString(
+                credProvClassStr, CredProvClass::Type::UNKNOWN);
+
+            // if PropertiesFileCredentialsProvider is selected but custom
+            // credentials file field is empty, throw an error
+            if (!shownCusCredFileBalloon && !cusCredFileEdit->HasText()
+                && className == CredProvClass::Type::PROP_FILE_CRED_PROV) {
+              Edit_ShowBalloonTip(cusCredFileEdit->GetHandle(),
+                                  cusCredFileBalloon.get());
+              shownCusCredFileBalloon = true;
+            } else {
+              Edit_HideBalloonTip(cusCredFileEdit->GetHandle());
+              shownCusCredFileBalloon = false;
+            }
+          }
+          break;
+        }
+
+        case ChildId::MAX_CONNECTIONS_EDIT: {
+          if (created) {
+            std::wstring maxConWStr;
+            maxConnectionsEdit->GetText(maxConWStr);
+
+            std::string maxConStr = utility::ToUtf8(maxConWStr);
+
+            int16_t maxCon = common::LexicalCast< int16_t >(maxConStr);
+
+            if (!shownMaxConBalloon && maxCon <= 0) {
+              Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
+                                  maxConnectionsBalloon.get());
+              shownMaxConBalloon = true;
+            } else {
+              Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
+              shownMaxConBalloon = false;
+            }
+          }
+          break;
+        }
+
         case ChildId::IDP_NAME_COMBO_BOX: {
-          EnableAdvanceAuthFields();
+          OnIdpNameChanged();
 
           break;
         }
@@ -717,6 +902,28 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
       break;
     }
 
+    case WM_NOTIFY: {
+      switch (LOWORD(wParam)) {
+        case ChildId::TABS: {
+          LOG_DEBUG_MSG("current Tab selection index (without cast): "
+                        << tabs->GetTabSelection());
+
+          TabIndex::Type curSel =
+              static_cast< TabIndex::Type >(tabs->GetTabSelection());
+
+          LOG_DEBUG_MSG("current Tab selection index (with cast): " << curSel);
+
+          OnSelChanged(curSel);
+          break;
+        }
+
+        default:
+          return false;
+      }
+
+      break;
+    }
+
     default:
       return false;
   }
@@ -726,70 +933,96 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 
 void DsnConfigurationWindow::RetrieveParameters(
     config::Configuration& cfg) const {
+  // Intentioanlly retrieve log parameters first
   RetrieveLogParameters(cfg);
+  RetrieveBasicParameters(cfg);
   RetrieveBasicAuthParameters(cfg);
-  RetrieveCredentialsProvidersParameters(cfg);
   RetrieveAdvanceAuthParameters(cfg);
   RetrieveConnectionParameters(cfg);
-  RetrieveEndpointConfigParameters(cfg);
+}
+
+void DsnConfigurationWindow::RetrieveBasicParameters(
+    config::Configuration& cfg) const {
+  bool enableMetadataPrepStmt = enableMetadataPrepStmtCheckbox->IsChecked();
+
+  std::wstring dsnWStr;
+  std::wstring endpointWStr;
+  std::wstring regionWStr;
+
+  nameEdit->GetText(dsnWStr);
+  endpointEdit->GetText(endpointWStr);
+  regionEdit->GetText(regionWStr);
+
+  std::string dsnStr = utility::ToUtf8(dsnWStr);
+  common::StripSurroundingWhitespaces(dsnStr);
+  std::string endpointStr = utility::ToUtf8(endpointWStr);
+  std::string regionStr = utility::ToUtf8(regionWStr);
+
+  cfg.SetDsn(dsnStr);
+  cfg.SetEnableMetadataPreparedStatement(enableMetadataPrepStmt);
+  cfg.SetEndpoint(endpointStr);
+  cfg.SetRegion(regionStr);
+
+  LOG_INFO_MSG("Retrieving arguments:");
+  LOG_INFO_MSG("DSN:                             " << dsnStr);
+  LOG_INFO_MSG("Enable Metadata Preprepard Statement: "
+               << (enableMetadataPrepStmt ? "true" : "false"));
+  LOG_INFO_MSG("Endpoint:    " << endpointStr);
+  LOG_INFO_MSG("Region:      " << regionStr);
 }
 
 void DsnConfigurationWindow::RetrieveBasicAuthParameters(
     config::Configuration& cfg) const {
-  bool enableMetadataPrepStmt =
-      enableMetadataPrepStmtCheckbox->IsChecked();
+  if (!regionEdit->HasText() && endpointEdit->HasText())
+    throw IgniteError(
+        IgniteError::IGNITE_ERR_GENERIC,
+        "[Region] Must enter the region if custom endpoint is provided.");
 
-  std::wstring dsnWStr;
+  // retrieve credentials provider class value
+  std::wstring credProvClassWStr;
+  credProvClassComboBox->GetText(credProvClassWStr);
+  std::string credProvClassStr = utility::ToUtf8(credProvClassWStr);
+  CredProvClass::Type className =
+      CredProvClass::FromString(credProvClassStr, CredProvClass::Type::UNKNOWN);
+
+  // if PropertiesFileCredentialsProvider is selected but custom credentials
+  // file field is empty, throw an error
+  if (!cusCredFileEdit->HasText()
+      && className == CredProvClass::Type::PROP_FILE_CRED_PROV)
+    throw IgniteError(IgniteError::IGNITE_ERR_GENERIC,
+                      "[Custom Credentials File] Must enter path to custom "
+                      "credentials file if "
+                      "PropertiesFileCredentialsProvider is selected as "
+                      "credentials provider class.");
+
   std::wstring accessKeyIdWStr;
   std::wstring secretKeyWStr;
   std::wstring sessionTokenWStr;
-
-  nameEdit->GetText(dsnWStr);
-  std::string dsnStr = utility::ToUtf8(dsnWStr);
-  common::StripSurroundingWhitespaces(dsnStr);
+  std::wstring cusCredFileWStr;
 
   accessKeyIdEdit->GetText(accessKeyIdWStr);
   secretAccessKeyEdit->GetText(secretKeyWStr);
   sessionTokenEdit->GetText(sessionTokenWStr);
+  cusCredFileEdit->GetText(cusCredFileWStr);
 
   std::string accessKeyIdStr = utility::ToUtf8(accessKeyIdWStr);
   std::string secretKeyStr = utility::ToUtf8(secretKeyWStr);
   std::string sessionTokenStr = utility::ToUtf8(sessionTokenWStr);
+  std::string cusCredFileStr = utility::ToUtf8(cusCredFileWStr);
 
-  cfg.SetDsn(dsnStr);
   cfg.SetAccessKeyId(accessKeyIdStr);
   cfg.SetSecretKey(secretKeyStr);
   cfg.SetSessionToken(sessionTokenStr);
-  cfg.SetEnableMetadataPreparedStatement(enableMetadataPrepStmt);
-
-  LOG_INFO_MSG("Retrieving arguments:");
-  LOG_INFO_MSG("DSN:                             " << dsnStr);
-  LOG_INFO_MSG("Session Token:                   " << sessionTokenStr);
-  LOG_INFO_MSG("Enable Metadata Preprepard Statement: "
-               << (enableMetadataPrepStmt ? "true" : "false"));
-  // username and password intentionally not logged for security reasons
-}
-
-void DsnConfigurationWindow::RetrieveCredentialsProvidersParameters(
-    config::Configuration& cfg) const {
-  std::wstring credProvClassWStr;
-  std::wstring cusCredFileWStr;
-
-  credProvClassComboBox->GetText(credProvClassWStr);
-  cusCredFileEdit->GetText(cusCredFileWStr);
-
-  std::string credProvClassStr = utility::ToUtf8(credProvClassWStr);
-  std::string cusCredFileStr = utility::ToUtf8(cusCredFileWStr);
-
-  CredProvClass::Type className =
-      CredProvClass::FromString(credProvClassStr, CredProvClass::Type::UNKNOWN);
-
   cfg.SetCredProvClass(className);
   cfg.SetCusCredFile(cusCredFileStr);
 
+  LOG_INFO_MSG("Retrieving arguments:");
+  LOG_INFO_MSG("Session Token:                   " << sessionTokenStr);
   LOG_INFO_MSG("AWS Credentials Provider Class: " << credProvClassStr);
-  LOG_DEBUG_MSG("CredProvClass::Type className: " << static_cast< int >(className));
+  LOG_DEBUG_MSG(
+      "CredProvClass::Type className: " << static_cast< int >(className));
   LOG_INFO_MSG("Custum Credentials File: " << cusCredFileStr);
+  // username and password intentionally not logged for security reasons
 }
 
 void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
@@ -842,8 +1075,7 @@ void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
   cfg.SetAadTenant(aadTenantStr);
 
   LOG_INFO_MSG("Idp Name:    " << idpNameStr);
-  LOG_DEBUG_MSG(
-      "IdpName::Type idpName: " << static_cast< int >(idpName));
+  LOG_DEBUG_MSG("IdpName::Type idpName: " << static_cast< int >(idpName));
   LOG_INFO_MSG("Idp Host:     " << idpHostStr);
   LOG_INFO_MSG("Idp User Name:     " << idpUserNameStr);
   LOG_INFO_MSG("Idp ARN:     " << idpArnStr);
@@ -852,33 +1084,6 @@ void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
   LOG_INFO_MSG("Azure AD Application Id:     " << aadAppIdStr);
   LOG_INFO_MSG("Azure AD Tenant:     " << aadTenantStr);
   // Idp password and AAD client secret not logged intentionally
-}
-
-// RetrieveLogParameters is a special case. We want to get the log level and
-// path as soon as possible. If user set log level to OFF, then nothing should
-// be logged. Therefore, the LOG_MSG calls are after log level and log path are
-// set.
-void DsnConfigurationWindow::RetrieveLogParameters(
-    config::Configuration& cfg) const {
-  std::wstring logLevelWStr;
-  std::wstring logPathWStr;
-
-  logLevelComboBox->GetText(logLevelWStr);
-  logPathEdit->GetText(logPathWStr);
-
-  std::string logLevelStr = utility::ToUtf8(logLevelWStr);
-  std::string logPathStr = utility::ToUtf8(logPathWStr);
-
-  LogLevel::Type logLevel =
-      LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
-
-  cfg.SetLogLevel(logLevel);
-  cfg.SetLogPath(logPathStr);
-
-  LOG_INFO_MSG("Log level:    " << logLevelStr);
-  LOG_DEBUG_MSG(
-      "LogLevel::Type logLevel: " << static_cast< int >(logLevel));
-  LOG_INFO_MSG("Log path:     " << logPathStr);
 }
 
 void DsnConfigurationWindow::RetrieveConnectionParameters(
@@ -904,8 +1109,9 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
   int32_t maxCon = common::LexicalCast< int32_t >(maxConStr);
 
   if (maxCon <= 0)
-    throw IgniteError(IgniteError::IGNITE_ERR_GENERIC,
-                      "[Max Connections] Number of connections must be a positive number.");
+    throw IgniteError(
+        IgniteError::IGNITE_ERR_GENERIC,
+        "[Max Connections] Number of connections must be a positive number.");
 
   cfg.SetReqTimeout(reqTimeout);
   cfg.SetSocketTimeout(socketTimeout);
@@ -918,26 +1124,30 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
   LOG_INFO_MSG("Max connections:      " << maxCon);
 }
 
-void DsnConfigurationWindow::RetrieveEndpointConfigParameters(
+// RetrieveLogParameters is a special case. We want to get the log level and
+// path as soon as possible. If user set log level to OFF, then nothing should
+// be logged. Therefore, the LOG_MSG calls are after log level and log path are
+// set.
+void DsnConfigurationWindow::RetrieveLogParameters(
     config::Configuration& cfg) const {
-  if (!regionEdit->HasText() && endpointEdit->HasText())
-    throw IgniteError(IgniteError::IGNITE_ERR_GENERIC,
-                      "[Region] Must enter the region if custom endpoint is provided.");
+  std::wstring logLevelWStr;
+  std::wstring logPathWStr;
 
-  std::wstring endpointWStr;
-  std::wstring regionWStr;
+  logLevelComboBox->GetText(logLevelWStr);
+  logPathEdit->GetText(logPathWStr);
 
-  endpointEdit->GetText(endpointWStr);
-  regionEdit->GetText(regionWStr);
+  std::string logLevelStr = utility::ToUtf8(logLevelWStr);
+  std::string logPathStr = utility::ToUtf8(logPathWStr);
 
-  std::string endpointStr = utility::ToUtf8(endpointWStr);
-  std::string regionStr = utility::ToUtf8(regionWStr);
+  LogLevel::Type logLevel =
+      LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
 
-  cfg.SetEndpoint(endpointStr);
-  cfg.SetRegion(regionStr);
+  cfg.SetLogLevel(logLevel);
+  cfg.SetLogPath(logPathStr);
 
-  LOG_INFO_MSG("Endpoint:    " << endpointStr);
-  LOG_INFO_MSG("Region:      " << regionStr);
+  LOG_INFO_MSG("Log level:    " << logLevelStr);
+  LOG_DEBUG_MSG("LogLevel::Type logLevel: " << static_cast< int >(logLevel));
+  LOG_INFO_MSG("Log path:     " << logPathStr);
 }
 }  // namespace ui
 }  // namespace system

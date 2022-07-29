@@ -7,8 +7,13 @@
 4. Fill the Windows Form properly.
     ![Amazon Timestream DSN](../images/windows-dsn-configuration.png)
 
-## Note
+## Notes
 
-Balloons would appear as tips when wrong input is entered for selected field. Clicking out of the field would cause the balloon to temporarily disappear. 
+- When PropertiesFileCredentialsProvider or Instanceprofilecredentialsprovider is selected as credentials provider class, the access key ID, secret access key and session token fields will be disabled as they are not needed. 
+
+- Similarly, when Okta or AAD is selected for IdpName field, the access key ID, secret access key and session token fields will be disabled as they are not needed.
+
+- Balloons would appear as tips when wrong input is entered for selected field. Clicking out of the field would cause the balloon to temporarily disappear. 
 
 ![Example of Balloon](../images/windows-dsn-configuration-balloon.png)
+

@@ -143,14 +143,28 @@ class Window {
    *
    * @param idx List index.
    */
-  void SetSelection(int idx);
+  void SetCBSelection(int idx);
 
   /**
    * Get current ComboBox selection.
    *
    * @return idx List index.
    */
-  int GetSelection() const;
+  int GetCBSelection() const;
+
+  /**
+   * Set current Tab selection.
+   *
+   * @param idx List index.
+   */
+  void SetTabSelection(int idx);
+
+  /**
+   * Get current Tab selection.
+   *
+   * @return idx List index.
+   */
+  int GetTabSelection() const;
 
   /**
    * Set enabled.
@@ -165,6 +179,13 @@ class Window {
    * @return True if enabled.
    */
   bool IsEnabled() const;
+
+  /**
+   * Add tab.
+   *
+   * @param idx Tab Index, str tabTitle.
+   */
+  void AddTab(int idx, wchar_t* tabTitle);
 
  protected:
   /**

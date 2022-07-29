@@ -18,6 +18,7 @@
 #include "ignite/odbc/system/ui/window.h"
 
 #include <windowsx.h>
+#include <CommCtrl.h>
 
 namespace ignite {
 namespace odbc {
@@ -147,12 +148,20 @@ void Window::AddString(const std::wstring& str) {
   SNDMSG(handle, CB_ADDSTRING, 0, reinterpret_cast< LPARAM >(str.c_str()));
 }
 
-void Window::SetSelection(int idx) {
+void Window::SetCBSelection(int idx) {
   SNDMSG(handle, CB_SETCURSEL, static_cast< WPARAM >(idx), 0);
 }
 
-int Window::GetSelection() const {
+int Window::GetCBSelection() const {
   return static_cast< int >(SNDMSG(handle, CB_GETCURSEL, 0, 0));
+}
+
+void Window::SetTabSelection(int idx) {
+  SNDMSG(handle, TCM_SETCURSEL, static_cast< WPARAM >(idx), 0);
+}
+
+int Window::GetTabSelection() const {
+  return static_cast< int >(SNDMSG(handle, TCM_GETCURSEL, 0, 0));
 }
 
 void Window::SetEnabled(bool enabled) {
@@ -161,6 +170,25 @@ void Window::SetEnabled(bool enabled) {
 
 bool Window::IsEnabled() const {
   return IsWindowEnabled(GetHandle()) != 0;
+}
+
+void Window::AddTab(int idx, wchar_t* tabTitle) {
+  TCITEM tabItem;
+  tabItem.mask = TCIF_TEXT;
+  tabItem.iImage = -1;
+  tabItem.pszText = tabTitle;
+
+  if (SNDMSG(handle, TCM_INSERTITEM, static_cast< WPARAM >(idx),
+             reinterpret_cast< LPARAM >(&tabItem))
+      == -1) {
+    DestroyWindow(handle);
+
+    std::stringstream buf;
+
+    buf << "Can not add new tab, error code: " << GetLastError();
+
+    throw IgniteError(IgniteError::IGNITE_ERR_GENERIC, buf.str().c_str());
+  }
 }
 }  // namespace ui
 }  // namespace system

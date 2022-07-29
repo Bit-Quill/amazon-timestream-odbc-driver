@@ -34,14 +34,24 @@ class DsnConfigurationWindow : public CustomWindow {
    */
   struct ChildId {
     enum Type {
-      BASIC_AUTH_SETTINGS_GROUP_BOX = 100,
-      ADVANCE_AUTH_SETTINGS_GROUP_BOX,
-      LOG_SETTINGS_GROUP_BOX,
-      CRED_PROVIDER_GROUP_BOX,
-      ENDPOINT_OPTIONS_GROUP_BOX,
-      CONNECTION_SETTINGS_GROUP_BOX,
-      NAME_EDIT,
+      NAME_EDIT = 100,
       NAME_LABEL,
+      ENDPOINT_EDIT,
+      ENDPOINT_LABEL,
+      REGION_EDIT,
+      REGION_LABEL,
+      ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX,
+      TABS,
+      ACCESS_KEY_ID_LABEL,
+      ACCESS_KEY_ID_EDIT,
+      SECRET_ACCESS_KEY_LABEL,
+      SECRET_ACCESS_KEY_EDIT,
+      SESSION_TOKEN_LABEL,
+      SESSION_TOKEN_EDIT,
+      CRED_PROV_CLASS_COMBO_BOX,
+      CRED_PROV_CLASS_LABEL,
+      CUS_CRED_FILE_EDIT,
+      CUS_CRED_FILE_LABEL,
       IDP_NAME_LABEL,
       IDP_NAME_COMBO_BOX,
       IDP_HOST_EDIT,
@@ -62,10 +72,6 @@ class DsnConfigurationWindow : public CustomWindow {
       AAD_CLIENT_SECRET_LABEL,
       AAD_TENANT_EDIT,
       AAD_TENANT_LABEL,
-      LOG_LEVEL_COMBO_BOX,
-      LOG_LEVEL_LABEL,
-      LOG_PATH_EDIT,
-      LOG_PATH_LABEL,
       REQ_TIMEOUT_EDIT,
       REQ_TIMEOUT_LABEL,
       SOCKET_TIMEOUT_EDIT,
@@ -74,23 +80,10 @@ class DsnConfigurationWindow : public CustomWindow {
       MAX_RETRY_COUNT_CLIENT_LABEL,
       MAX_CONNECTIONS_EDIT,
       MAX_CONNECTIONS_LABEL,
-      ENDPOINT_EDIT,
-      ENDPOINT_LABEL,
-      REGION_EDIT,
-      REGION_LABEL,
-      CRED_PROV_CLASS_COMBO_BOX,
-      CRED_PROV_CLASS_LABEL,
-      CUS_CRED_FILE_EDIT,
-      CUS_CRED_FILE_LABEL,
-      DRIVER_LABEL,
-      DRIVER_EDIT,
-      ACCESS_KEY_ID_LABEL,
-      ACCESS_KEY_ID_EDIT,
-      SECRET_ACCESS_KEY_LABEL,
-      SECRET_ACCESS_KEY_EDIT,
-      SESSION_TOKEN_LABEL,
-      SESSION_TOKEN_EDIT,
-      ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX,
+      LOG_LEVEL_COMBO_BOX,
+      LOG_LEVEL_LABEL,
+      LOG_PATH_EDIT,
+      LOG_PATH_LABEL,
       OK_BUTTON,
       CANCEL_BUTTON
     };
@@ -110,6 +103,11 @@ class DsnConfigurationWindow : public CustomWindow {
 
   // Standard button height.
   enum { BUTTON_HEIGHT = 25 };
+
+  // Tab indices
+  struct TabIndex {
+    enum Type { BASIC_AUTH, ADVANCE_AUTH, CONNECTION_SETTINGS, LOG_SETTINGS };
+  };
 
  public:
   /**
@@ -144,80 +142,71 @@ class DsnConfigurationWindow : public CustomWindow {
   IGNITE_NO_COPY_ASSIGNMENT(DsnConfigurationWindow)
 
   /**
+   * Show Advance Authentication UI group based on visible paramter
+   *
+   * @param visible Boolean indicating visibility
+   */
+  void DsnConfigurationWindow::ShowBasicAuth(bool visble) const;
+
+  /**
+   * Show Advance Authentication UI group based on visible paramter
+   *
+   * @param visible Boolean indicating visibility
+   */
+  void DsnConfigurationWindow::ShowAdvanceAuth(bool visble) const;
+
+  /**
+   * Show Connection Settings UI group based on visible paramter
+   *
+   * @param visible Boolean indicating visibility
+   */
+  void DsnConfigurationWindow::ShowConnectionSettings(bool visble) const;
+
+  /**
+   * Show Log Settings UI group based on visible paramter
+   *
+   * @param visible Boolean indicating visibility
+   */
+  void DsnConfigurationWindow::ShowLogSettings(bool visble) const;
+
+  /**
+   * Show tab window when tab selection changes
+   *
+   * @param idx Selected tab window index
+   */
+  void DsnConfigurationWindow::OnSelChanged(TabIndex::Type idx);
+
+  /**
    * Disable / Enable the cusCredFileEdit field
    * based on value of credProvClass.
    * If credProvClass equals "Properties File Credentials Provider,"
    * cusCredFileEdit field is enabled, else it is diabled.
    */
-  void DsnConfigurationWindow::EnableCusCredFileField() const;
+  void DsnConfigurationWindow::OnCredProvClassChanged() const;
 
   /**
-   * Disable / Enable the fields in advance authentication options UI group 
+   * Disable / Enable the fields in advance authentication options UI group
    * based on value of IdpName.
    * IdpName field is always enabled.
    * When "None" is selected for IdpName, all fields are disabled.
    * When "Okta" is selected for IdpName, AzureAD-specific fields are disabled,
-   * and the rest are enabled. 
-   * When "AzureAD" is selected for IdpName, Okta-specific fields are disabled, 
+   * and the rest are enabled.
+   * When "AzureAD" is selected for IdpName, Okta-specific fields are disabled,
    * and the rest are enabled.
    */
-  void DsnConfigurationWindow::EnableAdvanceAuthFields() const;
+  void DsnConfigurationWindow::OnIdpNameChanged() const;
 
   /**
-   * Retrieves current values from the children and stores
-   * them to the specified configuration.
+   * Create basic settings group box.
+   * Basic settings include DSN name, enable metadata statement checkbox and
+   * region and endpoint fields.
    *
-   * @param cfg Configuration.
+   * @param posX X position.
+   * @param posY Y position.
+   * @param sizeX Width.
+   * @return Size by Y.
    */
-  void RetrieveParameters(config::Configuration& cfg) const;
-
-  /**
-   * Retrieves current values from the basic authentication UI group and
-   * stores them to the specified configuration.
-   *
-   * @param cfg Configuration.
-   */
-  void RetrieveBasicAuthParameters(config::Configuration& cfg) const;
-
-  /**
-   * Retrieves current values from the advance authentication options UI group and
-   * stores them to the specified configuration.
-   *
-   * @param cfg Configuration.
-   */
-  void RetrieveAdvanceAuthParameters(config::Configuration& cfg) const;
-
-  /**
-   * Retrieves current values from the log configuration UI group and
-   * stores them to the specified configuration.
-   *
-   * @param cfg Configuration.
-   */
-  void RetrieveLogParameters(config::Configuration& cfg) const;
-
-  /**
-   * Retrieves current values from the AWS Credentials Provider Options UI group and
-   * stores them to the specified configuration.
-   *
-   * @param cfg Configuration.
-   */
-  void RetrieveCredentialsProvidersParameters(config::Configuration& cfg) const;
-
-  /**
-   * Retrieves current values from the Connection UI group and
-   * stores them to the specified configuration.
-   *
-   * @param cfg Configuration.
-   */
-  void RetrieveConnectionParameters(config::Configuration& cfg) const;
-
-  /**
-   * Retrieves current values from the Endpoint Configuration UI group and
-   * stores them to the specified configuration.
-   *
-   * @param cfg Configuration.
-   */
-  void RetrieveEndpointConfigParameters(config::Configuration& cfg) const;
+  int CreateBasicSettingsGroup(int posX, int posY, int sizeX);
 
   /**
    * Create basic authentication settings group box.
@@ -240,6 +229,16 @@ class DsnConfigurationWindow : public CustomWindow {
   int CreateAdvanceAuthSettingsGroup(int posX, int posY, int sizeX);
 
   /**
+   * Create Connection settings group box.
+   *
+   * @param posX X position.
+   * @param posY Y position.
+   * @param sizeX Width.
+   * @return Size by Y.
+   */
+  int CreateConnectionSettingsGroup(int posX, int posY, int sizeX);
+
+  /**
    * Create logging configuration settings group box.
    *
    * @param posX X position.
@@ -250,34 +249,52 @@ class DsnConfigurationWindow : public CustomWindow {
   int CreateLogSettingsGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create AWS Credentials Provider Options settings group box.
+   * Retrieves current values from the children and stores
+   * them to the specified configuration.
    *
-   * @param posX X position.
-   * @param posY Y position.
-   * @param sizeX Width.
-   * @return Size by Y.
+   * @param cfg Configuration.
    */
-  int CreateCredentialsProvidersGroup(int posX, int posY, int sizeX);
+  void RetrieveParameters(config::Configuration& cfg) const;
 
   /**
-   * Create Connection settings group box.
+   * Retrieves current values from the basic settings UI group and
+   * stores them to the specified configuration.
    *
-   * @param posX X position.
-   * @param posY Y position.
-   * @param sizeX Width.
-   * @return Size by Y.
+   * @param cfg Configuration.
    */
-  int CreateConnctionSettingsGroup(int posX, int posY, int sizeX);
+  void RetrieveBasicParameters(config::Configuration& cfg) const;
 
   /**
-   * Create endpoint configuration options group box.
+   * Retrieves current values from the basic authentication UI group and
+   * stores them to the specified configuration.
    *
-   * @param posX X position.
-   * @param posY Y position.
-   * @param sizeX Width.
-   * @return Size by Y.
+   * @param cfg Configuration.
    */
-  int CreateEndpointConfigOptionsGroup(int posX, int posY, int sizeX);
+  void RetrieveBasicAuthParameters(config::Configuration& cfg) const;
+
+  /**
+   * Retrieves current values from the advance authentication options UI group
+   * and stores them to the specified configuration.
+   *
+   * @param cfg Configuration.
+   */
+  void RetrieveAdvanceAuthParameters(config::Configuration& cfg) const;
+
+  /**
+   * Retrieves current values from the Connection UI group and
+   * stores them to the specified configuration.
+   *
+   * @param cfg Configuration.
+   */
+  void RetrieveConnectionParameters(config::Configuration& cfg) const;
+
+  /**
+   * Retrieves current values from the log configuration UI group and
+   * stores them to the specified configuration.
+   *
+   * @param cfg Configuration.
+   */
+  void RetrieveLogParameters(config::Configuration& cfg) const;
 
   /** Window width. */
   int width;
@@ -285,76 +302,70 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Window height. */
   int height;
 
-  /** Connection settings group box. */
-  std::unique_ptr< Window > basicAuthSettingsGroupBox;
-
-  /** SSH settings group box. */
-  std::unique_ptr< Window > advanceAuthSettingsGroupBox;
-
-  /** Log settings group box. */
-  std::unique_ptr< Window > logSettingsGroupBox;
-
-  /** AWS credentials provider options group box. */
-  std::unique_ptr< Window > credProviderSettingsGroupBox;
-
-  /** Connection Options group box. */
-  std::unique_ptr< Window > connctionSettingsGroupBox;
-
-  /** Endpoint Configuration Options group box. */
-  std::unique_ptr< Window > endpointConfigOptionsGroupBox;
+  /** DSN name edit field. */
+  std::unique_ptr< Window > nameEdit;
 
   /** DSN name field label. */
   std::unique_ptr< Window > nameLabel;
 
-  /** DSN name edit field. */
-  std::unique_ptr< Window > nameEdit;
-
   /** DSN name balloon. */
   std::unique_ptr< EDITBALLOONTIP > nameBalloon;
-
-  /** Request timeout field label. */
-  std::unique_ptr< Window > reqTimeoutLabel;
-
-  /** Request timeout edit. */
-  std::unique_ptr< Window > reqTimeoutEdit;
-
-  /** Socket timeout field label. */
-  std::unique_ptr< Window > socketTimeoutLabel;
-
-  /** Socket timeout edit. */
-  std::unique_ptr< Window > socketTimeoutEdit;
-
-  /** Max retry count client field label. */
-  std::unique_ptr< Window > maxRetryCountClientLabel;
-
-  /** Max retry count client edit. */
-  std::unique_ptr< Window > maxRetryCountClientEdit;
-
-  /** Max connections field label. */
-  std::unique_ptr< Window > maxConnectionsLabel;
-
-  /** Max connections edit. */
-  std::unique_ptr< Window > maxConnectionsEdit;
-
-  /** Max connections balloon. */
-  std::unique_ptr< EDITBALLOONTIP > maxConnectionsBalloon;
-
-  /** Endpoint label. */
-  std::unique_ptr< Window > endpointLabel;
 
   /** Endpoint edit. */
   std::unique_ptr< Window > endpointEdit;
 
-  /** Region label. */
-  std::unique_ptr< Window > regionLabel;
+  /** Endpoint label. */
+  std::unique_ptr< Window > endpointLabel;
 
   /** Region edit. */
   std::unique_ptr< Window > regionEdit;
 
+  /** Region label. */
+  std::unique_ptr< Window > regionLabel;
+
   /** Region balloon. */
   std::unique_ptr< EDITBALLOONTIP > regionBalloon;
 
-  /** Idp Name ComboBox **/
+  /** Enable Metadata Prepared Statement checkbox. */
+  std::unique_ptr< Window > enableMetadataPrepStmtCheckbox;
+
+  /** Tabs. */
+  std::unique_ptr< Window > tabs;
+
+  /** Access key Id edit. */
+  std::unique_ptr< Window > accessKeyIdEdit;
+
+  /** Access key Id label. */
+  std::unique_ptr< Window > accessKeyIdLabel;
+
+  /** Secret Access Key edit. */
+  std::unique_ptr< Window > secretAccessKeyEdit;
+
+  /** Secret Access Key label. */
+  std::unique_ptr< Window > secretAccessKeyLabel;
+
+  /** Session Token edit. */
+  std::unique_ptr< Window > sessionTokenEdit;
+
+  /** Session Token label. */
+  std::unique_ptr< Window > sessionTokenLabel;
+
+  /** AWS credentials provider class comboBox. */
+  std::unique_ptr< Window > credProvClassComboBox;
+
+  /** AWS credentials provider class label. */
+  std::unique_ptr< Window > credProvClassLabel;
+
+  /** Custom credentials file edit. */
+  std::unique_ptr< Window > cusCredFileEdit;
+
+  /** Custom credentials file label. */
+  std::unique_ptr< Window > cusCredFileLabel;
+
+  /** Custom credentials file balloon. */
+  std::unique_ptr< EDITBALLOONTIP > cusCredFileBalloon;
+
+  /** Idp Name comboBox **/
   std::unique_ptr< Window > idpNameComboBox;
 
   /** Idp Name label. */
@@ -414,7 +425,34 @@ class DsnConfigurationWindow : public CustomWindow {
   /** AAD Tenant label. */
   std::unique_ptr< Window > aadTenantLabel;
 
-  /** Log Level ComboBox **/
+  /** Request timeout edit. */
+  std::unique_ptr< Window > reqTimeoutEdit;
+
+  /** Request timeout field label. */
+  std::unique_ptr< Window > reqTimeoutLabel;
+
+  /** Socket timeout edit. */
+  std::unique_ptr< Window > socketTimeoutEdit;
+
+  /** Socket timeout field label. */
+  std::unique_ptr< Window > socketTimeoutLabel;
+
+  /** Max retry count client edit. */
+  std::unique_ptr< Window > maxRetryCountClientEdit;
+
+  /** Max retry count client field label. */
+  std::unique_ptr< Window > maxRetryCountClientLabel;
+
+  /** Max connections edit. */
+  std::unique_ptr< Window > maxConnectionsEdit;
+
+  /** Max connections field label. */
+  std::unique_ptr< Window > maxConnectionsLabel;
+
+  /** Max connections balloon. */
+  std::unique_ptr< EDITBALLOONTIP > maxConnectionsBalloon;
+
+  /** Log Level comboBox **/
   std::unique_ptr< Window > logLevelComboBox;
 
   /** Log Level label. */
@@ -432,39 +470,6 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Cancel button. */
   std::unique_ptr< Window > cancelButton;
 
-  /** AWS credentials provider class label. */
-  std::unique_ptr< Window > credProvClassLabel;
-
-  /** AWS credentials provider class comboBox. */
-  std::unique_ptr< Window > credProvClassComboBox;
-
-  /** Custom credentials file label. */
-  std::unique_ptr< Window > cusCredFileLabel;
-
-  /** Custom credentials file edit. */
-  std::unique_ptr< Window > cusCredFileEdit;
-
-  /** Access key Id label. */
-  std::unique_ptr< Window > accessKeyIdLabel;
-
-  /** Access key Id edit. */
-  std::unique_ptr< Window > accessKeyIdEdit;
-
-  /** Secret Access Key label. */
-  std::unique_ptr< Window > secretAccessKeyLabel;
-
-  /** Secret Access Key edit. */
-  std::unique_ptr< Window > secretAccessKeyEdit;
-
-  /** Session Token label. */
-  std::unique_ptr< Window > sessionTokenLabel;
-
-  /** Session Token edit. */
-  std::unique_ptr< Window > sessionTokenEdit;
-
-  /** Enable Metadata Prepared Statement checkbox. */
-  std::unique_ptr< Window > enableMetadataPrepStmtCheckbox;
-
   /** Configuration. */
   config::Configuration& config;
 
@@ -477,11 +482,18 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Flag indicating whether the DSN name balloon has been shown. */
   bool shownNameBalloon;
 
+  /** Flag indicating whether the region balloon has been shown. */
+  bool shownRegBalloon;
+
+  /** Flag indicating whether the custom credentials file balloon has been
+   * shown. */
+  bool shownCusCredFileBalloon;
+
   /** Flag indicating whether the max connections balloon has been shown. */
   bool shownMaxConBalloon;
 
-  /** Flag indicating whether the region balloon has been shown. */
-  bool shownRegBalloon;
+  /** The previously selected tab index.  */
+  TabIndex::Type preSel;
 };
 }  // namespace ui
 }  // namespace system

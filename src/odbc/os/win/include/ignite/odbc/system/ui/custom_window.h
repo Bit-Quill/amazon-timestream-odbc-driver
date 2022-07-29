@@ -168,6 +168,21 @@ class CustomWindow : public Window {
                                            int id);
 
   /**
+   * Create child Tab.
+   *
+   * @param posX Position by X coordinate.
+   * @param posY Position by Y coordinate.
+   * @param sizeX Size by X coordinate.
+   * @param sizeY Size by Y coordinate.
+   * @param title Title.
+   * @param id ID to be assigned to the created window.
+   * @return Unique pointer containing new window.
+   */
+  std::unique_ptr< Window > CreateTab(int posX, int posY, int sizeX, int sizeY,
+                                      const std::wstring& title, int id,
+                                      int style = 0);
+
+  /**
    * Create child Balloon.
    *
    * @param title Title.

@@ -109,7 +109,7 @@ CustomWindow::~CustomWindow() {
 std::unique_ptr< Window > CustomWindow::CreateGroupBox(
     int posX, int posY, int sizeX, int sizeY, const std::wstring& title,
     int id) {
-  std::unique_ptr< Window > child(new Window(this, L"Button", title));
+  std::unique_ptr< Window > child(new Window(this, WC_BUTTON, title));
 
   child->Create(WS_CHILD | WS_VISIBLE | BS_GROUPBOX, posX, posY, sizeX, sizeY,
                 id);
@@ -121,7 +121,7 @@ std::unique_ptr< Window > CustomWindow::CreateLabel(int posX, int posY,
                                                     int sizeX, int sizeY,
                                                     const std::wstring& title,
                                                     int id) {
-  std::unique_ptr< Window > child(new Window(this, L"Static", title));
+  std::unique_ptr< Window > child(new Window(this, WC_STATIC, title));
 
   child->Create(WS_CHILD | WS_VISIBLE, posX, posY, sizeX, sizeY, id);
 
@@ -132,7 +132,7 @@ std::unique_ptr< Window > CustomWindow::CreateEdit(int posX, int posY,
                                                    int sizeX, int sizeY,
                                                    const std::wstring& title,
                                                    int id, int style) {
-  std::unique_ptr< Window > child(new Window(this, L"Edit", title));
+  std::unique_ptr< Window > child(new Window(this, WC_EDIT, title));
 
   child->Create(
       WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | WS_TABSTOP | style,
@@ -145,7 +145,7 @@ std::unique_ptr< Window > CustomWindow::CreateButton(int posX, int posY,
                                                      int sizeX, int sizeY,
                                                      const std::wstring& title,
                                                      int id) {
-  std::unique_ptr< Window > child(new Window(this, L"Button", title));
+  std::unique_ptr< Window > child(new Window(this, WC_BUTTON, title));
 
   child->Create(WS_CHILD | WS_VISIBLE | WS_TABSTOP, posX, posY, sizeX, sizeY,
                 id);
@@ -156,7 +156,7 @@ std::unique_ptr< Window > CustomWindow::CreateButton(int posX, int posY,
 std::unique_ptr< Window > CustomWindow::CreateCheckBox(
     int posX, int posY, int sizeX, int sizeY, const std::wstring& title, int id,
     bool state) {
-  std::unique_ptr< Window > child(new Window(this, L"Button", title));
+  std::unique_ptr< Window > child(new Window(this, WC_BUTTON, title));
 
   child->Create(WS_CHILD | WS_VISIBLE | BS_CHECKBOX | WS_TABSTOP, posX, posY,
                 sizeX, sizeY, id);
@@ -169,7 +169,7 @@ std::unique_ptr< Window > CustomWindow::CreateCheckBox(
 std::unique_ptr< Window > CustomWindow::CreateComboBox(
     int posX, int posY, int sizeX, int sizeY, const std::wstring& title,
     int id) {
-  std::unique_ptr< Window > child(new Window(this, L"Combobox", title));
+  std::unique_ptr< Window > child(new Window(this, WC_COMBOBOX, title));
 
   child->Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP, posX,
                 posY, sizeX, sizeY, id);
@@ -177,10 +177,21 @@ std::unique_ptr< Window > CustomWindow::CreateComboBox(
   return child;
 }
 
-std::unique_ptr<EDITBALLOONTIP> CustomWindow::CreateBalloon(
-   const wchar_t* title, const wchar_t* text,
-    int icon) {
-  std::unique_ptr< EDITBALLOONTIP > child(new EDITBALLOONTIP());
+std::unique_ptr< Window > CustomWindow::CreateTab(int posX, int posY, int sizeX,
+                                                  int sizeY,
+                                                  const std::wstring& title,
+                                                  int id, int style) {
+  std::unique_ptr< Window > child(new Window(this, WC_TABCONTROL, title));
+
+  child->Create(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | style,
+                posX, posY, sizeX, sizeY, id);
+
+  return child;
+}
+
+std::unique_ptr< EDITBALLOONTIP > CustomWindow::CreateBalloon(
+    const wchar_t* title, const wchar_t* text, int icon) {
+  std::unique_ptr< EDITBALLOONTIP > child(std::make_unique< EDITBALLOONTIP >());
   child->cbStruct = sizeof(EDITBALLOONTIP);
   child->pszTitle = title;
   child->pszText = text;
