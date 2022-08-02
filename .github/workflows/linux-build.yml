@@ -131,7 +131,7 @@ jobs:
     - name: run-odbc-tests
       id: runodbctests
       run: |
-        ./build/odbc/bin/timestream-odbc-tests --catch_system_errors=false
+        ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
 
     - name: upload-odbc-test-report
       if: always()
@@ -230,7 +230,6 @@ jobs:
         mkdir -p "${{env.DOC_DB_LOG_PATH}}"
         ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
   
-  
     - name: upload-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
@@ -253,8 +252,8 @@ jobs:
     - name: run-odbc-tests
       id: runodbctests
       run: |
-        ./build/odbc/bin/timestream-odbc-tests --catch_system_errors=false
-        gcovr --exclude-directories cmake-build64/odbc-test/CMakeFiles/timestream-odbc-tests.dir$ --exclude-directories cmake-build64/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
+        ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
+        gcovr --exclude-directories cmake-build64/odbc-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories cmake-build64/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
 
     - name: Code Coverage Summary Report
       uses: irongut/CodeCoverageSummary@v1.2.0

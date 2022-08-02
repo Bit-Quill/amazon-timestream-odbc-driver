@@ -87,11 +87,4 @@ endif()
 
 if (${WITH_ODBC})
     add_subdirectory(odbc)
-
-    if (${WITH_TESTS} AND EXISTS ${CMAKE_SOURCE_DIR}/odbc-test)
-        add_subdirectory(odbc-test)
-    endif()
-    if (${WITH_TESTS} AND EXISTS ${CMAKE_SOURCE_DIR}/unit-test)
-        add_subdirectory(unit-test)
-    endif()
 endif()

@@ -16,6 +16,10 @@
 project(tests)
 
 set(PERFORMANCE "${CMAKE_CURRENT_SOURCE_DIR}/performance")
+set(INTEGRATION_TEST "${CMAKE_CURRENT_SOURCE_DIR}/integration-test")
+set(UNIT_TEST "${CMAKE_CURRENT_SOURCE_DIR}/unit-test")
 
 # Projects to build
 add_subdirectory(${PERFORMANCE})
+add_subdirectory(${INTEGRATION_TEST})
+add_subdirectory(${UNIT_TEST})
