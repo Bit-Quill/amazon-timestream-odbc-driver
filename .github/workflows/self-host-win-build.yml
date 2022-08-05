@@ -14,6 +14,7 @@ on:
       - develop
 
 env:
+  REPOSITORY_ROOT: "${{github.workspace}}"
   CI_OUTPUT_PATH: "ci-output"
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin/Release"

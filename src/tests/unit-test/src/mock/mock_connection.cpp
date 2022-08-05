@@ -44,8 +44,7 @@ SqlResult::Type MockConnection::InternalCreateStatement(Statement*& statement) {
 
 std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
 MockConnection::CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
-                    const Aws::Client::ClientConfiguration& clientCfg,
-                    const config::Configuration& cfg) {
+                    const Aws::Client::ClientConfiguration& clientCfg) {
   return std::static_pointer_cast< Aws::TimestreamQuery::TimestreamQueryClient  >(
       std::make_shared< ignite::odbc::MockTimestreamQueryClient >(credentials, clientCfg)
       );

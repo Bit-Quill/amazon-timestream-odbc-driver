@@ -32,6 +32,7 @@
 #include "ignite/odbc/streaming/streaming_context.h"
 
 #include <aws/core/Aws.h>
+#include <aws/core/auth/AWSCredentials.h>
 #include <aws/timestream-query/TimestreamQueryClient.h>
 
 using ignite::odbc::common::concurrent::SharedPointer;
@@ -94,7 +95,7 @@ class Connection : public diagnostic::DiagnosableAdapter {
    *
    * @param cfg Configuration.
    */
-  void Establish(const config::Configuration cfg);
+  void Establish(const config::Configuration& cfg);
 
   /**
    * Release established connection.
@@ -231,13 +232,11 @@ class Connection : public diagnostic::DiagnosableAdapter {
    *
    * @param credentials AWS IAM credentials.
    * @param clientCfg AWS client configuration.
-   * @param cfg connection configuration.
    * @return a shared_ptr to created TimestreamQueryClient object.
    */
   virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > 
       CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
-          const Aws::Client::ClientConfiguration& clientCfg,
-          const config::Configuration& cfg); 
+          const Aws::Client::ClientConfiguration& clientCfg); 
 
   /**
    * Create statement associated with the connection.

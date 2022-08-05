@@ -38,6 +38,9 @@ const std::string Configuration::DefaultValue::dsn = "Timestream DSN";
 const std::string Configuration::DefaultValue::driver = "Amazon Timestream";
 const std::string Configuration::DefaultValue::accessKeyId = "";
 const std::string Configuration::DefaultValue::secretKey = "";
+const std::string Configuration::DefaultValue::accessKeyIdFromProfile = "";
+const std::string Configuration::DefaultValue::secretKeyFromProfile = "";
+bool Configuration::DefaultValue::profileIsParsed = false;
 const std::string Configuration::DefaultValue::sessionToken = "";
 const bool Configuration::DefaultValue::enableMetadataPreparedStatement = false;
 
@@ -382,12 +385,44 @@ const std::string& Configuration::GetSecretKey() const {
   return secretKey.GetValue();
 }
 
-void Configuration::SetSecretKey(const std::string& pass) {
-  this->secretKey.SetValue(pass);
+void Configuration::SetSecretKey(const std::string& secretKey) {
+  this->secretKey.SetValue(secretKey);
 }
 
 bool Configuration::IsSecretKeySet() const {
   return secretKey.IsSet();
+}
+
+const std::string& Configuration::GetAccessKeyIdFromProfile() const {
+  return accessKeyIdFromProfile.GetValue();
+}
+
+void Configuration::SetAccessKeyIdFromProfile(const std::string& accessKeyIdValue) {
+  this->accessKeyIdFromProfile.SetValue(accessKeyIdValue);
+}
+
+bool Configuration::IsAccessKeyIdFromProfileSet() const {
+  return accessKeyIdFromProfile.IsSet();
+}
+
+const std::string& Configuration::GetSecretKeyFromProfile() const {
+  return secretKeyFromProfile.GetValue();
+}
+
+void Configuration::SetSecretKeyFromProfile(const std::string& secretKeyFromProfile) {
+  this->secretKeyFromProfile.SetValue(secretKeyFromProfile);
+}
+
+bool Configuration::IsSecretKeyFromProfileSet() const {
+  return secretKeyFromProfile.IsSet();
+}
+
+bool Configuration::GetProfileIsParsed() const {
+  return profileIsParsed.GetValue();
+}
+
+void Configuration::SetProfileIsParsed(bool profileIsParsed) {
+  this->profileIsParsed.SetValue(profileIsParsed);
 }
 
 const std::string& Configuration::GetSessionToken() const {
@@ -445,10 +480,17 @@ void Configuration::ToMap(ArgumentMap& res) const {
 
 void Configuration::Validate() const {
   // Validate minimum required properties.
-  if (!IsAccessKeyIdSet() || !IsSecretKeySet()) {
+  if ((!IsAccessKeyIdSet() || !IsSecretKeySet()) && 
+      (!IsCredProvClassSet() || 
+          ((GetCredProvClass()
+             == ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV) && (!IsAccessKeyIdFromProfileSet() || !IsSecretKeyFromProfileSet())))) {
     throw OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-        "ACCESS_KEY_ID and SECRET_KEY are required to connect.");
+        "Any of the following group is required to connect:\n"
+        "ACCESS_KEY_ID and SECRET_KEY or\n"
+        "AWS_CREDENTIALS_PROVIDER_CLASS or\n"
+        "AWS_CREDENTIALS_PROVIDER_CLASS is \"PropertiesFileCredentialsProvider\" and "
+        "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret access key");
   }
 }
 

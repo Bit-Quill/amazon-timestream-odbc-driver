@@ -58,6 +58,15 @@ class Configuration {
     /** Default value for sessionToken attribute. */
     static const std::string sessionToken;
 
+    /** Default value for accessKeyIdFromProfile attribute. */
+    static const std::string accessKeyIdFromProfile;
+
+    /** Default value for secretKeyFromProfile attribute. */
+    static const std::string secretKeyFromProfile;
+
+    /** Default value for profileIsParsed attribute. */
+    static bool profileIsParsed;
+
     /** Default value for enableMetadataPreparedStatement attribute. */
     static const bool enableMetadataPreparedStatement;
 
@@ -205,9 +214,9 @@ class Configuration {
   /**
    * Set secretKey.
    *
-   * @param pass secretKey.
+   * @param secretKey secretKey.
    */
-  void SetSecretKey(const std::string& pass);
+  void SetSecretKey(const std::string& secretKey);
 
   /**
    * Check if the value set.
@@ -215,6 +224,62 @@ class Configuration {
    * @return @true if the value set.
    */
   bool IsSecretKeySet() const;
+
+  /**
+   * Get accessKeyIdFromProfile.
+   *
+   * @return accessKeyIdFromProfile.
+   */
+  const std::string& GetAccessKeyIdFromProfile() const;
+
+  /**
+   * Set accessKeyIdFromProfile.
+   *
+   * @param accessKeyIdFromProfile accessKeyIdFromProfile.
+   */
+  void SetAccessKeyIdFromProfile(const std::string& accessKeyIdFromProfile);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsAccessKeyIdFromProfileSet() const;
+
+  /**
+   * Get secretKeyFromProfile.
+   *
+   * @return secretKeyFromProfile.
+   */
+  const std::string& GetSecretKeyFromProfile() const;
+
+  /**
+   * Set secretKeyFromProfile.
+   *
+   * @param secretKeyFromProfile secretKeyFromProfile.
+   */
+  void SetSecretKeyFromProfile(const std::string& secretKeyFromProfile);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsSecretKeyFromProfileSet() const;
+
+  /**
+   * Get profileIsParsed.
+   *
+   * @return profileIsParsed.
+   */
+  bool GetProfileIsParsed() const;
+
+  /**
+   * Set profileIsParsed.
+   *
+   * @param profileIsParsed profileIsParsed.
+   */
+  void SetProfileIsParsed(bool profileIsParsed);
 
   /**
    * Get sessionToken.
@@ -725,6 +790,15 @@ class Configuration {
 
   /** Secret Key. */
   SettableValue< std::string > secretKey = DefaultValue::secretKey;
+
+  /** Access Key Id from profile. */
+  SettableValue< std::string > accessKeyIdFromProfile = DefaultValue::accessKeyIdFromProfile;
+
+  /** Secret Key from profile. */
+  SettableValue< std::string > secretKeyFromProfile = DefaultValue::secretKeyFromProfile;
+
+  /** flag for profile is parsed or not. */
+  SettableValue< bool > profileIsParsed = DefaultValue::profileIsParsed;
 
   /** Session Token. */
   SettableValue< std::string > sessionToken = DefaultValue::sessionToken;

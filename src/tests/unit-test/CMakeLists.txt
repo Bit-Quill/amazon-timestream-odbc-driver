@@ -49,6 +49,7 @@ set(SOURCES
          src/column_meta_test.cpp
          src/configuration_test.cpp
          src/log_test.cpp
+	 src/unit_connection_string_parser_test.cpp
          src/unit_connection_test.cpp
          src/utility_test.cpp
          src/odbc_unit_test_suite.cpp

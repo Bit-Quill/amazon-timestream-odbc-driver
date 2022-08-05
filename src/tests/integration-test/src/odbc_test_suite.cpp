@@ -833,5 +833,21 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
 }
+
+void OdbcTestSuite::CreateDsnConnectionStringForAWS(
+    std::string& connectionString,
+    CredProvClass::Type testCredProvClass, const std::string& credentialsFile,
+    const std::string& miscOptions) const {
+  std::string region = common::GetEnv("AWS_REGION", "us-west-2");
+
+  connectionString =
+            "DRIVER={Amazon Timestream};"
+            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "CUSTOM_CREDENTIALS_FILE=" + credentialsFile + ";"
+            "REGION=" + region + ";";
+
+  if (!miscOptions.empty())
+    connectionString.append(miscOptions);
+}
 }  // namespace odbc
 }  // namespace ignite

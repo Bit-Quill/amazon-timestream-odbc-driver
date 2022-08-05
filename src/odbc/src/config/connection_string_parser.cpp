@@ -18,10 +18,13 @@
 #include "ignite/odbc/config/connection_string_parser.h"
 
 #include <vector>
+#include <fstream>
 
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/utility.h"
+
+using namespace ignite::odbc;
 
 namespace ignite {
 namespace odbc {
@@ -30,6 +33,8 @@ const std::string ConnectionStringParser::Key::dsn = "dsn";
 const std::string ConnectionStringParser::Key::driver = "driver";
 const std::string ConnectionStringParser::Key::accessKeyId = "access_key_id";
 const std::string ConnectionStringParser::Key::secretKey = "secret_key";
+const std::string ConnectionStringParser::Key::accessKeyIdFromProfile = "aws_access_key_id";
+const std::string ConnectionStringParser::Key::secretKeyFromProfile = "aws_secret_access_key";
 const std::string ConnectionStringParser::Key::sessionToken = "session_token";
 const std::string ConnectionStringParser::Key::enableMetadataPreparedStatement =
     "enable_metadata_prepared_statement";
@@ -106,7 +111,51 @@ void ConnectionStringParser::ParseConnectionString(
       break;
 
     connect_str.erase(attr_begin - 1);
+    
+    if (!cfg.GetProfileIsParsed() &&
+        (cfg.GetCredProvClass() == CredProvClass::Type::PROP_FILE_CRED_PROV)) {
+      ParseProfile(diag);
+    }
   }
+}
+
+void ConnectionStringParser::ParseProfile(
+    diagnostic::DiagnosticRecordStorage* diag) {
+    // set profileIsParsed first as this function should be executed only once
+    cfg.SetProfileIsParsed(true);
+
+    const std::string& profile = cfg.GetCusCredFile();
+    if (profile.empty()) {
+      if (diag) {
+        std::string errMsg("Credentials file is empty");
+        diag->AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMsg);
+      }
+      return;
+    }
+
+    std::ifstream ifs(profile);
+    if (!ifs.is_open()) {
+      if (diag) {
+        std::string errMsg("Failed to open file ");
+        errMsg += profile;
+        diag->AddStatusRecord(
+          SqlState::S08001_CANNOT_CONNECT, errMsg);
+      }
+      return;
+    }
+
+    std::string connStr;
+
+    // set up an internal connection string
+    while (!ifs.eof()) {
+      std::string line;
+      std::getline(ifs, line);
+      if (!line.empty()) {
+        connStr += line;
+        connStr += ";";
+      }
+    }
+    ParseConnectionString(connStr, diag);
 }
 
 void ConnectionStringParser::ParseConnectionString(
@@ -462,6 +511,25 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     cfg.SetSecretKey(value);
+  } else if (lKey == Key::accessKeyIdFromProfile 
+             && cfg.GetProfileIsParsed()) {  // internal key for access key from profile only
+    if (!cfg.GetAccessKeyIdFromProfile().empty() && diag) {
+      diag->AddStatusRecord(
+          SqlState::S01S02_OPTION_VALUE_CHANGED,
+          "Re-writing aws_access_key_id (have you specified it several times?");
+    }
+
+    cfg.SetAccessKeyIdFromProfile(value);
+  } else if (lKey == Key::secretKeyFromProfile
+             && cfg.GetProfileIsParsed()) {  // internal key for secret key from
+                                             // profile only
+    if (!cfg.GetSecretKeyFromProfile().empty() && diag) {
+      diag->AddStatusRecord(
+          SqlState::S01S02_OPTION_VALUE_CHANGED,
+          "Re-writing aws_secret_access_key (have you specified it several times?");
+    }
+
+    cfg.SetSecretKeyFromProfile(value);
   } else if (lKey == Key::sessionToken) {
     if (!cfg.GetSessionToken().empty() && diag) {
       diag->AddStatusRecord(

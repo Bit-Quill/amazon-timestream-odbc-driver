@@ -34,6 +34,9 @@ C/C++ usage and formatting.
 
   This ODBC driver uses AWS logs beside its own logging. Please see how AWS Logs work in their [official document](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/logging.html). The logs will be stored inthe executable directory following the default naming pattern of `aws_sdk_<date>.log`. 
 
+- To run integration/unit test, you need to specify the repository root directory.
+   - `REPOSITORY_ROOT` = `<Repository Root Directory>`
+
 ### Running an SSH tunnel for Testing
 By default, remote integration tests are not run. To enable remote integration tests, 
 set the environment variable `DOC_DB_ODBC_INTEGRATION_TEST=1`

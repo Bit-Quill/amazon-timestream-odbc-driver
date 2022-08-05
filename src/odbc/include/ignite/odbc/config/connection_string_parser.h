@@ -39,11 +39,17 @@ class ConnectionStringParser {
     /** Connection attribute keyword for Driver attribute. */
     static const std::string driver;
 
-    /** Connection attribute keyword for username attribute. */
+    /** Connection attribute keyword for accessKeyId attribute. */
     static const std::string accessKeyId;
 
-    /** Connection attribute keyword for password attribute. */
+    /** Connection attribute keyword for secretKey attribute. */
     static const std::string secretKey;
+
+    /** Connection attribute keyword for accessKeyIdFromProfile attribute. */
+    static const std::string accessKeyIdFromProfile;
+
+    /** Connection attribute keyword for secretKeyFromProfile attribute. */
+    static const std::string secretKeyFromProfile;
 
     /** Connection attribute keyword for sessiontoken attribute. */
     static const std::string sessionToken;
@@ -154,6 +160,14 @@ class ConnectionStringParser {
                              diagnostic::DiagnosticRecordStorage* diag);
 
  private:
+
+  /**
+   * Parse the credentials profile.
+   *
+   * @param diag Diagnostics collector.
+   */
+  void ParseProfile(diagnostic::DiagnosticRecordStorage* diag);
+
   /**
    * Result of parsing string value to bool.
    */

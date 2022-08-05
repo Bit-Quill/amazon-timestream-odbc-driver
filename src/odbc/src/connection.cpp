@@ -37,11 +37,11 @@
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
 
-#include <aws/core/auth/AWSCredentials.h>
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
 #include <aws/core/utils/logging/LogLevel.h>
 
+using namespace ignite::odbc;
 using namespace ignite::odbc::common;
 using namespace ignite::odbc::common::concurrent;
 using ignite::odbc::IgniteError;
@@ -160,7 +160,7 @@ SqlResult::Type Connection::InternalEstablish(const std::string& connectStr,
   return InternalEstablish(config);
 }
 
-void Connection::Establish(const config::Configuration cfg) {
+void Connection::Establish(const config::Configuration& cfg) {
   IGNITE_ODBC_API_CALL(InternalEstablish(cfg));
 }
 
@@ -462,16 +462,23 @@ void Connection::EnsureConnected() {
 bool Connection::TryRestoreConnection(
     const config::Configuration& cfg, IgniteError& err) {
   Aws::Auth::AWSCredentials credentials;
-  credentials.SetAWSAccessKeyId(cfg.GetAccessKeyId());
-  credentials.SetAWSSecretKey(cfg.GetSecretKey());
-  credentials.SetSessionToken(cfg.GetSessionToken());
+
+  if (cfg.GetCredProvClass()
+      == CredProvClass::Type::PROP_FILE_CRED_PROV) {
+    credentials.SetAWSAccessKeyId(cfg.GetAccessKeyIdFromProfile());
+    credentials.SetAWSSecretKey(cfg.GetSecretKeyFromProfile());
+  } else {
+    credentials.SetAWSAccessKeyId(cfg.GetAccessKeyId());
+    credentials.SetAWSSecretKey(cfg.GetSecretKey());
+    credentials.SetSessionToken(cfg.GetSessionToken());  
+  }
 
   Aws::Client::ClientConfiguration clientCfg;
   clientCfg.region = cfg.GetRegion();
   clientCfg.enableEndpointDiscovery = true;
 
 
-  client_ = CreateTSQueryClient(credentials, clientCfg, cfg);
+  client_ = CreateTSQueryClient(credentials, clientCfg);
 
   // try a simple query
   Aws::TimestreamQuery::Model::QueryRequest queryRequest;
@@ -484,7 +491,7 @@ bool Connection::TryRestoreConnection(
     LOG_DEBUG_MSG("ERROR: " << error.GetExceptionName() << ": "
                             << error.GetMessage());
 
-    err = IgniteError(ignite::odbc::IgniteError::IGNITE_ERR_TS_CONNECT,
+    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
             std::string(error.GetExceptionName()).append(": ")
             .append(error.GetMessage()).c_str());
 
@@ -516,8 +523,7 @@ int32_t Connection::RetrieveTimeout(void* value) {
 std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
 Connection::CreateTSQueryClient(
     const Aws::Auth::AWSCredentials& credentials, 
-    const Aws::Client::ClientConfiguration& clientCfg,
-    const config::Configuration& cfg) {
+    const Aws::Client::ClientConfiguration& clientCfg) {
   return std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
       credentials, clientCfg);  
 }

@@ -44,7 +44,16 @@ const std::string testSecretKey = "testSecretKey";
 const std::string testSessionToken = "testSessionToken";
 const bool testEnableMetadataPreparedStatement = true;
 const CredProvClass::Type testCredProvClass = CredProvClass::FromString("PropertiesFileCredentialsProvider");
+
+const std::string rootDir = ignite::odbc::common::GetEnv("REPOSITORY_ROOT");
+#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
+const std::string testCusCredFile = rootDir + "/src/tests/input/test_credentials";
+#elif defined(_WIN32)
+const std::string testCusCredFile = rootDir + "\\src\\tests\\input\\test_credentials";
+#else
 const std::string testCusCredFile = "/path/to/credentials";
+#endif
+
 const int32_t testReqTimeoutMS = 300000;
 const int32_t testSocketTimeoutMS = 200000;
 const int32_t testMaxRetryCount = 3;
@@ -173,6 +182,9 @@ void CheckConnectionConfig(const Configuration& cfg) {
                     testEnableMetadataPreparedStatement);
   BOOST_CHECK(cfg.GetCredProvClass() == testCredProvClass);
   BOOST_CHECK_EQUAL(cfg.GetCusCredFile(), testCusCredFile);
+  BOOST_CHECK_EQUAL(cfg.GetAccessKeyIdFromProfile(), testAccessKeyId);
+  BOOST_CHECK_EQUAL(cfg.GetSecretKeyFromProfile(), testSecretKey);
+  BOOST_CHECK_EQUAL(cfg.GetProfileIsParsed(), true);
   BOOST_CHECK_EQUAL(cfg.GetReqTimeout(), testReqTimeoutMS);
   BOOST_CHECK_EQUAL(cfg.GetSocketTimeout(), testSocketTimeoutMS);
   BOOST_CHECK_EQUAL(cfg.GetMaxRetryCount(), testMaxRetryCount);

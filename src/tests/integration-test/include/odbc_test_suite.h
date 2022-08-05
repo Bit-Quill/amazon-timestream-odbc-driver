@@ -28,6 +28,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <ignite/odbc/common/platform_utils.h>
+#include <ignite/odbc/cred_prov_class.h>
 
 #ifndef BOOST_TEST_CONTEXT
 #define BOOST_TEST_CONTEXT(...)
@@ -361,6 +362,15 @@ struct OdbcTestSuite {
       std::string& connectionString,
       const std::string& keyId = std::string(),
       const std::string& secret = std::string(),
+      const std::string& miscOptions = std::string()) const;
+
+  /**
+   * Creates the standard DSN connection string.
+   */
+  void CreateDsnConnectionStringForAWS(
+      std::string& connectionString,
+      CredProvClass::Type testCredProvClass,
+      const std::string& credentialsFile,
       const std::string& miscOptions = std::string()) const;
 
   /** ODBC Environment. */

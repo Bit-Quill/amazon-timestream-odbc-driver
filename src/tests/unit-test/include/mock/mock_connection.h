@@ -57,8 +57,7 @@ class MockConnection : public Connection {
    */
   virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
   CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
-                      const Aws::Client::ClientConfiguration& clientCfg,
-                      const config::Configuration& cfg);
+                      const Aws::Client::ClientConfiguration& clientCfg);
 };
 }  // namespace odbc
 }  // namespace ignite
