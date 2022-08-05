@@ -1,0 +1,226 @@
+name: ODBC Driver for Mac (Self-Hosted Runner)
+
+on: workflow_dispatch
+
+env:
+  CI_OUTPUT_PATH: "ci-output"
+  ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
+  ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
+  ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
+  DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
+  DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
+  DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
+  DOC_DB_USER: ${{secrets.DOC_DB_USER}}
+  DOC_DB_HOST: ${{secrets.DOC_DB_HOST}}
+  DOC_DB_LOCAL_PORT: 27019
+  DOC_DB_REMOTE_PORT: 27017
+  DOC_DB_PRIV_KEY_FILE: ~/certs/docdb-sshtunnel.pem
+  DOC_DB_ODBC_INTEGRATION_TEST: 1
+  DOC_DB_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
+  DOC_DB_LOG_LEVEL: "debug"
+  JDBC_DRIVER_VERSION: "1.2.4"
+  ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
+
+jobs:
+  build-mac-self-host:
+    runs-on: [self-hosted, macOS, x64]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: get-dependencies
+      run: |
+        brew tap homebrew/services
+        brew unlink unixodbc
+        brew install libiodbc
+        brew install cmake
+        brew install openssl
+        brew install boost
+        brew install aws-sdk-cpp
+
+    - name: configure-and-build-driver
+      run: |
+        ./build_mac_release64.sh
+      env:
+        OPENSSL_ROOT_DIR: /usr/local/opt/openssl
+    # - name: prepare-dsn
+    #   run: |
+    #     sudo mkdir /Library/ODBC
+    #     sudo cp ./src/Tests/Tests/odbc-mac.ini /Library/ODBC/odbc.ini
+    #     sudo cp ./src/Tests/Tests/odbcinst-mac.ini /Library/ODBC/odbcinst.ini
+    #     mkdir ${{ github.workspace }}/odbc-logs
+    - name: register-odbc-driver
+      run: |
+        chmod +x scripts/register_driver_unix.sh
+        ./scripts/register_driver_unix.sh
+    - name: run-tests
+      id: runtests
+      run: |
+        mkdir -p "${{env.DOC_DB_LOG_PATH}}"
+        ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
+      env: 
+        ODBCINSTINI: ${{env.ODBCINSTINI}}
+
+    # - name: print-memory-leak-logs
+    #   if: always()
+    #   run: |
+    #     cat ./leaks_*
+    # - name: upload-test-logs
+    #   if: failure()
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: test-logs-mac64
+    #     path: |
+    #       ${{ github.workspace }}/odbc-logs/
+    #       ${{ github.workspace }}/leaks_
+    # - name: test
+    #   run: |
+    #     bash ./run_test_runner.sh
+    # - name: build-installer
+    #   if: success()
+    #   run: |
+    #     cd cmake-build64
+    #     cmake ../src
+    #     make
+    #     cpack .
+    #     cd ..
+    # - name: create-output
+    #   if: success()
+    #   run: |
+    #     mkdir build-output
+    #     mkdir test-output
+    #     mkdir installer
+    #     cp ./build/odbc/lib/*.dylib build-output/
+    #     cp ./build/odbc/lib/*.a build-output/
+    #     cp ./cmake-build64/*.pkg installer/
+    # - name: upload-build
+    #   if: success()
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: mac64-build
+    #     path: build-output
+    # - name: upload-installer
+    #   if: success()
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: mac64-installer
+    #     path: installer
+    # - name: upload-test-results
+    #   if: success()
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: mac-test-results
+    #     path: test-output
+
+  build-mac-debug-self-host:
+    runs-on: [self-hosted, macOS, x64]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: run-cppcheck
+      run: |
+        brew install cppcheck
+        sh run_cppcheck.sh
+
+    - name: upload-cppcheck-results
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: cppcheck-results
+        path: cppcheck-results.log
+
+    - name: get-dependencies
+      run: |
+        brew tap homebrew/services
+        brew unlink unixodbc
+        brew install libiodbc
+        brew install cmake
+        brew install openssl
+        brew install boost
+        brew install aws-sdk-cpp
+        brew install gcovr
+
+    - name: configure-and-build-driver
+      run: |
+        ./build_mac_debug64.sh
+      env:
+        OPENSSL_ROOT_DIR: /usr/local/opt/openssl
+
+    - name: register-odbc-driver
+      run: |
+        chmod +x scripts/register_driver_unix.sh
+        ./scripts/register_driver_unix.sh
+
+      env:
+        RUN_CODE_COVERAGE: ${{ true }}
+        BOOST_TEST_CATCH_SYSTEM_ERRORS: no
+
+    - name: run-tests
+      id: runtests
+      run: |
+        mkdir -p "${{env.DOC_DB_LOG_PATH}}"
+        ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
+        gcovr -r .. --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
+      env: 
+        ODBCINSTINI: ${{env.ODBCINSTINI}}
+
+    - name: upload-coverage
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-coverage
+        path: coverage.cobertura.xml
+
+    - name: upload-test-file
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-test-results
+        path: |
+          ./odbc_test_result.xml
+          ./build/odbc/logs/docdb_odbc_*.log        
+
+  comment_PR_mac_coverage:
+    runs-on: ubuntu-latest
+    needs: build-mac-debug-self-host
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve coverage
+      uses: actions/download-artifact@v2
+      with:
+        name: code-coverage
+
+    - name: Retrieve test results
+      uses: actions/download-artifact@v2
+      with:
+        name: odbc-test-results
+        path: test-results
+
+    - name: Code Coverage Summary Report
+      uses: irongut/CodeCoverageSummary@v1.2.0
+      with:
+        filename: coverage.cobertura.xml
+        badge: true
+        format: markdown
+        indicators: true
+        output: both
+
+    - name: upload-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        check_name: "MacOS Big Sur 11 Debug Build Integration Test Results Check"
+        comment_title: "MacOS Big Sur 11 Debug Build Integration Test Results"
+        junit_files: "test-results/odbc_test_result.xml"       
+    
+    - name: Add Header for Code Coverage Summary Report
+      run: |
+        echo "## MacOS Big Sur 11 Debug Build Code Coverage Result" > coverage-cobertura.md
+        cat code-coverage-results.md >> coverage-cobertura.md
+    
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        header: macOS
+        recreate: true
+        path: coverage-cobertura.md

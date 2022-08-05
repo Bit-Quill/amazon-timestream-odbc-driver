@@ -9,10 +9,10 @@ mkdir $DRIVER_LOG_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 cmake ../src -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCODE_COVERAGE="ON" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON"
-cd ..
+make  -j 4
 
 #Change DOCUMENTDB_HOME to TIMESTREAM_HOME if needed.
 #Remove it if not needed.
 #export DOCUMENTDB_HOME="$DRIVER_BIN_DIR"
-make -j 4
+
 cd ..

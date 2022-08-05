@@ -76,7 +76,7 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
   }
 };
 
-BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionUnitTestSuiteFixture)
+BOOST_FIXTURE_TEST_SUITE(ConnectionUnitTestSuite, ConnectionUnitTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestEstablish) {
   ignite::odbc::config::Configuration cfg;

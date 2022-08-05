@@ -25,19 +25,19 @@ using namespace boost::unit_test;
 /**
  * Test setup config for test results
  */
-struct OdbcConfig {
-  OdbcConfig() : test_log("odbc_unit_test_result.xml") {
+struct OdbcUnitTestConfig {
+  OdbcUnitTestConfig() : test_log("odbc_unit_test_result.xml") {
     unit_test_log.set_stream(test_log);
     unit_test_log.set_format(OF_JUNIT);
   }
-  ~OdbcConfig() {
+  ~OdbcUnitTestConfig() {
     unit_test_log.set_stream(std::cout);
   }
 
   std::ofstream test_log;
 };
 
-BOOST_GLOBAL_FIXTURE(OdbcConfig);
+BOOST_GLOBAL_FIXTURE(OdbcUnitTestConfig);
 
 namespace ignite {
 namespace odbc {
