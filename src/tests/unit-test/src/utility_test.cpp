@@ -29,7 +29,7 @@ using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_SUITE(UtilityTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces) {
   std::string inStr("   \r \n    \t  some meaningfull data   \n\n   \t  \r  ");
   std::string expectedOutStr("some meaningfull data");
 
@@ -39,71 +39,75 @@ BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces, *disabled()) {
   BOOST_REQUIRE(expectedOutStr == realOutStr);
 }
 
-BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBuffer, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBuffer) {
   SQLWCHAR buffer[1024];
   std::wstring wstr(L"你好 - Some data. And some more data here.");
   std::string str = ToUtf8(wstr);
   size_t bytesWrittenOrRequired = 0;
+  bool isTruncated = false;
 
   // With length in character mode
   buffer[0] = 0;
-  bytesWrittenOrRequired =
-      CopyStringToBuffer(str, buffer, sizeof(buffer) / sizeof(SQLWCHAR));
+  bytesWrittenOrRequired = CopyStringToBuffer(
+      str, buffer, sizeof(buffer) / sizeof(SQLWCHAR), isTruncated);
   BOOST_REQUIRE_EQUAL(SqlWcharToString(buffer), str);
   BOOST_CHECK_EQUAL(wstr.size(), bytesWrittenOrRequired);
 
   // With length in byte mode
   buffer[0] = 0;
   bytesWrittenOrRequired =
-      CopyStringToBuffer(str, buffer, sizeof(buffer), true);
+      CopyStringToBuffer(str, buffer, sizeof(buffer), isTruncated, true);
   BOOST_REQUIRE_EQUAL(SqlWcharToString(buffer), str);
   BOOST_CHECK_EQUAL(wstr.size() * sizeof(SQLWCHAR), bytesWrittenOrRequired);
 
   // 10 characters plus 1 for null char.
   buffer[0] = 0;
-  bytesWrittenOrRequired = CopyStringToBuffer(str, buffer, 11, false);
+  bytesWrittenOrRequired =
+      CopyStringToBuffer(str, buffer, 11, isTruncated, false);
   BOOST_REQUIRE_EQUAL(SqlWcharToString(buffer), ToUtf8(wstr.substr(0, 10)));
   BOOST_CHECK_EQUAL(10, bytesWrittenOrRequired);
 
   // 10 characters plus 1 for null char, in bytes
   buffer[0] = 0;
-  bytesWrittenOrRequired =
-      CopyStringToBuffer(str, buffer, ((10 + 1) * sizeof(SQLWCHAR)), true);
+  bytesWrittenOrRequired = CopyStringToBuffer(
+      str, buffer, ((10 + 1) * sizeof(SQLWCHAR)), isTruncated, true);
   BOOST_REQUIRE_EQUAL(SqlWcharToString(buffer), ToUtf8(wstr.substr(0, 10)));
   BOOST_CHECK_EQUAL(10 * sizeof(SQLWCHAR), bytesWrittenOrRequired);
 
   // Zero length buffer in character mode.
   buffer[0] = 0;
-  bytesWrittenOrRequired = CopyStringToBuffer(str, buffer, 0);
+  bytesWrittenOrRequired = CopyStringToBuffer(str, buffer, 0, isTruncated);
   BOOST_REQUIRE_EQUAL(SqlWcharToString(buffer), std::string());
   BOOST_CHECK_EQUAL(0, bytesWrittenOrRequired);
 
   // Zero length buffer in byte mode.
   buffer[0] = 0;
-  bytesWrittenOrRequired = CopyStringToBuffer(str, buffer, 0, true);
+  bytesWrittenOrRequired =
+      CopyStringToBuffer(str, buffer, 0, isTruncated, true);
   BOOST_REQUIRE_EQUAL(SqlWcharToString(buffer), std::string());
   BOOST_CHECK_EQUAL(0, bytesWrittenOrRequired);
 
   // nullptr buffer, zero length, in character mode.
   buffer[0] = 0;
-  bytesWrittenOrRequired = CopyStringToBuffer(str, nullptr, 0);
+  bytesWrittenOrRequired = CopyStringToBuffer(str, nullptr, 0, isTruncated);
   BOOST_CHECK_EQUAL(wstr.size(), bytesWrittenOrRequired);
 
   // nullptr buffer, zero length, in byte mode.
   buffer[0] = 0;
-  bytesWrittenOrRequired = CopyStringToBuffer(str, nullptr, 0, true);
+  bytesWrittenOrRequired =
+      CopyStringToBuffer(str, nullptr, 0, isTruncated, true);
   BOOST_CHECK_EQUAL(wstr.size() * sizeof(SQLWCHAR), bytesWrittenOrRequired);
 
   // nullptr buffer, non-zero length, in character mode.
   buffer[0] = 0;
-  bytesWrittenOrRequired =
-      CopyStringToBuffer(str, nullptr, sizeof(buffer) / sizeof(SQLWCHAR));
+  bytesWrittenOrRequired = CopyStringToBuffer(
+      str, nullptr, sizeof(buffer) / sizeof(SQLWCHAR), isTruncated);
   BOOST_CHECK_EQUAL(wstr.size(), bytesWrittenOrRequired);
 
   // nullptr buffer, non-zero length, in byte mode.
   buffer[0] = 0;
   bytesWrittenOrRequired =
-      CopyStringToBuffer(str, nullptr, sizeof(buffer), true);
+      CopyStringToBuffer(str, nullptr, sizeof(buffer), isTruncated, true);
   BOOST_CHECK_EQUAL(wstr.size() * sizeof(SQLWCHAR), bytesWrittenOrRequired);
 }
 
@@ -121,9 +125,10 @@ BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBufferRepetative, *disabled()) {
 
   auto t1 = std::chrono::high_resolution_clock::now();
   size_t bytesWrittenOrRequired = 0;
+  bool isTruncated = false;
   for (int i = 0; i < 500; i++) {
     bytesWrittenOrRequired = CopyStringToBuffer(
-        str, buffer.data(), ((strLen + 1) * sizeof(SQLWCHAR)));
+        str, buffer.data(), ((strLen + 1) * sizeof(SQLWCHAR)), isTruncated);
     BOOST_CHECK_EQUAL(str.size(), bytesWrittenOrRequired);
   }
   auto t2 = std::chrono::high_resolution_clock::now();
@@ -131,7 +136,7 @@ BOOST_AUTO_TEST_CASE(TestUtilityCopyStringToBufferRepetative, *disabled()) {
             << " nanoseconds\n";
 }
 
-BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString) {
   std::string utf8String = u8"你好 - Some data. And some more data here.";
   std::vector< SQLWCHAR > buffer = ToWCHARVector(utf8String);
   std::string utf8StringShortened = u8"你好 - Some da";
@@ -168,7 +173,7 @@ BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString, *disabled()) {
   BOOST_CHECK_EQUAL(utf8StringShortened, result);
 }
 
-BOOST_AUTO_TEST_CASE(TestUtilityWriteReadString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestUtilityWriteReadString) {
   using namespace impl::binary;
   using namespace impl::interop;
 
@@ -249,7 +254,7 @@ void CheckDecimalWriteRead(const std::string& val) {
  * -3472986487.9625196, 3472.9864879625196, -3472.9864879625196,
  * 0.34729864879625196, -0.34729864879625196
  */
-BOOST_AUTO_TEST_CASE(TestUtilityWriteReadDecimal, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestUtilityWriteReadDecimal) {
   CheckDecimalWriteRead("0");
   CheckDecimalWriteRead("1");
   CheckDecimalWriteRead("-1");

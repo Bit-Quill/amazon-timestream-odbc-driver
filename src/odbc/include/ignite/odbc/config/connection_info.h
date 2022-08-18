@@ -25,6 +25,13 @@
 
 #include <map>
 
+// Missing definition in iODBC sqlext.h
+#if (ODBCVER >= 0x0300)
+#ifndef SQL_CVT_GUID
+#define SQL_CVT_GUID 0x01000000L
+#endif
+#endif
+
 namespace ignite {
 namespace odbc {
 namespace config {
@@ -66,6 +73,13 @@ class ConnectionInfo {
    */
   SqlResult::Type GetInfo(InfoType type, void* buf, short buflen,
                           short* reslen) const;
+  /**
+   * Set info of any type.
+   * @param type Info type.
+   * @param value String to be set.
+   * @return True on success.
+   */
+  SqlResult::Type SetInfo(InfoType type, std::string value);
 
  private:
   IGNITE_NO_COPY_ASSIGNMENT(ConnectionInfo);

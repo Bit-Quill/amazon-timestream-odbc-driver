@@ -52,6 +52,7 @@ set(SOURCES
          src/meta_queries_test.cpp
          src/odbc_test_suite.cpp
          src/queries_test.cpp
+         src/sql_get_info_test.cpp
          src/test_utils.cpp
          ../../odbc/src/app/application_data_buffer.cpp
          ../../odbc/src/binary/binary_containers.cpp

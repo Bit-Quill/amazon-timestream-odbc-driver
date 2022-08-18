@@ -459,6 +459,29 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
 void Connection::EnsureConnected() {
 }
 
+/**
+ * Updates connection runtime information used by SQLGetInfo.
+ *
+ */
+void UpdateConnectionRuntimeInfo(const config::Configuration& config,
+                                 config::ConnectionInfo& info) {
+  // TODO retrieve Okta IdP username
+  // https://bitquill.atlassian.net/browse/AT-1055
+
+  // TODO retrieve AAD IdP username
+  // https://bitquill.atlassian.net/browse/AT-1056
+#ifdef SQL_USER_NAME
+  if (config.GetCredProvClass() == CredProvClass::Type::PROP_FILE_CRED_PROV) {
+    info.SetInfo(SQL_USER_NAME, config.GetAccessKeyIdFromProfile());
+  } else {
+    info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
+  }
+#endif
+#ifdef SQL_DATA_SOURCE_NAME
+  info.SetInfo(SQL_DATA_SOURCE_NAME, config.GetDsn());
+#endif
+}
+
 bool Connection::TryRestoreConnection(
     const config::Configuration& cfg, IgniteError& err) {
   Aws::Auth::AWSCredentials credentials;
@@ -498,6 +521,8 @@ bool Connection::TryRestoreConnection(
     Close();
     return false;
   }
+
+  UpdateConnectionRuntimeInfo(config_, info_);
 
   return true;
 }

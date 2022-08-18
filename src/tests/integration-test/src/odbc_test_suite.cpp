@@ -27,11 +27,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include <ignite/odbc/utility.h>
+#include <ignite/odbc/config/configuration.h>
 #include "odbc_test_suite.h"
 #include "test_utils.h"
 
 using namespace ignite_test;
 using namespace boost::unit_test;
+using namespace ignite::odbc::config;
 
 /**
  * Test setup config for test results
@@ -85,7 +87,7 @@ void OdbcTestSuite::Connect(SQLHDBC& conn, SQLHSTMT& statement,
   SQLRETURN ret =
       SQLDriverConnect(conn, NULL, &connectStr0[0],
                        static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
-                       sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
+                       ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
 
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, conn));
@@ -110,7 +112,7 @@ void OdbcTestSuite::Connect(const std::string& connectStr) {
   SQLRETURN ret =
       SQLDriverConnect(dbc, NULL, &connectStr0[0],
                        static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
-                       sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
+                       ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
 
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
@@ -135,7 +137,7 @@ std::string OdbcTestSuite::ExpectConnectionReject(
   SQLRETURN ret =
       SQLDriverConnect(dbc, NULL, &connectStr0[0],
                        static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
-                       sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
+                       ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   BOOST_REQUIRE_EQUAL(
@@ -343,7 +345,7 @@ void OdbcTestSuite::CheckSQLDiagnosticError(
   SQLSMALLINT messageLen = 0;
 
   SQLRETURN ret = SQLGetDiagRec(handleType, handle, 1, state, &nativeError,
-                                message, sizeof(message), &messageLen);
+                                message, ODBC_BUFFER_SIZE, &messageLen);
 
   std::vector< SQLWCHAR > expectSqlStateWchar =
       MakeSqlBuffer(expectedSqlStateStr);
@@ -825,6 +827,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 
   connectionString =
             "DRIVER={Amazon Timestream};"
+            "DSN=" + Configuration::DefaultValue::dsn + ";"
             "ACCESS_KEY_ID=" + accessKeyId + ";"
             "SECRET_KEY=" + secretKey + ";"
             "SESSION_TOKEN=" + sessionToken + ";"
@@ -842,6 +845,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 
   connectionString =
             "DRIVER={Amazon Timestream};"
+            "DSN=" + Configuration::DefaultValue::dsn + ";"
             "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + credentialsFile + ";"
             "REGION=" + region + ";";
