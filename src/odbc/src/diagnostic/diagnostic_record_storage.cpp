@@ -16,6 +16,7 @@
  */
 
 #include "ignite/odbc/diagnostic/diagnostic_record_storage.h"
+#include "ignite/odbc/log.h"
 
 #include <set>
 #include <string>
@@ -89,10 +90,16 @@ int32_t DiagnosticRecordStorage::GetStatusRecordsNumber() const {
 
 const DiagnosticRecord& DiagnosticRecordStorage::GetStatusRecord(
     int32_t idx) const {
+  if (statusRecords.size() <= idx) {
+    LOG_ERROR_MSG("idx value " << idx << " is out of range");
+  }
   return statusRecords[idx - 1];
 }
 
 DiagnosticRecord& DiagnosticRecordStorage::GetStatusRecord(int32_t idx) {
+  if (statusRecords.size() <= idx) {
+    LOG_ERROR_MSG("idx value " << idx << " is out of range");
+  }
   return statusRecords[idx - 1];
 }
 

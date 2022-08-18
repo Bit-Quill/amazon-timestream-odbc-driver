@@ -33,28 +33,28 @@ const std::string ConnectionStringParser::Key::dsn = "dsn";
 const std::string ConnectionStringParser::Key::driver = "driver";
 const std::string ConnectionStringParser::Key::accessKeyId = "access_key_id";
 const std::string ConnectionStringParser::Key::secretKey = "secret_key";
-const std::string ConnectionStringParser::Key::accessKeyIdFromProfile = "aws_access_key_id";
-const std::string ConnectionStringParser::Key::secretKeyFromProfile = "aws_secret_access_key";
+const std::string ConnectionStringParser::Key::accessKeyIdFromProfile =
+    "aws_access_key_id";
+const std::string ConnectionStringParser::Key::secretKeyFromProfile =
+    "aws_secret_access_key";
 const std::string ConnectionStringParser::Key::sessionToken = "session_token";
-const std::string ConnectionStringParser::Key::enableMetadataPreparedStatement =
-    "enable_metadata_prepared_statement";
-const std::string ConnectionStringParser::Key::credProvClass =
-    "aws_credentials_provider_class";
+const std::string ConnectionStringParser::Key::profileName = "profile_name";
 const std::string ConnectionStringParser::Key::cusCredFile =
     "custom_credentials_file";
 const std::string ConnectionStringParser::Key::reqTimeout = "request_timeout";
-const std::string ConnectionStringParser::Key::socketTimeout = "socket_timeout";
+const std::string ConnectionStringParser::Key::connectionTimeout =
+    "connection_timeout";
 const std::string ConnectionStringParser::Key::maxRetryCount =
     "max_retry_count";
 const std::string ConnectionStringParser::Key::maxConnections =
     "max_connections";
 const std::string ConnectionStringParser::Key::endpoint = "endpoint";
 const std::string ConnectionStringParser::Key::region = "region";
-const std::string ConnectionStringParser::Key::idpName = "idp_name";
-const std::string ConnectionStringParser::Key::idpHost = "idp_host";
-const std::string ConnectionStringParser::Key::idpUserName = "idp_user_name";
-const std::string ConnectionStringParser::Key::idpPassword = "idp_password";
-const std::string ConnectionStringParser::Key::idpArn = "idp_arn";
+const std::string ConnectionStringParser::Key::authType = "auth";
+const std::string ConnectionStringParser::Key::idPHost = "idp_host";
+const std::string ConnectionStringParser::Key::idPUserName = "idp_user_name";
+const std::string ConnectionStringParser::Key::idPPassword = "idp_password";
+const std::string ConnectionStringParser::Key::idPArn = "idp_arn";
 const std::string ConnectionStringParser::Key::oktaAppId = "okta_app_id";
 const std::string ConnectionStringParser::Key::roleArn = "role_arn";
 const std::string ConnectionStringParser::Key::aadAppId = "aad_app_id";
@@ -111,51 +111,47 @@ void ConnectionStringParser::ParseConnectionString(
       break;
 
     connect_str.erase(attr_begin - 1);
-    
-    if (!cfg.GetProfileIsParsed() &&
-        (cfg.GetCredProvClass() == CredProvClass::Type::PROP_FILE_CRED_PROV)) {
-      ParseProfile(diag);
-    }
+  }
+
+  if (!cfg.GetProfileIsParsed()
+      && (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE)) {
+    ParseProfile(diag);
   }
 }
 
 void ConnectionStringParser::ParseProfile(
     diagnostic::DiagnosticRecordStorage* diag) {
-    // set profileIsParsed first as this function should be executed only once
-    cfg.SetProfileIsParsed(true);
+  const std::string& profile = cfg.GetCusCredFile();
+  if (profile.empty()) {
+    return;
+  }
 
-    const std::string& profile = cfg.GetCusCredFile();
-    if (profile.empty()) {
-      if (diag) {
-        std::string errMsg("Credentials file is empty");
-        diag->AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMsg);
-      }
-      return;
+  // set profileIsParsed first as this function should be executed only once
+  // set profileIsParsed only if custom credentials file is provided.
+  cfg.SetProfileIsParsed(true);
+
+  std::ifstream ifs(profile);
+  if (!ifs.is_open()) {
+    if (diag) {
+      std::string errMsg("Failed to open file ");
+      errMsg += profile;
+      diag->AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMsg);
     }
+    return;
+  }
 
-    std::ifstream ifs(profile);
-    if (!ifs.is_open()) {
-      if (diag) {
-        std::string errMsg("Failed to open file ");
-        errMsg += profile;
-        diag->AddStatusRecord(
-          SqlState::S08001_CANNOT_CONNECT, errMsg);
-      }
-      return;
+  std::string connStr;
+
+  // set up an internal connection string
+  while (!ifs.eof()) {
+    std::string line;
+    std::getline(ifs, line);
+    if (!line.empty()) {
+      connStr += line;
+      connStr += ";";
     }
-
-    std::string connStr;
-
-    // set up an internal connection string
-    while (!ifs.eof()) {
-      std::string line;
-      std::getline(ifs, line);
-      if (!line.empty()) {
-        connStr += line;
-        connStr += ";";
-      }
-    }
-    ParseConnectionString(connStr, diag);
+  }
+  ParseConnectionString(connStr, diag);
 }
 
 void ConnectionStringParser::ParseConnectionString(
@@ -183,34 +179,8 @@ void ConnectionStringParser::HandleAttributePair(
 
   if (lKey == Key::dsn) {
     cfg.SetDsn(value);
-  } else if (lKey == Key::enableMetadataPreparedStatement) {
-    BoolParseResult::Type res = StringToBool(value);
-
-    if (res == BoolParseResult::Type::AI_UNRECOGNIZED) {
-      if (diag) {
-        diag->AddStatusRecord(
-            SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Unrecognized bool value. Using default value.",
-                             key, value));
-      }
-      return;
-    }
-
-    cfg.SetEnableMetadataPreparedStatement(res
-                                           == BoolParseResult::Type::AI_TRUE);
-  } else if (lKey == Key::credProvClass) {
-    CredProvClass::Type className = CredProvClass::FromString(value);
-
-    if (className == CredProvClass::Type::UNKNOWN) {
-      if (diag) {
-        diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
-                              "Specified credProvClass is not supported. "
-                              "Default value used ('none').");
-      }
-      return;
-    }
-
-    cfg.SetCredProvClass(className);
+  } else if (lKey == Key::profileName) {
+    cfg.SetProfileName(value);
   } else if (lKey == Key::cusCredFile) {
     cfg.SetCusCredFile(value);
   } else if (lKey == Key::reqTimeout) {
@@ -266,14 +236,15 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     cfg.SetReqTimeout(static_cast< uint32_t >(numValue));
-  } else if (lKey == Key::socketTimeout) {
+  } else if (lKey == Key::connectionTimeout) {
     if (value.empty()) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Socket Timeout attribute value is empty. Using "
-                             "default value.",
-                             key, value));
+            MakeErrorMessage(
+                "Connection Timeout attribute value is empty. Using "
+                "default value.",
+                key, value));
       }
       return;
     }
@@ -282,7 +253,7 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Socket Timeout attribute value contains "
+            MakeErrorMessage("Connection Timeout attribute value contains "
                              "unexpected characters."
                              " Using default value.",
                              key, value));
@@ -294,7 +265,7 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Socket Timeout attribute value is too large. "
+            MakeErrorMessage("Connection Timeout attribute value is too large. "
                              "Using default value.",
                              key, value));
       }
@@ -311,14 +282,15 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Socket Timeout attribute value is out of range. "
-                             "Using default value.",
-                             key, value));
+            MakeErrorMessage(
+                "Connection Timeout attribute value is out of range. "
+                "Using default value.",
+                key, value));
       }
       return;
     }
 
-    cfg.SetSocketTimeout(static_cast< uint32_t >(numValue));
+    cfg.SetConnectionTimeout(static_cast< uint32_t >(numValue));
   } else if (lKey == Key::maxRetryCount) {
     if (value.empty()) {
       if (diag) {
@@ -429,39 +401,41 @@ void ConnectionStringParser::HandleAttributePair(
     cfg.SetEndpoint(value);
   } else if (lKey == Key::region) {
     cfg.SetRegion(value);
-  } else if (lKey == Key::idpName) {
-    IdpName::Type idpName = IdpName::FromString(value);
+  } else if (lKey == Key::authType) {
+    AuthType::Type authType = AuthType::FromString(value);
 
-    if (idpName == IdpName::Type::UNKNOWN) {
+    std::string val = common::ToLower(value);
+    common::StripSurroundingWhitespaces(val);
+    if (val != "aws_profile" && authType == AuthType::Type::AWS_PROFILE) {
       if (diag) {
         diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
-                              "Specified idpName is not supported. "
-                              "Default value used ('none').");
+                              "Specified AUTH is not supported. "
+                              "Default value used ('AWS_PROFILE').");
       }
       return;
     }
 
-    cfg.SetIdpName(idpName);
-  } else if (lKey == Key::idpHost) {
-    cfg.SetIdpHost(value);
-  } else if (lKey == Key::idpUserName) {
-    if (!cfg.GetIdpUserName().empty() && diag) {
+    cfg.SetAuthType(authType);
+  } else if (lKey == Key::idPHost) {
+    cfg.SetIdPHost(value);
+  } else if (lKey == Key::idPUserName) {
+    if (!cfg.GetIdPUserName().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
           "Re-writing IDP_USER_NAME (have you specified it several times?");
     }
 
-    cfg.SetIdpUserName(value);
-  } else if (lKey == Key::idpPassword) {
-    if (!cfg.GetIdpPassword().empty() && diag) {
+    cfg.SetIdPUserName(value);
+  } else if (lKey == Key::idPPassword) {
+    if (!cfg.GetIdPPassword().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
           "Re-writing IDP_PASSWORD (have you specified it several times?");
     }
 
-    cfg.SetIdpPassword(value);
-  } else if (lKey == Key::idpArn) {
-    cfg.SetIdpArn(value);
+    cfg.SetIdPPassword(value);
+  } else if (lKey == Key::idPArn) {
+    cfg.SetIdPArn(value);
   } else if (lKey == Key::oktaAppId) {
     cfg.SetOktaAppId(value);
   } else if (lKey == Key::roleArn) {
@@ -484,8 +458,8 @@ void ConnectionStringParser::HandleAttributePair(
     if (level == LogLevel::Type::UNKNOWN) {
       if (diag) {
         diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
-                              "Specified log level is not supported. "
-                              "Default value used ('error').");
+                              "Specified Log Level is not supported. "
+                              "Default value used ('off').");
       }
       return;
     }
@@ -511,8 +485,9 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     cfg.SetSecretKey(value);
-  } else if (lKey == Key::accessKeyIdFromProfile 
-             && cfg.GetProfileIsParsed()) {  // internal key for access key from profile only
+  } else if (lKey == Key::accessKeyIdFromProfile
+             && cfg.GetProfileIsParsed()) {  // internal key for access key from
+                                             // profile only
     if (!cfg.GetAccessKeyIdFromProfile().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -524,9 +499,9 @@ void ConnectionStringParser::HandleAttributePair(
              && cfg.GetProfileIsParsed()) {  // internal key for secret key from
                                              // profile only
     if (!cfg.GetSecretKeyFromProfile().empty() && diag) {
-      diag->AddStatusRecord(
-          SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing aws_secret_access_key (have you specified it several times?");
+      diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
+                            "Re-writing aws_secret_access_key (have you "
+                            "specified it several times?");
     }
 
     cfg.SetSecretKeyFromProfile(value);

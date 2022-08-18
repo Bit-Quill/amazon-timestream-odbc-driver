@@ -48,6 +48,13 @@ else
   echo $ODBC_LIB_PATH
 fi
 
+if [[ -z "${REPOSITORY_ROOT}" ]]; then
+  echo "REPOSITORY_ROOT environment variable is not set"
+  CHECK=0
+else
+  echo "REPOSITORY_ROOT=${ROOT_DIRECTORY}"
+fi
+
 if [[ "${CHECK}" -eq "0" ]]; then
   echo "Missing envrionment variables, please set them accordingly."
 else

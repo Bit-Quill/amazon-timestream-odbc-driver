@@ -54,11 +54,8 @@ class ConnectionStringParser {
     /** Connection attribute keyword for sessiontoken attribute. */
     static const std::string sessionToken;
 
-    /** Connection attribute keyword for enableMetadataPreparedStatement attribute. */
-    static const std::string enableMetadataPreparedStatement;
-
-    /** Connection attribute keyword for credProvClass attribute. */
-    static const std::string credProvClass;
+    /** Connection attribute keyword for profileName attribute. */
+    static const std::string profileName;
 
     /** Connection attribute keyword for cusCredFile attribute. */
     static const std::string cusCredFile;
@@ -66,8 +63,8 @@ class ConnectionStringParser {
     /** Connection attribute keyword for reqTimeout attribute. */
     static const std::string reqTimeout;
 
-    /** Connection attribute keyword for socketTimeout attribute. */
-    static const std::string socketTimeout;
+    /** Connection attribute keyword for connectionTimeout attribute. */
+    static const std::string connectionTimeout;
 
     /** Connection attribute keyword for maxRetryCount attribute. */
     static const std::string maxRetryCount;
@@ -81,20 +78,20 @@ class ConnectionStringParser {
     /** Connection attribute keyword for region attribute. */
     static const std::string region;
 
-    /** Connection attribute keyword for idpName attribute. */
-    static const std::string idpName;
+    /** Connection attribute keyword for authType attribute. */
+    static const std::string authType;
 
-    /** Connection attribute keyword for idpHost attribute. */
-    static const std::string idpHost;
+    /** Connection attribute keyword for idPHost attribute. */
+    static const std::string idPHost;
 
-    /** Connection attribute keyword for idpUserName attribute. */
-    static const std::string idpUserName;
+    /** Connection attribute keyword for idPUserName attribute. */
+    static const std::string idPUserName;
 
-    /** Connection attribute keyword for idpPassword attribute. */
-    static const std::string idpPassword;
+    /** Connection attribute keyword for idPPassword attribute. */
+    static const std::string idPPassword;
 
-    /** Connection attribute keyword for idpArn attribute. */
-    static const std::string idpArn;
+    /** Connection attribute keyword for idPArn attribute. */
+    static const std::string idPArn;
 
     /** Connection attribute keyword for oktaAppId attribute. */
     static const std::string oktaAppId;

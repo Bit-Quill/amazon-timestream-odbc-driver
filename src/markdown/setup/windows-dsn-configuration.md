@@ -9,9 +9,7 @@
 
 ## Notes
 
-- When PropertiesFileCredentialsProvider or Instanceprofilecredentialsprovider is selected as credentials provider class, the access key ID, secret access key and session token fields will be disabled as they are not needed. 
-
-- Similarly, when Okta or AAD is selected for IdpName field, the access key ID, secret access key and session token fields will be disabled as they are not needed.
+- When Okta or AAD is selected for AuthType field, the access key ID, secret access key and session token fields will be disabled as they are not needed.
 
 - Balloons would appear as tips when wrong input is entered for selected field. Clicking out of the field would cause the balloon to temporarily disappear. 
 

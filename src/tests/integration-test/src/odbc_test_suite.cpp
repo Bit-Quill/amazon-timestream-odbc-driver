@@ -20,6 +20,7 @@
 #endif
 
 #include <ignite/odbc/common/fixed_size_array.h>
+#include "ignite/odbc/log.h"
 #include <sql.h>
 #include <sqlext.h>
 #include <fstream>
@@ -664,7 +665,7 @@ int OdbcTestSuite::InsertTestBatch(int from, int to, int expectedToAffect,
 }
 
 void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
-  Connect("DRIVER={Amazon Timestream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect("DRIVER={Amazon Timestream ODBC Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   // Inserting values.
   int inserted = InsertTestBatch(0, recordsNum, recordsNum);
@@ -724,7 +725,7 @@ void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
 }
 
 void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
-  Connect("DRIVER={Amazon Timestream};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect("DRIVER={Amazon Timestream ODBC Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   std::vector< SQLUSMALLINT > statuses(recordsNum, 42);
 
@@ -814,9 +815,10 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
   std::string secretKey = common::GetEnv(
       "AWS_SECRET_ACCESS_KEY", "***REMOVED***");
   std::string sessionToken = common::GetEnv("AWS_SESSION_TOKEN", "");
-
   std::string region = common::GetEnv(
       "AWS_REGION", "us-west-2");
+  std::string logPath = common::GetEnv("DOC_DB_LOG_PATH", "");
+  std::string logLevel = common::GetEnv("DOC_DB_LOG_LEVEL", "");
 
   if (!keyId.empty()) {
     accessKeyId = keyId;
@@ -826,12 +828,15 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
   }
 
   connectionString =
-            "DRIVER={Amazon Timestream};"
+            "DRIVER={Amazon Timestream ODBC Driver};"
             "DSN=" + Configuration::DefaultValue::dsn + ";"
+            "AUTH=" + AuthType::ToString(AuthType::Type::IAM) + ";"
             "ACCESS_KEY_ID=" + accessKeyId + ";"
             "SECRET_KEY=" + secretKey + ";"
             "SESSION_TOKEN=" + sessionToken + ";"
-            "REGION=" + region + ";";
+            "REGION=" + region + ";"    
+            "LOG_PATH=" + logPath + ";"
+            "LOG_LEVEL=" + logLevel + ";";
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
@@ -839,14 +844,14 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     std::string& connectionString,
-    CredProvClass::Type testCredProvClass, const std::string& credentialsFile,
+    AuthType::Type testAuthType, const std::string& credentialsFile,
     const std::string& miscOptions) const {
   std::string region = common::GetEnv("AWS_REGION", "us-west-2");
 
   connectionString =
-            "DRIVER={Amazon Timestream};"
+            "DRIVER={Amazon Timestream ODBC Driver};"
             "DSN=" + Configuration::DefaultValue::dsn + ";"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + credentialsFile + ";"
             "REGION=" + region + ";";
 

@@ -26,7 +26,7 @@ C/C++ usage and formatting.
     The log path indicates the path to store the log file. The log file name has `docdb_odbc_YYYYMMDD.log` format, 
     where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
 
-    2. `DOC_DB_LOG_LEVEL`=`<log_level>`. The default is `error` level. (Choose from `debug`, `info`, `error`, `off`)
+    2. `DOC_DB_LOG_LEVEL`=`<log_level>`. The default is `off` level. (Choose from `debug`, `info`, `error`, `off`)
 
     More details about logging in [`src\markdown\troubleshooting-guide.md`](src/markdown/troubleshooting-guide.md).
 

@@ -109,7 +109,8 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckStrInfo(SQL_DRIVER_NAME, "Amazon Timestream ODBC Driver");
   CheckStrInfo(SQL_DBMS_NAME, "Amazon Timestream");
   CheckStrInfo(SQL_DRIVER_ODBC_VER, "03.00");
-  CheckStrInfo(SQL_DRIVER_VER, "02.00.0000");
+  CheckStrInfo(SQL_DRIVER_VER, TS_DRIVER_VERSION);
+  CheckStrInfo(SQL_ACCESSIBLE_TABLES, "Y");
   CheckStrInfo(SQL_COLUMN_ALIAS, "Y");
   CheckStrInfo(SQL_IDENTIFIER_QUOTE_CHAR, "\"");
   CheckStrInfo(SQL_CATALOG_NAME_SEPARATOR, ".");

@@ -28,7 +28,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <ignite/odbc/common/platform_utils.h>
-#include <ignite/odbc/cred_prov_class.h>
+#include <ignite/odbc/auth_type.h>
 
 #ifndef BOOST_TEST_CONTEXT
 #define BOOST_TEST_CONTEXT(...)
@@ -369,7 +369,7 @@ struct OdbcTestSuite {
    */
   void CreateDsnConnectionStringForAWS(
       std::string& connectionString,
-      CredProvClass::Type testCredProvClass,
+      AuthType::Type testAuthType,
       const std::string& credentialsFile,
       const std::string& miscOptions = std::string()) const;
 

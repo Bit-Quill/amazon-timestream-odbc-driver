@@ -18,7 +18,7 @@
 #include <string>
 
 #include <odbc_unit_test_suite.h>
-#include <ignite/odbc/cred_prov_class.h>
+#include <ignite/odbc/auth_type.h>
 #include <ignite/odbc/config/connection_string_parser.h>
 
 using namespace ignite::odbc;
@@ -40,22 +40,30 @@ struct ConnectionStringParserUnitTestSuiteFixture : OdbcUnitTestSuite {
   }
 };
 
-const CredProvClass::Type testCredProvClass = CredProvClass::FromString("PropertiesFileCredentialsProvider");
+const AuthType::Type testAuthType = AuthType::FromString("Aws_Profile");
 
 const std::string rootDir = common::GetEnv("REPOSITORY_ROOT");
-#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
 const std::string credentials = rootDir + "/src/tests/input/test_credentials";
-const std::string emptyCredentials = rootDir + "/src/tests/input/empty_credentials";
-const std::string incompleteCredentials = rootDir + "/src/tests/input/incomplete_credentials";
-const std::string corruptCredentials = rootDir + "/src/tests/input/corrupt_credentials";
+const std::string emptyCredentials =
+    rootDir + "/src/tests/input/empty_credentials";
+const std::string incompleteCredentials =
+    rootDir + "/src/tests/input/incomplete_credentials";
+const std::string corruptCredentials =
+    rootDir + "/src/tests/input/corrupt_credentials";
 #elif defined(_WIN32)
-const std::string credentials = rootDir + "\\src\\tests\\input\\test_credentials";
-const std::string emptyCredentials = rootDir + "\\src\\tests\\input\\empty_credentials";
-const std::string incompleteCredentials = rootDir + "\\src\\tests\\input\\incomplete_credentials";
-const std::string corruptCredentials = rootDir + "\\src\\tests\\input\\corrupt_credentials";
+const std::string credentials =
+    rootDir + "\\src\\tests\\input\\test_credentials";
+const std::string emptyCredentials =
+    rootDir + "\\src\\tests\\input\\empty_credentials";
+const std::string incompleteCredentials =
+    rootDir + "\\src\\tests\\input\\incomplete_credentials";
+const std::string corruptCredentials =
+    rootDir + "\\src\\tests\\input\\corrupt_credentials";
 #endif
 
-BOOST_FIXTURE_TEST_SUITE(ConnectionStringParserTestSuite, ConnectionStringParserUnitTestSuiteFixture)
+BOOST_FIXTURE_TEST_SUITE(ConnectionStringParserTestSuite,
+                         ConnectionStringParserUnitTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestParsingCredentials) {
   ignite::odbc::config::Configuration cfg;
@@ -65,15 +73,14 @@ BOOST_AUTO_TEST_CASE(TestParsingCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "DRIVER={Amazon Timestream ODBC Driver};"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + credentials + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
   if (diag.GetStatusRecordsNumber() != 0)
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
-
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
@@ -84,8 +91,9 @@ BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "CUSTOM_CREDENTIALS_FILE=" + credentials + ";";
+      "DRIVER={Amazon Timestream ODBC Driver};"
+      "CUSTOM_CREDENTIALS_FILE="
+      + credentials + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
@@ -93,7 +101,9 @@ BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
 }
 
-BOOST_AUTO_TEST_CASE(TestParsingNoCredentials) {
+// TODO modify & enable this test as part of AT-1048
+// https://bitquill.atlassian.net/browse/AT-1048
+BOOST_AUTO_TEST_CASE(TestParsingNoCredentials, *disabled()) {
   ignite::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
@@ -101,16 +111,17 @@ BOOST_AUTO_TEST_CASE(TestParsingNoCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-      "DRIVER={Amazon Timestream};"
-      "AWS_CREDENTIALS_PROVIDER_CLASS="
-      + CredProvClass::ToString(testCredProvClass) + ";";
+      "DRIVER={Amazon Timestream ODBC Driver};"
+      "AUTH="
+      + AuthType::ToString(testAuthType) + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
+  BOOST_CHECK_GE(diag.GetStatusRecordsNumber(), 1);
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetSqlState(), "08001");
-  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(), "Credentials file is empty");
+  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
+                    "Credentials file is empty");
 }
-
 
 BOOST_AUTO_TEST_CASE(TestParsingNonExistCredentials) {
   ignite::odbc::config::Configuration cfg;
@@ -120,16 +131,16 @@ BOOST_AUTO_TEST_CASE(TestParsingNonExistCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "DRIVER={Amazon Timestream ODBC Driver};"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=/path/to/nonexist_credentials;";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
+  BOOST_CHECK_GE(diag.GetStatusRecordsNumber(), 1);
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetSqlState(), "08001");
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
                     "Failed to open file /path/to/nonexist_credentials");
-
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
@@ -140,15 +151,14 @@ BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "DRIVER={Amazon Timestream ODBC Driver};"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + credentials + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
   if (diag.GetStatusRecordsNumber() != 0)
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
-
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingIncompleteCredentials) {
@@ -159,15 +169,14 @@ BOOST_AUTO_TEST_CASE(TestParsingIncompleteCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "DRIVER={Amazon Timestream ODBC Driver};"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + incompleteCredentials + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
   if (diag.GetStatusRecordsNumber() != 0)
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
-
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingCorruptCredentials1) {
@@ -178,8 +187,8 @@ BOOST_AUTO_TEST_CASE(TestParsingCorruptCredentials1) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "DRIVER={Amazon Timestream ODBC Driver};"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + corruptCredentials + "1;";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
@@ -196,12 +205,13 @@ BOOST_AUTO_TEST_CASE(TestParsingCorruptCredentials2) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream};"
-            "AWS_CREDENTIALS_PROVIDER_CLASS=" + CredProvClass::ToString(testCredProvClass) + ";"
+            "DRIVER={Amazon Timestream ODBC Driver};"
+            "AUTH=" + AuthType::ToString(testAuthType) + ";"
             "CUSTOM_CREDENTIALS_FILE=" + corruptCredentials + "2;";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
+  BOOST_CHECK_GE(diag.GetStatusRecordsNumber(), 1);
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetSqlState(), "01S02");
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
                     "Unknown attribute: 'access_key'. Ignoring.");
@@ -215,21 +225,23 @@ BOOST_AUTO_TEST_CASE(TestParsingInternalKeys) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-      "DRIVER={Amazon Timestream};"
+      "DRIVER={Amazon Timestream ODBC Driver};"
       "aws_access_key_id=testAccessKey;";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
+  BOOST_CHECK_GE(diag.GetStatusRecordsNumber(), 1);
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetSqlState(), "01S02");
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
                     "Unknown attribute: 'aws_access_key_id'. Ignoring.");
 
   connectionString =
-      "DRIVER={Amazon Timestream};"
+      "DRIVER={Amazon Timestream ODBC Driver};"
       "aws_secret_access_key=testSecretKey;";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
+  BOOST_CHECK_GE(diag.GetStatusRecordsNumber(), 2);
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(2).GetSqlState(), "01S02");
   BOOST_CHECK_EQUAL(diag.GetStatusRecord(2).GetMessageText(),
                     "Unknown attribute: 'aws_secret_access_key'. Ignoring.");

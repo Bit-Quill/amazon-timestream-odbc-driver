@@ -61,7 +61,8 @@ BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
 
 const std::string rootDir = ignite::odbc::common::GetEnv("REPOSITORY_ROOT");
 
-// TestConnectionRestoreInternalSSHTunnel has precondition `*precondition(if_integration())`
+// TestConnectionRestoreInternalSSHTunnel has precondition
+// `*precondition(if_integration())`
 BOOST_AUTO_TEST_CASE(TestConnection) {
   std::string connectionString;
   CreateDsnConnectionStringForAWS(connectionString);
@@ -70,32 +71,32 @@ BOOST_AUTO_TEST_CASE(TestConnection) {
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectionUsingProfile) {
-#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
   const std::string profile = rootDir + "/src/tests/input/credentials";
 #elif defined(_WIN32)
-  const std::string profile = rootDir  + "\\src\\tests\\input\\credentials";
-#else
-  const std::string profile = "";
-#endif
-  std::string connectionString;
-  CreateDsnConnectionStringForAWS(connectionString, ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV,
-      profile);
-  Connect(connectionString);
-  Disconnect();
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
-#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
-  const std::string profile = rootDir + "/src/tests/input/nonexist_credentials";
-#elif defined(_WIN32)
-  const std::string profile = rootDir + "\\src\\tests\\input\\nonexist_credentials";
+  const std::string profile = rootDir + "\\src\\tests\\input\\credentials";
 #else
   const std::string profile = "";
 #endif
   std::string connectionString;
   CreateDsnConnectionStringForAWS(
-      connectionString, ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV,
-      profile);
+      connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
+  Connect(connectionString);
+  Disconnect();
+}
+
+BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
+  const std::string profile = rootDir + "/src/tests/input/nonexist_credentials";
+#elif defined(_WIN32)
+  const std::string profile =
+      rootDir + "\\src\\tests\\input\\nonexist_credentials";
+#else
+  const std::string profile = "";
+#endif
+  std::string connectionString;
+  CreateDsnConnectionStringForAWS(
+      connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
 
   ExpectConnectionReject(connectionString,
                          "08001: Failed to open file " + profile);
@@ -104,9 +105,8 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile) {
-#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
-  const std::string profile =
-      rootDir + "/src/tests/input/empty_credentials";
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
+  const std::string profile = rootDir + "/src/tests/input/empty_credentials";
 #elif defined(_WIN32)
   const std::string profile =
       rootDir + "\\src\\tests\\input\\empty_credentials";
@@ -116,23 +116,22 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile) {
 
   std::string connectionString;
   CreateDsnConnectionStringForAWS(
-      connectionString, ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV,
-      profile);
+      connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
 
-  ExpectConnectionReject(connectionString,
-                         "01S00: Any of the following group is required to connect:\n"
-                         "ACCESS_KEY_ID and SECRET_KEY or\n"
-                         "AWS_CREDENTIALS_PROVIDER_CLASS or\n"
-                         "AWS_CREDENTIALS_PROVIDER_CLASS is "
-                         "\"PropertiesFileCredentialsProvider\" and "
-                         "CUSTOM_CREDENTIALS_FILE which should contain access "
-                         "key Id and secret access key");
+  ExpectConnectionReject(
+      connectionString,
+      "01S00: Any of the following group is required to connect:\n"
+      "AUTH is \"IAM\" and "
+      "ACCESS_KEY_ID and SECRET_KEY or\n"
+      "AUTH is \"AWS_PROFILE\" and "
+      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret "
+      "access key");
 
   Disconnect();
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
-#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
   const std::string profile =
       rootDir + "/src/tests/input/incomplete_credentials";
 #elif defined(_WIN32)
@@ -144,17 +143,16 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
 
   std::string connectionString;
   CreateDsnConnectionStringForAWS(
-      connectionString, ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV,
-      profile);
+      connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
 
-  ExpectConnectionReject(connectionString,
-                         "01S00: Any of the following group is required to connect:\n"
-                         "ACCESS_KEY_ID and SECRET_KEY or\n"
-                         "AWS_CREDENTIALS_PROVIDER_CLASS or\n"
-                         "AWS_CREDENTIALS_PROVIDER_CLASS is "
-                         "\"PropertiesFileCredentialsProvider\" and "
-                         "CUSTOM_CREDENTIALS_FILE which should contain access "
-                         "key Id and secret access key");
+  ExpectConnectionReject(
+      connectionString,
+      "01S00: Any of the following group is required to connect:\n"
+      "AUTH is \"IAM\" and "
+      "ACCESS_KEY_ID and SECRET_KEY or\n"
+      "AUTH is \"AWS_PROFILE\" and "
+      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret "
+      "access key");
 
   Disconnect();
 }
@@ -182,11 +180,9 @@ BOOST_AUTO_TEST_CASE(TestConnectionConcurrency, *disabled()) {
 // https://bitquill.atlassian.net/browse/AT-1056
 BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
   // TODO add misc options
-  const std::string miscOptions =
-      "APP_NAME=TestAppName;";
+  const std::string miscOptions = "APP_NAME=TestAppName;";
   std::string connectionString;
-  CreateDsnConnectionStringForAWS(connectionString, "", "",
-                                          miscOptions);
+  CreateDsnConnectionStringForAWS(connectionString, "", "", miscOptions);
 
   Connect(connectionString);
   Disconnect();
@@ -204,16 +200,18 @@ BOOST_AUTO_TEST_CASE(TestConnectionOnlyDisconnect) {
 
 BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
   std::string connectionString =
-      "DRIVER={Amazon Timestream};"
+      "DRIVER={Amazon Timestream ODBC Driver};"
+      "AUTH=IAM;"
       "ACCESS_KEY_ID=key;";
 
   ExpectConnectionReject(
       connectionString,
       "01S00: Any of the following group is required to connect:\n"
+      "AUTH is \"IAM\" and "
       "ACCESS_KEY_ID and SECRET_KEY or\n"
-      "AWS_CREDENTIALS_PROVIDER_CLASS or\n"
-      "AWS_CREDENTIALS_PROVIDER_CLASS is \"PropertiesFileCredentialsProvider\" and "
-      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret access key");
+      "AUTH is \"AWS_PROFILE\" and "
+      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret "
+      "access key");
 
   Disconnect();
 }

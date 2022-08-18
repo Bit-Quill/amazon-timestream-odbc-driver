@@ -24,9 +24,8 @@
 #include <string>
 
 #include "ignite/odbc/config/settable_value.h"
-#include "ignite/odbc/cred_prov_class.h"
 #include "ignite/odbc/diagnostic/diagnosable.h"
-#include "ignite/odbc/idp_name.h"
+#include "ignite/odbc/auth_type.h"
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/log_level.h"
 
@@ -67,11 +66,8 @@ class Configuration {
     /** Default value for profileIsParsed attribute. */
     static bool profileIsParsed;
 
-    /** Default value for enableMetadataPreparedStatement attribute. */
-    static const bool enableMetadataPreparedStatement;
-
-    /** Default value for credProvClass attribute. */
-    static const CredProvClass::Type credProvClass;
+    /** Default value for profileName attribute. */
+    static const std::string profileName;
 
     /** Default value for cusCredFile attribute. */
     static const std::string cusCredFile;
@@ -79,8 +75,8 @@ class Configuration {
     /** Default value for reqTimeout attribute. */
     static const int32_t reqTimeout;
 
-    /** Default value for socketTimeout attribute. */
-    static const int32_t socketTimeout;
+    /** Default value for connectionTimeout attribute. */
+    static const int32_t connectionTimeout;
 
     /** Default value for maxRetryCount attribute. */
     static const int32_t maxRetryCount;
@@ -94,20 +90,20 @@ class Configuration {
     /** Default value for region attribute. */
     static const std::string region;
 
-    /** Default value for idpName attribute. */
-    static const IdpName::Type idpName;
+    /** Default value for authType attribute. */
+    static const AuthType::Type authType;
 
-    /** Default value for idpHost attribute. */
-    static const std::string idpHost;
+    /** Default value for idPHost attribute. */
+    static const std::string idPHost;
 
-    /** Default value for idpUserName attribute. */
-    static const std::string idpUserName;
+    /** Default value for idPUserName attribute. */
+    static const std::string idPUserName;
 
-    /** Default value for idpPassword attribute. */
-    static const std::string idpPassword;
+    /** Default value for idPPassword attribute. */
+    static const std::string idPPassword;
 
-    /** Default value for idpArn attribute. */
-    static const std::string idpArn;
+    /** Default value for idPArn attribute. */
+    static const std::string idPArn;
 
     /** Default value for oktaAppId attribute. */
     static const std::string oktaAppId;
@@ -303,58 +299,40 @@ class Configuration {
   bool IsSessionTokenSet() const;
 
   /**
-   * Get enable metadata prepared statement flag.
+   * Get profileName.
    *
-   * @return @true if metadata prepared statement enabled.
+   * @return name Profile Name.
    */
-  bool IsEnableMetadataPreparedStatement() const;
+  const std::string& GetProfileName() const;
 
   /**
-   * Set enable metadata prepared statement.
+   * Set profileName.
    *
-   * @param val Value to set.
+   * @param name Profile Name.
    */
-  void SetEnableMetadataPreparedStatement(bool val);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsEnableMetadataPreparedStatementSet() const;
-
-  /**
-   * Get AWS Credentials Provider Class name.
-   *
-   * @return className AWS Credentials Provider Class name.
-   */
-  const CredProvClass::Type GetCredProvClass() const;
-
-  /**
-   * Set AWS Credentials Provider Class name.
-   *
-   * @param className AWS Credentials Provider Class name.
-   */
-  void SetCredProvClass(const CredProvClass::Type className);
+  void SetProfileName(const std::string& name);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsCredProvClassSet() const;
+  bool IsProfileNameSet() const;
+
+  // TODO remove custom credentials file from DSN
+  // https://bitquill.atlassian.net/browse/AT-1079
 
   /**
-   * Get path to Custom Credentials File file.
+   * Get path to Custom Credentials File.
    *
-   * @return path to Custom Credentials File file.
+   * @return path to Custom Credentials File.
    */
   const std::string& GetCusCredFile() const;
 
   /**
-   * Set path to Custom Credentials File file.
+   * Set path to Custom Credentials File.
    *
-   * @param path Path to Custom Credentials File file.
+   * @param path Path to Custom Credentials File.
    */
   void SetCusCredFile(const std::string& path);
 
@@ -387,25 +365,25 @@ class Configuration {
   bool IsReqTimeoutSet() const;
 
   /**
-   * Get socket timeout in milliseconds.
+   * Get connection timeout in milliseconds.
    *
-   * @return ms Socket timeout.
+   * @return ms Connection timeout.
    */
-  int32_t GetSocketTimeout() const;
+  int32_t GetConnectionTimeout() const;
 
   /**
-   * Set socket timeout in milliseconds.
+   * Set connection timeout in milliseconds.
    *
-   * @param ms Socket timeout.
+   * @param ms Connection timeout.
    */
-  void SetSocketTimeout(int32_t ms);
+  void SetConnectionTimeout(int32_t ms);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsSocketTimeoutSet() const;
+  bool IsConnectionTimeoutSet() const;
 
   /**
    * Get maximum # of retry attempts.
@@ -492,109 +470,109 @@ class Configuration {
   bool IsRegionSet() const;
 
   /**
-   * Get idpName.
+   * Get authType.
    *
-   * @return value IdpName.
+   * @return value AuthType.
    */
-  IdpName::Type GetIdpName() const;
+  AuthType::Type GetAuthType() const;
 
   /**
-   * Set idpName.
+   * Set authType.
    *
-   * @param value IdpName.
+   * @param value AuthType.
    */
-  void SetIdpName(const IdpName::Type value);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsIdpNameSet() const;
-
-  /**
-   * Get idpHost.
-   *
-   * @return value IdpHost.
-   */
-  const std::string& GetIdpHost() const;
-
-  /**
-   * Set idpHost.
-   *
-   * @param value IdpHost.
-   */
-  void SetIdpHost(const std::string& value);
+  void SetAuthType(const AuthType::Type value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsIdpHostSet() const;
+  bool IsAuthTypeSet() const;
 
   /**
-   * Get idpUserName.
+   * Get idPHost.
    *
-   * @return value IdpUserName.
+   * @return value IdPHost.
    */
-  const std::string& GetIdpUserName() const;
+  const std::string& GetIdPHost() const;
 
   /**
-   * Set idpUserName.
+   * Set idPHost.
    *
-   * @param value IdpUserName.
+   * @param value IdPHost.
    */
-  void SetIdpUserName(const std::string& value);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsIdpUserNameSet() const;
-
-  /**
-   * Get idpPassword.
-   *
-   * @return value IdpPassword.
-   */
-  const std::string& GetIdpPassword() const;
-
-  /**
-   * Set idpPassword.
-   *
-   * @param value IdpPassword.
-   */
-  void SetIdpPassword(const std::string& value);
+  void SetIdPHost(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsIdpPasswordSet() const;
+  bool IsIdPHostSet() const;
 
   /**
-   * Get idpArn.
+   * Get idPUserName.
    *
-   * @return value IdpArn.
+   * @return value IdPUserName.
    */
-  const std::string& GetIdpArn() const;
+  const std::string& GetIdPUserName() const;
 
   /**
-   * Set idpArn.
+   * Set idPUserName.
    *
-   * @param value IdpArn.
+   * @param value IdPUserName.
    */
-  void SetIdpArn(const std::string& value);
+  void SetIdPUserName(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsIdpArnSet() const;
+  bool IsIdPUserNameSet() const;
+
+  /**
+   * Get idPPassword.
+   *
+   * @return value IdPPassword.
+   */
+  const std::string& GetIdPPassword() const;
+
+  /**
+   * Set idPPassword.
+   *
+   * @param value IdPPassword.
+   */
+  void SetIdPPassword(const std::string& value);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsIdPPasswordSet() const;
+
+  /**
+   * Get idPArn.
+   *
+   * @return value IdPArn.
+   */
+  const std::string& GetIdPArn() const;
+
+  /**
+   * Set idPArn.
+   *
+   * @param value IdPArn.
+   */
+  void SetIdPArn(const std::string& value);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsIdPArnSet() const;
 
   /**
    * Get oktaAppId.
@@ -782,7 +760,7 @@ class Configuration {
   /** DSN. */
   SettableValue< std::string > dsn = DefaultValue::dsn;
 
-  /** Driver name. */
+  /** Driver Name. */
   SettableValue< std::string > driver = DefaultValue::driver;
 
   /** Access Key Id. */
@@ -803,12 +781,8 @@ class Configuration {
   /** Session Token. */
   SettableValue< std::string > sessionToken = DefaultValue::sessionToken;
 
-  /** Enable metadata prepared statement flag. */
-  SettableValue< bool > enableMetadataPreparedStatement = DefaultValue::enableMetadataPreparedStatement;
-
-  /** AWS Credentials Provider class name. */
-  SettableValue< CredProvClass::Type > credProvClass =
-      DefaultValue::credProvClass;
+  /** Profile Name. */
+  SettableValue< std::string > profileName = DefaultValue::profileName;
 
   /** Custom Credentials file path. */
   SettableValue< std::string > cusCredFile = DefaultValue::cusCredFile;
@@ -816,8 +790,8 @@ class Configuration {
   /** Request timeout in milliseconds.  */
   SettableValue< int32_t > reqTimeout = DefaultValue::reqTimeout;
 
-  /** Socket timeout in milliseconds.  */
-  SettableValue< int32_t > socketTimeout = DefaultValue::socketTimeout;
+  /** Connection timeout in milliseconds.  */
+  SettableValue< int32_t > connectionTimeout = DefaultValue::connectionTimeout;
 
   /** Max Retry Count.  */
   SettableValue< int32_t > maxRetryCount = DefaultValue::maxRetryCount;
@@ -831,20 +805,20 @@ class Configuration {
   /** Region. */
   SettableValue< std::string > region = DefaultValue::region;
 
-  /** Idp Name. */
-  SettableValue< IdpName::Type > idpName = DefaultValue::idpName;
+  /** Auth Type. */
+  SettableValue< AuthType::Type > authType = DefaultValue::authType;
 
-  /** Idp Host. */
-  SettableValue< std::string > idpHost = DefaultValue::idpHost;
+  /** IdP Host. */
+  SettableValue< std::string > idPHost = DefaultValue::idPHost;
 
-  /** Idp User Name. */
-  SettableValue< std::string > idpUserName = DefaultValue::idpUserName;
+  /** IdP User Name. */
+  SettableValue< std::string > idPUserName = DefaultValue::idPUserName;
 
-  /** Idp Password. */
-  SettableValue< std::string > idpPassword = DefaultValue::idpPassword;
+  /** IdP Password. */
+  SettableValue< std::string > idPPassword = DefaultValue::idPPassword;
 
-  /** Idp ARN. */
-  SettableValue< std::string > idpArn = DefaultValue::idpArn;
+  /** IdP ARN. */
+  SettableValue< std::string > idPArn = DefaultValue::idPArn;
 
   /** Okta Application ID. */
   SettableValue< std::string > oktaAppId = DefaultValue::oktaAppId;
@@ -888,14 +862,9 @@ void Configuration::AddToMap< bool >(ArgumentMap& map, const std::string& key,
                                      const SettableValue< bool >& value);
 
 template <>
-void Configuration::AddToMap< CredProvClass::Type >(
+void Configuration::AddToMap< AuthType::Type >(
     ArgumentMap& map, const std::string& key,
-    const SettableValue< CredProvClass::Type >& value);
-
-template <>
-void Configuration::AddToMap< IdpName::Type >(
-    ArgumentMap& map, const std::string& key,
-    const SettableValue< IdpName::Type >& value);
+    const SettableValue< AuthType::Type >& value);
 
 template <>
 void Configuration::AddToMap< LogLevel::Type >(

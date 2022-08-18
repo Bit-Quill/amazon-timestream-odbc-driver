@@ -15,15 +15,18 @@
  * limitations under the License.
  */
 
-#define BOOST_TEST_MODULE TimeStreamUnitTest
+#define BOOST_TEST_MODULE TimestreamUnitTest
 #include <string>
 
 #include <odbc_unit_test_suite.h>
+#include <ignite/odbc/auth_type.h>
 #include "mock/mock_timestream_service.h"
 
+using ignite::odbc::AuthType;
 using ignite::odbc::OdbcUnitTestSuite;
 using ignite::odbc::MockConnection;
 using ignite::odbc::MockTimestreamService;
+
 using namespace boost::unit_test;
 
 /**
@@ -80,6 +83,7 @@ BOOST_FIXTURE_TEST_SUITE(ConnectionUnitTestSuite, ConnectionUnitTestSuiteFixture
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingKey) {
   ignite::odbc::config::Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
   cfg.SetSecretKey("AwsTSUnitTestSecretKey");
 
@@ -88,8 +92,20 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingKey) {
   BOOST_CHECK(IsSuccessful());
 }
 
+BOOST_AUTO_TEST_CASE(TestEstablishAuthTypeNotSpecified) {
+  ignite::odbc::config::Configuration cfg;
+  cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
+  cfg.SetSecretKey("AwsTSUnitTestSecretKey");
+
+  dbc->Establish(cfg);
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "01S00");
+}
+
 BOOST_AUTO_TEST_CASE(TestEstablishUsingKeyNoSecretKey) {
   ignite::odbc::config::Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
 
   dbc->Establish(cfg);
@@ -100,6 +116,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingKeyNoSecretKey) {
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingKeyInvalidLogin) {
   ignite::odbc::config::Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("InvalidLogin");
   cfg.SetSecretKey("AwsTSUnitTestSecretKey");
 
@@ -111,6 +128,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingKeyInvalidLogin) {
 
 BOOST_AUTO_TEST_CASE(TestEstablishusingKeyInvalidSecretKey) {
   ignite::odbc::config::Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
   cfg.SetSecretKey("InvalidSecretKey");
 
@@ -122,7 +140,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishusingKeyInvalidSecretKey) {
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingProfile) {
   ignite::odbc::config::Configuration cfg;
-  cfg.SetCredProvClass(ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV);
+  cfg.SetAuthType(ignite::odbc::AuthType::Type::AWS_PROFILE);
   cfg.SetAccessKeyIdFromProfile("AwsTSUnitTestKeyId");
   cfg.SetSecretKeyFromProfile("AwsTSUnitTestSecretKey");
 
@@ -133,7 +151,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingProfile) {
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingProfileNoSecretKey) {
   ignite::odbc::config::Configuration cfg;
-  cfg.SetCredProvClass(ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV);
+  cfg.SetAuthType(ignite::odbc::AuthType::Type::AWS_PROFILE);
   cfg.SetAccessKeyIdFromProfile("AwsTSUnitTestKeyId");
 
   dbc->Establish(cfg);
@@ -144,7 +162,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingProfileNoSecretKey) {
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingProfileInvalidLogin) {
   ignite::odbc::config::Configuration cfg;
-  cfg.SetCredProvClass(ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV);
+  cfg.SetAuthType(ignite::odbc::AuthType::Type::AWS_PROFILE);
   cfg.SetAccessKeyIdFromProfile("InvalidLogin");
   cfg.SetSecretKeyFromProfile("AwsTSUnitTestSecretKey");
 
@@ -156,6 +174,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingProfileInvalidLogin) {
 
 BOOST_AUTO_TEST_CASE(TestEstablishReconnect) {
   ignite::odbc::config::Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
   cfg.SetSecretKey("AwsTSUnitTestSecretKey");
 
@@ -170,6 +189,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishReconnect) {
 
 BOOST_AUTO_TEST_CASE(TestRelease) {
   ignite::odbc::config::Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
   cfg.SetSecretKey("AwsTSUnitTestSecretKey");
 

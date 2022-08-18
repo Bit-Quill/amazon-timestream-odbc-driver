@@ -71,7 +71,6 @@ set(SOURCES
          ../../odbc/src/app/parameter.cpp
          ../../odbc/src/app/parameter_set.cpp
          ../../odbc/src/column.cpp
-         ../../odbc/src/cred_prov_class.cpp
          ../../odbc/src/common/big_integer.cpp
          ../../odbc/src/common/bits.cpp
          ../../odbc/src/common/concurrent.cpp
@@ -113,6 +112,7 @@ set(SOURCES
          ../../odbc/src/impl/ignite_binding_impl.cpp
          ../../odbc/src/impl/ignite_environment.cpp
          ../../odbc/src/impl/ignite_impl.cpp
+         ../../odbc/src/auth_type.cpp
          ../../odbc/src/connection.cpp
          ../../odbc/src/cursor.cpp
          ../../odbc/src/diagnostic/diagnosable_adapter.cpp
@@ -120,7 +120,6 @@ set(SOURCES
          ../../odbc/src/diagnostic/diagnostic_record.cpp
          ../../odbc/src/dsn_config.cpp
          ../../odbc/src/environment.cpp
-         ../../odbc/src/idp_name.cpp
          ../../odbc/src/ignite_error.cpp
          ../../odbc/src/jni/java.cpp
          ../../odbc/src/log.cpp

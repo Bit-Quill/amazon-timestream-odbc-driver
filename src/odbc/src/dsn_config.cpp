@@ -21,8 +21,7 @@
 
 #include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/config/connection_string_parser.h"
-#include <ignite/odbc/cred_prov_class.h>
-#include <ignite/odbc/idp_name.h>
+#include <ignite/odbc/auth_type.h>
 #include <ignite/odbc/log_level.h>
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/utility.h"
@@ -132,22 +131,11 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   if (sessionToken.IsSet() && !config.IsSessionTokenSet())
     config.SetSessionToken(sessionToken.GetValue());
 
-  SettableValue< bool > enableMetadataPreparedStatement = ReadDsnBool(
-      dsn, ConnectionStringParser::Key::enableMetadataPreparedStatement);
+  SettableValue< std::string > profileName =
+      ReadDsnString(dsn, ConnectionStringParser::Key::profileName);
 
-  if (enableMetadataPreparedStatement.IsSet()
-      && !config.IsEnableMetadataPreparedStatementSet())
-    config.SetEnableMetadataPreparedStatement(
-        enableMetadataPreparedStatement.GetValue());
-
-  SettableValue< std::string > credProvClass =
-      ReadDsnString(dsn, ConnectionStringParser::Key::credProvClass);
-
-  if (credProvClass.IsSet() && !config.IsCredProvClassSet()) {
-    CredProvClass::Type className = CredProvClass::FromString(
-        credProvClass.GetValue(), CredProvClass::Type::NONE);
-    config.SetCredProvClass(className);
-  }
+  if (profileName.IsSet() && !config.IsProfileNameSet())
+    config.SetProfileName(profileName.GetValue());
 
   SettableValue< std::string > cusCredFile =
       ReadDsnString(dsn, ConnectionStringParser::Key::cusCredFile);
@@ -161,11 +149,11 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   if (reqTimeout.IsSet() && !config.IsReqTimeoutSet())
     config.SetReqTimeout(reqTimeout.GetValue());
 
-  SettableValue< int32_t > socketTimeout =
-      ReadDsnInt(dsn, ConnectionStringParser::Key::socketTimeout);
+  SettableValue< int32_t > connectionTimeout =
+      ReadDsnInt(dsn, ConnectionStringParser::Key::connectionTimeout);
 
-  if (reqTimeout.IsSet() && !config.IsSocketTimeoutSet())
-    config.SetSocketTimeout(socketTimeout.GetValue());
+  if (reqTimeout.IsSet() && !config.IsConnectionTimeoutSet())
+    config.SetConnectionTimeout(connectionTimeout.GetValue());
 
   SettableValue< int32_t > maxRetryCount =
       ReadDsnInt(dsn, ConnectionStringParser::Key::maxRetryCount);
@@ -191,38 +179,38 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   if (region.IsSet() && !config.IsRegionSet())
     config.SetRegion(region.GetValue());
 
-  SettableValue< std::string > idpName =
-      ReadDsnString(dsn, ConnectionStringParser::Key::idpName);
+  SettableValue< std::string > authType =
+      ReadDsnString(dsn, ConnectionStringParser::Key::authType);
 
-  if (idpName.IsSet() && !config.IsIdpNameSet()) {
-    IdpName::Type idpn =
-        IdpName::FromString(idpName.GetValue(), IdpName::Type::NONE);
-    config.SetIdpName(idpn);
+  if (authType.IsSet() && !config.IsAuthTypeSet()) {
+    AuthType::Type type =
+        AuthType::FromString(authType.GetValue(), AuthType::Type::AWS_PROFILE);
+    config.SetAuthType(type);
   }
 
-  SettableValue< std::string > idpHost =
-      ReadDsnString(dsn, ConnectionStringParser::Key::idpHost);
+  SettableValue< std::string > idPHost =
+      ReadDsnString(dsn, ConnectionStringParser::Key::idPHost);
 
-  if (idpHost.IsSet() && !config.IsIdpHostSet())
-    config.SetIdpHost(idpHost.GetValue());
+  if (idPHost.IsSet() && !config.IsIdPHostSet())
+    config.SetIdPHost(idPHost.GetValue());
 
-  SettableValue< std::string > idpUserName =
-      ReadDsnString(dsn, ConnectionStringParser::Key::idpUserName);
+  SettableValue< std::string > idPUserName =
+      ReadDsnString(dsn, ConnectionStringParser::Key::idPUserName);
 
-  if (idpUserName.IsSet() && !config.IsIdpUserNameSet())
-    config.SetIdpUserName(idpUserName.GetValue());
+  if (idPUserName.IsSet() && !config.IsIdPUserNameSet())
+    config.SetIdPUserName(idPUserName.GetValue());
 
-  SettableValue< std::string > idpPassword =
-      ReadDsnString(dsn, ConnectionStringParser::Key::idpPassword);
+  SettableValue< std::string > idPPassword =
+      ReadDsnString(dsn, ConnectionStringParser::Key::idPPassword);
 
-  if (idpPassword.IsSet() && !config.IsIdpPasswordSet())
-    config.SetIdpPassword(idpPassword.GetValue());
+  if (idPPassword.IsSet() && !config.IsIdPPasswordSet())
+    config.SetIdPPassword(idPPassword.GetValue());
 
-  SettableValue< std::string > idpArn =
-      ReadDsnString(dsn, ConnectionStringParser::Key::idpArn);
+  SettableValue< std::string > idPArn =
+      ReadDsnString(dsn, ConnectionStringParser::Key::idPArn);
 
-  if (idpArn.IsSet() && !config.IsIdpArnSet())
-    config.SetIdpArn(idpArn.GetValue());
+  if (idPArn.IsSet() && !config.IsIdPArnSet())
+    config.SetIdPArn(idPArn.GetValue());
 
   SettableValue< std::string > oktaAppId =
       ReadDsnString(dsn, ConnectionStringParser::Key::oktaAppId);

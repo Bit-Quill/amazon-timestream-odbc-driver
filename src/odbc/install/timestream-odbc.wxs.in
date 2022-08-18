@@ -37,9 +37,9 @@
                         <Component Id='Driver' Guid='@WIX_COMPONENT_ID@' Win64='@WIX_COMPONENT_IS_WIN64@'>
                             <File Id='IgniteOdbcDll' Name='timestream.odbc.dll' DiskId='1' Source='@WIX_ODBC_LIBRARY_PATH@' KeyPath='yes'/>
 
-                            <RegistryValue Root='HKLM' Key='Software\ODBC\ODBCINST.INI\ODBC Drivers' Name='Amazon Timestream' Type='string' Value='Installed'/>
+                            <RegistryValue Root='HKLM' Key='Software\ODBC\ODBCINST.INI\ODBC Drivers' Name='Amazon Timestream ODBC Driver' Type='string' Value='Installed'/>
 
-                            <RegistryKey Id='OdbcDriverRegInfo' Root='HKLM' Key='Software\ODBC\ODBCINST.INI\Amazon Timestream' ForceCreateOnInstall='yes' ForceDeleteOnUninstall='yes'>
+                            <RegistryKey Id='OdbcDriverRegInfo' Root='HKLM' Key='Software\ODBC\ODBCINST.INI\Amazon Timestream ODBC Driver' ForceCreateOnInstall='yes' ForceDeleteOnUninstall='yes'>
                                 <RegistryValue Type='string' Name='DriverODBCVer' Value='03.00'/>
                                 <RegistryValue Type='string' Name='Driver' Value='[#IgniteOdbcDll]'/>
                                 <RegistryValue Type='string' Name='Setup' Value='[#IgniteOdbcDll]'/>

@@ -23,7 +23,7 @@ namespace ignite {
 namespace odbc {
 /** Log Level enum. */
 struct LogLevel {
-  enum class Type { DEBUG_LEVEL, INFO_LEVEL, ERROR_LEVEL, OFF, UNKNOWN };
+  enum class Type { OFF, ERROR_LEVEL, INFO_LEVEL, DEBUG_LEVEL, UNKNOWN };
 
   /**
    * Convert log level from string.
@@ -41,6 +41,14 @@ struct LogLevel {
    * @return String value.
    */
   static std::string ToString(Type val);
+
+  /**
+   * Convert log level to comboBox string.
+   *
+   * @param val Value to convert.
+   * @return String value.
+   */
+  static std::wstring ToCBString(Type val);
 };
 }  // namespace odbc
 }  // namespace ignite

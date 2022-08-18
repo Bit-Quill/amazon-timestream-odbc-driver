@@ -23,8 +23,8 @@ then
   exit 1
 fi
 
-echo "[Amazon Timestream]"            > "$ODBC_LIB_PATH/timestream-odbc-install.ini"
-echo "Description=Amazon Timestream" >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
+echo "[Amazon Timestream ODBC Driver]"            > "$ODBC_LIB_PATH/timestream-odbc-install.ini"
+echo "Description=Amazon Timestream ODBC Driver" >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 echo "Driver=$ODBC_LIB_FILENAME" >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 echo "Setup=$ODBC_LIB_FILENAME"  >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 echo "DriverODBCVer=03.00"       >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"

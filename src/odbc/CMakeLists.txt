@@ -43,6 +43,7 @@ include_directories(include)
 set(SOURCES src/app/application_data_buffer.cpp
         src/app/parameter.cpp
         src/app/parameter_set.cpp
+        src/auth_type.cpp
         src/binary/binary_containers.cpp
         src/binary/binary_raw_writer.cpp
         src/binary/binary_writer.cpp
@@ -95,7 +96,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/impl/ignite_environment.cpp
         src/impl/ignite_impl.cpp
         src/connection.cpp
-        src/cred_prov_class.cpp
         src/cursor.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
@@ -123,7 +123,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/sql/sql_utils.cpp
         src/streaming/streaming_batch.cpp
         src/streaming/streaming_context.cpp
-        src/idp_name.cpp
         src/ignite.cpp
         src/ssl_mode.cpp
         src/protocol_version.cpp
@@ -207,7 +206,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
 
     set(WIX_ODBC_LIBRARY_PATH ".\\timestream.odbc.dll")
 
-    set(WIX_PROJECT_NAME "Amazon Timestream")
+    set(WIX_PROJECT_NAME "Amazon Timestream ODBC driver")
     set(WIX_MANUFACTURER "Amazon Web Services")
     set(WIX_COPYRIGHT_COMMENT "Apache, Apache Ignite, the Apache feather and the Apache Ignite logo are trademarks of The Apache Software Foundation.")
 

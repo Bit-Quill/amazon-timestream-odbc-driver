@@ -23,8 +23,7 @@
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/config/connection_string_parser.h"
-#include "ignite/odbc/cred_prov_class.h"
-#include "ignite/odbc/idp_name.h"
+#include "ignite/odbc/auth_type.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/utility.h"
 
@@ -35,36 +34,34 @@ namespace odbc {
 namespace config {
 // Connection (Basic Authentication) Settings
 const std::string Configuration::DefaultValue::dsn = "Timestream DSN";
-const std::string Configuration::DefaultValue::driver = "Amazon Timestream";
+const std::string Configuration::DefaultValue::driver = "Amazon Timestream ODBC Driver";
 const std::string Configuration::DefaultValue::accessKeyId = "";
 const std::string Configuration::DefaultValue::secretKey = "";
 const std::string Configuration::DefaultValue::accessKeyIdFromProfile = "";
 const std::string Configuration::DefaultValue::secretKeyFromProfile = "";
 bool Configuration::DefaultValue::profileIsParsed = false;
 const std::string Configuration::DefaultValue::sessionToken = "";
-const bool Configuration::DefaultValue::enableMetadataPreparedStatement = false;
 
 // Credential Providers Options
-const CredProvClass::Type Configuration::DefaultValue::credProvClass =
-    CredProvClass::Type::NONE;
+const std::string Configuration::DefaultValue::profileName = "";
 const std::string Configuration::DefaultValue::cusCredFile = "";
 
 // Connection Options
-const int32_t Configuration::DefaultValue::reqTimeout = 0;
-const int32_t Configuration::DefaultValue::socketTimeout = 50000;
+const int32_t Configuration::DefaultValue::reqTimeout = 3000;
+const int32_t Configuration::DefaultValue::connectionTimeout = 1000;
 const int32_t Configuration::DefaultValue::maxRetryCount = 0;
-const int32_t Configuration::DefaultValue::maxConnections = 50;
+const int32_t Configuration::DefaultValue::maxConnections = 25;
 
 // Endpoint Options
 const std::string Configuration::DefaultValue::endpoint = "";
-const std::string Configuration::DefaultValue::region = "";
+const std::string Configuration::DefaultValue::region = "us-east-1";
 
 // Advance Authentication Settings
-const IdpName::Type Configuration::DefaultValue::idpName = IdpName::Type::NONE;
-const std::string Configuration::DefaultValue::idpHost = "";
-const std::string Configuration::DefaultValue::idpUserName = "";
-const std::string Configuration::DefaultValue::idpPassword = "";
-const std::string Configuration::DefaultValue::idpArn = "";
+const AuthType::Type Configuration::DefaultValue::authType = AuthType::Type::AWS_PROFILE;
+const std::string Configuration::DefaultValue::idPHost = "";
+const std::string Configuration::DefaultValue::idPUserName = "";
+const std::string Configuration::DefaultValue::idPPassword = "";
+const std::string Configuration::DefaultValue::idPArn = "";
 const std::string Configuration::DefaultValue::oktaAppId = "";
 const std::string Configuration::DefaultValue::roleArn = "";
 const std::string Configuration::DefaultValue::aadAppId = "";
@@ -73,7 +70,7 @@ const std::string Configuration::DefaultValue::aadTenant = "";
 
 // Logging Configuration Options
 const LogLevel::Type Configuration::DefaultValue::logLevel =
-    LogLevel::Type::ERROR_LEVEL;
+    LogLevel::Type::OFF;
 const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
 
 std::string Configuration::ToConnectString() const {
@@ -91,6 +88,7 @@ std::string Configuration::ToConnectString() const {
     if (value.empty())
       continue;
 
+    // If there is space in the value, add brackets around it.
     if (value.find(' ') == std::string::npos)
       connect_string_buffer << key << '=' << value << ';';
     else
@@ -123,16 +121,16 @@ void Configuration::SetDriver(const std::string& driverName) {
   this->driver.SetValue(driverName);
 }
 
-const CredProvClass::Type Configuration::GetCredProvClass() const {
-  return credProvClass.GetValue();
+const std::string& Configuration::GetProfileName() const {
+  return profileName.GetValue();
 }
 
-void Configuration::SetCredProvClass(const CredProvClass::Type className) {
-  this->credProvClass.SetValue(className);
+void Configuration::SetProfileName(const std::string& name) {
+  this->profileName.SetValue(name);
 }
 
-bool Configuration::IsCredProvClassSet() const {
-  return credProvClass.IsSet();
+bool Configuration::IsProfileNameSet() const {
+  return profileName.IsSet();
 }
 
 const std::string& Configuration::GetCusCredFile() const {
@@ -159,16 +157,16 @@ bool Configuration::IsReqTimeoutSet() const {
   return reqTimeout.IsSet();
 }
 
-int32_t Configuration::GetSocketTimeout() const {
-  return socketTimeout.GetValue();
+int32_t Configuration::GetConnectionTimeout() const {
+  return connectionTimeout.GetValue();
 }
 
-void Configuration::SetSocketTimeout(int32_t ms) {
-  this->socketTimeout.SetValue(ms);
+void Configuration::SetConnectionTimeout(int32_t ms) {
+  this->connectionTimeout.SetValue(ms);
 }
 
-bool Configuration::IsSocketTimeoutSet() const {
-  return socketTimeout.IsSet();
+bool Configuration::IsConnectionTimeoutSet() const {
+  return connectionTimeout.IsSet();
 }
 
 int32_t Configuration::GetMaxRetryCount() const {
@@ -219,64 +217,64 @@ bool Configuration::IsRegionSet() const {
   return region.IsSet();
 }
 
-IdpName::Type Configuration::GetIdpName() const {
-  return idpName.GetValue();
+AuthType::Type Configuration::GetAuthType() const {
+  return authType.GetValue();
 }
 
-void Configuration::SetIdpName(const IdpName::Type value) {
-  this->idpName.SetValue(value);
+void Configuration::SetAuthType(const AuthType::Type value) {
+  this->authType.SetValue(value);
 }
 
-bool Configuration::IsIdpNameSet() const {
-  return idpName.IsSet();
+bool Configuration::IsAuthTypeSet() const {
+  return authType.IsSet();
 }
 
-const std::string& Configuration::GetIdpHost() const {
-  return idpHost.GetValue();
+const std::string& Configuration::GetIdPHost() const {
+  return idPHost.GetValue();
 }
 
-void Configuration::SetIdpHost(const std::string& value) {
-  this->idpHost.SetValue(value);
+void Configuration::SetIdPHost(const std::string& value) {
+  this->idPHost.SetValue(value);
 }
 
-bool Configuration::IsIdpHostSet() const {
-  return idpHost.IsSet();
+bool Configuration::IsIdPHostSet() const {
+  return idPHost.IsSet();
 }
 
-const std::string& Configuration::GetIdpUserName() const {
-  return idpUserName.GetValue();
+const std::string& Configuration::GetIdPUserName() const {
+  return idPUserName.GetValue();
 }
 
-void Configuration::SetIdpUserName(const std::string& value) {
-  this->idpUserName.SetValue(value);
+void Configuration::SetIdPUserName(const std::string& value) {
+  this->idPUserName.SetValue(value);
 }
 
-bool Configuration::IsIdpUserNameSet() const {
-  return idpUserName.IsSet();
+bool Configuration::IsIdPUserNameSet() const {
+  return idPUserName.IsSet();
 }
 
-const std::string& Configuration::GetIdpPassword() const {
-  return idpPassword.GetValue();
+const std::string& Configuration::GetIdPPassword() const {
+  return idPPassword.GetValue();
 }
 
-void Configuration::SetIdpPassword(const std::string& value) {
-  this->idpPassword.SetValue(value);
+void Configuration::SetIdPPassword(const std::string& value) {
+  this->idPPassword.SetValue(value);
 }
 
-bool Configuration::IsIdpPasswordSet() const {
-  return idpPassword.IsSet();
+bool Configuration::IsIdPPasswordSet() const {
+  return idPPassword.IsSet();
 }
 
-const std::string& Configuration::GetIdpArn() const {
-  return idpArn.GetValue();
+const std::string& Configuration::GetIdPArn() const {
+  return idPArn.GetValue();
 }
 
-void Configuration::SetIdpArn(const std::string& value) {
-  this->idpArn.SetValue(value);
+void Configuration::SetIdPArn(const std::string& value) {
+  this->idPArn.SetValue(value);
 }
 
-bool Configuration::IsIdpArnSet() const {
-  return idpArn.IsSet();
+bool Configuration::IsIdPArnSet() const {
+  return idPArn.IsSet();
 }
 
 const std::string& Configuration::GetOktaAppId() const {
@@ -437,38 +435,25 @@ bool Configuration::IsSessionTokenSet() const {
   return sessionToken.IsSet();
 }
 
-bool Configuration::IsEnableMetadataPreparedStatement() const {
-  return enableMetadataPreparedStatement.GetValue();
-}
-
-void Configuration::SetEnableMetadataPreparedStatement(bool val) {
-  this->enableMetadataPreparedStatement.SetValue(val);
-}
-
-bool Configuration::IsEnableMetadataPreparedStatementSet() const {
-  return enableMetadataPreparedStatement.IsSet();
-}
-
 void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::dsn, dsn);
   AddToMap(res, ConnectionStringParser::Key::driver, driver);
   AddToMap(res, ConnectionStringParser::Key::accessKeyId, accessKeyId);
   AddToMap(res, ConnectionStringParser::Key::secretKey, secretKey);
   AddToMap(res, ConnectionStringParser::Key::sessionToken, sessionToken);
-  AddToMap(res, ConnectionStringParser::Key::enableMetadataPreparedStatement, enableMetadataPreparedStatement);
-  AddToMap(res, ConnectionStringParser::Key::credProvClass, credProvClass);
+  AddToMap(res, ConnectionStringParser::Key::profileName, profileName);
   AddToMap(res, ConnectionStringParser::Key::cusCredFile, cusCredFile);
   AddToMap(res, ConnectionStringParser::Key::reqTimeout, reqTimeout);
-  AddToMap(res, ConnectionStringParser::Key::socketTimeout, socketTimeout);
+  AddToMap(res, ConnectionStringParser::Key::connectionTimeout, connectionTimeout);
   AddToMap(res, ConnectionStringParser::Key::maxRetryCount, maxRetryCount);
   AddToMap(res, ConnectionStringParser::Key::maxConnections, maxConnections);
   AddToMap(res, ConnectionStringParser::Key::endpoint, endpoint);
   AddToMap(res, ConnectionStringParser::Key::region, region);
-  AddToMap(res, ConnectionStringParser::Key::idpName, idpName);
-  AddToMap(res, ConnectionStringParser::Key::idpHost, idpHost);
-  AddToMap(res, ConnectionStringParser::Key::idpUserName, idpUserName);
-  AddToMap(res, ConnectionStringParser::Key::idpPassword, idpPassword);
-  AddToMap(res, ConnectionStringParser::Key::idpArn, idpArn);
+  AddToMap(res, ConnectionStringParser::Key::authType, authType);
+  AddToMap(res, ConnectionStringParser::Key::idPHost, idPHost);
+  AddToMap(res, ConnectionStringParser::Key::idPUserName, idPUserName);
+  AddToMap(res, ConnectionStringParser::Key::idPPassword, idPPassword);
+  AddToMap(res, ConnectionStringParser::Key::idPArn, idPArn);
   AddToMap(res, ConnectionStringParser::Key::oktaAppId, oktaAppId);
   AddToMap(res, ConnectionStringParser::Key::roleArn, roleArn);
   AddToMap(res, ConnectionStringParser::Key::aadAppId, aadAppId);
@@ -480,16 +465,25 @@ void Configuration::ToMap(ArgumentMap& res) const {
 
 void Configuration::Validate() const {
   // Validate minimum required properties.
-  if ((!IsAccessKeyIdSet() || !IsSecretKeySet()) && 
-      (!IsCredProvClassSet() || 
-          ((GetCredProvClass()
-             == ignite::odbc::CredProvClass::Type::PROP_FILE_CRED_PROV) && (!IsAccessKeyIdFromProfileSet() || !IsSecretKeyFromProfileSet())))) {
+
+  // TODO support Okta authentication and remove this check
+  // https://bitquill.atlassian.net/browse/AT-1055
+
+  // TODO support AAD authentication and remove this check
+  // https://bitquill.atlassian.net/browse/AT-1056
+  if ((GetAuthType() == ignite::odbc::AuthType::Type::OKTA)
+      || (GetAuthType() == ignite::odbc::AuthType::Type::AAD))
+        throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE, "Unsupported AUTH value");
+
+  if (((GetAuthType() == ignite::odbc::AuthType::Type::IAM) && (!IsAccessKeyIdSet() || !IsSecretKeySet())) || 
+      ((GetAuthType()
+             == ignite::odbc::AuthType::Type::AWS_PROFILE) && (!IsAccessKeyIdFromProfileSet() || !IsSecretKeyFromProfileSet()))) {
     throw OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
         "Any of the following group is required to connect:\n"
+        "AUTH is \"IAM\" and "
         "ACCESS_KEY_ID and SECRET_KEY or\n"
-        "AWS_CREDENTIALS_PROVIDER_CLASS or\n"
-        "AWS_CREDENTIALS_PROVIDER_CLASS is \"PropertiesFileCredentialsProvider\" and "
+        "AUTH is \"AWS_PROFILE\" and "
         "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret access key");
   }
 }
@@ -524,16 +518,9 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
 
 template <>
 void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
-                             const SettableValue< CredProvClass::Type >& value) {
+                             const SettableValue< AuthType::Type >& value) {
   if (value.IsSet())
-    map[key] = CredProvClass::ToString(value.GetValue());
-}
-
-template <>
-void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
-                             const SettableValue< IdpName::Type >& value) {
-  if (value.IsSet())
-    map[key] = IdpName::ToString(value.GetValue());
+    map[key] = AuthType::ToString(value.GetValue());
 }
 
 template <>

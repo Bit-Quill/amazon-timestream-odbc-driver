@@ -61,7 +61,8 @@ RUN git clone https://github.com/Microsoft/vcpkg.git \
     && ./vcpkg/bootstrap-vcpkg.sh \
     && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
 
-ENV VCPKG_ROOT /documentdb-odbc/vcpkg
+ENV REPOSITORY_ROOT /timestream-odbc/
+ENV VCPKG_ROOT /timestream-odbc/vcpkg
 ENV JAVA_HOME /usr/lib/jvm/java-17-amazon-corretto/
 ENV ODBC_LIB_PATH /timestream-odbc/build/odbc/lib/
 

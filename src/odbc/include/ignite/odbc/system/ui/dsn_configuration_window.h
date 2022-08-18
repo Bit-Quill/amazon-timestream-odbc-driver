@@ -19,6 +19,7 @@
 #define _IGNITE_ODBC_SYSTEM_UI_DSN_CONFIGURATION_WINDOW
 
 #include "ignite/odbc/config/configuration.h"
+#include "ignite/odbc/config/connection_info.h"
 #include "ignite/odbc/system/ui/custom_window.h"
 
 namespace ignite {
@@ -40,42 +41,40 @@ class DsnConfigurationWindow : public CustomWindow {
       ENDPOINT_LABEL,
       REGION_EDIT,
       REGION_LABEL,
-      ENABLE_METADATA_PREPARED_STATEMENT_CHECKBOX,
       TABS,
+      TABS_GROUP_BOX,
+      AUTH_TYPE_LABEL,
+      AUTH_TYPE_COMBO_BOX,
       ACCESS_KEY_ID_LABEL,
       ACCESS_KEY_ID_EDIT,
       SECRET_ACCESS_KEY_LABEL,
       SECRET_ACCESS_KEY_EDIT,
       SESSION_TOKEN_LABEL,
       SESSION_TOKEN_EDIT,
-      CRED_PROV_CLASS_COMBO_BOX,
-      CRED_PROV_CLASS_LABEL,
-      CUS_CRED_FILE_EDIT,
-      CUS_CRED_FILE_LABEL,
-      IDP_NAME_LABEL,
-      IDP_NAME_COMBO_BOX,
-      IDP_HOST_EDIT,
-      IDP_HOST_LABEL,
+      PROFILE_NAME_EDIT,
+      PROFILE_NAME_LABEL,
+      ROLE_ARN_EDIT,
+      ROLE_ARN_LABEL,
       IDP_USER_NAME_EDIT,
       IDP_USER_NAME_LABEL,
       IDP_PASSWORD_EDIT,
       IDP_PASSWORD_LABEL,
       IDP_ARN_EDIT,
       IDP_ARN_LABEL,
+      IDP_HOST_EDIT,
+      IDP_HOST_LABEL,
       OKTA_APP_ID_EDIT,
       OKTA_APP_ID_LABEL,
-      ROLE_ARN_EDIT,
-      ROLE_ARN_LABEL,
       AAD_APP_ID_EDIT,
       AAD_APP_ID_LABEL,
       AAD_CLIENT_SECRET_EDIT,
       AAD_CLIENT_SECRET_LABEL,
       AAD_TENANT_EDIT,
       AAD_TENANT_LABEL,
+      CONNECTION_TIMEOUT_EDIT,
+      CONNECTION_TIMEOUT_LABEL,
       REQ_TIMEOUT_EDIT,
       REQ_TIMEOUT_LABEL,
-      SOCKET_TIMEOUT_EDIT,
-      SOCKET_TIMEOUT_LABEL,
       MAX_RETRY_COUNT_CLIENT_EDIT,
       MAX_RETRY_COUNT_CLIENT_LABEL,
       MAX_CONNECTIONS_EDIT,
@@ -84,8 +83,11 @@ class DsnConfigurationWindow : public CustomWindow {
       LOG_LEVEL_LABEL,
       LOG_PATH_EDIT,
       LOG_PATH_LABEL,
+      BROWSE_BUTTON,
+      TEST_BUTTON,
       OK_BUTTON,
-      CANCEL_BUTTON
+      CANCEL_BUTTON,
+      VERSION_LABEL
     };
   };
 
@@ -106,7 +108,7 @@ class DsnConfigurationWindow : public CustomWindow {
 
   // Tab indices
   struct TabIndex {
-    enum Type { BASIC_AUTH, ADVANCE_AUTH, CONNECTION_SETTINGS, LOG_SETTINGS };
+    enum Type { AUTHENTICATION, ADVANCED_OPTIONS, LOG_SETTINGS };
   };
 
  public:
@@ -138,6 +140,16 @@ class DsnConfigurationWindow : public CustomWindow {
    */
   virtual bool OnMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
+  /*
+   * Returns the parsed Driver Version in the format V.XX.XX.XXXX.
+   * Leading zeros will not be included.
+   * 
+   * @param driverVersion Driver Version number to be parsed.
+   * @return str Parsed Driver Version.
+   */
+  static std::wstring GetParsedDriverVersion(
+      std::string driverVersion = TS_DRIVER_VERSION);
+
  private:
   IGNITE_NO_COPY_ASSIGNMENT(DsnConfigurationWindow)
 
@@ -146,59 +158,46 @@ class DsnConfigurationWindow : public CustomWindow {
    *
    * @param visible Boolean indicating visibility
    */
-  void DsnConfigurationWindow::ShowBasicAuth(bool visble) const;
+  void ShowAdvanceAuth(bool visble) const;
 
   /**
-   * Show Advance Authentication UI group based on visible paramter
+   * Show Advanced Options UI group based on visible paramter
    *
    * @param visible Boolean indicating visibility
    */
-  void DsnConfigurationWindow::ShowAdvanceAuth(bool visble) const;
-
-  /**
-   * Show Connection Settings UI group based on visible paramter
-   *
-   * @param visible Boolean indicating visibility
-   */
-  void DsnConfigurationWindow::ShowConnectionSettings(bool visble) const;
+  void ShowAdvancedOptions(bool visble) const;
 
   /**
    * Show Log Settings UI group based on visible paramter
    *
    * @param visible Boolean indicating visibility
    */
-  void DsnConfigurationWindow::ShowLogSettings(bool visble) const;
+  void ShowLogSettings(bool visble) const;
 
   /**
    * Show tab window when tab selection changes
    *
    * @param idx Selected tab window index
    */
-  void DsnConfigurationWindow::OnSelChanged(TabIndex::Type idx);
-
-  /**
-   * Disable / Enable the cusCredFileEdit field
-   * based on value of credProvClass.
-   * If credProvClass equals "Properties File Credentials Provider,"
-   * cusCredFileEdit field is enabled, else it is diabled.
-   */
-  void DsnConfigurationWindow::OnCredProvClassChanged() const;
+  void OnSelChanged(TabIndex::Type idx);
 
   /**
    * Disable / Enable the fields in advance authentication options UI group
-   * based on value of IdpName.
-   * IdpName field is always enabled.
-   * When "None" is selected for IdpName, all fields are disabled.
-   * When "Okta" is selected for IdpName, AzureAD-specific fields are disabled,
-   * and the rest are enabled.
-   * When "AzureAD" is selected for IdpName, Okta-specific fields are disabled,
-   * and the rest are enabled.
+   * based on value of AuthType.
+   * AuthType field is always enabled.
    */
-  void DsnConfigurationWindow::OnIdpNameChanged() const;
+  void OnAuthTypeChanged() const;
+
+  /**
+   * Disable / Enable the fields in logging options UI group
+   * based on value of LogLevel.
+   * LogLevel field is always enabled.
+   */
+  void OnLogLevelChanged() const;
 
   /**
    * Create basic settings group box.
-   * Basic settings include DSN name, enable metadata statement checkbox and
+   * Basic settings include DSN name, and
    * region and endpoint fields.
    *
    * @param posX X position.
@@ -209,34 +208,24 @@ class DsnConfigurationWindow : public CustomWindow {
   int CreateBasicSettingsGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create basic authentication settings group box.
+   * Create authentication options group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateBasicAuthSettingsGroup(int posX, int posY, int sizeX);
+  int CreateAuthenticationSettingsGroup(int posX, int posY, int sizeX);
 
   /**
-   * Create advance authentication options group box.
+   * Create Advanced Options group box.
    *
    * @param posX X position.
    * @param posY Y position.
    * @param sizeX Width.
    * @return Size by Y.
    */
-  int CreateAdvanceAuthSettingsGroup(int posX, int posY, int sizeX);
-
-  /**
-   * Create Connection settings group box.
-   *
-   * @param posX X position.
-   * @param posY Y position.
-   * @param sizeX Width.
-   * @return Size by Y.
-   */
-  int CreateConnectionSettingsGroup(int posX, int posY, int sizeX);
+  int CreateAdvancedOptionsGroup(int posX, int posY, int sizeX);
 
   /**
    * Create logging configuration settings group box.
@@ -323,14 +312,17 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Region label. */
   std::unique_ptr< Window > regionLabel;
 
-  /** Region balloon. */
-  std::unique_ptr< EDITBALLOONTIP > regionBalloon;
-
-  /** Enable Metadata Prepared Statement checkbox. */
-  std::unique_ptr< Window > enableMetadataPrepStmtCheckbox;
-
   /** Tabs. */
   std::unique_ptr< Window > tabs;
+
+  /** TabsGroupBox. */
+  std::unique_ptr< Window > tabsGroupBox;
+
+  /** Auth Type comboBox **/
+  std::unique_ptr< Window > authTypeComboBox;
+
+  /** Auth Type label. */
+  std::unique_ptr< Window > authTypeLabel;
 
   /** Access key Id edit. */
   std::unique_ptr< Window > accessKeyIdEdit;
@@ -350,62 +342,47 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Session Token label. */
   std::unique_ptr< Window > sessionTokenLabel;
 
-  /** AWS credentials provider class comboBox. */
-  std::unique_ptr< Window > credProvClassComboBox;
+  /** Profile Name edit. */
+  std::unique_ptr< Window > profileNameEdit;
 
-  /** AWS credentials provider class label. */
-  std::unique_ptr< Window > credProvClassLabel;
-
-  /** Custom credentials file edit. */
-  std::unique_ptr< Window > cusCredFileEdit;
-
-  /** Custom credentials file label. */
-  std::unique_ptr< Window > cusCredFileLabel;
-
-  /** Custom credentials file balloon. */
-  std::unique_ptr< EDITBALLOONTIP > cusCredFileBalloon;
-
-  /** Idp Name comboBox **/
-  std::unique_ptr< Window > idpNameComboBox;
-
-  /** Idp Name label. */
-  std::unique_ptr< Window > idpNameLabel;
-
-  /** Idp Host edit. */
-  std::unique_ptr< Window > idpHostEdit;
-
-  /** Idp Host label. */
-  std::unique_ptr< Window > idpHostLabel;
-
-  /** Idp User Name edit. */
-  std::unique_ptr< Window > idpUserNameEdit;
-
-  /** Idp User Name label. */
-  std::unique_ptr< Window > idpUserNameLabel;
-
-  /** Idp Password edit. */
-  std::unique_ptr< Window > idpPasswordEdit;
-
-  /** Idp Password label. */
-  std::unique_ptr< Window > idpPasswordLabel;
-
-  /** Idp ARN edit. */
-  std::unique_ptr< Window > idpArnEdit;
-
-  /** Idp ARN label. */
-  std::unique_ptr< Window > idpArnLabel;
-
-  /** Okta Application Id edit. */
-  std::unique_ptr< Window > oktaAppIdEdit;
-
-  /** Okta Application Id label. */
-  std::unique_ptr< Window > oktaAppIdLabel;
+  /** Profile Name label. */
+  std::unique_ptr< Window > profileNameLabel;
 
   /** Role ARN edit. */
   std::unique_ptr< Window > roleArnEdit;
 
   /** Role ARN label. */
   std::unique_ptr< Window > roleArnLabel;
+
+  /** IdP User Name edit. */
+  std::unique_ptr< Window > idPUserNameEdit;
+
+  /** IdP User Name label. */
+  std::unique_ptr< Window > idPUserNameLabel;
+
+  /** IdP Password edit. */
+  std::unique_ptr< Window > idPPasswordEdit;
+
+  /** IdP Password label. */
+  std::unique_ptr< Window > idPPasswordLabel;
+
+  /** IdP ARN edit. */
+  std::unique_ptr< Window > idPArnEdit;
+
+  /** IdP ARN label. */
+  std::unique_ptr< Window > idPArnLabel;
+
+  /** IdP Host edit. */
+  std::unique_ptr< Window > idPHostEdit;
+
+  /** IdP Host label. */
+  std::unique_ptr< Window > idPHostLabel;
+
+  /** Okta Application Id edit. */
+  std::unique_ptr< Window > oktaAppIdEdit;
+
+  /** Okta Application Id label. */
+  std::unique_ptr< Window > oktaAppIdLabel;
 
   /** AAD Application Id edit. */
   std::unique_ptr< Window > aadAppIdEdit;
@@ -425,17 +402,17 @@ class DsnConfigurationWindow : public CustomWindow {
   /** AAD Tenant label. */
   std::unique_ptr< Window > aadTenantLabel;
 
+  /** Connection timeout edit. */
+  std::unique_ptr< Window > connectionTimeoutEdit;
+
+  /** Connection timeout field label. */
+  std::unique_ptr< Window > connectionTimeoutLabel;
+
   /** Request timeout edit. */
   std::unique_ptr< Window > reqTimeoutEdit;
 
   /** Request timeout field label. */
   std::unique_ptr< Window > reqTimeoutLabel;
-
-  /** Socket timeout edit. */
-  std::unique_ptr< Window > socketTimeoutEdit;
-
-  /** Socket timeout field label. */
-  std::unique_ptr< Window > socketTimeoutLabel;
 
   /** Max retry count client edit. */
   std::unique_ptr< Window > maxRetryCountClientEdit;
@@ -464,11 +441,20 @@ class DsnConfigurationWindow : public CustomWindow {
   /** Log Path label. */
   std::unique_ptr< Window > logPathLabel;
 
+  /** Browse button. */
+  std::unique_ptr< Window > browseButton;
+
+  /** Test button. */
+  std::unique_ptr< Window > testButton;
+
   /** Ok button. */
   std::unique_ptr< Window > okButton;
 
   /** Cancel button. */
   std::unique_ptr< Window > cancelButton;
+
+  /* Driver Version Label */
+  std::unique_ptr< Window > versionLabel;
 
   /** Configuration. */
   config::Configuration& config;
@@ -481,13 +467,6 @@ class DsnConfigurationWindow : public CustomWindow {
 
   /** Flag indicating whether the DSN name balloon has been shown. */
   bool shownNameBalloon;
-
-  /** Flag indicating whether the region balloon has been shown. */
-  bool shownRegBalloon;
-
-  /** Flag indicating whether the custom credentials file balloon has been
-   * shown. */
-  bool shownCusCredFileBalloon;
 
   /** Flag indicating whether the max connections balloon has been shown. */
   bool shownMaxConBalloon;

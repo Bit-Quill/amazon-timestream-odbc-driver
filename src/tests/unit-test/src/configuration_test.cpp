@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
+#ifdef _WIN32
+#include "ignite/odbc/system/ui/dsn_configuration_window.h"
+#endif
+
 #include <ignite/odbc/common/utils.h>
 #include <ignite/odbc/config/config_tools.h>
 #include <ignite/odbc/config/configuration.h>
 #include <ignite/odbc/config/connection_string_parser.h>
-#include <ignite/odbc/cred_prov_class.h>
-#include <ignite/odbc/idp_name.h>
+#include <ignite/odbc/auth_type.h>
 #include <ignite/odbc/log.h>
 #include <ignite/odbc/log_level.h>
 #include <ignite/odbc/odbc_error.h>
@@ -42,29 +45,29 @@ const std::string testDsn = "Test DSN";
 const std::string testAccessKeyId = "testAccessKeyId";
 const std::string testSecretKey = "testSecretKey";
 const std::string testSessionToken = "testSessionToken";
-const bool testEnableMetadataPreparedStatement = true;
-const CredProvClass::Type testCredProvClass = CredProvClass::FromString("PropertiesFileCredentialsProvider");
-
+const std::string testProfileName = "testProfileName";
 const std::string rootDir = ignite::odbc::common::GetEnv("REPOSITORY_ROOT");
-#if defined(PREDEF_PLATFORM_UNIX_OR_APPLE) || defined(__linux__)
-const std::string testCusCredFile = rootDir + "/src/tests/input/test_credentials";
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
+const std::string testCusCredFile =
+    rootDir + "/src/tests/input/test_credentials";
 #elif defined(_WIN32)
-const std::string testCusCredFile = rootDir + "\\src\\tests\\input\\test_credentials";
+const std::string testCusCredFile =
+    rootDir + "\\src\\tests\\input\\test_credentials";
 #else
 const std::string testCusCredFile = "/path/to/credentials";
 #endif
 
-const int32_t testReqTimeoutMS = 300000;
-const int32_t testSocketTimeoutMS = 200000;
+const int32_t testReqTimeoutMS = 300;
+const int32_t testConnectionTimeoutMS = 500;
 const int32_t testMaxRetryCount = 3;
 const int32_t testMaxConnections = 15;
 const std::string testEndpoint = "testEndpoint";
 const std::string testRegion = "testRegion";
-const IdpName::Type testIdpName = IdpName::FromString("azuread");
-const std::string testIdpHost = "testIdpHost";
-const std::string testIdpUserName = "testIdpUserName";
-const std::string testIdpPassword = "testIdpPassword";
-const std::string testIdpArn = "testIdpArn";
+const AuthType::Type testAuthType = AuthType::FromString("aws_profile");
+const std::string testIdPHost = "testIdPHost";
+const std::string testIdPUserName = "testIdPUserName";
+const std::string testIdPPassword = "testIdPPassword";
+const std::string testIdPArn = "testIdPArn";
 const std::string testOktaAppId = "testOktaAppId";
 const std::string testRoleArn = "testRoleArn";
 const std::string testAadAppId = "testAadAppId";
@@ -115,20 +118,20 @@ void ParseConnectStringWithError(const std::string& connectStr,
   BOOST_CHECK_NE(diag.GetStatusRecordsNumber(), 0);
 }
 
-void CheckValidIdpName(const char* connectStr, IdpName::Type idpName) {
+void CheckValidAuthType(const char* connectStr, AuthType::Type authType) {
   Configuration cfg;
 
   ParseValidConnectString(connectStr, cfg);
 
-  BOOST_CHECK(cfg.GetIdpName() == idpName);
+  BOOST_CHECK(cfg.GetAuthType() == authType);
 }
 
-void CheckInvalidIdpName(const char* connectStr) {
+void CheckInvalidAuthType(const char* connectStr) {
   Configuration cfg;
 
   ParseConnectStringWithError(connectStr, cfg);
 
-  BOOST_CHECK(cfg.GetIdpName() == Configuration::DefaultValue::idpName);
+  BOOST_CHECK(cfg.GetAuthType() == Configuration::DefaultValue::authType);
 }
 
 void CheckValidLogLevel(const char* connectStr, LogLevel::Type loglevel) {
@@ -178,24 +181,22 @@ void CheckConnectionConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetAccessKeyId(), testAccessKeyId);
   BOOST_CHECK_EQUAL(cfg.GetSecretKey(), testSecretKey);
   BOOST_CHECK_EQUAL(cfg.GetSessionToken(), testSessionToken);
-  BOOST_CHECK_EQUAL(cfg.IsEnableMetadataPreparedStatement(),
-                    testEnableMetadataPreparedStatement);
-  BOOST_CHECK(cfg.GetCredProvClass() == testCredProvClass);
+  BOOST_CHECK_EQUAL(cfg.GetProfileName(), testProfileName);
   BOOST_CHECK_EQUAL(cfg.GetCusCredFile(), testCusCredFile);
   BOOST_CHECK_EQUAL(cfg.GetAccessKeyIdFromProfile(), testAccessKeyId);
   BOOST_CHECK_EQUAL(cfg.GetSecretKeyFromProfile(), testSecretKey);
   BOOST_CHECK_EQUAL(cfg.GetProfileIsParsed(), true);
   BOOST_CHECK_EQUAL(cfg.GetReqTimeout(), testReqTimeoutMS);
-  BOOST_CHECK_EQUAL(cfg.GetSocketTimeout(), testSocketTimeoutMS);
+  BOOST_CHECK_EQUAL(cfg.GetConnectionTimeout(), testConnectionTimeoutMS);
   BOOST_CHECK_EQUAL(cfg.GetMaxRetryCount(), testMaxRetryCount);
   BOOST_CHECK_EQUAL(cfg.GetMaxConnections(), testMaxConnections);
   BOOST_CHECK_EQUAL(cfg.GetEndpoint(), testEndpoint);
   BOOST_CHECK_EQUAL(cfg.GetRegion(), testRegion);
-  BOOST_CHECK(cfg.GetIdpName() == testIdpName);
-  BOOST_CHECK_EQUAL(cfg.GetIdpHost(), testIdpHost);
-  BOOST_CHECK_EQUAL(cfg.GetIdpUserName(), testIdpUserName);
-  BOOST_CHECK_EQUAL(cfg.GetIdpPassword(), testIdpPassword);
-  BOOST_CHECK_EQUAL(cfg.GetIdpArn(), testIdpArn);
+  BOOST_CHECK(cfg.GetAuthType() == testAuthType);
+  BOOST_CHECK_EQUAL(cfg.GetIdPHost(), testIdPHost);
+  BOOST_CHECK_EQUAL(cfg.GetIdPUserName(), testIdPUserName);
+  BOOST_CHECK_EQUAL(cfg.GetIdPPassword(), testIdPPassword);
+  BOOST_CHECK_EQUAL(cfg.GetIdPArn(), testIdPArn);
   BOOST_CHECK_EQUAL(cfg.GetOktaAppId(), testOktaAppId);
   BOOST_CHECK_EQUAL(cfg.GetRoleArn(), testRoleArn);
   BOOST_CHECK_EQUAL(cfg.GetAadAppId(), testAadAppId);
@@ -211,28 +212,27 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << "aad_client_secret=" << testAadClientSecret << ';'
               << "aad_tenant=" << testAadTenant << ';'
               << "access_key_id=" << testAccessKeyId << ';'
-              << "aws_credentials_provider_class="
-              << CredProvClass::ToString(testCredProvClass) << ';'
-              << "custom_credentials_file=" << testCusCredFile << ';'
+              << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "connection_timeout=" << testConnectionTimeoutMS << ';'
+              << ((testCusCredFile.find(' ') == std::string::npos)
+                      ? ("custom_credentials_file=" + testCusCredFile + ";")
+                      : ("custom_credentials_file={" + testCusCredFile + "};"))
               << "driver={" << testDriverName << "};"
-              << "enable_metadata_prepared_statement="
-              << BoolToStr(testEnableMetadataPreparedStatement) << ';'
-              << "endpoint=" << testEndpoint << ';' << "idp_arn=" << testIdpArn
-              << ';' << "idp_host=" << testIdpHost << ';'
-              << "idp_name=" << IdpName::ToString(testIdpName) << ';'
-              << "idp_password=" << testIdpPassword << ';'
-              << "idp_user_name=" << testIdpUserName << ';'
+              << "endpoint=" << testEndpoint << ';' << "idp_arn=" << testIdPArn
+              << ';' << "idp_host=" << testIdPHost << ';'
+              << "idp_password=" << testIdPPassword << ';'
+              << "idp_user_name=" << testIdPUserName << ';'
               << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
               << "log_path=" << testLogPath << ';'
               << "max_connections=" << testMaxConnections << ';'
               << "max_retry_count=" << testMaxRetryCount << ';'
               << "okta_app_id=" << testOktaAppId << ';'
+              << "profile_name=" << testProfileName << ';'
               << "region=" << testRegion << ';'
               << "request_timeout=" << testReqTimeoutMS << ';'
               << "role_arn=" << testRoleArn << ';'
               << "secret_key=" << testSecretKey << ';'
-              << "session_token=" << testSessionToken << ';'
-              << "socket_timeout=" << testSocketTimeoutMS << ';';
+              << "session_token=" << testSessionToken << ';';
   const std::string& expectedStr = constructor.str();
 
   BOOST_CHECK_EQUAL(ignite::odbc::common::ToLower(cfg.ToConnectString()),
@@ -252,29 +252,27 @@ void CheckDsnConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetSecretKey(), Configuration::DefaultValue::secretKey);
   BOOST_CHECK_EQUAL(cfg.GetSessionToken(),
                     Configuration::DefaultValue::sessionToken);
-  BOOST_CHECK_EQUAL(
-      cfg.IsEnableMetadataPreparedStatement(),
-      Configuration::DefaultValue::enableMetadataPreparedStatement);
-  BOOST_CHECK(cfg.GetCredProvClass() == Configuration::DefaultValue::credProvClass);
+  BOOST_CHECK_EQUAL(cfg.GetProfileName(),
+                    Configuration::DefaultValue::profileName);
   BOOST_CHECK_EQUAL(cfg.GetCusCredFile(),
                     Configuration::DefaultValue::cusCredFile);
   BOOST_CHECK_EQUAL(cfg.GetReqTimeout(),
                     Configuration::DefaultValue::reqTimeout);
-  BOOST_CHECK_EQUAL(cfg.GetSocketTimeout(),
-                    Configuration::DefaultValue::socketTimeout);
+  BOOST_CHECK_EQUAL(cfg.GetConnectionTimeout(),
+                    Configuration::DefaultValue::connectionTimeout);
   BOOST_CHECK_EQUAL(cfg.GetMaxRetryCount(),
                     Configuration::DefaultValue::maxRetryCount);
   BOOST_CHECK_EQUAL(cfg.GetMaxConnections(),
                     Configuration::DefaultValue::maxConnections);
   BOOST_CHECK_EQUAL(cfg.GetEndpoint(), Configuration::DefaultValue::endpoint);
   BOOST_CHECK_EQUAL(cfg.GetRegion(), Configuration::DefaultValue::region);
-  BOOST_CHECK(cfg.GetIdpName() == Configuration::DefaultValue::idpName);
-  BOOST_CHECK_EQUAL(cfg.GetIdpHost(), Configuration::DefaultValue::idpHost);
-  BOOST_CHECK_EQUAL(cfg.GetIdpUserName(),
-                    Configuration::DefaultValue::idpUserName);
-  BOOST_CHECK_EQUAL(cfg.GetIdpPassword(),
-                    Configuration::DefaultValue::idpPassword);
-  BOOST_CHECK_EQUAL(cfg.GetIdpArn(), Configuration::DefaultValue::idpArn);
+  BOOST_CHECK(cfg.GetAuthType() == Configuration::DefaultValue::authType);
+  BOOST_CHECK_EQUAL(cfg.GetIdPHost(), Configuration::DefaultValue::idPHost);
+  BOOST_CHECK_EQUAL(cfg.GetIdPUserName(),
+                    Configuration::DefaultValue::idPUserName);
+  BOOST_CHECK_EQUAL(cfg.GetIdPPassword(),
+                    Configuration::DefaultValue::idPPassword);
+  BOOST_CHECK_EQUAL(cfg.GetIdPArn(), Configuration::DefaultValue::idPArn);
   BOOST_CHECK_EQUAL(cfg.GetOktaAppId(), Configuration::DefaultValue::oktaAppId);
   BOOST_CHECK_EQUAL(cfg.GetRoleArn(), Configuration::DefaultValue::roleArn);
   BOOST_CHECK_EQUAL(cfg.GetAadAppId(), Configuration::DefaultValue::aadAppId);
@@ -286,28 +284,28 @@ void CheckDsnConfig(const Configuration& cfg) {
 BOOST_AUTO_TEST_SUITE(ConfigurationTestSuite)
 
 BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
+  // authType value is the default value (aws_profile) so custom credentials
+  // file will be parsed. Therefore there is no check for authType value in this
+  // test case.
   BOOST_CHECK_NE(testDriverName, Configuration::DefaultValue::driver);
   BOOST_CHECK_NE(testDsn, Configuration::DefaultValue::dsn);
   BOOST_CHECK_NE(testAccessKeyId, Configuration::DefaultValue::accessKeyId);
   BOOST_CHECK_NE(testSecretKey, Configuration::DefaultValue::secretKey);
   BOOST_CHECK_NE(testSessionToken, Configuration::DefaultValue::sessionToken);
-  BOOST_CHECK_NE(testEnableMetadataPreparedStatement,
-                 Configuration::DefaultValue::enableMetadataPreparedStatement);
-  BOOST_CHECK(testCredProvClass != Configuration::DefaultValue::credProvClass);
+  BOOST_CHECK_NE(testProfileName, Configuration::DefaultValue::profileName);
   BOOST_CHECK_NE(testCusCredFile, Configuration::DefaultValue::cusCredFile);
   BOOST_CHECK_NE(testReqTimeoutMS, Configuration::DefaultValue::reqTimeout);
-  BOOST_CHECK_NE(testSocketTimeoutMS,
-                 Configuration::DefaultValue::socketTimeout);
+  BOOST_CHECK_NE(testConnectionTimeoutMS,
+                 Configuration::DefaultValue::connectionTimeout);
   BOOST_CHECK_NE(testMaxRetryCount, Configuration::DefaultValue::maxRetryCount);
   BOOST_CHECK_NE(testMaxConnections,
                  Configuration::DefaultValue::maxConnections);
   BOOST_CHECK_NE(testEndpoint, Configuration::DefaultValue::endpoint);
   BOOST_CHECK_NE(testRegion, Configuration::DefaultValue::region);
-  BOOST_CHECK(testIdpName != Configuration::DefaultValue::idpName);
-  BOOST_CHECK_NE(testIdpHost, Configuration::DefaultValue::idpHost);
-  BOOST_CHECK_NE(testIdpUserName, Configuration::DefaultValue::idpUserName);
-  BOOST_CHECK_NE(testIdpPassword, Configuration::DefaultValue::idpPassword);
-  BOOST_CHECK_NE(testIdpArn, Configuration::DefaultValue::idpArn);
+  BOOST_CHECK_NE(testIdPHost, Configuration::DefaultValue::idPHost);
+  BOOST_CHECK_NE(testIdPUserName, Configuration::DefaultValue::idPUserName);
+  BOOST_CHECK_NE(testIdPPassword, Configuration::DefaultValue::idPPassword);
+  BOOST_CHECK_NE(testIdPArn, Configuration::DefaultValue::idPArn);
   BOOST_CHECK_NE(testOktaAppId, Configuration::DefaultValue::oktaAppId);
   BOOST_CHECK_NE(testRoleArn, Configuration::DefaultValue::roleArn);
   BOOST_CHECK_NE(testAadAppId, Configuration::DefaultValue::aadAppId);
@@ -324,23 +322,20 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
   constructor << "ACCESS_KEY_ID=" << testAccessKeyId << ';'
               << "SECRET_KEY=" << testSecretKey << ';'
               << "SESSION_TOKEN=" << testSessionToken << ';'
-              << "ENABLE_METADATA_PREPARED_STATEMENT="
-              << BoolToStr(testEnableMetadataPreparedStatement) << ';'
               << "LOG_LEVEL=" << LogLevel::ToString(testLogLevel) << ';'
               << "LOG_PATH=" << testLogPath << ';'
-              << "AWS_CREDENTIALS_PROVIDER_CLASS="
-              << CredProvClass::ToString(testCredProvClass) << ';'
+              << "PROFILE_NAME=" << testProfileName << ';'
               << "CUSTOM_CREDENTIALS_FILE=" << testCusCredFile << ';'
               << "REQUEST_TIMEOUT=" << testReqTimeoutMS << ';'
-              << "SOCKET_TIMEOUT=" << testSocketTimeoutMS << ';'
+              << "CONNECTION_TIMEOUT=" << testConnectionTimeoutMS << ';'
               << "MAX_RETRY_COUNT=" << testMaxRetryCount << ';'
               << "MAX_CONNECTIONS=" << testMaxConnections << ';'
               << "ENDPOINT=" << testEndpoint << ';' << "REGION=" << testRegion
-              << ';' << "IDP_NAME=" << IdpName::ToString(testIdpName) << ';'
-              << "IDP_HOST=" << testIdpHost << ';'
-              << "IDP_USER_NAME=" << testIdpUserName << ';'
-              << "IDP_PASSWORD=" << testIdpPassword << ';'
-              << "IDP_ARN=" << testIdpArn << ';'
+              << ';' << "AUTH=" << AuthType::ToString(testAuthType) << ';'
+              << "IDP_HOST=" << testIdPHost << ';'
+              << "IDP_USER_NAME=" << testIdPUserName << ';'
+              << "IDP_PASSWORD=" << testIdPPassword << ';'
+              << "IDP_ARN=" << testIdPArn << ';'
               << "OKTA_APP_ID=" << testOktaAppId << ';'
               << "ROLE_ARN=" << testRoleArn << ';'
               << "AAD_APP_ID=" << testAadAppId << ';'
@@ -363,23 +358,20 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
   constructor << "access_key_id=" << testAccessKeyId << ';'
               << "secret_key=" << testSecretKey << ';'
               << "session_token=" << testSessionToken << ';'
-              << "enable_metadata_prepared_statement="
-              << BoolToStr(testEnableMetadataPreparedStatement) << ';'
               << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
               << "log_path=" << testLogPath << ';'
-              << "aws_credentials_provider_class="
-              << CredProvClass::ToString(testCredProvClass) << ';'
+              << "profile_name=" << testProfileName << ';'
               << "custom_credentials_file=" << testCusCredFile << ';'
               << "request_timeout=" << testReqTimeoutMS << ';'
-              << "socket_timeout=" << testSocketTimeoutMS << ';'
+              << "connection_timeout=" << testConnectionTimeoutMS << ';'
               << "max_retry_count=" << testMaxRetryCount << ';'
               << "max_connections=" << testMaxConnections << ';'
               << "endpoint=" << testEndpoint << ';' << "region=" << testRegion
-              << ';' << "idp_name=" << IdpName::ToString(testIdpName) << ';'
-              << "idp_host=" << testIdpHost << ';'
-              << "idp_user_name=" << testIdpUserName << ';'
-              << "idp_password=" << testIdpPassword << ';'
-              << "idp_arn=" << testIdpArn << ';'
+              << ';' << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "idp_host=" << testIdPHost << ';'
+              << "idp_user_name=" << testIdPUserName << ';'
+              << "idp_password=" << testIdPPassword << ';'
+              << "idp_arn=" << testIdPArn << ';'
               << "okta_app_id=" << testOktaAppId << ';'
               << "role_arn=" << testRoleArn << ';'
               << "aad_app_id=" << testAadAppId << ';'
@@ -402,23 +394,20 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
   constructor << "access_key_id=" << testAccessKeyId << ';'
               << "secret_key=" << testSecretKey << ';'
               << "session_token=" << testSessionToken << ';'
-              << "enable_metadata_prepared_statement="
-              << BoolToStr(testEnableMetadataPreparedStatement) << ';'
               << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
               << "log_path=" << testLogPath << ';'
-              << "aws_credentials_provider_class="
-              << CredProvClass::ToString(testCredProvClass) << ';'
+              << "profile_name=" << testProfileName << ';'
               << "custom_credentials_file=" << testCusCredFile << ';'
               << "request_timeout=" << testReqTimeoutMS << ';'
-              << "socket_timeout=" << testSocketTimeoutMS << ';'
+              << "connection_timeout=" << testConnectionTimeoutMS << ';'
               << "max_retry_count=" << testMaxRetryCount << ';'
               << "max_connections=" << testMaxConnections << ';'
               << "endpoint=" << testEndpoint << ';' << "region=" << testRegion
-              << ';' << "idp_name=" << IdpName::ToString(testIdpName) << ';'
-              << "idp_host=" << testIdpHost << ';'
-              << "idp_user_name=" << testIdpUserName << ';'
-              << "idp_password=" << testIdpPassword << ';'
-              << "idp_arn=" << testIdpArn << ';'
+              << ';' << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "idp_host=" << testIdPHost << ';'
+              << "idp_user_name=" << testIdPUserName << ';'
+              << "idp_password=" << testIdPPassword << ';'
+              << "idp_arn=" << testIdPArn << ';'
               << "okta_app_id=" << testOktaAppId << ';'
               << "role_arn=" << testRoleArn << ';'
               << "aad_app_id=" << testAadAppId << ';'
@@ -443,23 +432,20 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
   constructor << "Access_Key_Id=" << testAccessKeyId << ';'
               << "Secret_Key=" << testSecretKey << ';'
               << "Session_Token=" << testSessionToken << ';'
-              << "Enable_Metadata_Prepared_Statement="
-              << BoolToStr(testEnableMetadataPreparedStatement) << ';'
               << "Log_Level=" << LogLevel::ToString(testLogLevel) << ';'
               << "Log_Path=" << testLogPath << ';'
-              << "AWS_Credentials_Provider_Class="
-              << CredProvClass::ToString(testCredProvClass) << ';'
+              << "Profile_Name=" << testProfileName << ';'
               << "Custom_Credentials_File=" << testCusCredFile << ';'
               << "Request_Timeout=" << testReqTimeoutMS << ';'
-              << "Socket_Timeout=" << testSocketTimeoutMS << ';'
+              << "Connection_Timeout=" << testConnectionTimeoutMS << ';'
               << "Max_Retry_Count=" << testMaxRetryCount << ';'
               << "Max_Connections=" << testMaxConnections << ';'
               << "Endpoint=" << testEndpoint << ';' << "Region=" << testRegion
-              << ';' << "Idp_Name=" << IdpName::ToString(testIdpName) << ';'
-              << "Idp_Host=" << testIdpHost << ';'
-              << "Idp_User_Name=" << testIdpUserName << ';'
-              << "Idp_Password=" << testIdpPassword << ';'
-              << "Idp_Arn=" << testIdpArn << ';'
+              << ';' << "Auth=" << AuthType::ToString(testAuthType) << ';'
+              << "IdP_Host=" << testIdPHost << ';'
+              << "IdP_User_Name=" << testIdPUserName << ';'
+              << "IdP_Password=" << testIdPPassword << ';'
+              << "IdP_Arn=" << testIdPArn << ';'
               << "Okta_App_Id=" << testOktaAppId << ';'
               << "Role_Arn=" << testRoleArn << ';'
               << "Aad_App_Id=" << testAadAppId << ';'
@@ -482,24 +468,21 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
   constructor << "ACCESS_KEY_ID =" << testAccessKeyId << ';'
               << "SECRET_KEY=" << testSecretKey << ';'
               << "SESSION_TOKEN=" << testSessionToken << ';'
-              << "ENABLE_METADATA_PREPARED_STATEMENT="
-              << BoolToStr(testEnableMetadataPreparedStatement) << ";  "
               << "  LOG_LEVEL =" << LogLevel::ToString(testLogLevel) << "  ; "
               << "LOG_PATH=  " << testLogPath << " ;"
-              << " AWS_CREDENTIALS_PROVIDER_CLASS="
-              << CredProvClass::ToString(testCredProvClass) << " ; "
+              << "     PROFILE_NAME  = " << testProfileName << "    ; "
               << "  CUSTOM_CREDENTIALS_FILE=   " << testCusCredFile << ";  "
               << "  REQUEST_TIMEOUT=" << testReqTimeoutMS << "  ;  "
-              << "SOCKET_TIMEOUT=  " << testSocketTimeoutMS << ";  "
+              << "CONNECTION_TIMEOUT=  " << testConnectionTimeoutMS << ";  "
               << "MAX_RETRY_COUNT=  " << testMaxRetryCount << " ;"
               << "MAX_CONNECTIONS=  " << testMaxConnections << "  ; "
               << "ENDPOINT=" << testEndpoint << "  ; "
               << "REGION=" << testRegion << "  ; "
-              << "IDP_NAME=" << IdpName::ToString(testIdpName) << " ;  "
-              << "IDP_HOST=" << testIdpHost << ";  "
-              << "IDP_USER_NAME=" << testIdpUserName << ";  "
-              << "IDP_PASSWORD=" << testIdpPassword << "  ; "
-              << "IDP_ARN=" << testIdpArn << " ;   "
+              << "AUTH=" << AuthType::ToString(testAuthType) << " ;  "
+              << "IDP_HOST=" << testIdPHost << ";  "
+              << "IDP_USER_NAME=" << testIdPUserName << ";  "
+              << "IDP_PASSWORD=" << testIdPPassword << "  ; "
+              << "IDP_ARN=" << testIdPArn << " ;   "
               << "OKTA_APP_ID=" << testOktaAppId << "  ;  "
               << "ROLE_ARN=" << testRoleArn << ";  "
               << "AAD_APP_ID=" << testAadAppId << ";  "
@@ -514,15 +497,16 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
   CheckConnectionConfig(cfg);
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidIdpName) {
-  CheckInvalidIdpName("idp_name=tableau;");
-  CheckInvalidIdpName("idp_name=aat;");
+BOOST_AUTO_TEST_CASE(TestConnectStringInvalidAuthType) {
+  CheckInvalidAuthType("auth=tableau;");
+  CheckInvalidAuthType("auth=aat;");
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectStringValidIdpName) {
-  CheckValidIdpName("idp_name=none;", IdpName::Type::NONE);
-  CheckValidIdpName("idp_name=azuread;", IdpName::Type::AAD);
-  CheckValidIdpName("idp_name=okta;", IdpName::Type::OKTA);
+BOOST_AUTO_TEST_CASE(TestConnectStringValidAuthType) {
+  CheckValidAuthType("auth=aws_profile;", AuthType::Type::AWS_PROFILE);
+  CheckValidAuthType("auth=iam;", AuthType::Type::IAM);
+  CheckValidAuthType("auth=aad;", AuthType::Type::AAD);
+  CheckValidAuthType("auth=okta;", AuthType::Type::OKTA);
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectStringInvalidLogLevel) {
@@ -535,47 +519,6 @@ BOOST_AUTO_TEST_CASE(TestConnectStringValidLogLevel) {
   CheckValidLogLevel("log_level=info;", LogLevel::Type::INFO_LEVEL);
   CheckValidLogLevel("log_level=error;", LogLevel::Type::ERROR_LEVEL);
   CheckValidLogLevel("log_level=off;", LogLevel::Type::OFF);
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectStringInvalidBoolKeys) {
-  typedef std::set< std::string > Set;
-
-  Set keys;
-
-  keys.emplace("enable_metadata_prepared_statement");
-
-  for (auto it = keys.begin(); it != keys.end(); ++it) {
-    const std::string& key = *it;
-
-    CheckInvalidBoolValue(key + "=1;", key);
-    CheckInvalidBoolValue(key + "=0;", key);
-    CheckInvalidBoolValue(key + "=42;", key);
-    CheckInvalidBoolValue(key + "=truee;", key);
-    CheckInvalidBoolValue(key + "=flase;", key);
-    CheckInvalidBoolValue(key + "=falsee;", key);
-    CheckInvalidBoolValue(key + "=yes;", key);
-    CheckInvalidBoolValue(key + "=no;", key);
-  }
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectStringValidBoolKeys) {
-  typedef std::set< std::string > Set;
-
-  Set keys;
-
-  keys.emplace("enable_metadata_prepared_statement");
-
-  for (auto it = keys.begin(); it != keys.end(); ++it) {
-    const std::string& key = *it;
-
-    CheckValidBoolValue(key + "=true;", key, true);
-    CheckValidBoolValue(key + "=True;", key, true);
-    CheckValidBoolValue(key + "=TRUE;", key, true);
-
-    CheckValidBoolValue(key + "=false;", key, false);
-    CheckValidBoolValue(key + "=False;", key, false);
-    CheckValidBoolValue(key + "=FALSE;", key, false);
-  }
 }
 
 BOOST_AUTO_TEST_CASE(TestDsnStringUppercase) {
@@ -638,5 +581,47 @@ BOOST_AUTO_TEST_CASE(TestDsnStringWhitespaces) {
 
   CheckDsnConfig(cfg);
 }
+
+#ifdef _WIN32
+BOOST_AUTO_TEST_CASE(TestParseDriverVersion) {
+  using ignite::odbc::system::ui::DsnConfigurationWindow;
+
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.00.0000"), L"V.2.0.0");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.01.0000"), L"V.2.1.0");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.10.0000"),
+      L"V.2.10.0");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("12.00.0000"),
+      L"V.12.0.0");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.01.1000"),
+      L"V.2.1.1000");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.01.0100"),
+      L"V.2.1.100");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.10.0010"),
+      L"V.2.10.10");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.01.0200"),
+      L"V.2.1.200");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.01.0201"),
+      L"V.2.1.201");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("02.10.1001"),
+      L"V.2.10.1001");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("12.10.0001"),
+      L"V.12.10.1");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("08.01.0001"), L"V.8.1.1");
+  BOOST_CHECK_EQUAL(
+      DsnConfigurationWindow::GetParsedDriverVersion("88.88.8888"), L"V.88.88.8888");
+}
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()

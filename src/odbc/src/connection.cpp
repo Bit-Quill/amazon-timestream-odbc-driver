@@ -470,7 +470,7 @@ void UpdateConnectionRuntimeInfo(const config::Configuration& config,
   // TODO retrieve AAD IdP username
   // https://bitquill.atlassian.net/browse/AT-1056
 #ifdef SQL_USER_NAME
-  if (config.GetCredProvClass() == CredProvClass::Type::PROP_FILE_CRED_PROV) {
+  if (config.GetAuthType() == AuthType::Type::AWS_PROFILE) {
     info.SetInfo(SQL_USER_NAME, config.GetAccessKeyIdFromProfile());
   } else {
     info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
@@ -485,14 +485,30 @@ bool Connection::TryRestoreConnection(
     const config::Configuration& cfg, IgniteError& err) {
   Aws::Auth::AWSCredentials credentials;
 
-  if (cfg.GetCredProvClass()
-      == CredProvClass::Type::PROP_FILE_CRED_PROV) {
+  if (cfg.GetAuthType()
+      == AuthType::Type::AWS_PROFILE) {
     credentials.SetAWSAccessKeyId(cfg.GetAccessKeyIdFromProfile());
     credentials.SetAWSSecretKey(cfg.GetSecretKeyFromProfile());
-  } else {
+  } else if (cfg.GetAuthType() == AuthType::Type::IAM) {
     credentials.SetAWSAccessKeyId(cfg.GetAccessKeyId());
     credentials.SetAWSSecretKey(cfg.GetSecretKey());
     credentials.SetSessionToken(cfg.GetSessionToken());  
+  } else {
+    // TODO support Okta authentication
+    // https://bitquill.atlassian.net/browse/AT-1055
+
+    // TODO support AAD authentication
+    // https://bitquill.atlassian.net/browse/AT-1056
+
+    LOG_ERROR_MSG(
+        "AuthType is not AWS_PROFILE or IAM, but TryRestoreConnection is "
+        "called.");
+    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
+                      "AuthType is not AWS_PROFILE or IAM, but "
+                      "TryRestoreConnection is called.");
+                      
+    Close();
+    return false;
   }
 
   Aws::Client::ClientConfiguration clientCfg;

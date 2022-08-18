@@ -14,34 +14,42 @@
  *
  */
 
-#ifndef _IGNITE_ODBC_CRED_PROV_CLASS
-#define _IGNITE_ODBC_CRED_PROV_CLASS
+#ifndef _IGNITE_ODBC_AUTH_TYPE
+#define _IGNITE_ODBC_AUTH_TYPE
 
 #include <string>
 
 namespace ignite {
 namespace odbc {
-/** AWS Credentials Provider Class enum. */
-struct CredProvClass {
-  enum class Type { NONE, PROP_FILE_CRED_PROV, INST_PROF_CRED_PROV, UNKNOWN };
+/** Auth Type enum. */
+struct AuthType {
+  enum class Type { AWS_PROFILE, IAM, AAD, OKTA };
 
   /**
-   * Convert AWS Credentials Provider Class from string.
+   * Convert Auth Type from string.
    *
    * @param val String value.
    * @param dflt Default value to return on error.
    * @return Corresponding enum value.
    */
-  static Type FromString(const std::string& val, Type dflt = Type::UNKNOWN);
+  static Type FromString(const std::string& val, Type dflt = Type::AWS_PROFILE);
 
   /**
-   * Convert AWS Credentials Provider Class to string.
+   * Convert Auth Type to string.
    *
    * @param val Value to convert.
    * @return String value.
    */
   static std::string ToString(Type val);
+
+  /**
+   * Convert Auth Type to combo box string.
+   *
+   * @param val Value to convert.
+   * @return String value.
+   */
+  static std::wstring ToCBString(Type val);
 };
 }  // namespace odbc
 }  // namespace ignite
-#endif  //_IGNITE_ODBC_CRED_PROV_CLASS
+#endif  //_IGNITE_ODBC_AUTH_TYPE
