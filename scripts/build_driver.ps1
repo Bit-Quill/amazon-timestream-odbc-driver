@@ -28,6 +28,14 @@ cmake -S $SRC_DIR `
     -D CMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE
 
 if ($?) {
-    # # Build Project
+    # Build Project
     cmake --build $BUILD_DIR --target install --config $CONFIGURATION --parallel 4 
+}
+
+# Check if either the first CMake command or the second CMake command fails
+$RET_CODE = $LastExitCode
+
+if ( $RET_CODE -ne 0 ) {
+   Write-Output "Error occurred while building project. Exiting."
+   exit $RET_CODE
 }

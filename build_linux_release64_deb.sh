@@ -14,4 +14,12 @@ mkdir cmake-build64
 cd cmake-build64
 cmake ../src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCODE_COVERAGE="OFF" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON" -DVCPKG_TARGET_TRIPLET="$VCPKG_TARGET_TRIPLET" -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE"
 make -j 4
+
+RET_CODE=$?
+
+if [ $RET_CODE -ne 0 ]; then
+   echo "Error occurred while building project. Exiting."
+   exit $RET_CODE
+fi
+
 cd ..

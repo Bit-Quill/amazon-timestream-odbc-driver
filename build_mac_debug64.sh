@@ -11,8 +11,11 @@ cd $BUILD_DIR
 cmake ../src -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCODE_COVERAGE="ON" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON"
 make  -j 4
 
-#Change DOCUMENTDB_HOME to TIMESTREAM_HOME if needed.
-#Remove it if not needed.
-#export DOCUMENTDB_HOME="$DRIVER_BIN_DIR"
+RET_CODE=$?
+
+if [ $RET_CODE -ne 0 ]; then
+   echo "Error occurred while building project. Exiting."
+   exit $RET_CODE
+fi
 
 cd ..
