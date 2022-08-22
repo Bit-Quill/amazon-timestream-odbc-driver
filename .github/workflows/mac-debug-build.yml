@@ -16,18 +16,8 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
-  DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
-  DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
-  DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
-  DOC_DB_USER: ${{secrets.DOC_DB_USER}}
-  DOC_DB_HOST: ${{secrets.DOC_DB_HOST}}
-  DOC_DB_LOCAL_PORT: 27019
-  DOC_DB_REMOTE_PORT: 27017
-  DOC_DB_PRIV_KEY_FILE: ~/certs/docdb-sshtunnel.pem
-  DOC_DB_ODBC_INTEGRATION_TEST: 1
-  DOC_DB_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
-  DOC_DB_LOG_LEVEL: "debug"
-  JDBC_DRIVER_VERSION: "1.2.4"
+  TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
+  TIMESTREAM_LOG_LEVEL: "debug"
   ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/ignite-odbc-install.ini"
 
 jobs:
@@ -51,11 +41,6 @@ jobs:
       with:
         name: cppcheck-results
         path: cppcheck-results.log
-    - name: Extract key-pair into file
-      run: |
-        mkdir ~/certs
-        echo "${{env.DOC_DB_KEYPAIR}}" > ${{env.DOC_DB_PRIV_KEY_FILE}}
-        chmod 400 ${{env.DOC_DB_PRIV_KEY_FILE}}
 
     - name: get-dependencies
       run: |
@@ -100,8 +85,7 @@ jobs:
     - name: run-tests
       id: runtests
       run: |
-        mkdir -p "${{env.DOC_DB_LOG_PATH}}"
-        ssh -f -N -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}
+        mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
         gcovr -r .. --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
 
@@ -160,5 +144,5 @@ jobs:
         name: odbc-test-results
         path: |
           ./odbc_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log
+          ./build/odbc/logs/timestream_odbc_*.log
 

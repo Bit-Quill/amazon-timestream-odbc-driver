@@ -39,7 +39,7 @@ using ignite::odbc::common::concurrent::CriticalSection;
   {                                                                           \
     std::shared_ptr< ignite::odbc::Logger > p =                               \
         ignite::odbc::Logger::GetLoggerInstance();                            \
-    if (p->GetLogLevel() <= logLevel && (p->IsEnabled() || p->EnableLog())) { \
+    if (p->GetLogLevel() >= logLevel && (p->IsEnabled() || p->EnableLog())) { \
       std::ostream* prevStream = p.get()->GetLogStream();                     \
       if (logStream != nullptr) {                                             \
         /* Override the stream temporarily */                                 \
@@ -161,7 +161,6 @@ class IGNITE_IMPORT_EXPORT Logger {
 
   /**
    * Set the logger's set log path.
-   * Once a log path is set, it cannot be changed
    */
   void SetLogPath(const std::string& path);
 
@@ -245,7 +244,7 @@ class IGNITE_IMPORT_EXPORT Logger {
 
   /**
    * Creates the log file name based on date
-   * Log file format: docdb_odbc_YYYYMMDD.log
+   * Log file format: timestream_odbc_YYYYMMDD.log
    */
   std::string CreateFileName() const;
 

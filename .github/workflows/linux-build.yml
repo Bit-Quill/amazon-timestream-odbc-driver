@@ -17,17 +17,8 @@ env:
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
   VCPKG_ROOT: "${{github.workspace}}/vcpkg"
-  DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
-  DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
-  DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
-  DOC_DB_USER: ${{secrets.DOC_DB_USER}}
-  DOC_DB_HOST: ${{secrets.DOC_DB_HOST}}
-  DOC_DB_LOCAL_PORT: 27019
-  DOC_DB_REMOTE_PORT: 27017
-  DOC_DB_PRIV_KEY_FILE: ~/certs/docdb-sshtunnel.pem
-  DOC_DB_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
-  DOC_DB_LOG_LEVEL: "debug"
-  JDBC_DRIVER_VERSION: "1.2.4"
+  TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
+  TIMESTREAM_LOG_LEVEL: "debug"
   JAVA_HOME: "/usr/lib/jvm/java-17-amazon-corretto/"
 
 jobs:
@@ -58,12 +49,6 @@ jobs:
       with:
         name: cppcheck-results
         path: cppcheck-results.log
-  
-    - name: Extract key-pair into file
-      run: |
-        mkdir ~/certs
-        echo "${{env.DOC_DB_KEYPAIR}}" > ${{env.DOC_DB_PRIV_KEY_FILE}}
-        chmod 400 ${{env.DOC_DB_PRIV_KEY_FILE}}
 
     - name: get-dependencies
       if: success()
@@ -107,7 +92,7 @@ jobs:
     - name: run-unit-tests
       id: rununittests
       run: |
-        mkdir -p "${{env.DOC_DB_LOG_PATH}}"
+        mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
         ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
 
     - name: upload-unit-test-report
@@ -125,7 +110,7 @@ jobs:
         name: odbc-unit-test-results
         path: |
           ./odbc_unit_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log 
+          ./build/odbc/logs/timestream_odbc_*.log 
           ./aws_sdk_*.log
 
     # run odbc tests
@@ -149,7 +134,7 @@ jobs:
         name: odbc-test-results
         path: |
           ./odbc_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log 
+          ./build/odbc/logs/timestream_odbc_*.log 
           ./aws_sdk_*.log
 
   build-linux64-debug:
@@ -179,12 +164,6 @@ jobs:
       with:
         name: cppcheck-results
         path: cppcheck-results.log
-  
-    - name: Extract key-pair into file
-      run: |
-        mkdir ~/certs
-        echo "${{env.DOC_DB_KEYPAIR}}" > ${{env.DOC_DB_PRIV_KEY_FILE}}
-        chmod 400 ${{env.DOC_DB_PRIV_KEY_FILE}}
 
     - name: get-dependencies
       if: success()
@@ -228,7 +207,7 @@ jobs:
     - name: run-unit-tests
       id: rununittests
       run: |
-        mkdir -p "${{env.DOC_DB_LOG_PATH}}"
+        mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
         ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
   
     - name: upload-test-report
@@ -246,7 +225,7 @@ jobs:
         name: odbc-unit-test-results-linux-debug
         path: |
           ./odbc_unit_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log 
+          ./build/odbc/logs/timestream_odbc_*.log 
           ./aws_sdk_*.log
 
     # run odbc tests
@@ -293,7 +272,7 @@ jobs:
         name: odbc-test-results-linux-debug
         path: |
           ./odbc_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log 
+          ./build/odbc/logs/timestream_odbc_*.log 
           ./aws_sdk_*.log   
 
     - name: upload-coverage

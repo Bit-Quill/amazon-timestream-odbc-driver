@@ -20,17 +20,8 @@ env:
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin/Release"
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
-  DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
-  DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
-  DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
-  DOC_DB_USER: ${{secrets.DOC_DB_USER}}
-  DOC_DB_HOST: ${{secrets.DOC_DB_HOST}}
-  DOC_DB_ODBC_INTEGRATION_TEST: 1
-  DOC_DB_LOCAL_PORT: 27019
-  DOC_DB_REMOTE_PORT: 27017
-  DOC_DB_PRIV_KEY_FILE: ~/certs/docdb-sshtunnel.pem
-  DOC_DB_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
-  DOC_DB_LOG_LEVEL: "debug"
+  TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
+  TIMESTREAM_LOG_LEVEL: "debug"
 
 jobs:
   # TODO enable windows 32 and make it run on github-hosted runners
@@ -77,14 +68,6 @@ jobs:
   #   - name: add-msbuild-to-path
   #     uses: microsoft/setup-msbuild@v1.0.2
 
-  #   - name: Extract key-pair into file
-  #     run: |
-  #       mkdir -p ~/certs
-  #       echo "${{env.DOC_DB_KEYPAIR}}" > ~/certs/docdb-sshtunnel.pem
-  #       chmod 400 ~/certs/docdb-sshtunnel.pem
-  #       mkdir -p ~/.ssh
-  #       copy ./src/odbc-test/config/ssh_config ~/.ssh/config
-
   #   - name: Cache dependencies Windows 32
   #     id: cache-dependencies-windows-32
   #     uses: actions/cache@v3
@@ -111,8 +94,7 @@ jobs:
   #   - name: run-tests
   #     id: runtests
   #     run: |
-  #       mkdir -p "${{env.DOC_DB_LOG_PATH}}"
-  #       Start-Process -NoNewWindow ssh "-f -N -o UserKnownHostsFile=/temp -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}"
+  #       mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
   #       ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
 
   #   - name: upload-test-report
@@ -130,7 +112,7 @@ jobs:
   #       name: odbc-test-results
   #       path: |
   #         ./odbc_test_result.xml
-  #         ./build/odbc/logs/docdb_odbc_*.log
+  #         ./build/odbc/logs/timestream_odbc_*.log
   #   # - name: build-installer
   #   #   if: success()
   #   #   run: |
@@ -196,7 +178,7 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       uses: actions/upload-artifact@v3
       with:
-        name: docdb-odbc-driver
+        name: timestream-odbc-driver
         path: build/odbc/cmake/Release
 
     - name: Upload performance test at push to develop
@@ -212,7 +194,6 @@ jobs:
 
     - name: run-tests
       run: |
-        Start-Process -NoNewWindow ssh "-f -N -o UserKnownHostsFile=/temp -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}"
         ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
 
   #   - name: build-installer
@@ -259,7 +240,6 @@ jobs:
 
     - name: run-tests
       run: |
-        Start-Process -NoNewWindow ssh "-f -N -o UserKnownHostsFile=/temp -o StrictHostKeyChecking=no -i ${{env.DOC_DB_PRIV_KEY_FILE}} -L${{env.DOC_DB_LOCAL_PORT}}:${{secrets.DOC_DB_HOST}}:${{env.DOC_DB_REMOTE_PORT}} ${{secrets.DOC_DB_USER}}"
         opencppcoverage --sources src --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-integration-tests.exe
 
     - name: upload-coverage
@@ -276,7 +256,7 @@ jobs:
         name: odbc-test-results
         path: |
           ./odbc_test_result.xml
-          ./build/odbc/logs/docdb_odbc_*.log
+          ./build/odbc/logs/timestream_odbc_*.log
 
   comment_PR_coverage:
     runs-on: ubuntu-latest

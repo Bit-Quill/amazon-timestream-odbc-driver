@@ -19,14 +19,14 @@ C/C++ usage and formatting.
 - [ Optional ] Log configurations
 
   Set these 2 variables only if you would like to set a custom log path or log level for connection tests; it is completely optional.
-    1. `DOC_DB_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\Timestream ODBC Driver"`)
+    1. `TIMESTREAM_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\Timestream ODBC Driver"`)
 
     The user needs to ensure that the directory mentioned in the log file path does exist, or driver will ignore user's passed value and create the log file in the default log path. Do **not** include a slash at the end of the log path.
 
-    The log path indicates the path to store the log file. The log file name has `docdb_odbc_YYYYMMDD.log` format, 
+    The log path indicates the path to store the log file. The log file name has `timestream_odbc_YYYYMMDD.log` format, 
     where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
 
-    2. `DOC_DB_LOG_LEVEL`=`<log_level>`. The default is `off` level. (Choose from `debug`, `info`, `error`, `off`)
+    2. `TIMESTREAM_LOG_LEVEL`=`<log_level>`. The default is `off` level. (Choose from `debug`, `info`, `error`, `off`)
 
     More details about logging in [`src\markdown\troubleshooting-guide.md`](src/markdown/troubleshooting-guide.md).
 
@@ -36,18 +36,6 @@ C/C++ usage and formatting.
 
 - To run integration/unit test, you need to specify the repository root directory.
    - `REPOSITORY_ROOT` = `<Repository Root Directory>`
-
-### Running an SSH tunnel for Testing
-By default, remote integration tests are not run. To enable remote integration tests, 
-set the environment variable `DOC_DB_ODBC_INTEGRATION_TEST=1`
-To run tests that require an external SSH tunnel, you will need to start an SSH tunnel using the same values as the environment variables set in the previous section. 
-If the local port is a value other than 27019, set `DOC_DB_LOCAL_PORT` to that value. 
-If the remote port is a value other than 27017, set `DOC_DB_REMOTE_PORT` to that value. 
-
-Example:
-```
- ssh -i $DOC_DB_PRIV_KEY_FILE -N -L $DOC_DB_LOCAL_PORT:$DOC_DB_HOST:$DOC_DB_REMOTE_PORT $DOC_DB_USER
-```
 
 ## Windows
 

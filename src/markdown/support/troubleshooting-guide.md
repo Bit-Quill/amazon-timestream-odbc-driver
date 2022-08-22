@@ -10,7 +10,7 @@ On Windows, the driver's logs will be written to the user's home directory (`%US
 On Mac/Linux/Unix, the default log path is also the user's home directory(`getpwuid()` or `$HOME`), whichever one is available.
 On Windows, you may change the default path in the DSN configuration window.
 In any platform, you may pass your log path / log level in the connection string.
-The log path indicates the path to store the log file. The log file name has `docdb_odbc_YYYYMMDD.log` format, 
+The log path indicates the path to store the log file. The log file name has `timestream_odbc_YYYYMMDD.log` format, 
 where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022)
 is the timestamp at the first log message.
 The keyword for log path is `log_path` and the keyword for log level is `log_level`. 
@@ -36,12 +36,12 @@ To set these properties, use the connection string with the following format
 `<property-name>=<property-value>`. The user should **not** have a slash at the end of the log path. 
 
 For example: (Note: The capitalization does not matter.)
-- In Windows, append `LOG_PATH="C:\Users\Name\Desktop\Timestream ODBC Driver";LOG_LEVEL=DEBUG;` 
+- In Windows, append `log_path="C:\Users\Name\Desktop\Timestream ODBC Driver";log_level=DEBUG;` 
 to your connection string.
     * You can also set the log path and log level from the configuration window in the Microsoft ODBC Administrator. 
     * Click on the drop menu for setting the log level
     * Enter the desired log file path in the field next to the label `Log File`. The user needs to ensure that the directory mentioned in the log file path does exist, or driver will ignore user's passed value and create the log file in the default log path.
 
-- In MacOS/Linux/Unix, append `LOG_PATH="~/path/to/log/file";LOG_LEVEL=ERROR;` to your connection string, or append
-`LOG_PATH` and `LOG_LEVEL` as keywords in the ODBC manager. 
-- If you just want to change the log level, append `LOG_LEVEL=<desired-log-level>;` to your connection string.
+- In MacOS/Linux/Unix, append `log_path="~/path/to/log/file";log_level=ERROR;` to your connection string, or append
+`log_path` and `log_level` as keywords in the ODBC manager. 
+- If you just want to change the log level, append `log_level=<desired-log-level>;` to your connection string.

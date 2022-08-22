@@ -462,7 +462,7 @@ int DsnConfigurationWindow::CreateBasicSettingsGroup(int posX, int posY,
   tabs = CreateTab(labelPosX, rowPos, tabSizeX, ROW_HEIGHT, L"Tabs",
                    ChildId::TABS);
 
-  tabs->AddTab(TabIndex::Type::AUTHENTICATION, L"Authenication");
+  tabs->AddTab(TabIndex::Type::AUTHENTICATION, L"Authentication");
   tabs->AddTab(TabIndex::Type::ADVANCED_OPTIONS, L"Advanced Options");
   tabs->AddTab(TabIndex::Type::LOG_SETTINGS, L"Logging Options");
 
