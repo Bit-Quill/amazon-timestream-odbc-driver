@@ -77,6 +77,10 @@ if (${WARNINGS_AS_ERRORS})
     endif()
 endif()
 
+if (${WITH_ODBC})
+    add_subdirectory(odbc)
+endif()
+
 if (${WITH_TESTS})
     enable_testing()
 
@@ -85,6 +89,3 @@ if (${WITH_TESTS})
     endif()
 endif()
 
-if (${WITH_ODBC})
-    add_subdirectory(odbc)
-endif()

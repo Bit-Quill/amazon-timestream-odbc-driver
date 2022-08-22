@@ -18,7 +18,6 @@ env:
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
   VCPKG_ROOT: "c:/vcpkg"
-  DOC_DB_KEYPAIR: ${{secrets.DOC_DB_KEYPAIR}}
   DOC_DB_USER_NAME: ${{secrets.DOC_DB_USER_NAME}}
   DOC_DB_PASSWORD: ${{secrets.DOC_DB_PASSWORD}}
   DOC_DB_USER: ${{secrets.DOC_DB_USER}}
@@ -72,14 +71,6 @@ jobs:
 
     - name: add-msbuild-to-path
       uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Extract key-pair into file
-      run: |
-        mkdir -p ~/certs
-        echo "${{env.DOC_DB_KEYPAIR}}" > ~/certs/docdb-sshtunnel.pem
-        chmod 400 ~/certs/docdb-sshtunnel.pem
-        mkdir -p ~/.ssh
-        copy ./src/odbc-test/config/ssh_config ~/.ssh/config
 
     - name: Cache dependencies Windows 32
       id: cache-dependencies-windows-32
@@ -195,14 +186,6 @@ jobs:
     - name: add-msbuild-to-path
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Extract key-pair into file
-      run: |
-        mkdir -p ~/certs
-        echo "${{env.DOC_DB_KEYPAIR}}" > ~/certs/docdb-sshtunnel.pem
-        chmod 400 ~/certs/docdb-sshtunnel.pem
-        mkdir -p ~/.ssh
-        copy ./src/odbc-test/config/ssh_config ~/.ssh/config
-
     - name: Cache dependencies Windows 64
       id: cache-dependencies-windows-64
       uses: actions/cache@v3
@@ -306,14 +289,6 @@ jobs:
 
     - name: add-msbuild-to-path
       uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Extract key-pair into file
-      run: |
-        mkdir -p ~/certs
-        echo "${{env.DOC_DB_KEYPAIR}}" > ~/certs/docdb-sshtunnel.pem
-        chmod 400 ~/certs/docdb-sshtunnel.pem
-        mkdir -p ~/.ssh
-        copy ./src/odbc-test/config/ssh_config ~/.ssh/config
 
     - name: setup-opencppcoverage-and-add-to-path
       id: setup_opencppcoverage

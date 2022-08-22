@@ -29,7 +29,7 @@ namespace config {
 /**
  * ODBC configuration parser abstraction.
  */
-class ConnectionStringParser {
+class IGNITE_IMPORT_EXPORT ConnectionStringParser {
  public:
   /** Connection attribute keywords. */
   struct Key {

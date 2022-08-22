@@ -68,7 +68,8 @@ T* GetPointerWithOffset(T* ptr, size_t offset) {
  *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
  *   is not 0
  */
-size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
+IGNITE_IMPORT_EXPORT size_t CopyUtf8StringToSqlCharString(
+    const char* inBuffer, SQLCHAR* outBuffer,
                                      size_t outBufferLenBytes,
                                      bool& isTruncated);
 
@@ -87,7 +88,8 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
  *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
  *   is not 0
  */
-size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
+IGNITE_IMPORT_EXPORT size_t CopyUtf8StringToSqlWcharString(
+    const char* inBuffer, SQLWCHAR* outBuffer,
                                       size_t outBufferLenBytes,
                                       bool& isTruncated);
 
@@ -104,29 +106,34 @@ size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
  *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
  *   is not 0
  */
-size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
-                          bool& isTruncated, bool isLenInBytes = false);
+IGNITE_IMPORT_EXPORT size_t CopyStringToBuffer(const std::string& str,
+                                              SQLWCHAR* buf, size_t buflen,
+                                              bool& isTruncated,
+                                              bool isLenInBytes = false);
 
 /**
  * Read array from reader.
  * @param reader Reader.
  * @param res Resulting vector.
  */
-void ReadByteArray(BinaryReaderImpl& reader, std::vector< int8_t >& res);
+IGNITE_IMPORT_EXPORT void ReadByteArray(BinaryReaderImpl& reader,
+                                       std::vector< int8_t >& res);
 
 /**
  * Read string from reader.
  * @param reader Reader.
  * @param str String.
  */
-void ReadString(BinaryReaderImpl& reader, std::string& str);
+IGNITE_IMPORT_EXPORT void ReadString(BinaryReaderImpl& reader, std::string& str);
 
 /**
  * Write string using writer.
  * @param writer Writer.
  * @param str String.
  */
-void WriteString(BinaryWriterImpl& writer, const std::string& str);
+IGNITE_IMPORT_EXPORT void
+WriteString(BinaryWriterImpl& writer,
+                                     const std::string& str);
 
 /**
  * Read decimal value using reader.
@@ -134,7 +141,8 @@ void WriteString(BinaryWriterImpl& writer, const std::string& str);
  * @param reader Reader.
  * @param decimal Decimal value.
  */
-void ReadDecimal(BinaryReaderImpl& reader, Decimal& decimal);
+IGNITE_IMPORT_EXPORT void ReadDecimal(BinaryReaderImpl& reader,
+                                     Decimal& decimal);
 
 /**
  * Write decimal value using writer.
@@ -142,7 +150,8 @@ void ReadDecimal(BinaryReaderImpl& reader, Decimal& decimal);
  * @param writer Writer.
  * @param decimal Decimal value.
  */
-void WriteDecimal(BinaryWriterImpl& writer, const Decimal& decimal);
+IGNITE_IMPORT_EXPORT void WriteDecimal(BinaryWriterImpl& writer,
+                                      const Decimal& decimal);
 
 /**
  * Convert SQLWCHAR string buffer to std::string.
@@ -153,7 +162,7 @@ void WriteDecimal(BinaryWriterImpl& writer, const Decimal& decimal);
  * characters.
  * @return Standard string containing the same data.
  */
-std::string SqlWcharToString(const SQLWCHAR* sqlStr,
+IGNITE_IMPORT_EXPORT std::string SqlWcharToString(const SQLWCHAR* sqlStr,
                               int32_t sqlStrLen = SQL_NTS,
                               bool isLenInBytes = false);
 
@@ -167,7 +176,8 @@ std::string SqlWcharToString(const SQLWCHAR* sqlStr,
  * @return Standard optional string containing the same data.
  * If sqlStrLen indicates null string, boost::none is returned.
  */
-boost::optional< std::string > SqlWcharToOptString(const SQLWCHAR* sqlStr,
+IGNITE_IMPORT_EXPORT boost::optional< std::string > SqlWcharToOptString(
+    const SQLWCHAR* sqlStr,
                                                     int32_t sqlStrLen = SQL_NTS,
                                                     bool isLenInBytes = false);
 
@@ -178,7 +188,8 @@ boost::optional< std::string > SqlWcharToOptString(const SQLWCHAR* sqlStr,
  * @param sqlStrLen SQL string length.
  * @return Standard string containing the same data.
  */
-std::string SqlCharToString(const SQLCHAR* sqlStr, int32_t sqlStrLen);
+IGNITE_IMPORT_EXPORT std::string SqlCharToString(const SQLCHAR* sqlStr,
+                                                int32_t sqlStrLen);
 
 /**
  * Convert a wide string to UTF-8 encoded string.
@@ -186,7 +197,7 @@ std::string SqlCharToString(const SQLCHAR* sqlStr, int32_t sqlStrLen);
  * @param value wide string value to convert.
  * @return String value converted to UTF-8 encoding.
  */
-std::string ToUtf8(const std::wstring& value);
+IGNITE_IMPORT_EXPORT std::string ToUtf8(const std::wstring& value);
 
 /**
  * Convert a wide string to UTF-8 encoded string.
@@ -194,7 +205,7 @@ std::string ToUtf8(const std::wstring& value);
  * @param value wide string value to convert.
  * @return String value converted to UTF-8 encoding.
  */
-std::string ToUtf8(const wchar_t* value);
+IGNITE_IMPORT_EXPORT std::string ToUtf8(const wchar_t* value);
 
 /**
  * Convert a UTF-8 encoded string to wide string.
@@ -202,7 +213,7 @@ std::string ToUtf8(const wchar_t* value);
  * @param value UTF-8 encoded string.
  * @return String value converted to UTF-8 encoding.
  */
-std::wstring FromUtf8(const std::string& value);
+IGNITE_IMPORT_EXPORT std::wstring FromUtf8(const std::string& value);
 
 /**
  * Convert a UTF-8 encoded string to wide string.
@@ -210,7 +221,7 @@ std::wstring FromUtf8(const std::string& value);
  * @param value Pointer to UTF-8 encoded string.
  * @return String value converted to UTF-8 encoding.
  */
-std::wstring FromUtf8(const char* value);
+IGNITE_IMPORT_EXPORT std::wstring FromUtf8(const char* value);
 
 /**
  * Convert a UTF-8 string to vector of unsigned short.
@@ -218,7 +229,8 @@ std::wstring FromUtf8(const char* value);
  * @param value wide string value to convert.
  * @return String value converted to vector of unsigned short encoding.
  */
-std::vector< SQLWCHAR > ToWCHARVector(const std::string& value);
+IGNITE_IMPORT_EXPORT std::vector< SQLWCHAR > ToWCHARVector(
+    const std::string& value);
 
 /**
  * Convert a UTF-8 string to vector of unsigned short.
@@ -226,7 +238,7 @@ std::vector< SQLWCHAR > ToWCHARVector(const std::string& value);
  * @param value pointer to null-terminated wide string value to convert.
  * @return String value converted to vector of unsigned short encoding.
  */
-std::vector< SQLWCHAR > ToWCHARVector(const char* value);
+IGNITE_IMPORT_EXPORT std::vector< SQLWCHAR > ToWCHARVector(const char* value);
 
 /**
  * Convert binary data to hex dump form
@@ -234,7 +246,7 @@ std::vector< SQLWCHAR > ToWCHARVector(const char* value);
  * @param count data length
  * @return standard string containing the formated hex dump
  */
-std::string HexDump(const void* data, size_t count);
+IGNITE_IMPORT_EXPORT std::string HexDump(const void* data, size_t count);
 }  // namespace utility
 }  // namespace odbc
 }  // namespace ignite

@@ -43,7 +43,7 @@ namespace diagnostic {
  * This class provides interface for interaction with all handle
  * diagnostic records. That means both header and status records.
  */
-class DiagnosticRecordStorage {
+class IGNITE_IMPORT_EXPORT DiagnosticRecordStorage {
  public:
   /**
    * Default constructor.

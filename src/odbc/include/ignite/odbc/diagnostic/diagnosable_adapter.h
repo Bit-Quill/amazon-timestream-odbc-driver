@@ -38,7 +38,7 @@ namespace diagnostic {
 /**
  * Diagnosable interface.
  */
-class DiagnosableAdapter : public Diagnosable {
+class IGNITE_IMPORT_EXPORT DiagnosableAdapter : public Diagnosable {
  public:
   /**
    * Constructor.

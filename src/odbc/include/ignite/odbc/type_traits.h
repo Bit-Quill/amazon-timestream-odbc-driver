@@ -23,6 +23,7 @@
 #include <string>
 
 #include <boost/optional.hpp>
+#include <ignite/odbc/common/common.h>
 
 namespace ignite {
 namespace odbc {
@@ -112,7 +113,7 @@ struct OdbcNativeType {
 /**
  * SQL type name constants.
  */
-class SqlTypeName {
+class IGNITE_IMPORT_EXPORT SqlTypeName {
  public:
   /** SMALLINT SQL type name constant. */
   static const std::string SMALLINT;

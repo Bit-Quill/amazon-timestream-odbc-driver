@@ -29,13 +29,45 @@
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/log_level.h"
 
+#define DEFAULT_DSN "Timestream DSN"
+#define DEFAULT_DRIVER "Amazon Timestream ODBC Driver"
+#define DEFAULT_ACCESS_KEY_ID ""
+#define DEFAULT_SECRET_KEY ""
+#define DEFAULT_ACCESS_KEY_ID_FROM_PROFILE ""
+#define DEFAULT_SECRET_KEY_FROM_PROFILE ""
+#define DEFAULT_PROFILE_IS_PARSED false
+#define DEFAULT_SESSION_TOKEN ""
+
+#define DEFAULT_PROFILE_NAME ""
+#define DEFAULT_CUS_CRED_FILE ""
+
+#define DEFAULT_REQ_TIMEOUT 3000
+#define DEFAULT_CONNECTION_TIMEOUT 1000
+#define DEFAULT_MAX_RETRY_COUNT 0
+#define DEFAULT_MAX_CONNECTIONS 25
+
+#define DEFAULT_ENDPOINT ""
+#define DEFAULT_REGION "us-east-1"
+
+#define DEFAULT_AUTH_TYPE AuthType::Type::AWS_PROFILE
+#define DEFAULT_IDP_HOST ""
+#define DEFAULT_IDP_USER_NAME ""
+#define DEFAULT_IDP_PASSWORD ""
+#define DEFAULT_IDP_ARN ""
+#define DEFAULT_OKTA_APP_ID ""
+#define DEFAULT_ROLE_ARN ""
+#define DEFAULT_AAD_APP_ID ""
+#define DEFAULT_ACCESS_CLIENT_SECRET ""
+#define DEFAULT_AAD_TENANT ""
+#define DEFAULT_LOG_LEVEL LogLevel::Type::OFF
+
 namespace ignite {
 namespace odbc {
 namespace config {
 /**
  * ODBC configuration abstraction.
  */
-class Configuration {
+class IGNITE_IMPORT_EXPORT Configuration {
  public:
   /** Argument map type. */
   typedef std::map< std::string, std::string > ArgumentMap;

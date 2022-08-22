@@ -46,7 +46,7 @@ class Statement;
 /**
  * ODBC node connection.
  */
-class Connection : public diagnostic::DiagnosableAdapter {
+class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   friend class Environment;
 
  public:

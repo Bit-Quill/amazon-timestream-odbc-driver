@@ -32,7 +32,7 @@ namespace diagnostic {
 /**
  * Status diagnostic record.
  */
-class DiagnosticRecord {
+class IGNITE_IMPORT_EXPORT DiagnosticRecord {
  public:
   /**
    * Default constructor.

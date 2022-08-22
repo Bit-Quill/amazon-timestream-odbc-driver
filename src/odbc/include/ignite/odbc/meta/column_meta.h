@@ -65,7 +65,7 @@ using namespace ignite::odbc;
 /**
  * Column metadata.
  */
-class ColumnMeta {
+class IGNITE_IMPORT_EXPORT ColumnMeta {
  public:
   /**
    * Convert attribute ID to string containing its name.

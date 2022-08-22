@@ -18,11 +18,12 @@
 #define _IGNITE_ODBC_LOG_LEVEL
 
 #include <string>
+#include <ignite/odbc/common/common.h>
 
 namespace ignite {
 namespace odbc {
 /** Log Level enum. */
-struct LogLevel {
+struct IGNITE_IMPORT_EXPORT LogLevel {
   enum class Type { OFF, ERROR_LEVEL, INFO_LEVEL, DEBUG_LEVEL, UNKNOWN };
 
   /**

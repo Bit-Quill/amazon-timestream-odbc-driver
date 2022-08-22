@@ -29,7 +29,7 @@ class Connection;
 /**
  * ODBC environment.
  */
-class Environment : public diagnostic::DiagnosableAdapter {
+class IGNITE_IMPORT_EXPORT Environment : public diagnostic::DiagnosableAdapter {
  public:
   /** Connection set type. */
   typedef std::set< Connection* > ConnectionSet;

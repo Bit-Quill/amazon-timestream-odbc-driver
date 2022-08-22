@@ -115,7 +115,7 @@ class Logger;
  * Helper object providing stream operations for single log line.
  * Writes resulting string to Logger object upon destruction.
  */
-class LogStream : public std::basic_ostream< char > {
+class IGNITE_IMPORT_EXPORT LogStream : public std::basic_ostream< char > {
  public:
   /**
    * Constructor.
@@ -147,7 +147,7 @@ class LogStream : public std::basic_ostream< char > {
 /**
  * Logging facility.
  */
-class Logger {
+class IGNITE_IMPORT_EXPORT Logger {
  public:
   /**
    * Destructor.

@@ -169,7 +169,7 @@ endif ()
 
 include_directories(${OS_INCLUDE})
 
-
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(${TARGET} SHARED ${SOURCES})
 
 set_target_properties(${TARGET} PROPERTIES VERSION ${CMAKE_PROJECT_VERSION})

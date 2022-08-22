@@ -33,44 +33,55 @@ namespace ignite {
 namespace odbc {
 namespace config {
 // Connection (Basic Authentication) Settings
-const std::string Configuration::DefaultValue::dsn = "Timestream DSN";
-const std::string Configuration::DefaultValue::driver = "Amazon Timestream ODBC Driver";
-const std::string Configuration::DefaultValue::accessKeyId = "";
-const std::string Configuration::DefaultValue::secretKey = "";
-const std::string Configuration::DefaultValue::accessKeyIdFromProfile = "";
-const std::string Configuration::DefaultValue::secretKeyFromProfile = "";
-bool Configuration::DefaultValue::profileIsParsed = false;
-const std::string Configuration::DefaultValue::sessionToken = "";
+const std::string Configuration::DefaultValue::dsn = DEFAULT_DSN;
+const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
+const std::string Configuration::DefaultValue::accessKeyId =
+    DEFAULT_ACCESS_KEY_ID;
+const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
+const std::string Configuration::DefaultValue::accessKeyIdFromProfile =
+    DEFAULT_ACCESS_KEY_ID_FROM_PROFILE;
+const std::string Configuration::DefaultValue::secretKeyFromProfile =
+    DEFAULT_SECRET_KEY_FROM_PROFILE;
+bool Configuration::DefaultValue::profileIsParsed = DEFAULT_PROFILE_IS_PARSED;
+const std::string Configuration::DefaultValue::sessionToken =
+    DEFAULT_SESSION_TOKEN;
 
 // Credential Providers Options
-const std::string Configuration::DefaultValue::profileName = "";
-const std::string Configuration::DefaultValue::cusCredFile = "";
+const std::string Configuration::DefaultValue::profileName =
+    DEFAULT_PROFILE_NAME;
+const std::string Configuration::DefaultValue::cusCredFile =
+    DEFAULT_CUS_CRED_FILE;
 
 // Connection Options
-const int32_t Configuration::DefaultValue::reqTimeout = 3000;
-const int32_t Configuration::DefaultValue::connectionTimeout = 1000;
-const int32_t Configuration::DefaultValue::maxRetryCount = 0;
-const int32_t Configuration::DefaultValue::maxConnections = 25;
+const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
+const int32_t Configuration::DefaultValue::connectionTimeout =
+    DEFAULT_CONNECTION_TIMEOUT;
+const int32_t Configuration::DefaultValue::maxRetryCount =
+    DEFAULT_MAX_RETRY_COUNT;
+const int32_t Configuration::DefaultValue::maxConnections =
+    DEFAULT_MAX_CONNECTIONS;
 
 // Endpoint Options
-const std::string Configuration::DefaultValue::endpoint = "";
-const std::string Configuration::DefaultValue::region = "us-east-1";
+const std::string Configuration::DefaultValue::endpoint = DEFAULT_ENDPOINT;
+const std::string Configuration::DefaultValue::region = DEFAULT_REGION;
 
 // Advance Authentication Settings
-const AuthType::Type Configuration::DefaultValue::authType = AuthType::Type::AWS_PROFILE;
-const std::string Configuration::DefaultValue::idPHost = "";
-const std::string Configuration::DefaultValue::idPUserName = "";
-const std::string Configuration::DefaultValue::idPPassword = "";
-const std::string Configuration::DefaultValue::idPArn = "";
-const std::string Configuration::DefaultValue::oktaAppId = "";
-const std::string Configuration::DefaultValue::roleArn = "";
-const std::string Configuration::DefaultValue::aadAppId = "";
-const std::string Configuration::DefaultValue::aadClientSecret = "";
-const std::string Configuration::DefaultValue::aadTenant = "";
+const AuthType::Type Configuration::DefaultValue::authType = DEFAULT_AUTH_TYPE;
+const std::string Configuration::DefaultValue::idPHost = DEFAULT_IDP_HOST;
+const std::string Configuration::DefaultValue::idPUserName =
+    DEFAULT_IDP_USER_NAME;
+const std::string Configuration::DefaultValue::idPPassword =
+    DEFAULT_IDP_PASSWORD;
+const std::string Configuration::DefaultValue::idPArn = DEFAULT_IDP_ARN;
+const std::string Configuration::DefaultValue::oktaAppId = DEFAULT_OKTA_APP_ID;
+const std::string Configuration::DefaultValue::roleArn = DEFAULT_ROLE_ARN;
+const std::string Configuration::DefaultValue::aadAppId = DEFAULT_AAD_APP_ID;
+const std::string Configuration::DefaultValue::aadClientSecret =
+    DEFAULT_ACCESS_CLIENT_SECRET;
+const std::string Configuration::DefaultValue::aadTenant = DEFAULT_AAD_TENANT;
 
 // Logging Configuration Options
-const LogLevel::Type Configuration::DefaultValue::logLevel =
-    LogLevel::Type::OFF;
+const LogLevel::Type Configuration::DefaultValue::logLevel = DEFAULT_LOG_LEVEL;
 const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
 
 std::string Configuration::ToConnectString() const {

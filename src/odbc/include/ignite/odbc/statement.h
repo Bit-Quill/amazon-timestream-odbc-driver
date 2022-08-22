@@ -39,7 +39,7 @@ class Connection;
  * SQL-statement abstraction. Holds SQL query user buffers data and
  * call result.
  */
-class Statement : public diagnostic::DiagnosableAdapter {
+class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   friend class Connection;
 
  public:

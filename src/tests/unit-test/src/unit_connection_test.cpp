@@ -21,6 +21,7 @@
 #include <odbc_unit_test_suite.h>
 #include <ignite/odbc/auth_type.h>
 #include "mock/mock_timestream_service.h"
+#include "ignite/odbc/log.h"
 
 using ignite::odbc::AuthType;
 using ignite::odbc::OdbcUnitTestSuite;
@@ -28,6 +29,72 @@ using ignite::odbc::MockConnection;
 using ignite::odbc::MockTimestreamService;
 
 using namespace boost::unit_test;
+
+#ifdef _WIN32
+// For Windows only, add static variables definition here in case of 
+// "unresolved symbol" error when linking.
+using namespace ignite::odbc::config;
+using namespace ignite::odbc;
+
+// mirrored from src/odbc/src/config/configuration.cpp
+// Connection (Basic Authentication) Settings
+const std::string Configuration::DefaultValue::dsn = DEFAULT_DSN;
+const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
+const std::string Configuration::DefaultValue::accessKeyId =
+    DEFAULT_ACCESS_KEY_ID;
+const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
+const std::string Configuration::DefaultValue::accessKeyIdFromProfile =
+    DEFAULT_ACCESS_KEY_ID_FROM_PROFILE;
+const std::string Configuration::DefaultValue::secretKeyFromProfile =
+    DEFAULT_SECRET_KEY_FROM_PROFILE;
+bool Configuration::DefaultValue::profileIsParsed = DEFAULT_PROFILE_IS_PARSED;
+const std::string Configuration::DefaultValue::sessionToken =
+    DEFAULT_SESSION_TOKEN;
+
+// Credential Providers Options
+const std::string Configuration::DefaultValue::profileName =
+    DEFAULT_PROFILE_NAME;
+const std::string Configuration::DefaultValue::cusCredFile =
+    DEFAULT_CUS_CRED_FILE;
+
+// Connection Options
+const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
+const int32_t Configuration::DefaultValue::connectionTimeout =
+    DEFAULT_CONNECTION_TIMEOUT;
+const int32_t Configuration::DefaultValue::maxRetryCount =
+    DEFAULT_MAX_RETRY_COUNT;
+const int32_t Configuration::DefaultValue::maxConnections =
+    DEFAULT_MAX_CONNECTIONS;
+
+// Endpoint Options
+const std::string Configuration::DefaultValue::endpoint = DEFAULT_ENDPOINT;
+const std::string Configuration::DefaultValue::region = DEFAULT_REGION;
+
+// Advance Authentication Settings
+const AuthType::Type Configuration::DefaultValue::authType = DEFAULT_AUTH_TYPE;
+const std::string Configuration::DefaultValue::idPHost = DEFAULT_IDP_HOST;
+const std::string Configuration::DefaultValue::idPUserName =
+    DEFAULT_IDP_USER_NAME;
+const std::string Configuration::DefaultValue::idPPassword =
+    DEFAULT_IDP_PASSWORD;
+const std::string Configuration::DefaultValue::idPArn = DEFAULT_IDP_ARN;
+const std::string Configuration::DefaultValue::oktaAppId = DEFAULT_OKTA_APP_ID;
+const std::string Configuration::DefaultValue::roleArn = DEFAULT_ROLE_ARN;
+const std::string Configuration::DefaultValue::aadAppId = DEFAULT_AAD_APP_ID;
+const std::string Configuration::DefaultValue::aadClientSecret =
+    DEFAULT_ACCESS_CLIENT_SECRET;
+const std::string Configuration::DefaultValue::aadTenant = DEFAULT_AAD_TENANT;
+
+// Logging Configuration Options
+const LogLevel::Type Configuration::DefaultValue::logLevel = DEFAULT_LOG_LEVEL;
+const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
+
+// mirrored from src/odbc/src/log.cpp
+std::shared_ptr< Logger > Logger::logger_;
+
+// mirrored from src/odbc/src/type_traits.cpp
+const std::string type_traits::SqlTypeName::VARCHAR("VARCHAR");
+#endif
 
 /**
  * Test setup fixture.

@@ -18,11 +18,12 @@
 #define _IGNITE_ODBC_AUTH_TYPE
 
 #include <string>
+#include <ignite/odbc/common/common.h>
 
 namespace ignite {
 namespace odbc {
 /** Auth Type enum. */
-struct AuthType {
+struct IGNITE_IMPORT_EXPORT AuthType {
   enum class Type { AWS_PROFILE, IAM, AAD, OKTA };
 
   /**

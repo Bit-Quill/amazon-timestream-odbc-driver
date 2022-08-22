@@ -46,7 +46,7 @@ jobs:
         
     - name: Get latest version of CMake
       uses: lukka/get-cmake@latest
-    
+
     - name: run-cppcheck
       run: |
         sudo apt install cppcheck
@@ -164,10 +164,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y java-17-amazon-corretto-jdk
         pip install gcovr
-        
+
     - name: Get latest version of CMake
       uses: lukka/get-cmake@latest
-    
+
     - name: run-cppcheck
       run: |
         sudo apt install cppcheck
@@ -223,7 +223,7 @@ jobs:
         chmod +r -R ${{env.ODBC_LIB_PATH}}
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
-    
+
     # run unit tests
     - name: run-unit-tests
       id: rununittests
@@ -254,7 +254,7 @@ jobs:
       id: runodbctests
       run: |
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
-        gcovr -r .. --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ -e "${{env.VCPKG_ROOT}}" --cobertura --output coverage.cobertura.xml
+        gcovr --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ -e "${{env.VCPKG_ROOT}}" --cobertura --output coverage.cobertura.xml
 
     - name: Code Coverage Summary Report
       uses: irongut/CodeCoverageSummary@v1.2.0
@@ -302,6 +302,7 @@ jobs:
       with:
         name: code-coverage-Linux
         path: cmake-build64/ccov/all-merged
+
   build-linux-docker-image:
     runs-on: ubuntu-20.04
     steps:
