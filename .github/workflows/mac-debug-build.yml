@@ -18,7 +18,7 @@ env:
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
-  ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/ignite-odbc-install.ini"
+  ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
 
 jobs:
   build-mac-debug:
@@ -86,6 +86,7 @@ jobs:
       id: runtests
       run: |
         mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
+        export DYLD_LIBRARY_PATH=${{env.ODBC_LIB_PATH}}:$DYLD_LIBRARY_PATH
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
         gcovr -r .. --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
 
