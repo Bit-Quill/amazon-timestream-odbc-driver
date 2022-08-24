@@ -28,7 +28,7 @@ C/C++ usage and formatting.
 
     2. `TIMESTREAM_LOG_LEVEL`=`<log_level>`. The default is `off` level. (Choose from `debug`, `info`, `error`, `off`)
 
-    More details about logging in [`src\markdown\troubleshooting-guide.md`](src/markdown/troubleshooting-guide.md).
+    More details about logging in [`support\troubleshooting-guide.md`](../support/troubleshooting-guide.md).
 
 - AWS Logs
 
@@ -47,7 +47,7 @@ C/C++ usage and formatting.
    5. [WiX Toolset v3 Schemas for Visual Studio](https://wixtoolset.org/releases/)
       If encountering "wix toolset requires .net 3.5.1 to be enabled", follow the steps below.
       1. Open Settings -> Apps -> Optional Features -> Under "Related Settings", click on "More Windows features", and select ".Net Framework 3.5".
-      ![Alt text](src/markdown/images/dotNet_screenshot.PNG "Example")
+      ![Alt text](../images/dotNet_screenshot.PNG "Example")
    6. [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset)
 2. OpenSSL (full)
    1. Installed via [VCPKG](https://vcpkg.io/en/getting-started.html) (`.\vcpkg install openssl`).
@@ -70,8 +70,7 @@ C/C++ usage and formatting.
    ```
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ``` 
-   Ensure that backslashes are used in your command. 
-9. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
+   Ensure that backslashes are used in your command.
 
 ## MacOS
 
@@ -100,7 +99,6 @@ C/C++ usage and formatting.
 4. Run the following command to register the ODBC driver. 
    `./scripts/register_driver_unix.sh`.
 5. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
-6. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
 
 ## Linux
 
@@ -118,8 +116,7 @@ C/C++ usage and formatting.
    4. You are ready to run the tests.
    E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
    E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
-3. More details in [`src\DEVNOTES.txt`](src/DEVNOTES.txt).
-
+   
 #### Known issues
 
 If a windows host machine is used, it is possible to have an issue with end of line character in the *.sh files. 
