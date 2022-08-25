@@ -811,9 +811,9 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     std::string& connectionString, const std::string& keyId, const std::string& secret,
     const std::string& miscOptions) const {
   std::string accessKeyId = 
-      common::GetEnv("AWS_ACCESS_KEY_ID", "***REMOVED***");
+      common::GetEnv("AWS_ACCESS_KEY_ID");
   std::string secretKey = common::GetEnv(
-      "AWS_SECRET_ACCESS_KEY", "***REMOVED***");
+      "AWS_SECRET_ACCESS_KEY");
   std::string sessionToken = common::GetEnv("AWS_SESSION_TOKEN", "");
   std::string region = common::GetEnv(
       "AWS_REGION", "us-west-2");

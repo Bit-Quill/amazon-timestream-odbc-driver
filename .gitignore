@@ -71,3 +71,5 @@ test_output.html
 leaks_itodbc_results
 src/out
 tools/ODBCcli/out
+src/tests/input/credentials
+src/tests/input/incomplete_credentials

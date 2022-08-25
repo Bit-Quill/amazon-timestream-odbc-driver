@@ -59,7 +59,7 @@ C/C++ usage and formatting.
    1. Ensure to set `JAVA_HOME`. (e.g. C:\Program Files\Java\jdk-17.0.2)
    2. Ensure to save Java `\bin` and `\server` directories to the User `PATH` variable. 
    Example: C:\Program Files\Java\jdk1.8.0_321\jre\bin\server
-5. Boost Test Framework and Mondodb Driver
+5. Boost Test Framework
    1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query]:x64-windows" --recurse`
 6. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
 7. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
@@ -71,6 +71,8 @@ C/C++ usage and formatting.
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ``` 
    Ensure that backslashes are used in your command.
+9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src\tests\input\credentials` and `src\tests\input\incomplete_credentials`).
+10. Now you're ready to run tests (e.g., `.\build\odbc\bin\timestream-odbc-integration-tests.exe` and `.\build\odbc\bin\timestream-odbc-unit-tests.exe`).
 
 ## MacOS
 
@@ -98,22 +100,31 @@ C/C++ usage and formatting.
 3. Set the environment variable `ODBCINSTINI`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib/timestream-odbc-install.ini`.
 4. Run the following command to register the ODBC driver. 
    `./scripts/register_driver_unix.sh`.
-5. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
+6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src/tests/input/credentials` and `src/tests/input/incomplete_credentials`).
+7. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
 
 ## Linux
 
 ### Using docker
 
+#### Pre-requisites 
+
+1. Build docker image
+   1. Navigate Dockerfile folder `cd docker/linux-environment`
+   2. Build the docker image E.g.: `docker build -t timestream-dev-linux .`
+2. Ensure DockerHub application is opened. 
+
 #### Using the dev image
 
-1. Run docker container with interactive mode.
+1. Run docker container with interactive mode. E.g.: `docker run --add-host host.docker.internal:host-gateway -v "<path-to-repo>:/timestream-odbc" -it timestream-dev-linux`
 2. Next steps all are from inside the container
    1. Set environment variables for testing and double-check if all dev environmnet variables are set by running `scripts/env_variables_check.sh`. More info [Environment Variables for Testing Accounts/Secrets ](#environment-variables-for-testing-accounts/secrets)
       Note. Since the environment variables JAVA_HOME and ODBC_LIB_PATH are already set in the container, it is not recommended to change those.
    2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64.sh` or `./build_linux_release64_deb.sh`
    3. Run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
-   4. You are ready to run the tests.
+   4. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src/tests/input/credentials` and `src/tests/input/incomplete_credentials`).
+   5. You are ready to run the tests.
    E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
    E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
    
@@ -167,7 +178,8 @@ There are two ways to fix the issue.
       `./scripts/register_driver_unix.sh`
    5. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
    6. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   7. You are ready to run the tests.
+   7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src/tests/input/credentials` and `src/tests/input/incomplete_credentials`).
+   8. You are ready to run the tests.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 ## Code Coverage

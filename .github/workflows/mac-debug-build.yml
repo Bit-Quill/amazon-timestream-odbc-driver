@@ -16,6 +16,8 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}  
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
   ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
@@ -59,6 +61,15 @@ jobs:
       run: |
         echo "/Library/Developer/CommandLineTools/usr/bin" >> $GITHUB_PATH
         echo "/usr/local/bin/" >> $GITHUB_PATH
+
+    - name: create-credentials-files
+      run: |
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
 
     - name: configure-and-build-driver
       run: |

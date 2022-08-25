@@ -16,6 +16,8 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}  
   VCPKG_ROOT: "${{github.workspace}}/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
@@ -76,7 +78,16 @@ jobs:
       # with:         
         # If there are any comments, fail the check
     # - if: steps.review.outputs.total_comments > 0
-    #   run: exit 1        
+    #   run: exit 1    
+
+    - name: create-credentials-files
+      run: |
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
 
     - name: configure-and-build-driver
       run: |
@@ -191,7 +202,16 @@ jobs:
       # with:         
         # If there are any comments, fail the check
     # - if: steps.review.outputs.total_comments > 0
-    #   run: exit 1        
+    #   run: exit 1      
+
+    - name: create-credentials-files
+      run: |
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
 
     - name: configure-and-build-driver
       run: |

@@ -3,26 +3,35 @@ if [[ -z "${JAVA_HOME}" ]]; then
   echo "JAVA_HOME environment variable is not set"
   CHECK=0
 else
-  echo $JAVA_HOME
+  echo "JAVA_HOME=${JAVA_HOME}"
 fi
-if [[ -z "${DOCUMENTDB_HOME}" ]]; then
-  echo "DOCUMENTDB_HOME environment variable is not set"
+
+if [[ -z "${AWS_ACCESS_KEY_ID}" ]]; then
+  echo "AWS_ACCESS_KEY_ID environment variable is not set"
   CHECK=0
 else
-  echo $DOCUMENTDB_HOME
+  echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
 fi
+
+if [[ -z "${AWS_SECRET_ACCESS_KEY}" ]]; then
+  echo "AWS_SECRET_ACCESS_KEY environment variable is not set"
+  CHECK=0
+else
+  echo "AWS_SECRET_ACCESS_KEY=***"
+fi
+
 if [[ -z "${ODBC_LIB_PATH}" ]]; then
   echo "ODBC_LIB_PATH environment variable is not set"
   CHECK=0
 else
-  echo $ODBC_LIB_PATH
+  echo "ODBC_LIB_PATH=${ODBC_LIB_PATH}"
 fi
 
 if [[ -z "${REPOSITORY_ROOT}" ]]; then
   echo "REPOSITORY_ROOT environment variable is not set"
   CHECK=0
 else
-  echo "REPOSITORY_ROOT=${ROOT_DIRECTORY}"
+  echo "REPOSITORY_ROOT=${REPOSITORY_ROOT}"
 fi
 
 if [[ "${CHECK}" -eq "0" ]]; then

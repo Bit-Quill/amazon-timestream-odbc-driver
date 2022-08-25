@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckStrInfo(SQL_SEARCH_PATTERN_ESCAPE, "\\");
   CheckStrInfo(SQL_SERVER_NAME, "Amazon Timestream");
   std::string expectedUserName =
-      common::GetEnv("AWS_ACCESS_KEY_ID", "***REMOVED***");
+      common::GetEnv("AWS_ACCESS_KEY_ID");
   CheckStrInfo(SQL_USER_NAME, expectedUserName);
 
   CheckIntInfo(SQL_ASYNC_MODE, SQL_AM_NONE);

@@ -20,6 +20,8 @@ env:
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin/Release"
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
 
@@ -168,6 +170,15 @@ jobs:
     - name: Install dependencies Windows
       run: vcpkg integrate install; vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query]:x64-windows" --recurse
 
+    - name: create-credentials-files
+      run: |
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
+
     - name: configure-and-build-driver
       run: |
         .\build_win_release64.ps1
@@ -227,6 +238,15 @@ jobs:
   
     - name: Install dependencies Windows
       run: vcpkg integrate install; vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core, sts,timestream-query]:x64-windows" --recurse
+
+    - name: create-credentials-files
+      run: |
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
+
+        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
+        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
 
     - name: configure-and-build-driver
       run: |
