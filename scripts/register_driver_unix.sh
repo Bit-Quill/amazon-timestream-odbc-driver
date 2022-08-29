@@ -35,4 +35,6 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   export ODBCINSTINI="$ODBC_LIB_PATH/timestream-odbc-install.ini"
   echo "Exported ODBCINSTINI=$ODBCINSTINI"
+  export DYLD_LIBRARY_PATH=$ODBC_LIB_PATH:$DYLD_LIBRARY_PATH
+  echo "Exported DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
 fi

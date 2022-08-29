@@ -71,7 +71,7 @@ C/C++ usage and formatting.
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ``` 
    Ensure that backslashes are used in your command.
-9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src\tests\input\credentials` and `src\tests\input\incomplete_credentials`).
+9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
 10. Now you're ready to run tests (e.g., `.\build\odbc\bin\timestream-odbc-integration-tests.exe` and `.\build\odbc\bin\timestream-odbc-unit-tests.exe`).
 
 ## MacOS
@@ -100,7 +100,7 @@ C/C++ usage and formatting.
 3. Set the environment variable `ODBCINSTINI`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib/timestream-odbc-install.ini`.
 4. Run the following command to register the ODBC driver. 
    `./scripts/register_driver_unix.sh`.
-6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src/tests/input/credentials` and `src/tests/input/incomplete_credentials`).
+6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
 7. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
 
 ## Linux
@@ -123,7 +123,7 @@ C/C++ usage and formatting.
    2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64.sh` or `./build_linux_release64_deb.sh`
    3. Run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
-   4. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src/tests/input/credentials` and `src/tests/input/incomplete_credentials`).
+   4. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
    5. You are ready to run the tests.
    E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
    E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
@@ -178,7 +178,7 @@ There are two ways to fix the issue.
       `./scripts/register_driver_unix.sh`
    5. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
    6. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials in files (`src/tests/input/credentials` and `src/tests/input/incomplete_credentials`).
+   7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file`src/tests/input/credentials`.
    8. You are ready to run the tests.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.

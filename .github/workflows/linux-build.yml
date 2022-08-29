@@ -86,9 +86,6 @@ jobs:
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
 
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-
     - name: configure-and-build-driver
       run: |
         ./build_linux_release64_deb.sh
@@ -209,9 +206,6 @@ jobs:
         echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
-
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
 
     - name: configure-and-build-driver
       run: |

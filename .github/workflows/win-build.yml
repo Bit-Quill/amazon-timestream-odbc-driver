@@ -85,9 +85,6 @@ jobs:
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
 
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-
     - name: configure-and-build-driver
       run: |
         .\build_win_release32.ps1
@@ -98,22 +95,44 @@ jobs:
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll
 
-    - name: run-tests
-      id: runtests
+    - name: run-unit-tests
+      id: rununittests
       run: |
         mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
-        ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
+        ${{env.ODBC_BIN_PATH}}/timestream-odbc-unit-tests.exe
 
-    - name: upload-test-report
+    - name: upload-unit-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
         check_name: "Windows x32 Build Unit Test Results Check"
         comment_title: "Windows 2022 (x32) Build Unit Test Results"
+        files: ./odbc_unit_test_result.xml
+
+    - name: upload-unit-test-file
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-unit-test-results
+        path: |
+          ./odbc_unit_test_result.xml
+          ./build/odbc/logs/timestream_odbc_*.log
+
+    - name: run-integration-tests
+      id: runintegrationtests
+      run: |
+        ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
+
+    - name: upload-integration-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      with:
+        check_name: "Windows x32 Build Integration Test Results Check"
+        comment_title: "Windows 2022 (x32) Build Integration Test Results"
         files: ./odbc_test_result.xml
 
-    - name: upload-test-file
-      if: always() && (steps.runtests.outcome == 'failure')
+    - name: upload-integration-test-file
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: odbc-test-results
@@ -207,9 +226,6 @@ jobs:
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
 
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-
     - name: configure-and-build-driver
       run: |
         .\build_win_release64.ps1
@@ -234,19 +250,43 @@ jobs:
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll
 
-    - name: run-tests
+    - name: run-unit-tests
+      id: rununittests
       run: |
-        ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
+        mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
+        ${{env.ODBC_BIN_PATH}}/timestream-odbc-unit-tests.exe
 
-    - name: upload-test-report
+    - name: upload-unit-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
         check_name: "Windows 2022 (x64) Build Unit Test Results Check"
         comment_title: "Windows 2022 (x64) Build Unit Test Results"
+        files: ./odbc_unit_test_result.xml
+
+    - name: upload-unit-test-file
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-unit-test-results
+        path: |
+          ./odbc_unit_test_result.xml
+          ./build/odbc/logs/timestream_odbc_*.log
+
+    - name: run-integration-tests
+      id: runintegrationtests
+      run: |
+        ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
+
+    - name: upload-integration-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      with:
+        check_name: "Windows 2022 (x64) Build Integration Test Results Check"
+        comment_title: "Windows 2022 (x64) Build Integration Test Results"
         files: ./odbc_test_result.xml
 
-    - name: upload-test-file
+    - name: upload-integration-test-file
       if: always()
       uses: actions/upload-artifact@v3
       with:
@@ -325,9 +365,6 @@ jobs:
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
 
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials      
-
     - name: configure-and-build-driver
       run: |
         .\build_win_debug64.ps1
@@ -340,7 +377,10 @@ jobs:
 
     - name: run-tests
       run: |
-        opencppcoverage --sources src --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-integration-tests.exe
+        # run code coverage against unit test first
+        opencppcoverage --sources src --export_type binary:unit.test.cov --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-unit-tests.exe
+        # run code coverage against integration test and merge the result with the unit test one
+        opencppcoverage --sources src --input_coverage unit.test.cov --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-integration-tests.exe
 
     - name: upload-coverage
       if: always()
@@ -372,7 +412,7 @@ jobs:
 
     - name: Add Header for Code Coverage Summary Report
       run: |
-        echo "## Windows 2022 (x32) Debug Build  Unit Test Results Check" > coverage-cobertura.md
+        echo "## Windows 2022 (x64) Debug Build Code Coverage Test Results Check" > coverage-cobertura.md
         cat code-coverage-results.md >> coverage-cobertura.md
     
     - name: Add Coverage PR Comment

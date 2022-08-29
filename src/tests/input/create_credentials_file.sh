@@ -27,6 +27,3 @@ fi
 echo "[default]" > $REPO_ROOT/src/tests/input/credentials
 echo "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT/src/tests/input/credentials
 echo "aws_secret_access_key = $ENV_SECRET_KEY" >> $REPO_ROOT/src/tests/input/credentials
-
-echo "[default]" > $REPO_ROOT/src/tests/input/incomplete_credentials
-echo "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT/src/tests/input/incomplete_credentials

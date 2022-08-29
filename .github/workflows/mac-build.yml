@@ -61,9 +61,6 @@ jobs:
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
 
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials        
-
     - name: configure-and-build-driver
       run: |
         ./build_mac_release64.sh
@@ -79,24 +76,50 @@ jobs:
       run: |
         chmod +x scripts/register_driver_unix.sh
         ./scripts/register_driver_unix.sh
-    - name: run-tests
-      id: runtests
+
+    - name: run-unit-tests
+      id: rununittests
       run: |
         mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
-        export DYLD_LIBRARY_PATH=${{env.ODBC_LIB_PATH}}:$DYLD_LIBRARY_PATH
-        ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
-    - name: upload-test-report
+        export DYLD_LIBRARY_PATH=${{env.ODBC_LIB_PATH}}:$DYLD_LIBRARY_PATH     
+        ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
+
+    - name: upload-unit-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
         check_name: "MacOS Big Sur 11 Build Unit Test Results Check"
         comment_title: "MacOS Big Sur 11 Build Unit Test Results"
-        files: ./odbc_test_result.xml
-    - name: upload-test-file
-      if: always() && (steps.runtests.outcome == 'failure')
+        files: ./odbc_unit_test_result.xml
+
+    - name: upload-unit-test-file
+      if: always() && (steps.rununittests.outcome == 'failure')
       uses: actions/upload-artifact@v3
       with:
-        name: odbc-test-results
+        name: odbc-unit-test-results
+        path: |
+          ./odbc_unit_test_result.xml
+          ./build/odbc/logs/timestream_odbc_*.log
+
+    - name: run-integration-tests
+      id: runintegrationtests
+      run: |
+        export DYLD_LIBRARY_PATH=${{env.ODBC_LIB_PATH}}:$DYLD_LIBRARY_PATH     
+        ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
+
+    - name: upload-integration-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      with:
+        check_name: "MacOS Big Sur 11 Build Integration Test Results Check"
+        comment_title: "MacOS Big Sur 11 Build Integration Test Results"
+        files: ./odbc_test_result.xml
+
+    - name: upload-integration-test-file
+      if: always() && (steps.runintegrationtests.outcome == 'failure')
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-integration-test-results
         path: |
           ./odbc_test_result.xml
           ./build/odbc/logs/timestream_odbc_*.log
@@ -151,3 +174,4 @@ jobs:
     #   with:
     #     name: mac-test-results
     #     path: test-output
+

@@ -161,7 +161,9 @@ BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
 }
 
-BOOST_AUTO_TEST_CASE(TestParsingIncompleteCredentials) {
+// disabled as it will be modified by AT-1079
+// https://bitquill.atlassian.net/browse/AT-1079
+BOOST_AUTO_TEST_CASE(TestParsingIncompleteCredentials, *disabled()) {
   ignite::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);

@@ -26,6 +26,3 @@ If ($MISSING_VARS -eq 1) {
 Write-Output "[default]" > $REPO_ROOT\src\tests\input\credentials
 Write-Output "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT\src\tests\input\credentials
 Write-Output "aws_secret_access_key = $ENV_SECRET_KEY" >> $REPO_ROOT\src\tests\input\credentials
-
-Write-Output "[default]" > $REPO_ROOT\src\tests\input\incomplete_credentials
-Write-Output "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT\src\tests\input\incomplete_credentials

@@ -68,9 +68,6 @@ jobs:
         echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
         echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/credentials
 
-        echo "[default]" > ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{env.REPOSITORY_ROOT}}/src/tests/input/incomplete_credentials
-
     - name: configure-and-build-driver
       run: |
         ./build_mac_debug64.sh
@@ -93,10 +90,24 @@ jobs:
         RUN_CODE_COVERAGE: ${{ true }}
         BOOST_TEST_CATCH_SYSTEM_ERRORS: no
 
-    - name: run-tests
-      id: runtests
+    - name: run-unit-tests
+      id: rununittests
       run: |
         mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
+        export DYLD_LIBRARY_PATH=${{env.ODBC_LIB_PATH}}:$DYLD_LIBRARY_PATH
+        ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
+
+    - name: upload-unit-test-report
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      with:
+        check_name: "MacOS Big Sur 11 Debug Build Unit Test Results Check"
+        comment_title: "MacOS Big Sur 11 Debug Build Unit Test Results"
+        files: ./odbc_unit_test_result.xml
+
+    - name: run-integration-tests
+      id: runintegrationtests
+      run: |
         export DYLD_LIBRARY_PATH=${{env.ODBC_LIB_PATH}}:$DYLD_LIBRARY_PATH
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
         gcovr -r .. --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
@@ -108,12 +119,12 @@ jobs:
         name: code-coverage
         path: coverage.cobertura.xml
   
-    - name: upload-test-report
+    - name: upload-integration-test-report
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
-        check_name: "MacOS Big Sur 11 Debug Build Unit Test Results Check"
-        comment_title: "MacOS Big Sur 11 Debug Build Unit Test Results"
+        check_name: "MacOS Big Sur 11 Debug Build Integration Test Results Check"
+        comment_title: "MacOS Big Sur 11 Debug Build Integration Test Results"
         files: ./odbc_test_result.xml
 
   comment_PR_mac_coverage:
@@ -138,7 +149,7 @@ jobs:
     
     - name: Add Header for Code Coverage Summary Report
       run: |
-        echo "## MacOS Big Sur 11 Debug Build Code Coverage Result" > coverage-cobertura.md
+        echo "## MacOS Big Sur 11 Debug Build Code Coverage Unit and Integration Test Result" > coverage-cobertura.md
         cat code-coverage-results.md >> coverage-cobertura.md
     
     - name: Add Coverage PR Comment
@@ -155,6 +166,7 @@ jobs:
       with:
         name: odbc-test-results
         path: |
+          ./odbc_unit_test_result.xml
           ./odbc_test_result.xml
           ./build/odbc/logs/timestream_odbc_*.log
 
