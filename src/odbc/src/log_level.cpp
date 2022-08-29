@@ -74,7 +74,7 @@ std::wstring LogLevel::ToCBString(Type val) {
       return L"Off";
 
     default:
-      return L"Off";
+      return L"Error";
   }
 }
 }  // namespace odbc

@@ -91,7 +91,7 @@
 
 | Option | Description | Default |
 |--------|-------------|---------------|
-| `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3}<br /> meaning<br />{OFF, ERROR, INFO, DEBUG} | `0` (means OFF)
+| `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3}<br /> meaning<br />{OFF, ERROR, INFO, DEBUG} | `1` (means ERROR)
 | `LogOutput` | Folder to store the log file | Windows: `%USERPROFILE%`, or if not available, `%HOMEDRIVE%%HOMEPATH%` <br /> macOS/Linux: `getpwuid()`, or if not available, `$HOME` 
 
 ## Examples

@@ -818,7 +818,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
   std::string region = common::GetEnv(
       "AWS_REGION", "us-west-2");
   std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
-  std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "");
+  std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
 
   if (!keyId.empty()) {
     accessKeyId = keyId;
@@ -848,7 +848,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     const std::string& miscOptions) const {
   std::string region = common::GetEnv("AWS_REGION", "us-west-2");
   std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
-  std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "");
+  std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
 
   connectionString =
             "DRIVER={Amazon Timestream ODBC Driver};"

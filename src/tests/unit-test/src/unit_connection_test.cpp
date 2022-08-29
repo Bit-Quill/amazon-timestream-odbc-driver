@@ -130,7 +130,7 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
     using ignite::odbc::LogLevel;
 
     std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
-    std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "");
+    std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
 
     LogLevel::Type logLevel = LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
     config.SetLogLevel(logLevel);

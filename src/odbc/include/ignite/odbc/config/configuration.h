@@ -59,7 +59,7 @@
 #define DEFAULT_AAD_APP_ID ""
 #define DEFAULT_ACCESS_CLIENT_SECRET ""
 #define DEFAULT_AAD_TENANT ""
-#define DEFAULT_LOG_LEVEL LogLevel::Type::OFF
+#define DEFAULT_LOG_LEVEL LogLevel::Type::ERROR_LEVEL
 
 namespace ignite {
 namespace odbc {
