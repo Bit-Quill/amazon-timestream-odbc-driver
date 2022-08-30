@@ -182,6 +182,73 @@ void DsnConfigurationWindow::OnCreate() {
   okButton->SetEnabled(nameEdit->HasText());
 }
 
+void DsnConfigurationWindow::TestConnection() const {
+  // Use a temporary configuration to test the connection.
+  // Changes will not be committed until OK button is pressed.
+  config::Configuration tempConfig;
+  RetrieveParameters(tempConfig);
+  std::vector< SQLWCHAR > dsnVec =
+      utility::ToWCHARVector(tempConfig.ToConnectString());
+
+  // Allocate an environment handle
+  SQLHENV env = {};
+  SQLRETURN ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+  if (!SQL_SUCCEEDED(ret)) {
+    MessageBox(handle, L"Unable to allocate Environment handle.", L"Error!",
+               MB_ICONEXCLAMATION | MB_OK);
+    SQLFreeHandle(SQL_HANDLE_ENV, env);
+    return;
+  }
+
+  // We want ODBC 3 support
+  ret = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION,
+                      reinterpret_cast< void* >(SQL_OV_ODBC3), 0);
+  if (!SQL_SUCCEEDED(ret)) {
+    MessageBox(handle, L"Unable to set ODBC version.", L"Error!",
+               MB_ICONEXCLAMATION | MB_OK);
+    SQLFreeHandle(SQL_HANDLE_ENV, env);
+    return;
+  }
+
+  // Allocate a connection handle
+  SQLHDBC dbc = {};
+  ret = SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
+  if (!SQL_SUCCEEDED(ret)) {
+    MessageBox(handle, L"Unable to allocate Connection handle.", L"Error!",
+               MB_ICONEXCLAMATION | MB_OK);
+    SQLFreeHandle(SQL_HANDLE_ENV, env);
+    return;
+  }
+
+  // Test the connection.
+  ret = SQLDriverConnect(dbc, nullptr, dsnVec.data(), dsnVec.size(), nullptr, 0,
+                         nullptr, SQL_DRIVER_COMPLETE);
+  if (!SQL_SUCCEEDED(ret)) {
+    SQLWCHAR sqlState[7];
+    SQLINTEGER nativeCode;
+    SQLWCHAR errMessage[1024];
+    SQLGetDiagRec(SQL_HANDLE_DBC, dbc, 1, sqlState, &nativeCode, errMessage,
+                  sizeof(errMessage) / sizeof(SQLWCHAR), nullptr);
+    std::stringstream buf;
+    buf << "Connection failed: '" << utility::SqlWcharToString(errMessage)
+        << "'";
+    std::vector< SQLWCHAR > errMessageVec = utility::ToWCHARVector(buf.str());
+    MessageBox(handle, errMessageVec.data(), L"Error!",
+               MB_ICONEXCLAMATION | MB_OK);
+    SQLFreeHandle(SQL_HANDLE_DBC, dbc);
+    SQLFreeHandle(SQL_HANDLE_ENV, env);
+    return;
+  }
+
+  MessageBox(handle, L"Connection succeeded.", L"Success!",
+             MB_ICONINFORMATION | MB_OK);
+
+  // Cleanup
+  SQLDisconnect(dbc);
+  SQLFreeHandle(SQL_HANDLE_DBC, dbc);
+  SQLFreeHandle(SQL_HANDLE_ENV, env);
+}
+
 std::wstring DsnConfigurationWindow::GetParsedDriverVersion(
     std::string driverVersion) {
   std::stringstream tmpStream;
@@ -747,21 +814,8 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_COMMAND: {
       switch (LOWORD(wParam)) {
         case ChildId::TEST_BUTTON: {
-          // TODO AT-1051 implement functionality of test button
-          // https://bitquill.atlassian.net/browse/AT-1051
+          TestConnection();
 
-          bool testSuccess = false;
-
-          // For now, only the connection failed window is shown when the test
-          // button is pressed
-          if (testSuccess)
-            MessageBox(NULL, L"Connection successful.", L"Connection Test",
-                       MB_ICONINFORMATION | MB_OK);
-          else
-            MessageBox(NULL, L"Failed to establish connection:",
-                       L"Connection Test",
-                       MB_ICONEXCLAMATION
-                           | MB_OK);  // TODO AT-1051 add reason of faliure.
           break;
         }
 

@@ -154,6 +154,11 @@ class DsnConfigurationWindow : public CustomWindow {
   IGNITE_NO_COPY_ASSIGNMENT(DsnConfigurationWindow)
 
   /**
+   * Tests the connection with the current values from the dialog.
+   */
+  void TestConnection() const;
+
+  /**
    * Show Advance Authentication UI group based on visible paramter
    *
    * @param visible Boolean indicating visibility
