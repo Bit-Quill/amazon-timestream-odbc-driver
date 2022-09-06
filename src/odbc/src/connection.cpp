@@ -40,6 +40,7 @@
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
 #include <aws/core/utils/logging/LogLevel.h>
+#include <aws/core/auth/AWSCredentialsProvider.h>
 
 using namespace ignite::odbc;
 using namespace ignite::odbc::common;
@@ -470,11 +471,7 @@ void UpdateConnectionRuntimeInfo(const config::Configuration& config,
   // TODO retrieve AAD IdP username
   // https://bitquill.atlassian.net/browse/AT-1056
 #ifdef SQL_USER_NAME
-  if (config.GetAuthType() == AuthType::Type::AWS_PROFILE) {
-    info.SetInfo(SQL_USER_NAME, config.GetAccessKeyIdFromProfile());
-  } else {
-    info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
-  }
+  info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
 #endif
 #ifdef SQL_DATA_SOURCE_NAME
   info.SetInfo(SQL_DATA_SOURCE_NAME, config.GetDsn());
@@ -487,8 +484,21 @@ bool Connection::TryRestoreConnection(
 
   if (cfg.GetAuthType()
       == AuthType::Type::AWS_PROFILE) {
-    credentials.SetAWSAccessKeyId(cfg.GetAccessKeyIdFromProfile());
-    credentials.SetAWSSecretKey(cfg.GetSecretKeyFromProfile());
+    Aws::Auth::ProfileConfigFileAWSCredentialsProvider credProvider(
+        cfg.GetProfileName().data());
+    credentials = credProvider.GetAWSCredentials();
+
+    if (credentials.IsExpiredOrEmpty()) {
+      std::stringstream ss;
+      ss << "No credentials in profile " << cfg.GetProfileName()
+         << " or they are expired";
+
+      LOG_ERROR_MSG(ss.str());
+      err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT, ss.str().data());
+
+      Close();
+      return false;
+    }
   } else if (cfg.GetAuthType() == AuthType::Type::IAM) {
     credentials.SetAWSAccessKeyId(cfg.GetAccessKeyId());
     credentials.SetAWSSecretKey(cfg.GetSecretKey());

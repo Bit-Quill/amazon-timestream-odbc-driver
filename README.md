@@ -24,7 +24,3 @@ File:
 
 File:
  * timestream.odbc.dll - Amazon Timestream ODBC driver.
-
-Development for all platforms:
-
- * To run tests, REPOSITORY_ROOT environment variable must be set to repository root directory.

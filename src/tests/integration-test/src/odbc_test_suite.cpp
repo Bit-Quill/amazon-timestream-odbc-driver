@@ -844,7 +844,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     std::string& connectionString,
-    AuthType::Type testAuthType, const std::string& credentialsFile,
+    AuthType::Type testAuthType, const std::string& profileName,
     const std::string& miscOptions) const {
   std::string region = common::GetEnv("AWS_REGION", "us-west-2");
   std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
@@ -854,7 +854,7 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
             "DRIVER={Amazon Timestream ODBC Driver};"
             "DSN=" + Configuration::DefaultValue::dsn + ";"
             "AUTH=" + AuthType::ToString(testAuthType) + ";"
-            "CUSTOM_CREDENTIALS_FILE=" + credentialsFile + ";"
+            "PROFILE_NAME=" + profileName + ";"
             "REGION=" + region + ";"
             "LOG_PATH=" + logPath + ";"
             "LOG_LEVEL=" + logLevel + ";";

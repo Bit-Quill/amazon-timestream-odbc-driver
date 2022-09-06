@@ -45,25 +45,14 @@ const std::string testDsn = "Test DSN";
 const std::string testAccessKeyId = "testAccessKeyId";
 const std::string testSecretKey = "testSecretKey";
 const std::string testSessionToken = "testSessionToken";
-const std::string testProfileName = "testProfileName";
-const std::string rootDir = ignite::odbc::common::GetEnv("REPOSITORY_ROOT");
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
-const std::string testCusCredFile =
-    rootDir + "/src/tests/input/test_credentials";
-#elif defined(_WIN32)
-const std::string testCusCredFile =
-    rootDir + "\\src\\tests\\input\\test_credentials";
-#else
-const std::string testCusCredFile = "/path/to/credentials";
-#endif
-
+const AuthType::Type testAuthType = AuthType::FromString("aws_profile");
+const std::string testProfileName = "test-profile";
 const int32_t testReqTimeoutMS = 300;
 const int32_t testConnectionTimeoutMS = 500;
 const int32_t testMaxRetryCount = 3;
 const int32_t testMaxConnections = 15;
 const std::string testEndpoint = "testEndpoint";
 const std::string testRegion = "testRegion";
-const AuthType::Type testAuthType = AuthType::FromString("aws_profile");
 const std::string testIdPHost = "testIdPHost";
 const std::string testIdPUserName = "testIdPUserName";
 const std::string testIdPPassword = "testIdPPassword";
@@ -182,10 +171,6 @@ void CheckConnectionConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetSecretKey(), testSecretKey);
   BOOST_CHECK_EQUAL(cfg.GetSessionToken(), testSessionToken);
   BOOST_CHECK_EQUAL(cfg.GetProfileName(), testProfileName);
-  BOOST_CHECK_EQUAL(cfg.GetCusCredFile(), testCusCredFile);
-  BOOST_CHECK_EQUAL(cfg.GetAccessKeyIdFromProfile(), testAccessKeyId);
-  BOOST_CHECK_EQUAL(cfg.GetSecretKeyFromProfile(), testSecretKey);
-  BOOST_CHECK_EQUAL(cfg.GetProfileIsParsed(), true);
   BOOST_CHECK_EQUAL(cfg.GetReqTimeout(), testReqTimeoutMS);
   BOOST_CHECK_EQUAL(cfg.GetConnectionTimeout(), testConnectionTimeoutMS);
   BOOST_CHECK_EQUAL(cfg.GetMaxRetryCount(), testMaxRetryCount);
@@ -214,9 +199,6 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << "access_key_id=" << testAccessKeyId << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "connection_timeout=" << testConnectionTimeoutMS << ';'
-              << ((testCusCredFile.find(' ') == std::string::npos)
-                      ? ("custom_credentials_file=" + testCusCredFile + ";")
-                      : ("custom_credentials_file={" + testCusCredFile + "};"))
               << "driver={" << testDriverName << "};"
               << "endpoint=" << testEndpoint << ';' << "idp_arn=" << testIdPArn
               << ';' << "idp_host=" << testIdPHost << ';'
@@ -227,7 +209,7 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << "max_connections=" << testMaxConnections << ';'
               << "max_retry_count=" << testMaxRetryCount << ';'
               << "okta_app_id=" << testOktaAppId << ';'
-              << "profile_name=" << testProfileName << ';'
+              << "profile_name=" << testProfileName << ";"
               << "region=" << testRegion << ';'
               << "request_timeout=" << testReqTimeoutMS << ';'
               << "role_arn=" << testRoleArn << ';'
@@ -254,8 +236,6 @@ void CheckDsnConfig(const Configuration& cfg) {
                     Configuration::DefaultValue::sessionToken);
   BOOST_CHECK_EQUAL(cfg.GetProfileName(),
                     Configuration::DefaultValue::profileName);
-  BOOST_CHECK_EQUAL(cfg.GetCusCredFile(),
-                    Configuration::DefaultValue::cusCredFile);
   BOOST_CHECK_EQUAL(cfg.GetReqTimeout(),
                     Configuration::DefaultValue::reqTimeout);
   BOOST_CHECK_EQUAL(cfg.GetConnectionTimeout(),
@@ -293,7 +273,6 @@ BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
   BOOST_CHECK_NE(testSecretKey, Configuration::DefaultValue::secretKey);
   BOOST_CHECK_NE(testSessionToken, Configuration::DefaultValue::sessionToken);
   BOOST_CHECK_NE(testProfileName, Configuration::DefaultValue::profileName);
-  BOOST_CHECK_NE(testCusCredFile, Configuration::DefaultValue::cusCredFile);
   BOOST_CHECK_NE(testReqTimeoutMS, Configuration::DefaultValue::reqTimeout);
   BOOST_CHECK_NE(testConnectionTimeoutMS,
                  Configuration::DefaultValue::connectionTimeout);
@@ -323,15 +302,15 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
               << "SECRET_KEY=" << testSecretKey << ';'
               << "SESSION_TOKEN=" << testSessionToken << ';'
               << "LOG_LEVEL=" << LogLevel::ToString(testLogLevel) << ';'
-              << "LOG_PATH=" << testLogPath << ';'
+              << "LOG_PATH=" << testLogPath << ';' 
+              << "AUTH=" << AuthType::ToString(testAuthType) << ';'
               << "PROFILE_NAME=" << testProfileName << ';'
-              << "CUSTOM_CREDENTIALS_FILE=" << testCusCredFile << ';'
               << "REQUEST_TIMEOUT=" << testReqTimeoutMS << ';'
               << "CONNECTION_TIMEOUT=" << testConnectionTimeoutMS << ';'
               << "MAX_RETRY_COUNT=" << testMaxRetryCount << ';'
               << "MAX_CONNECTIONS=" << testMaxConnections << ';'
-              << "ENDPOINT=" << testEndpoint << ';' << "REGION=" << testRegion
-              << ';' << "AUTH=" << AuthType::ToString(testAuthType) << ';'
+              << "ENDPOINT=" << testEndpoint << ';' 
+              << "REGION=" << testRegion << ';' 
               << "IDP_HOST=" << testIdPHost << ';'
               << "IDP_USER_NAME=" << testIdPUserName << ';'
               << "IDP_PASSWORD=" << testIdPPassword << ';'
@@ -360,14 +339,14 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
               << "session_token=" << testSessionToken << ';'
               << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
               << "log_path=" << testLogPath << ';'
+              << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "profile_name=" << testProfileName << ';'
-              << "custom_credentials_file=" << testCusCredFile << ';'
               << "request_timeout=" << testReqTimeoutMS << ';'
               << "connection_timeout=" << testConnectionTimeoutMS << ';'
               << "max_retry_count=" << testMaxRetryCount << ';'
               << "max_connections=" << testMaxConnections << ';'
-              << "endpoint=" << testEndpoint << ';' << "region=" << testRegion
-              << ';' << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "endpoint=" << testEndpoint << ';' 
+              << "region=" << testRegion << ';' 
               << "idp_host=" << testIdPHost << ';'
               << "idp_user_name=" << testIdPUserName << ';'
               << "idp_password=" << testIdPPassword << ';'
@@ -396,14 +375,14 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
               << "session_token=" << testSessionToken << ';'
               << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
               << "log_path=" << testLogPath << ';'
+              << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "profile_name=" << testProfileName << ';'
-              << "custom_credentials_file=" << testCusCredFile << ';'
               << "request_timeout=" << testReqTimeoutMS << ';'
               << "connection_timeout=" << testConnectionTimeoutMS << ';'
               << "max_retry_count=" << testMaxRetryCount << ';'
               << "max_connections=" << testMaxConnections << ';'
-              << "endpoint=" << testEndpoint << ';' << "region=" << testRegion
-              << ';' << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "endpoint=" << testEndpoint << ';' 
+              << "region=" << testRegion << ';' 
               << "idp_host=" << testIdPHost << ';'
               << "idp_user_name=" << testIdPUserName << ';'
               << "idp_password=" << testIdPPassword << ';'
@@ -434,14 +413,14 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
               << "Session_Token=" << testSessionToken << ';'
               << "Log_Level=" << LogLevel::ToString(testLogLevel) << ';'
               << "Log_Path=" << testLogPath << ';'
+              << "Auth=" << AuthType::ToString(testAuthType) << ';'
               << "Profile_Name=" << testProfileName << ';'
-              << "Custom_Credentials_File=" << testCusCredFile << ';'
               << "Request_Timeout=" << testReqTimeoutMS << ';'
               << "Connection_Timeout=" << testConnectionTimeoutMS << ';'
               << "Max_Retry_Count=" << testMaxRetryCount << ';'
               << "Max_Connections=" << testMaxConnections << ';'
-              << "Endpoint=" << testEndpoint << ';' << "Region=" << testRegion
-              << ';' << "Auth=" << AuthType::ToString(testAuthType) << ';'
+              << "Endpoint=" << testEndpoint << ';' 
+              << "Region=" << testRegion << ';' 
               << "IdP_Host=" << testIdPHost << ';'
               << "IdP_User_Name=" << testIdPUserName << ';'
               << "IdP_Password=" << testIdPPassword << ';'
@@ -470,15 +449,14 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
               << "SESSION_TOKEN=" << testSessionToken << ';'
               << "  LOG_LEVEL =" << LogLevel::ToString(testLogLevel) << "  ; "
               << "LOG_PATH=  " << testLogPath << " ;"
+              << " AUTH=" << AuthType::ToString(testAuthType) << ';'
               << "     PROFILE_NAME  = " << testProfileName << "    ; "
-              << "  CUSTOM_CREDENTIALS_FILE=   " << testCusCredFile << ";  "
               << "  REQUEST_TIMEOUT=" << testReqTimeoutMS << "  ;  "
               << "CONNECTION_TIMEOUT=  " << testConnectionTimeoutMS << ";  "
               << "MAX_RETRY_COUNT=  " << testMaxRetryCount << " ;"
               << "MAX_CONNECTIONS=  " << testMaxConnections << "  ; "
               << "ENDPOINT=" << testEndpoint << "  ; "
               << "REGION=" << testRegion << "  ; "
-              << "AUTH=" << AuthType::ToString(testAuthType) << " ;  "
               << "IDP_HOST=" << testIdPHost << ";  "
               << "IDP_USER_NAME=" << testIdPUserName << ";  "
               << "IDP_PASSWORD=" << testIdPPassword << "  ; "

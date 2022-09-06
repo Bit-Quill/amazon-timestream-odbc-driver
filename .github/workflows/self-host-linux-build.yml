@@ -1,4 +1,4 @@
-name: ODBC Driver for Linux
+name: ODBC Driver for Linux (Self-Hosted Runner)
 
 on:
   push:
@@ -25,8 +25,7 @@ env:
 
 jobs:
   build-linux64:
-    runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+    runs-on: [self-hosted, Linux, x64]
     steps:
     - uses: actions/checkout@v2
     - name: Get Java distribution
@@ -110,8 +109,8 @@ jobs:
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
-        check_name: "Ubuntu 20.04 Build Unit Test Results Check"
-        comment_title: "Ubuntu 20.04 Build Unit Test Results"
+        check_name: "Ubuntu 20.04 Build (Self-hosted Runner) Unit Test Results Check"
+        comment_title: "Ubuntu 20.04 Build (Self-hosted Runner) Unit Test Results"
         files: ./odbc_unit_test_result.xml
 
     - name: upload-odbc-unit-test-file
@@ -134,8 +133,8 @@ jobs:
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
-        check_name: "Ubuntu 20.04 Build Integration Test Results Check"
-        comment_title: "Ubuntu 20.04 Build Integration Test Results"
+        check_name: "Ubuntu 20.04 Build (Self-hosted Runner) Integration Test Results Check"
+        comment_title: "Ubuntu 20.04 Build (Self-hosted Runner) Integration Test Results"
         files: ./odbc_test_result.xml
 
     - name: upload-odbc-test-file
@@ -149,7 +148,7 @@ jobs:
           ./aws_sdk_*.log
 
   build-linux64-debug:
-    runs-on: ubuntu-20.04
+    runs-on: [self-hosted, Linux, x64]
     steps:
     - uses: actions/checkout@v2
     - name: Get Java distribution
@@ -234,8 +233,8 @@ jobs:
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
-        check_name: "Ubuntu 20.04 Debug Build Unit Test Results Check"
-        comment_title: "Ubuntu 20.04 Debug Build Unit Test Results"
+        check_name: "Ubuntu 20.04 Debug Build (Self-hosted Runner) Unit Test Results Check"
+        comment_title: "Ubuntu 20.04 Debug Build (Self-hosted Runner) Unit Test Results"
         files: ./odbc_unit_test_result.xml
 
     - name: upload-unit-test-file
@@ -266,7 +265,7 @@ jobs:
 
     - name: Add Header for Code Coverage Summary Report
       run: |
-        echo "## Ubuntu 20.04 Debug Build Test Results Check" > coverage-cobertura.md
+        echo "## Ubuntu 20.04 Debug Build (Self-hosted Runner) Test Results Check" > coverage-cobertura.md
         cat code-coverage-results.md >> coverage-cobertura.md
     
     - name: Add Coverage PR Comment
@@ -281,8 +280,8 @@ jobs:
       if: always()
       uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
       with:
-        check_name: "Ubuntu 20.04 Debug Build Integration Test Results Check"
-        comment_title: "Ubuntu 20.04 Debug Build Integration Test Results"
+        check_name: "Ubuntu 20.04 Debug Build (Self-hosted Runner) Integration Test Results Check"
+        comment_title: "Ubuntu 20.04 Debug Build (Self-hosted Runner) Integration Test Results"
         files: ./odbc_test_result.xml
 
     - name: upload-odbc-test-file
@@ -303,14 +302,13 @@ jobs:
         path: cmake-build64/ccov/all-merged
 
   build-linux-docker-image:
-    runs-on: ubuntu-20.04
+    runs-on: [self-hosted, Linux, x64]
     steps:
     - uses: actions/checkout@v2
     - name: build-image
       run: |
         cd docker/linux-environment
         docker build -t timestream-dev-linux . 
-
 
 # TODO Linux build enhacements 
 #https://bitquill.atlassian.net/browse/AD-688

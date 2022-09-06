@@ -59,8 +59,6 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
 
-const std::string rootDir = ignite::odbc::common::GetEnv("REPOSITORY_ROOT");
-
 // TestConnectionRestoreInternalSSHTunnel has precondition
 // `*precondition(if_integration())`
 BOOST_AUTO_TEST_CASE(TestConnection) {
@@ -70,85 +68,42 @@ BOOST_AUTO_TEST_CASE(TestConnection) {
   Disconnect();
 }
 
-// temporarily disable this test on Windows.
-// TODO enable this test as part of AT-1079
-// https://bitquill.atlassian.net/browse/AT-1079
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
 BOOST_AUTO_TEST_CASE(TestConnectionUsingProfile) {
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
-  const std::string profile = rootDir + "/src/tests/input/credentials";
-#elif defined(_WIN32)
-  const std::string profile = rootDir + "\\src\\tests\\input\\credentials";
-#else
-  const std::string profile = "";
-#endif
+  const std::string profile = "test-profile";
   std::string connectionString;
   CreateDsnConnectionStringForAWS(
       connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
   Connect(connectionString);
   Disconnect();
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
-  const std::string profile = rootDir + "/src/tests/input/nonexist_credentials";
-#elif defined(_WIN32)
-  const std::string profile =
-      rootDir + "\\src\\tests\\input\\nonexist_credentials";
-#else
-  const std::string profile = "";
-#endif
-  std::string connectionString;
-  CreateDsnConnectionStringForAWS(
-      connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
-
-  ExpectConnectionReject(connectionString,
-                         "08001: Failed to open file " + profile);
-
-  Disconnect();
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile) {
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
-  const std::string profile = rootDir + "/src/tests/input/empty_credentials";
-#elif defined(_WIN32)
-  const std::string profile =
-      rootDir + "\\src\\tests\\input\\empty_credentials";
-#else
-  const std::string profile = "";
-#endif
-
+  const std::string profile = "nonexist-profile";
   std::string connectionString;
   CreateDsnConnectionStringForAWS(
       connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
 
   ExpectConnectionReject(
       connectionString,
-      "01S00: Any of the following group is required to connect:\n"
-      "AUTH is \"IAM\" and "
-      "ACCESS_KEY_ID and SECRET_KEY or\n"
-      "AUTH is \"AWS_PROFILE\" and "
-      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret "
-      "access key");
+      "08001: Failed to establish connection to Timestream.\nNo credentials in "
+      "profile nonexist-profile or they are expired");
 
   Disconnect();
 }
 
-// temporarily disable this test on Windows.
-// TODO enable this test as part of AT-1079
-// https://bitquill.atlassian.net/browse/AT-1079
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
+// TODO modify & enable this test as part of AT-1048
+// https://bitquill.atlassian.net/browse/AT-1048
+BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile, *disabled()) {
+  const std::string profile = "";
+  std::string connectionString;
+  CreateDsnConnectionStringForAWS(
+      connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
+
+  Disconnect();
+}
+
 BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
-  const std::string profile =
-      rootDir + "/src/tests/input/incomplete_credentials";
-#elif defined(_WIN32)
-  const std::string profile =
-      rootDir + "\\src\\tests\\input\\incomplete_credentials";
-#else
-  const std::string profile = "";
-#endif
+  const std::string profile = "incomplete-profile";
 
   std::string connectionString;
   CreateDsnConnectionStringForAWS(
@@ -156,19 +111,14 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
 
   ExpectConnectionReject(
       connectionString,
-      "01S00: Any of the following group is required to connect:\n"
-      "AUTH is \"IAM\" and "
-      "ACCESS_KEY_ID and SECRET_KEY or\n"
-      "AUTH is \"AWS_PROFILE\" and "
-      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret "
-      "access key");
+      "08001: Failed to establish connection to Timestream.\nINVALID_ENDPOINT: "
+      "Failed to discover endpoint");
 
   Disconnect();
 }
-#endif
 
 // Disable this multi-thread test now as it causes s2n_init failure
-// on github Linux host. The root cause is unclear, use 
+// on github Linux host. The root cause is unclear, use
 // https://bitquill.atlassian.net/browse/AT-1087 for investigation
 BOOST_AUTO_TEST_CASE(TestConnectionConcurrency, *disabled()) {
   ConnectionTestSuiteFixture testConn[10];
@@ -214,14 +164,10 @@ BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
       "AUTH=IAM;"
       "ACCESS_KEY_ID=key;";
 
-  ExpectConnectionReject(
-      connectionString,
-      "01S00: Any of the following group is required to connect:\n"
-      "AUTH is \"IAM\" and "
-      "ACCESS_KEY_ID and SECRET_KEY or\n"
-      "AUTH is \"AWS_PROFILE\" and "
-      "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret "
-      "access key");
+  ExpectConnectionReject(connectionString,
+                         "01S00: The following is required to connect:\n"
+                         "AUTH is \"IAM\" and "
+                         "ACCESS_KEY_ID and SECRET_KEY");
 
   Disconnect();
 }

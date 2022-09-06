@@ -46,19 +46,12 @@ const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
 const std::string Configuration::DefaultValue::accessKeyId =
     DEFAULT_ACCESS_KEY_ID;
 const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
-const std::string Configuration::DefaultValue::accessKeyIdFromProfile =
-    DEFAULT_ACCESS_KEY_ID_FROM_PROFILE;
-const std::string Configuration::DefaultValue::secretKeyFromProfile =
-    DEFAULT_SECRET_KEY_FROM_PROFILE;
-bool Configuration::DefaultValue::profileIsParsed = DEFAULT_PROFILE_IS_PARSED;
 const std::string Configuration::DefaultValue::sessionToken =
     DEFAULT_SESSION_TOKEN;
 
 // Credential Providers Options
 const std::string Configuration::DefaultValue::profileName =
     DEFAULT_PROFILE_NAME;
-const std::string Configuration::DefaultValue::cusCredFile =
-    DEFAULT_CUS_CRED_FILE;
 
 // Connection Options
 const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
@@ -183,7 +176,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishAuthTypeNotSpecified) {
   dbc->Establish(cfg);
 
   BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
-  BOOST_CHECK_EQUAL(GetSqlState(), "01S00");
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
 }
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingKeyNoSecretKey) {
@@ -216,43 +209,6 @@ BOOST_AUTO_TEST_CASE(TestEstablishusingKeyInvalidSecretKey) {
   cfg.SetAuthType(AuthType::Type::IAM);
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
   cfg.SetSecretKey("InvalidSecretKey");
-  getLogOptions(cfg);
-
-  dbc->Establish(cfg);
-
-  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
-  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
-}
-
-BOOST_AUTO_TEST_CASE(TestEstablishUsingProfile) {
-  Configuration cfg;
-  cfg.SetAuthType(ignite::odbc::AuthType::Type::AWS_PROFILE);
-  cfg.SetAccessKeyIdFromProfile("AwsTSUnitTestKeyId");
-  cfg.SetSecretKeyFromProfile("AwsTSUnitTestSecretKey");
-  getLogOptions(cfg);
-
-  dbc->Establish(cfg);
-
-  BOOST_CHECK(IsSuccessful());
-}
-
-BOOST_AUTO_TEST_CASE(TestEstablishUsingProfileNoSecretKey) {
-  Configuration cfg;
-  cfg.SetAuthType(ignite::odbc::AuthType::Type::AWS_PROFILE);
-  cfg.SetAccessKeyIdFromProfile("AwsTSUnitTestKeyId");
-  getLogOptions(cfg);
-
-  dbc->Establish(cfg);
-
-  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
-  BOOST_CHECK_EQUAL(GetSqlState(), "01S00");
-}
-
-BOOST_AUTO_TEST_CASE(TestEstablishUsingProfileInvalidLogin) {
-  Configuration cfg;
-  cfg.SetAuthType(ignite::odbc::AuthType::Type::AWS_PROFILE);
-  cfg.SetAccessKeyIdFromProfile("InvalidLogin");
-  cfg.SetSecretKeyFromProfile("AwsTSUnitTestSecretKey");
   getLogOptions(cfg);
 
   dbc->Establish(cfg);

@@ -23,6 +23,15 @@ If ($MISSING_VARS -eq 1) {
     Exit 1
 }
 
-Write-Output "[default]" > $REPO_ROOT\src\tests\input\credentials
-Write-Output "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT\src\tests\input\credentials
-Write-Output "aws_secret_access_key = $ENV_SECRET_KEY" >> $REPO_ROOT\src\tests\input\credentials
+echo "[test-profile]" > $REPO_ROOT\src\tests\input\credentials
+echo "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT\src\tests\input\credentials
+echo "aws_secret_access_key = $ENV_SECRET_KEY" >> $REPO_ROOT\src\tests\input\credentials
+
+echo "[incomplete-profile]" >> $REPO_ROOT\src\tests\input\credentials
+echo "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT\src\tests\input\credentials
+
+# Convert CRLFs to LFs 
+$original_file = "$REPO_ROOT\src\tests\input\credentials"
+(Get-Content $original_file) | Foreach-Object {
+$_ -replace "`r`n",'`n' } | 
+Set-Content "$REPO_ROOT\src\tests\input\credentials" -Force

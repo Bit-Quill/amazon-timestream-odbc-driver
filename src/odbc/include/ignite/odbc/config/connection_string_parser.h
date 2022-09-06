@@ -45,20 +45,11 @@ class IGNITE_IMPORT_EXPORT ConnectionStringParser {
     /** Connection attribute keyword for secretKey attribute. */
     static const std::string secretKey;
 
-    /** Connection attribute keyword for accessKeyIdFromProfile attribute. */
-    static const std::string accessKeyIdFromProfile;
-
-    /** Connection attribute keyword for secretKeyFromProfile attribute. */
-    static const std::string secretKeyFromProfile;
-
     /** Connection attribute keyword for sessiontoken attribute. */
     static const std::string sessionToken;
 
     /** Connection attribute keyword for profileName attribute. */
     static const std::string profileName;
-
-    /** Connection attribute keyword for cusCredFile attribute. */
-    static const std::string cusCredFile;
 
     /** Connection attribute keyword for reqTimeout attribute. */
     static const std::string reqTimeout;
@@ -157,14 +148,6 @@ class IGNITE_IMPORT_EXPORT ConnectionStringParser {
                              diagnostic::DiagnosticRecordStorage* diag);
 
  private:
-
-  /**
-   * Parse the credentials profile.
-   *
-   * @param diag Diagnostics collector.
-   */
-  void ParseProfile(diagnostic::DiagnosticRecordStorage* diag);
-
   /**
    * Result of parsing string value to bool.
    */

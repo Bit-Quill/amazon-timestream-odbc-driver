@@ -38,19 +38,12 @@ const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
 const std::string Configuration::DefaultValue::accessKeyId =
     DEFAULT_ACCESS_KEY_ID;
 const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
-const std::string Configuration::DefaultValue::accessKeyIdFromProfile =
-    DEFAULT_ACCESS_KEY_ID_FROM_PROFILE;
-const std::string Configuration::DefaultValue::secretKeyFromProfile =
-    DEFAULT_SECRET_KEY_FROM_PROFILE;
-bool Configuration::DefaultValue::profileIsParsed = DEFAULT_PROFILE_IS_PARSED;
 const std::string Configuration::DefaultValue::sessionToken =
     DEFAULT_SESSION_TOKEN;
 
 // Credential Providers Options
 const std::string Configuration::DefaultValue::profileName =
     DEFAULT_PROFILE_NAME;
-const std::string Configuration::DefaultValue::cusCredFile =
-    DEFAULT_CUS_CRED_FILE;
 
 // Connection Options
 const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
@@ -141,19 +134,7 @@ void Configuration::SetProfileName(const std::string& name) {
 }
 
 bool Configuration::IsProfileNameSet() const {
-  return profileName.IsSet();
-}
-
-const std::string& Configuration::GetCusCredFile() const {
-  return cusCredFile.GetValue();
-}
-
-void Configuration::SetCusCredFile(const std::string& path) {
-  this->cusCredFile.SetValue(path);
-}
-
-bool Configuration::IsCusCredFileSet() const {
-  return cusCredFile.IsSet();
+  return profileName.IsSet() && !profileName.GetValue().empty();
 }
 
 int32_t Configuration::GetReqTimeout() const {
@@ -401,39 +382,6 @@ void Configuration::SetSecretKey(const std::string& secretKey) {
 bool Configuration::IsSecretKeySet() const {
   return secretKey.IsSet();
 }
-
-const std::string& Configuration::GetAccessKeyIdFromProfile() const {
-  return accessKeyIdFromProfile.GetValue();
-}
-
-void Configuration::SetAccessKeyIdFromProfile(const std::string& accessKeyIdValue) {
-  this->accessKeyIdFromProfile.SetValue(accessKeyIdValue);
-}
-
-bool Configuration::IsAccessKeyIdFromProfileSet() const {
-  return accessKeyIdFromProfile.IsSet();
-}
-
-const std::string& Configuration::GetSecretKeyFromProfile() const {
-  return secretKeyFromProfile.GetValue();
-}
-
-void Configuration::SetSecretKeyFromProfile(const std::string& secretKeyFromProfile) {
-  this->secretKeyFromProfile.SetValue(secretKeyFromProfile);
-}
-
-bool Configuration::IsSecretKeyFromProfileSet() const {
-  return secretKeyFromProfile.IsSet();
-}
-
-bool Configuration::GetProfileIsParsed() const {
-  return profileIsParsed.GetValue();
-}
-
-void Configuration::SetProfileIsParsed(bool profileIsParsed) {
-  this->profileIsParsed.SetValue(profileIsParsed);
-}
-
 const std::string& Configuration::GetSessionToken() const {
   return sessionToken.GetValue();
 }
@@ -453,7 +401,6 @@ void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::secretKey, secretKey);
   AddToMap(res, ConnectionStringParser::Key::sessionToken, sessionToken);
   AddToMap(res, ConnectionStringParser::Key::profileName, profileName);
-  AddToMap(res, ConnectionStringParser::Key::cusCredFile, cusCredFile);
   AddToMap(res, ConnectionStringParser::Key::reqTimeout, reqTimeout);
   AddToMap(res, ConnectionStringParser::Key::connectionTimeout, connectionTimeout);
   AddToMap(res, ConnectionStringParser::Key::maxRetryCount, maxRetryCount);
@@ -486,16 +433,12 @@ void Configuration::Validate() const {
       || (GetAuthType() == ignite::odbc::AuthType::Type::AAD))
         throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE, "Unsupported AUTH value");
 
-  if (((GetAuthType() == ignite::odbc::AuthType::Type::IAM) && (!IsAccessKeyIdSet() || !IsSecretKeySet())) || 
-      ((GetAuthType()
-             == ignite::odbc::AuthType::Type::AWS_PROFILE) && (!IsAccessKeyIdFromProfileSet() || !IsSecretKeyFromProfileSet()))) {
+  if ((GetAuthType() == ignite::odbc::AuthType::Type::IAM) && (!IsAccessKeyIdSet() || !IsSecretKeySet())) {
     throw OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-        "Any of the following group is required to connect:\n"
+        "The following is required to connect:\n"
         "AUTH is \"IAM\" and "
-        "ACCESS_KEY_ID and SECRET_KEY or\n"
-        "AUTH is \"AWS_PROFILE\" and "
-        "CUSTOM_CREDENTIALS_FILE which should contain access key Id and secret access key");
+        "ACCESS_KEY_ID and SECRET_KEY");
   }
 }
 

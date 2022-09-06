@@ -23,7 +23,9 @@ if [[ "${MISSING_VARS}" -eq "1" ]]; then
 fi
 
 # write credentials files
-
-echo "[default]" > $REPO_ROOT/src/tests/input/credentials
+echo "[test-profile]" > $REPO_ROOT/src/tests/input/credentials
 echo "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT/src/tests/input/credentials
 echo "aws_secret_access_key = $ENV_SECRET_KEY" >> $REPO_ROOT/src/tests/input/credentials
+
+echo "[incomplete-profile]" >> $REPO_ROOT/src/tests/input/credentials
+echo "aws_access_key_id = $ENV_ACCESS_ID" >> $REPO_ROOT/src/tests/input/credentials

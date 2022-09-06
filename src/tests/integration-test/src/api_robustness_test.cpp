@@ -59,19 +59,12 @@ const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
 const std::string Configuration::DefaultValue::accessKeyId =
     DEFAULT_ACCESS_KEY_ID;
 const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
-const std::string Configuration::DefaultValue::accessKeyIdFromProfile =
-    DEFAULT_ACCESS_KEY_ID_FROM_PROFILE;
-const std::string Configuration::DefaultValue::secretKeyFromProfile =
-    DEFAULT_SECRET_KEY_FROM_PROFILE;
-bool Configuration::DefaultValue::profileIsParsed = DEFAULT_PROFILE_IS_PARSED;
 const std::string Configuration::DefaultValue::sessionToken =
     DEFAULT_SESSION_TOKEN;
 
 // Credential Providers Options
 const std::string Configuration::DefaultValue::profileName =
     DEFAULT_PROFILE_NAME;
-const std::string Configuration::DefaultValue::cusCredFile =
-    DEFAULT_CUS_CRED_FILE;
 
 // Connection Options
 const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;

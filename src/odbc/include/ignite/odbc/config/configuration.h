@@ -33,13 +33,9 @@
 #define DEFAULT_DRIVER "Amazon Timestream ODBC Driver"
 #define DEFAULT_ACCESS_KEY_ID ""
 #define DEFAULT_SECRET_KEY ""
-#define DEFAULT_ACCESS_KEY_ID_FROM_PROFILE ""
-#define DEFAULT_SECRET_KEY_FROM_PROFILE ""
-#define DEFAULT_PROFILE_IS_PARSED false
 #define DEFAULT_SESSION_TOKEN ""
 
 #define DEFAULT_PROFILE_NAME ""
-#define DEFAULT_CUS_CRED_FILE ""
 
 #define DEFAULT_REQ_TIMEOUT 3000
 #define DEFAULT_CONNECTION_TIMEOUT 1000
@@ -89,20 +85,8 @@ class IGNITE_IMPORT_EXPORT Configuration {
     /** Default value for sessionToken attribute. */
     static const std::string sessionToken;
 
-    /** Default value for accessKeyIdFromProfile attribute. */
-    static const std::string accessKeyIdFromProfile;
-
-    /** Default value for secretKeyFromProfile attribute. */
-    static const std::string secretKeyFromProfile;
-
-    /** Default value for profileIsParsed attribute. */
-    static bool profileIsParsed;
-
     /** Default value for profileName attribute. */
     static const std::string profileName;
-
-    /** Default value for cusCredFile attribute. */
-    static const std::string cusCredFile;
 
     /** Default value for reqTimeout attribute. */
     static const int32_t reqTimeout;
@@ -254,62 +238,6 @@ class IGNITE_IMPORT_EXPORT Configuration {
   bool IsSecretKeySet() const;
 
   /**
-   * Get accessKeyIdFromProfile.
-   *
-   * @return accessKeyIdFromProfile.
-   */
-  const std::string& GetAccessKeyIdFromProfile() const;
-
-  /**
-   * Set accessKeyIdFromProfile.
-   *
-   * @param accessKeyIdFromProfile accessKeyIdFromProfile.
-   */
-  void SetAccessKeyIdFromProfile(const std::string& accessKeyIdFromProfile);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsAccessKeyIdFromProfileSet() const;
-
-  /**
-   * Get secretKeyFromProfile.
-   *
-   * @return secretKeyFromProfile.
-   */
-  const std::string& GetSecretKeyFromProfile() const;
-
-  /**
-   * Set secretKeyFromProfile.
-   *
-   * @param secretKeyFromProfile secretKeyFromProfile.
-   */
-  void SetSecretKeyFromProfile(const std::string& secretKeyFromProfile);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsSecretKeyFromProfileSet() const;
-
-  /**
-   * Get profileIsParsed.
-   *
-   * @return profileIsParsed.
-   */
-  bool GetProfileIsParsed() const;
-
-  /**
-   * Set profileIsParsed.
-   *
-   * @param profileIsParsed profileIsParsed.
-   */
-  void SetProfileIsParsed(bool profileIsParsed);
-
-  /**
    * Get sessionToken.
    *
    * @return sessionToken.
@@ -350,30 +278,6 @@ class IGNITE_IMPORT_EXPORT Configuration {
    * @return @true if the value set.
    */
   bool IsProfileNameSet() const;
-
-  // TODO remove custom credentials file from DSN
-  // https://bitquill.atlassian.net/browse/AT-1079
-
-  /**
-   * Get path to Custom Credentials File.
-   *
-   * @return path to Custom Credentials File.
-   */
-  const std::string& GetCusCredFile() const;
-
-  /**
-   * Set path to Custom Credentials File.
-   *
-   * @param path Path to Custom Credentials File.
-   */
-  void SetCusCredFile(const std::string& path);
-
-  /**
-   * Check if the value set.
-   *
-   * @return @true if the value set.
-   */
-  bool IsCusCredFileSet() const;
 
   /**
    * Get request timeout in milliseconds.
@@ -801,23 +705,11 @@ class IGNITE_IMPORT_EXPORT Configuration {
   /** Secret Key. */
   SettableValue< std::string > secretKey = DefaultValue::secretKey;
 
-  /** Access Key Id from profile. */
-  SettableValue< std::string > accessKeyIdFromProfile = DefaultValue::accessKeyIdFromProfile;
-
-  /** Secret Key from profile. */
-  SettableValue< std::string > secretKeyFromProfile = DefaultValue::secretKeyFromProfile;
-
-  /** flag for profile is parsed or not. */
-  SettableValue< bool > profileIsParsed = DefaultValue::profileIsParsed;
-
   /** Session Token. */
   SettableValue< std::string > sessionToken = DefaultValue::sessionToken;
 
   /** Profile Name. */
   SettableValue< std::string > profileName = DefaultValue::profileName;
-
-  /** Custom Credentials file path. */
-  SettableValue< std::string > cusCredFile = DefaultValue::cusCredFile;
 
   /** Request timeout in milliseconds.  */
   SettableValue< int32_t > reqTimeout = DefaultValue::reqTimeout;

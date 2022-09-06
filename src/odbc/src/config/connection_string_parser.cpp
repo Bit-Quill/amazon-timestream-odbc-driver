@@ -33,14 +33,8 @@ const std::string ConnectionStringParser::Key::dsn = "dsn";
 const std::string ConnectionStringParser::Key::driver = "driver";
 const std::string ConnectionStringParser::Key::accessKeyId = "access_key_id";
 const std::string ConnectionStringParser::Key::secretKey = "secret_key";
-const std::string ConnectionStringParser::Key::accessKeyIdFromProfile =
-    "aws_access_key_id";
-const std::string ConnectionStringParser::Key::secretKeyFromProfile =
-    "aws_secret_access_key";
 const std::string ConnectionStringParser::Key::sessionToken = "session_token";
 const std::string ConnectionStringParser::Key::profileName = "profile_name";
-const std::string ConnectionStringParser::Key::cusCredFile =
-    "custom_credentials_file";
 const std::string ConnectionStringParser::Key::reqTimeout = "request_timeout";
 const std::string ConnectionStringParser::Key::connectionTimeout =
     "connection_timeout";
@@ -112,46 +106,6 @@ void ConnectionStringParser::ParseConnectionString(
 
     connect_str.erase(attr_begin - 1);
   }
-
-  if (!cfg.GetProfileIsParsed()
-      && (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE)) {
-    ParseProfile(diag);
-  }
-}
-
-void ConnectionStringParser::ParseProfile(
-    diagnostic::DiagnosticRecordStorage* diag) {
-  const std::string& profile = cfg.GetCusCredFile();
-  if (profile.empty()) {
-    return;
-  }
-
-  // set profileIsParsed first as this function should be executed only once
-  // set profileIsParsed only if custom credentials file is provided.
-  cfg.SetProfileIsParsed(true);
-
-  std::ifstream ifs(profile);
-  if (!ifs.is_open()) {
-    if (diag) {
-      std::string errMsg("Failed to open file ");
-      errMsg += profile;
-      diag->AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, errMsg);
-    }
-    return;
-  }
-
-  std::string connStr;
-
-  // set up an internal connection string
-  while (!ifs.eof()) {
-    std::string line;
-    std::getline(ifs, line);
-    if (!line.empty()) {
-      connStr += line;
-      connStr += ";";
-    }
-  }
-  ParseConnectionString(connStr, diag);
 }
 
 void ConnectionStringParser::ParseConnectionString(
@@ -181,8 +135,6 @@ void ConnectionStringParser::HandleAttributePair(
     cfg.SetDsn(value);
   } else if (lKey == Key::profileName) {
     cfg.SetProfileName(value);
-  } else if (lKey == Key::cusCredFile) {
-    cfg.SetCusCredFile(value);
   } else if (lKey == Key::reqTimeout) {
     if (value.empty()) {
       if (diag) {
@@ -485,26 +437,6 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     cfg.SetSecretKey(value);
-  } else if (lKey == Key::accessKeyIdFromProfile
-             && cfg.GetProfileIsParsed()) {  // internal key for access key from
-                                             // profile only
-    if (!cfg.GetAccessKeyIdFromProfile().empty() && diag) {
-      diag->AddStatusRecord(
-          SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing aws_access_key_id (have you specified it several times?");
-    }
-
-    cfg.SetAccessKeyIdFromProfile(value);
-  } else if (lKey == Key::secretKeyFromProfile
-             && cfg.GetProfileIsParsed()) {  // internal key for secret key from
-                                             // profile only
-    if (!cfg.GetSecretKeyFromProfile().empty() && diag) {
-      diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
-                            "Re-writing aws_secret_access_key (have you "
-                            "specified it several times?");
-    }
-
-    cfg.SetSecretKeyFromProfile(value);
   } else if (lKey == Key::sessionToken) {
     if (!cfg.GetSessionToken().empty() && diag) {
       diag->AddStatusRecord(

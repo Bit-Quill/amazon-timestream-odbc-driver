@@ -137,12 +137,6 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   if (profileName.IsSet() && !config.IsProfileNameSet())
     config.SetProfileName(profileName.GetValue());
 
-  SettableValue< std::string > cusCredFile =
-      ReadDsnString(dsn, ConnectionStringParser::Key::cusCredFile);
-
-  if (cusCredFile.IsSet() && !config.IsCusCredFileSet())
-    config.SetCusCredFile(cusCredFile.GetValue());
-
   SettableValue< int32_t > reqTimeout =
       ReadDsnInt(dsn, ConnectionStringParser::Key::reqTimeout);
 
