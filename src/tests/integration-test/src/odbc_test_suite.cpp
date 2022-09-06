@@ -28,6 +28,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <ignite/odbc/utility.h>
+#include <ignite/odbc/dsn_config.h>
 #include <ignite/odbc/config/configuration.h>
 #include "odbc_test_suite.h"
 #include "test_utils.h"
@@ -114,7 +115,6 @@ void OdbcTestSuite::Connect(const std::string& connectStr) {
       SQLDriverConnect(dbc, NULL, &connectStr0[0],
                        static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
                        ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
-
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
 
@@ -124,8 +124,86 @@ void OdbcTestSuite::Connect(const std::string& connectStr) {
   BOOST_REQUIRE(stmt != NULL);
 }
 
+void OdbcTestSuite::Connect(const std::string& dsn, const std::string& username,
+                            const std::string& password) {
+  Prepare();
+
+  // Connect string
+  std::vector< SQLWCHAR > wDsn(dsn.begin(), dsn.end());
+  std::vector< SQLWCHAR > wUsername(username.begin(), username.end());
+  std::vector< SQLWCHAR > wPassword(password.begin(), password.end());
+
+  // Connecting to ODBC server.
+  SQLRETURN ret = SQLConnect(
+      dbc, wDsn.data(), static_cast< SQLSMALLINT >(wDsn.size()),
+      wUsername.data(), static_cast< SQLSMALLINT >(wUsername.size()),
+      wPassword.data(), static_cast< SQLSMALLINT >(wPassword.size()));
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+
+  // Allocate a statement handle
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+  BOOST_REQUIRE(stmt != NULL);
+}
+
+void OdbcTestSuite::ParseConnectionString(const std::string& connectionString,
+                                          Configuration& config) {
+  ConnectionStringParser parser(config);
+  parser.ParseConnectionString(connectionString, nullptr);
+}
+
+void OdbcTestSuite::WriteDsnConfiguration(const Configuration& config) {
+  IgniteError error;
+  if (!odbc::WriteDsnConfiguration(config, error)) {
+    std::stringstream msg;
+    msg << "Call to WriteDsnConfiguration failed: " << error.GetText()
+        << ", IgniteError code: " << error.GetCode();
+    BOOST_FAIL(msg.str());
+  }
+}
+
+void OdbcTestSuite::WriteDsnConfiguration(const std::string& dsn,
+                                          const std::string& connectionString,
+                                          std::string& username,
+                                          std::string& password) {
+  Configuration config;
+  ParseConnectionString(connectionString, config);
+  AuthType::Type authType = config.GetAuthType();
+
+  if (authType == AuthType::Type::IAM) {
+    username = config.GetAccessKeyId();
+    password = config.GetSecretKey();
+  } else {
+    username = "";
+    password = "";
+  }
+
+  // TODO support Okta authentication and add if statements for auth type Okta
+  // https://bitquill.atlassian.net/browse/AT-1055
+
+  // TODO support AAD authentication and add if statements for auth type AAD
+  // https://bitquill.atlassian.net/browse/AT-1056
+
+  // Update the DSN
+  config.SetDsn(dsn);
+
+  WriteDsnConfiguration(config);
+}
+
+void OdbcTestSuite::DeleteDsnConfiguration(const std::string& dsn) {
+  IgniteError error;
+  if (!odbc::DeleteDsnConfiguration(dsn, error)) {
+    std::stringstream msg;
+    msg << "Call to DeleteDsnConfiguration failed: " << error.GetText()
+        << ", IgniteError code: " << error.GetCode();
+    BOOST_FAIL(msg.str());
+  }
+}
+
 std::string OdbcTestSuite::ExpectConnectionReject(
-    const std::string& connectStr, const std::string& expectedError) {
+    const std::string& connectStr, const std::string& expectedState,
+    const std::string& expectedError) {
   Prepare();
 
   // Connect string
@@ -141,9 +219,43 @@ std::string OdbcTestSuite::ExpectConnectionReject(
                        ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-  BOOST_REQUIRE_EQUAL(
-      expectedError,
-      GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc).substr(0, expectedError.size()));
+  OdbcClientError error = GetOdbcError(SQL_HANDLE_DBC, dbc);
+  BOOST_CHECK_EQUAL(error.sqlstate, expectedState);
+  size_t prefixLen = std::string("[unixODBC]").size();
+  BOOST_REQUIRE(error.message.substr(0, expectedError.size()) == expectedError
+                || error.message.substr(prefixLen, expectedError.size())
+                       == expectedError);
+
+  return GetOdbcErrorState(SQL_HANDLE_DBC, dbc);
+}
+
+std::string OdbcTestSuite::ExpectConnectionReject(
+    const std::string& dsn, const std::string& username,
+    const std::string& password, const std::string& expectedState,
+    const std::string& expectedError) {
+  Prepare();
+
+  std::vector< SQLWCHAR > wDsn(dsn.begin(), dsn.end());
+  std::vector< SQLWCHAR > wUsername(username.begin(), username.end());
+  std::vector< SQLWCHAR > wPassword(password.begin(), password.end());
+
+  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
+  SQLSMALLINT outstrlen;
+
+  // Connecting to ODBC server.
+  SQLRETURN ret = SQLConnect(
+      dbc, wDsn.data(), static_cast< SQLSMALLINT >(wDsn.size()),
+      wUsername.data(), static_cast< SQLSMALLINT >(wUsername.size()),
+      wPassword.data(), static_cast< SQLSMALLINT >(wPassword.size()));
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+  OdbcClientError error = GetOdbcError(SQL_HANDLE_DBC, dbc);
+  BOOST_CHECK_EQUAL(error.sqlstate, expectedState);
+  size_t prefixLen = std::string("[unixODBC]").size();
+  BOOST_REQUIRE(error.message.substr(0, expectedError.size()) == expectedError
+                || error.message.substr(prefixLen, expectedError.size())
+                       == expectedError);
 
   return GetOdbcErrorState(SQL_HANDLE_DBC, dbc);
 }
@@ -158,7 +270,7 @@ void OdbcTestSuite::Disconnect() {
   if (dbc) {
     // Disconneting from the server.
     SQLDisconnect(dbc);
-    
+
     // Releasing allocated handles.
     SQLFreeHandle(SQL_HANDLE_DBC, dbc);
     dbc = nullptr;
@@ -665,7 +777,9 @@ int OdbcTestSuite::InsertTestBatch(int from, int to, int expectedToAffect,
 }
 
 void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
-  Connect("DRIVER={Amazon Timestream ODBC Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect(
+      "DRIVER={Amazon Timestream ODBC "
+      "Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   // Inserting values.
   int inserted = InsertTestBatch(0, recordsNum, recordsNum);
@@ -725,7 +839,9 @@ void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
 }
 
 void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
-  Connect("DRIVER={Amazon Timestream ODBC Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
+  Connect(
+      "DRIVER={Amazon Timestream ODBC "
+      "Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   std::vector< SQLUSMALLINT > statuses(recordsNum, 42);
 
@@ -808,15 +924,12 @@ void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
 }
 
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(
-    std::string& connectionString, const std::string& keyId, const std::string& secret,
-    const std::string& miscOptions) const {
-  std::string accessKeyId = 
-      common::GetEnv("AWS_ACCESS_KEY_ID");
-  std::string secretKey = common::GetEnv(
-      "AWS_SECRET_ACCESS_KEY");
+    std::string& connectionString, const std::string& keyId,
+    const std::string& secret, const std::string& miscOptions) const {
+  std::string accessKeyId = common::GetEnv("AWS_ACCESS_KEY_ID");
+  std::string secretKey = common::GetEnv("AWS_SECRET_ACCESS_KEY");
   std::string sessionToken = common::GetEnv("AWS_SESSION_TOKEN", "");
-  std::string region = common::GetEnv(
-      "AWS_REGION", "us-west-2");
+  std::string region = common::GetEnv("AWS_REGION", "us-west-2");
   std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
   std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
 
@@ -843,9 +956,8 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 }
 
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(
-    std::string& connectionString,
-    AuthType::Type testAuthType, const std::string& profileName,
-    const std::string& miscOptions) const {
+    std::string& connectionString, AuthType::Type testAuthType,
+    const std::string& profileName, const std::string& miscOptions) const {
   std::string region = common::GetEnv("AWS_REGION", "us-west-2");
   std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
   std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "Error");

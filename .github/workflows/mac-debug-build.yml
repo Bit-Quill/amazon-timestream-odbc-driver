@@ -20,6 +20,7 @@ env:
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
   ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
+  ODBCINI: "${{github.workspace}}/odbc.ini"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
 
 jobs:
@@ -130,6 +131,16 @@ jobs:
         comment_title: "MacOS Big Sur 11 Debug Build Integration Test Results"
         files: ./odbc_test_result.xml
 
+    - name: upload-test-file
+      if: always() && ((steps.runintegrationtests.outcome == 'failure') || (steps.rununittests.outcome == 'failure'))
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-test-results
+        path: |
+          ./odbc_unit_test_result.xml
+          ./odbc_test_result.xml
+          ./build/odbc/logs/timestream_odbc_*.log        
+
   comment_PR_mac_coverage:
     runs-on: ubuntu-latest
     needs: build-mac-debug
@@ -162,14 +173,4 @@ jobs:
         header: macOS
         recreate: true
         path: coverage-cobertura.md
-        
-    - name: upload-test-file
-      if: always() && (steps.runtests.outcome == 'failure')
-      uses: actions/upload-artifact@v3
-      with:
-        name: odbc-test-results
-        path: |
-          ./odbc_unit_test_result.xml
-          ./odbc_test_result.xml
-          ./build/odbc/logs/timestream_odbc_*.log
 

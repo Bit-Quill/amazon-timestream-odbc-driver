@@ -24,6 +24,7 @@
 #include <sqlext.h>
 
 #include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
 #include <string>
 
 #include "odbc_test_suite.h"
@@ -59,12 +60,28 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
 
-// TestConnectionRestoreInternalSSHTunnel has precondition
-// `*precondition(if_integration())`
-BOOST_AUTO_TEST_CASE(TestConnection) {
+BOOST_AUTO_TEST_CASE(TestSQLConnection) {
+  std::string dsn = "TestConnectionDSN";
   std::string connectionString;
   CreateDsnConnectionStringForAWS(connectionString);
+
+  std::string username;
+  std::string password;
+  WriteDsnConfiguration(dsn, connectionString, username, password);
+  Connect(dsn, username, password);
+
+  Disconnect();
+
+  DeleteDsnConfiguration(dsn);
+}
+
+BOOST_AUTO_TEST_CASE(TestDriverConnection) {
+  std::string dsn = "TestConnectionDSN";
+  std::string connectionString;
+  CreateDsnConnectionStringForAWS(connectionString);
+
   Connect(connectionString);
+
   Disconnect();
 }
 
@@ -84,8 +101,8 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
       connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
 
   ExpectConnectionReject(
-      connectionString,
-      "08001: Failed to establish connection to Timestream.\nNo credentials in "
+      connectionString, "08001",
+      "Failed to establish connection to Timestream.\nNo credentials in "
       "profile nonexist-profile or they are expired");
 
   Disconnect();
@@ -110,8 +127,8 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
       connectionString, ignite::odbc::AuthType::Type::AWS_PROFILE, profile);
 
   ExpectConnectionReject(
-      connectionString,
-      "08001: Failed to establish connection to Timestream.\nINVALID_ENDPOINT: "
+      connectionString, "08001",
+      "Failed to establish connection to Timestream.\nINVALID_ENDPOINT: "
       "Failed to discover endpoint");
 
   Disconnect();
@@ -158,26 +175,64 @@ BOOST_AUTO_TEST_CASE(TestConnectionOnlyDisconnect) {
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionIncompleteBasicProperties) {
+BOOST_AUTO_TEST_CASE(TestSQLConnectionIncompleteBasicProperties) {
+  const std::string dsn = "IncompleteBasicProperties";
   std::string connectionString =
       "DRIVER={Amazon Timestream ODBC Driver};"
       "AUTH=IAM;"
       "ACCESS_KEY_ID=key;";
 
-  ExpectConnectionReject(connectionString,
-                         "01S00: The following is required to connect:\n"
+  std::string username;
+  std::string password;
+  WriteDsnConfiguration(dsn, connectionString, username, password);
+  ExpectConnectionReject(dsn, username, password, "01S00",
+                         "The following is required to connect:\n"
+                         "AUTH is \"IAM\" and "
+                         "ACCESS_KEY_ID and SECRET_KEY");
+
+  Disconnect();
+
+  DeleteDsnConfiguration(dsn);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLDriverConnectionIncompleteBasicProperties) {
+  const std::string dsn = "IncompleteBasicProperties";
+  std::string connectionString =
+      "DRIVER={Amazon Timestream ODBC Driver};"
+      "AUTH=IAM;"
+      "ACCESS_KEY_ID=key;";
+  ExpectConnectionReject(connectionString, "01S00",
+                         "The following is required to connect:\n"
                          "AUTH is \"IAM\" and "
                          "ACCESS_KEY_ID and SECRET_KEY");
 
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionInvalidUser) {
+BOOST_AUTO_TEST_CASE(TestSQLConnectionInvalidUser) {
+  const std::string dsn = "InvalidUser";
   std::string connectionString;
   CreateDsnConnectionStringForAWS(connectionString, "", "invaliduser");
 
-  ExpectConnectionReject(connectionString,
-                         "08001: Failed to establish connection to "
+  std::string username;
+  std::string password;
+  WriteDsnConfiguration(dsn, connectionString, username, password);
+  ExpectConnectionReject(dsn, username, password, "08001",
+                         "Failed to establish connection to "
+                         "Timestream.\nINVALID_ENDPOINT: Failed to discover");
+
+  Disconnect();
+
+  DeleteDsnConfiguration(dsn);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLDriverConnectionInvalidUser) {
+  const std::string dsn = "InvalidUser";
+  std::string connectionString;
+  CreateDsnConnectionStringForAWS(connectionString, "", "invaliduser");
+
+  ExpectConnectionReject(connectionString, "08001",
+                         "Failed to establish connection to "
                          "Timestream.\nINVALID_ENDPOINT: Failed to discover");
 
   Disconnect();

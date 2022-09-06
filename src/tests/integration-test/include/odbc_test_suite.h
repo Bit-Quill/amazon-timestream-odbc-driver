@@ -28,6 +28,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <ignite/odbc/common/platform_utils.h>
+#include <ignite/odbc/config/configuration.h>
+#include <ignite/odbc/config/connection_string_parser.h>
 #include <ignite/odbc/auth_type.h>
 
 #ifndef BOOST_TEST_CONTEXT
@@ -40,6 +42,7 @@
 
 using boost::unit_test::test_unit_id;
 using ignite::odbc::common::GetEnv;
+using namespace ignite::odbc::config;
 
 namespace ignite {
 namespace odbc {
@@ -70,15 +73,75 @@ struct OdbcTestSuite {
   void Connect(const std::string& connectStr);
 
   /**
+   * Establish connection to node using default handles.
+   *
+   * @param dsn The DSN of the connection
+   * @param username user name
+   * @param password password
+   */
+  void Connect(const std::string& dsn, const std::string& username,
+               const std::string& password);
+
+  /**
+   * Parse the connection string into configuration.
+   *
+   * @param connectionString the connection string to parse.
+   * @param config the configuration to update.
+   */
+  void ParseConnectionString(const std::string& connectionString,
+                             Configuration& config);
+
+  /**
+   * Writes the DSN configuration
+   *
+   * @param dsn The DSN to write
+   * @param config The configuration to write
+   */
+  void WriteDsnConfiguration(const Configuration& config);
+
+  /**
+   * Writes the DSN configuration for a local connection.
+   * Sets the username and password parameters to be used
+   * with SQLConnect.
+   *
+   * @param dsn the DSN to write configuration for.
+   * @param username the updated username for the connection.
+   * @param password the updated password for the connection.
+   */
+  void WriteDsnConfiguration(const std::string& dsn,
+                             const std::string& connectionString,
+                             std::string& username, std::string& password);
+
+  /**
+   * Removes the DSN configuration
+   *
+   * @param dsn The DSN to write
+   */
+  void DeleteDsnConfiguration(const std::string& dsn);
+
+  /**
    * Expect connection to be rejected by the node.
    *
    * @param connectStr Connection string.
    * @return SQL State.
    */
-  std::string ExpectConnectionReject(
-      const std::string& connectStr,
-      const std::string& expectedError =
-          "08001: Failed to establish connection with the host.");
+  std::string ExpectConnectionReject(const std::string& connectStr,
+                                     const std::string& expectedState,
+                                     const std::string& expectedError);
+
+  /**
+   * Expect connection to be rejected by the node.
+   *
+   * @param dsn the DSN for the connection
+   * @param username the username for the connection.
+   * @param password the password for the connection.
+   * @return SQL State.
+   */
+  std::string ExpectConnectionReject(const std::string& dsn,
+                                     const std::string& username,
+                                     const std::string& password,
+                                     const std::string& expectedState,
+                                     const std::string& expectedError);
 
   /**
    * Disconnect.
@@ -359,8 +422,7 @@ struct OdbcTestSuite {
    * Creates the standard DSN connection string.
    */
   void CreateDsnConnectionStringForAWS(
-      std::string& connectionString,
-      const std::string& keyId = std::string(),
+      std::string& connectionString, const std::string& keyId = std::string(),
       const std::string& secret = std::string(),
       const std::string& miscOptions = std::string()) const;
 
@@ -368,8 +430,7 @@ struct OdbcTestSuite {
    * Creates the standard DSN connection string.
    */
   void CreateDsnConnectionStringForAWS(
-      std::string& connectionString,
-      AuthType::Type testAuthType,
+      std::string& connectionString, AuthType::Type testAuthType,
       const std::string& credentialsFile,
       const std::string& miscOptions = std::string()) const;
 

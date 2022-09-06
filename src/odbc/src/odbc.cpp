@@ -375,6 +375,7 @@ SQLRETURN SQLConnect(SQLHDBC conn, SQLWCHAR* serverName,
                      SQLSMALLINT serverNameLen, SQLWCHAR* userName,
                      SQLSMALLINT userNameLen, SQLWCHAR* auth,
                      SQLSMALLINT authLen) {
+
   using odbc::Connection;
   using odbc::config::Configuration;
 
@@ -397,14 +398,14 @@ SQLRETURN SQLConnect(SQLHDBC conn, SQLWCHAR* serverName,
 
   odbc::ReadDsnConfiguration(dsn.c_str(), config,
                              &connection->GetDiagnosticRecords());
-
-  //user user specified accessKeyId and secretKey
-  std::string accessKeyId = SqlWcharToString(userName, userNameLen);
-  config.SetAccessKeyId(accessKeyId);
-  LOG_INFO_MSG("AccessKeyId: " << accessKeyId);
-
-  std::string secretKey = SqlWcharToString(auth, authLen);
-  config.SetSecretKey(secretKey);
+  if (userName) {
+    std::string userNameStr = SqlWcharToString(userName, userNameLen);
+    config.SetAccessKeyId(userNameStr);
+  }
+  if (auth) {
+    std::string passwordStr = SqlWcharToString(auth, authLen);
+    config.SetSecretKey(passwordStr);
+  }
 
   connection->Establish(config);
 

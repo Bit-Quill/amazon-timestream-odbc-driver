@@ -20,6 +20,7 @@ env:
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
   ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
+  ODBCINI: "${{github.workspace}}/odbc.ini"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
 
 jobs:

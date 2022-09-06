@@ -58,6 +58,7 @@ jobs:
       run: |
         chmod +x scripts/register_driver_unix.sh
         ./scripts/register_driver_unix.sh
+        
     - name: run-tests
       id: runtests
       run: |
@@ -67,6 +68,16 @@ jobs:
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
       env: 
         ODBCINSTINI: ${{env.ODBCINSTINI}}
+
+    - name: upload-test-file
+      if: always() && (steps.runtests.outcome == 'failure')
+      uses: actions/upload-artifact@v3
+      with:
+        name: odbc-test-results
+        path: |
+          ./odbc_unit_test_result.xml
+          ./odbc_test_result.xml
+          ./build/odbc/logs/timestream_odbc_*.log
 
     # - name: print-memory-leak-logs
     #   if: always()
@@ -194,9 +205,10 @@ jobs:
         path: coverage.cobertura.xml
 
     - name: upload-test-file
+      if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: odbc-test-results
+        name: odbc-test-results-debug
         path: |
           ./odbc_unit_test_result.xml
           ./odbc_test_result.xml
@@ -216,7 +228,7 @@ jobs:
     - name: Retrieve test results
       uses: actions/download-artifact@v2
       with:
-        name: odbc-test-results
+        name: odbc-test-results-debug
         path: test-results
 
     - name: Code Coverage Summary Report
