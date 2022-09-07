@@ -11,19 +11,11 @@ This project is licensed under the Apache-2.0 License.
 
 ## Architecture
 
-ODBC is wrapping the Amazon Timestream JDBC Driver with JNI. This will add a translation layer between C++ objects and Java objects. 
-This is a 2-tier approach, where document scanning, metadata discovery, and SQL to MQL translation is performed using Java/JVM on a local machine. The communication from ODBC Adapter to JVM will be using JNI. For performance reasons, a separate (C/C++) client driver connection will be used to query and return results from the Timestream database.
-
+The ODBC driver is based on AWS SDK to connect and query from AWS Timestream database.
 
 ```mermaid
 graph LR
-    A(BI Tool) --> B(ODBC Driver Adapter)
-    subgraph Driver [ODBC Driver]
-    B --> C(JAVA Adapter)
-    B --> D(Native Adapter)
-    end
-    C --> E[(Timestream Server)]
-    D --> E 
+    A(BI Tool) --> B(ODBC Driver Adapter) --> C[(Timestream Service)]
 ```
 ## Documentation
 

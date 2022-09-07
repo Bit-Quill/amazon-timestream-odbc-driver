@@ -23,19 +23,16 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 find_package(ODBC REQUIRED)
 find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
-find_package(Java REQUIRED)
-find_package(JNI REQUIRED)
 find_package(Boost REQUIRED)
 if (UNIX AND NOT APPLE)
     find_package(ZLIB REQUIRED)
 endif()
-include(UseJava)
 
 if (${CODE_COVERAGE}) 
     add_code_coverage()    
 endif()
 
-include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 include_directories(include)
 
@@ -44,15 +41,12 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/app/parameter.cpp
         src/app/parameter_set.cpp
         src/auth_type.cpp
-        src/binary/binary_containers.cpp
-        src/binary/binary_raw_writer.cpp
-        src/binary/binary_writer.cpp
-        src/binary/binary_reader.cpp
-        src/binary/binary_type.cpp
-        src/binary/binary_raw_reader.cpp
-        src/cluster/cluster_group.cpp
-        src/cluster/cluster_node.cpp
-        src/cluster/ignite_cluster.cpp
+	src/binary/binary_containers.cpp
+	src/binary/binary_raw_writer.cpp
+	src/binary/binary_writer.cpp
+	src/binary/binary_reader.cpp
+	src/binary/binary_type.cpp
+	src/binary/binary_raw_reader.cpp
         src/common_types.cpp
         src/common/big_integer.cpp
         src/common/bits.cpp
@@ -64,43 +58,26 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/config/configuration.cpp
         src/config/connection_info.cpp
         src/config/connection_string_parser.cpp
-        src/impl/binary/binary_type_manager.cpp
-        src/impl/binary/binary_type_impl.cpp
-        src/impl/binary/binary_utils.cpp
-        src/impl/binary/binary_reader_impl.cpp
-        src/impl/binary/binary_type_handler.cpp
-        src/impl/binary/binary_writer_impl.cpp
-        src/impl/binary/binary_schema.cpp
-        src/impl/binary/binary_type_snapshot.cpp
-        src/impl/binary/binary_object_header.cpp
-        src/impl/binary/binary_object_impl.cpp
-        src/impl/binary/binary_field_meta.cpp
-        src/impl/binary/binary_type_updater_impl.cpp
-        src/impl/cache/cache_affinity_impl.cpp
-        src/impl/cache/cache_impl.cpp
-        src/impl/cache/query/query_batch.cpp
-        src/impl/cache/query/query_impl.cpp
-        src/impl/cache/query/continuous/continuous_query_handle_impl.cpp
-        src/impl/cluster/cluster_group_impl.cpp
-        src/impl/cluster/cluster_node_impl.cpp
-        src/impl/cluster/ignite_cluster_impl.cpp
-        src/impl/compute/cancelable_impl.cpp
-        src/impl/compute/compute_impl.cpp
-        src/impl/interop/interop_input_stream.cpp
-        src/impl/interop/interop_memory.cpp
-        src/impl/interop/interop_output_stream.cpp
-        src/impl/interop/interop_target.cpp
-        src/impl/interop/interop_external_memory.cpp
-        src/impl/handle_registry.cpp
-        src/impl/ignite_binding_impl.cpp
-        src/impl/ignite_environment.cpp
-        src/impl/ignite_impl.cpp
+	src/impl/binary/binary_type_manager.cpp
+	src/impl/binary/binary_type_impl.cpp
+	src/impl/binary/binary_utils.cpp
+	src/impl/binary/binary_reader_impl.cpp
+	src/impl/binary/binary_type_handler.cpp
+	src/impl/binary/binary_writer_impl.cpp
+	src/impl/binary/binary_schema.cpp
+	src/impl/binary/binary_type_snapshot.cpp
+	src/impl/binary/binary_object_header.cpp
+	src/impl/binary/binary_object_impl.cpp
+	src/impl/binary/binary_field_meta.cpp
+	src/impl/interop/interop_input_stream.cpp
+	src/impl/interop/interop_memory.cpp
+	src/impl/interop/interop_output_stream.cpp
+	src/impl/handle_registry.cpp
         src/connection.cpp
         src/cursor.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
         src/diagnostic/diagnostic_record_storage.cpp
-        src/jni/java.cpp
         src/environment.cpp
         src/meta/column_meta.cpp
         src/meta/foreign_key_meta.cpp
@@ -123,7 +100,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/sql/sql_utils.cpp
         src/streaming/streaming_batch.cpp
         src/streaming/streaming_context.cpp
-        src/ignite.cpp
         src/ssl_mode.cpp
         src/protocol_version.cpp
         src/result_page.cpp
@@ -153,7 +129,6 @@ if (WIN32)
             os/win/src/common/concurrent_os.cpp
             os/win/src/common/platform_utils.cpp
             os/win/src/common/dynamic_load_os.cpp
-            src/jni/os/win/utils.cpp
             module.def
     )
 else()
@@ -163,7 +138,6 @@ else()
             os/linux/src/common/concurrent_os.cpp
             os/linux/src/common/platform_utils.cpp
             os/linux/src/common/dynamic_load_os.cpp
-            src/jni/os/linux/utils.cpp
     )
 endif ()
 
@@ -176,7 +150,6 @@ set_target_properties(${TARGET} PROPERTIES VERSION ${CMAKE_PROJECT_VERSION})
 
 target_link_libraries(${TARGET} ${ODBC_LIBRARIES})
 target_link_libraries(${TARGET} ${AWSSDK_LINK_LIBRARIES})
-target_link_libraries(${TARGET} ${JNI_LIBRARIES})
 
 add_definitions(-DUNICODE=1)
 if (WIN32)

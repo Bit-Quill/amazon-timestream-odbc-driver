@@ -20,7 +20,6 @@ env:
   VCPKG_ROOT: "${{github.workspace}}/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "debug"
-  JAVA_HOME: "/usr/lib/jvm/java-17-amazon-corretto/"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
 
 jobs:
@@ -29,13 +28,6 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/checkout@v2
-    - name: Get Java distribution
-      run: | 
-        sudo apt-get -y install software-properties-common
-        wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
-        sudo apt-add-repository 'deb https://apt.corretto.aws stable main'
-        sudo apt-get update
-        sudo apt-get install -y java-17-amazon-corretto-jdk
         
     - name: Get latest version of CMake
       uses: lukka/get-cmake@latest
@@ -152,13 +144,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: Get Java distribution
+    - name: Get gcovr
       run: | 
-        sudo apt-get -y install software-properties-common
-        wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
-        sudo apt-add-repository 'deb https://apt.corretto.aws stable main'
-        sudo apt-get update
-        sudo apt-get install -y java-17-amazon-corretto-jdk
         pip install gcovr
 
     - name: Get latest version of CMake

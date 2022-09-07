@@ -63,12 +63,6 @@ option (WITH_THIN_CLIENT OFF)
 option (WITH_TESTS OFF)
 option (WARNINGS_AS_ERRORS OFF)
 
-if (${WITH_TESTS})
-    find_package(Java 1.8 REQUIRED)
-    find_package(JNI REQUIRED)
-    include(UseJava)
-endif()
-
 if (${WARNINGS_AS_ERRORS})
     if (MSVC)
         add_compile_options(/WX)

@@ -127,41 +127,6 @@ class IGNITE_IMPORT_EXPORT BinaryObjectImpl {
   }
 
   /**
-   * Get field.
-   * @throw IgniteError if the there is no specified field or if it
-   *     is not of the specified type.
-   *
-   * @param name Field name.
-   * @return Field value.
-   */
-  template < typename T >
-  T GetField(const char* name) const {
-    CheckIdResolver();
-
-    int32_t fieldId = idRslvr->GetFieldId(GetTypeId(), name);
-    int32_t pos = FindField(fieldId);
-
-    if (pos == -1)
-      return T();
-
-    interop::InteropInputStream stream(mem);
-
-    stream.Position(pos);
-    BinaryReaderImpl reader(&stream);
-
-    return reader.ReadTopObject< T >();
-  }
-
-  /**
-   * Check if the binary object has the specified field.
-   *
-   * @param name Field name.
-   * @return True if the binary object has the specified field and
-   *     false otherwise.
-   */
-  bool HasField(const char* name) const;
-
-  /**
    * Gets the value of underlying enum in int form.
    *
    * @return The value of underlying enum in int form.
@@ -219,13 +184,6 @@ class IGNITE_IMPORT_EXPORT BinaryObjectImpl {
    */
   int32_t FindField(const int32_t fieldId) const;
 
-  /**
-   * Checks that id resolver is set.
-   *
-   * @throw IgniteError if idRslvr is not set.
-   */
-  void CheckIdResolver() const;
-
   /** Underlying object memory. */
   interop::InteropMemory* mem;
 
@@ -241,11 +199,6 @@ class IGNITE_IMPORT_EXPORT BinaryObjectImpl {
   /** If object is in binary wrapper. */
   bool binary;
 };
-
-/* Specialization */
-template <>
-IGNITE_IMPORT_EXPORT BinaryObjectImpl
-BinaryObjectImpl::GetField(const char* name) const;
 }  // namespace binary
 }  // namespace impl
 }  // namespace odbc

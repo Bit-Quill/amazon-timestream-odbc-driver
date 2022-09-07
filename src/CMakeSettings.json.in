@@ -1,7 +1,6 @@
 {
   "environments": [
     {
-      "JAVA_HOME": "<PATH_TO_JDK>",
       "BOOST_ROOT": "<PATH_TO_BOOST",
       "OPENSSL_ROOT_DIR": "<PATH_TO_OPENSSL>",
       "BuildDir": "${env.USERPROFILE}\\CMakeBuilds\\ignite-cpp\\${workspaceHash}",

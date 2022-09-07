@@ -1,7 +1,6 @@
 {
   "environments": [
     {
-      "JAVA_HOME": "<PATH_TO_JDK>",
       "BuildDir": "${env.USERPROFILE}\\CMakeBuilds\\ignite-cpp-examples\\${workspaceHash}",
       "IGNITE_CPP_DIR": "<PATH_TO_IGNITE_CPP>"
     }

@@ -29,12 +29,6 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/checkout@v2
-    - name: Get Java distribution
-      uses: actions/setup-java@v2
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-        architecture: x64
     - name: run-cppcheck
       run: |
         brew install cppcheck

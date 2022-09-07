@@ -44,18 +44,6 @@ RUN apt-get -y update \
                           tar \
     && rm -r /var/lib/apt/lists/*
 
-#installing dependecies for JDK
-RUN apt-get -y update \
-    && apt-get -y install software-properties-common \
-    && rm -r /var/lib/apt/lists/*
-
-#setup JDK
-RUN  wget -O- https://apt.corretto.aws/corretto.key | apt-key add - \
-     && apt-add-repository 'deb https://apt.corretto.aws stable main' \
-     && apt-get update \
-     && apt-get install -y java-17-amazon-corretto-jdk \
-     && rm -r /var/lib/apt/lists/*
-
 #install aws-sdk-dependencies
 RUN git clone https://github.com/Microsoft/vcpkg.git \
     && ./vcpkg/bootstrap-vcpkg.sh \
@@ -63,7 +51,6 @@ RUN git clone https://github.com/Microsoft/vcpkg.git \
 
 ENV REPOSITORY_ROOT /timestream-odbc/
 ENV VCPKG_ROOT /timestream-odbc/vcpkg
-ENV JAVA_HOME /usr/lib/jvm/java-17-amazon-corretto/
 ENV ODBC_LIB_PATH /timestream-odbc/build/odbc/lib/
 
 WORKDIR /timestream-odbc

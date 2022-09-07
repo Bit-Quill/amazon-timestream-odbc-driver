@@ -23,8 +23,6 @@
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 
-#include "ignite/odbc/jni/utils.h"
-
 using namespace ignite::odbc;
 
 namespace ignite_test {

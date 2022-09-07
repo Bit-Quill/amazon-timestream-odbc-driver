@@ -20,7 +20,12 @@
 
 #include <string>
 
-#include "ignite/odbc/ignite.h"
+#include "ignite/odbc/binary/binary_type.h"
+#include "ignite/odbc/binary/binary_reader.h"
+#include "ignite/odbc/binary/binary_writer.h"
+
+using ignite::odbc::binary::BinaryReader;
+using ignite::odbc::binary::BinaryWriter;
 
 namespace ignite {
 struct TestObject {

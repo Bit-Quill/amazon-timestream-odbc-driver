@@ -52,26 +52,22 @@ C/C++ usage and formatting.
    3. Ensure to set the OPENSSL_ROOT_DIR.
 3. [WiX Installer (3.11)](https://wixtoolset.org/releases/)
    1. Ensure to add path to WiX executables (e.g. `C:\Program Files (x86)\WiX Toolset v3.11\bin`)
-4. [Java](https://www.oracle.com/java/technologies/downloads/) **JDK** (version 8+ - 17 recommended)
-   1. Ensure to set `JAVA_HOME`. (e.g. C:\Program Files\Java\jdk-17.0.2)
-   2. Ensure to save Java `\bin` and `\server` directories to the User `PATH` variable. 
-   Example: C:\Program Files\Java\jdk1.8.0_321\jre\bin\server
-5. Boost Test Framework
+4. Boost Test Framework
    1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query]:x64-windows" --recurse`
-6. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
-7. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
+5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
+6. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
    2. Navigate to the `build\odbc\cmake` folder to use the generated solution file, `Ignite.C++.sln` to work on
    source code development and testing.
-8. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
+7. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
    ```
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ``` 
    Ensure that backslashes are used in your command.
-9. Set environment variable REPOSITORY_ROOT to your repository root.
-10. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
-11. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
-12. Now you're ready to run tests (e.g., `.\build\odbc\bin\timestream-odbc-integration-tests.exe` and `.\build\odbc\bin\timestream-odbc-unit-tests.exe`).
+8. Set environment variable REPOSITORY_ROOT to your repository root.
+9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
+10. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
+11. Now you're ready to run tests (e.g., `.\build\odbc\bin\timestream-odbc-integration-tests.exe` and `.\build\odbc\bin\timestream-odbc-unit-tests.exe`).
 
 ## MacOS
 
@@ -81,16 +77,9 @@ C/C++ usage and formatting.
    3. `brew install libiodbc`  
       - You may need to unlink `unixodbc` if you already have this installed. Use `brew unlink unixodbc`.
    4. `brew install boost`
-   5. Install Java **JDK** (version 8+ - 17 recommended)  
-   6. `brew install aws-sdk-cpp`
+   5. `brew install aws-sdk-cpp`
       - This can be done through Homebrew using `brew install --cask temurin<version>`. 
-      - Ensure to set `JAVA_HOME`. Make sure it is set to temurin. Other JDK package may cause test errors 
-      such as `Unable to get initialized JVM` at run time.  
-      Example: /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
-      - Ensure to save Java `/bin` and `/server` directories to the User `PATH` variable.  
-      Example: /Library/Java/JavaVirtualMachines/jdk-17.0.2.jdk/Contents/Home/lib/server/
-      /Library/Java/JavaVirtualMachines/jdk-17.0.2.jdk/Contents/Home/bin/
-   7. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
+   6. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
       - If you only have XCode Command Line Tools, use the LLVM included with XCode by modifying the PATH with `export PATH=/Library/Developer/CommandLineTools/usr/bin/:$PATH`. Ensure this XCode path comes first in $PATH. If error occurs, check that clang and llvm are under folder Library/Developer/CommandLineTools/usr/bin.
       - If you have XCode application, to ensure LLVM and CMake are compatible, use the LLVM included with XCode by modifying the PATH with `export PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH`.
 2. Run one of the build scripts to create an initial compilation.
@@ -124,7 +113,7 @@ C/C++ usage and formatting.
 1. Run docker container with interactive mode. E.g.: `docker run --add-host host.docker.internal:host-gateway -v "<path-to-repo>:/timestream-odbc" -it timestream-dev-linux`
 2. Next steps all are from inside the container
    1. Set environment variables for testing and double-check if all dev environmnet variables are set by running `scripts/env_variables_check.sh`. More info [Environment Variables for Testing Accounts/Secrets ](#environment-variables-for-testing-accounts/secrets)
-      Note. Since the environment variables JAVA_HOME and ODBC_LIB_PATH are already set in the container, it is not recommended to change those.
+      Note. Since the environment variable ODBC_LIB_PATH is already set in the container, it is not recommended to change those.
    2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64.sh` or `./build_linux_release64_deb.sh`
    3. Run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
@@ -184,19 +173,18 @@ There are two ways to fix the issue.
            && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse \
            export VCPKG_ROOT=<odbc-repo>/vcpkg
 ```
-   3. Install Java if necessary ( correto 17 is recommended) Follow this (link)[https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/generic-linux-install.html] for instructions.
-   4. Set all necessary environment variables and run the following command to register the ODBC driver. 
+   3. Set all necessary environment variables and run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
-   5. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
-   6. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   7. Set environment variable REPOSITORY_ROOT to your repository root
+   4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
+   5. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
+   6. Set environment variable REPOSITORY_ROOT to your repository root
 
         `export REPOSITORY_ROOT=<your repository root>`
-   8. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   9. Set environment variable AWS_SHARED_CREDENTIALS_FILE
+   7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+   8. Set environment variable AWS_SHARED_CREDENTIALS_FILE
 
        `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   10. You are ready to run the tests.
+   9. You are ready to run the tests.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 ## Code Coverage

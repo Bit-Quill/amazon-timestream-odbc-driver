@@ -92,27 +92,6 @@ BinaryObjectImpl BinaryObjectImpl::FromMemory(interop::InteropMemory& mem,
   return BinaryObjectImpl(mem, adjustedStart, 0, metaMgr);
 }
 
-template <>
-IGNITE_IMPORT_EXPORT BinaryObjectImpl
-BinaryObjectImpl::GetField(const char* name) const {
-  CheckIdResolver();
-
-  int32_t fieldId = idRslvr->GetFieldId(GetTypeId(), name);
-  int32_t pos = FindField(fieldId);
-
-  return FromMemory(*mem, pos, metaMgr);
-}
-
-bool BinaryObjectImpl::HasField(const char* name) const {
-  CheckIdResolver();
-
-  int32_t fieldId = idRslvr->GetFieldId(GetTypeId(), name);
-
-  int32_t fieldPos = FindField(fieldId);
-
-  return fieldPos >= 0;
-}
-
 int32_t BinaryObjectImpl::GetEnumValue() const {
   throw IgniteError(IgniteError::IGNITE_ERR_BINARY,
                     "GetEnumValue is only supported for enums.");
@@ -196,21 +175,6 @@ int32_t BinaryObjectImpl::FindField(const int32_t fieldId) const {
   }
 
   return -1;
-}
-
-void BinaryObjectImpl::CheckIdResolver() const {
-  if (idRslvr)
-    return;
-
-  assert(metaMgr != 0);
-
-  BinaryObjectHeader header(mem->Data() + start);
-
-  int32_t typeId = header.GetTypeId();
-
-  SPSnap meta = metaMgr->GetMeta(typeId);
-
-  idRslvr = new MetadataBinaryIdResolver(meta);
 }
 }  // namespace binary
 }  // namespace impl

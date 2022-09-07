@@ -26,9 +26,6 @@
 
 namespace ignite {
 namespace odbc {
-/**
- * A wrapper class for the ResultSet java class.
- */
 class ResultSet {
 
   /**

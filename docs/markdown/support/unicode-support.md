@@ -14,19 +14,14 @@ In terms of our driver, the entry point is the entry_point.cpp/h. For each API e
 
 Here we pass the SQLWCHAR pointer to/from entry_point and odbc. 
 
-However, from the `odbc` namespace to the rest of the driver, we encode data in UTF-8 encoding. The reason being is that all the backend API (JNI and MongoCXX) use UTF-8 encoding. So to minimize the number of conversions, we choose to use UTF-8 encoding at this layer.
+However, from the `odbc` namespace to the rest of the driver, we encode data in UTF-8 encoding. The reason being is that all the strings in Timestream use UTF-8 encoding. So to minimize the number of conversions, we choose to use UTF-8 encoding at this layer.
 
 ```mermaid
 graph TD
     A(BI Tool) -- SQLWCHAR --> B(ODBC Driver Adapter)
-    subgraph Driver [ODBC Driver]
     B -- SQLWCHAR --> C(entry_point.cpp)
     C -- SQLWCHAR --> D(odbc.cpp)
-    D -- char* UTF-8 --> E(JNI API)
-    D -- char* UTF-8 --> F(MongoCXX API)
-    end
-    E -- char* UTF-8 --> G[(Timestream Server)]
-    F -- char* UTF-8 --> G
+    D -- char* UTF-8 --> E[(Timestream Service)]
 ```
 
 ## 1.2. Logging

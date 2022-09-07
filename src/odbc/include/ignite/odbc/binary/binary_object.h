@@ -106,40 +106,10 @@ class IGNITE_IMPORT_EXPORT BinaryObject {
     return impl.Deserialize< T >();
   }
 
-  /**
-   * Get field.
-   * @throw IgniteError if the there is no specified field or if it
-   *     is not of the specified type.
-   *
-   * @param name Field name.
-   * @return Field value.
-   */
-  template < typename T >
-  T GetField(const char* name) const {
-    return impl.GetField< T >(name);
-  }
-
-  /**
-   * Check if the binary object has the specified field.
-   *
-   * @param name Field name.
-   * @return True if the binary object has the specified field and
-   *     false otherwise.
-   */
-  bool HasField(const char* name) const {
-    return impl.HasField(name);
-  }
-
  private:
   /** Implementation. */
   impl::binary::BinaryObjectImpl impl;
 };
-
-/* Specialization */
-template <>
-inline BinaryObject BinaryObject::GetField(const char* name) const {
-  return BinaryObject(impl.GetField< impl::binary::BinaryObjectImpl >(name));
-}
 }  // namespace binary
 }  // namespace odbc
 }  // namespace ignite

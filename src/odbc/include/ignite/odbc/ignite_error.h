@@ -97,17 +97,6 @@
 
 namespace ignite {
 namespace odbc {
-namespace jni {
-namespace java {
-enum class JniErrorCode {
-  /* JNI error constants. */
-  IGNITE_JNI_ERR_SUCCESS = 0,
-  IGNITE_JNI_ERR_GENERIC = 1,
-  IGNITE_JNI_ERR_JVM_INIT = 2,
-  IGNITE_JNI_ERR_JVM_ATTACH = 3
-};
-}  // namespace java
-}  // namespace jni
 
 /**
  * %Ignite error information.
@@ -116,30 +105,6 @@ class IGNITE_IMPORT_EXPORT IgniteError : public std::exception {
  public:
   /** Success. */
   static const int IGNITE_SUCCESS = 0;
-
-  /** Failed to initialize JVM. */
-  static const int IGNITE_ERR_JVM_INIT = 1;
-
-  /** Failed to attach to JVM. */
-  static const int IGNITE_ERR_JVM_ATTACH = 2;
-
-  /** JVM library is not found. */
-  static const int IGNITE_ERR_JVM_LIB_NOT_FOUND = 3;
-
-  /** Failed to load JVM library. */
-  static const int IGNITE_ERR_JVM_LIB_LOAD_FAILED = 4;
-
-  /** JVM classpath is not provided. */
-  static const int IGNITE_ERR_JVM_NO_CLASSPATH = 5;
-
-  /** JVM error: no class definition found. */
-  static const int IGNITE_ERR_JVM_NO_CLASS_DEF_FOUND = 6;
-
-  /** JVM error: no such method. */
-  static const int IGNITE_ERR_JVM_NO_SUCH_METHOD = 7;
-
-  /** JNI error: getting database metadata */
-  static const int IGNITE_ERR_JNI_GET_DATABASE_METADATA = 101;
 
   /** Failed to connect to Timestream */
   static const int IGNITE_ERR_TS_CONNECT = 102;
@@ -312,18 +277,6 @@ class IGNITE_IMPORT_EXPORT IgniteError : public std::exception {
    * @return Error message string.
    */
   virtual const char* what() const IGNITE_NO_THROW;
-
-  /**
-   * Initializes IgniteError instance from the JNI error.
-   *
-   * @param jniCode Error code.
-   * @param jniCls Error class.
-   * @param jniMsg Error message.
-   * @param err Error. Can not be NULL.
-   */
-  static void SetError(const jni::java::JniErrorCode jniCode,
-                       const char* jniCls, const char* jniMsg,
-                       IgniteError& err);
 
  private:
   /** Error code. */

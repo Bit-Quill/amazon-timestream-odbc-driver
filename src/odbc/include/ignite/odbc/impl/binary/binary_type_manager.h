@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "ignite/odbc/impl/binary/binary_type_handler.h"
-#include "ignite/odbc/impl/binary/binary_type_updater.h"
 
 namespace ignite {
 namespace odbc {
@@ -77,29 +76,6 @@ class IGNITE_IMPORT_EXPORT BinaryTypeManager {
    */
   bool IsUpdatedSince(int32_t oldVer) const;
 
-  /**
-   * Process pending updates.
-   *
-   * @param err Error.
-   * @return In case of success.
-   */
-  bool ProcessPendingUpdates(IgniteError& err);
-
-  /**
-   * Set updater.
-   *
-   * @param updater Updater.
-   */
-  void SetUpdater(BinaryTypeUpdater* updater);
-
-  /**
-   * Get metadata snapshop for the type.
-   *
-   * @param typeId Type ID.
-   * @return Metadata snapshot.
-   */
-  SPSnap GetMeta(int32_t typeId);
-
  private:
   /** Current snapshots. */
   std::map< int32_t, SPSnap >* snapshots;
@@ -109,9 +85,6 @@ class IGNITE_IMPORT_EXPORT BinaryTypeManager {
 
   /** Critical section. */
   common::concurrent::CriticalSection cs;
-
-  /** Type updater */
-  BinaryTypeUpdater* updater;
 
   /** Version of pending changes. */
   int32_t pendingVer;

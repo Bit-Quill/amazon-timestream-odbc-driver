@@ -1,11 +1,4 @@
 CHECK=1
-if [[ -z "${JAVA_HOME}" ]]; then
-  echo "JAVA_HOME environment variable is not set"
-  CHECK=0
-else
-  echo "JAVA_HOME=${JAVA_HOME}"
-fi
-
 if [[ -z "${AWS_ACCESS_KEY_ID}" ]]; then
   echo "AWS_ACCESS_KEY_ID environment variable is not set"
   CHECK=0
@@ -32,3 +25,4 @@ if [[ "${CHECK}" -eq "0" ]]; then
 else
   echo "Environment variables are all set"
 fi
+

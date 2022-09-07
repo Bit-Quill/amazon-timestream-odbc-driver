@@ -106,7 +106,7 @@ class PrimaryKeyMeta {
   /**
    * Read resultset item.
    * @param resultSet SharedPointer< ResultSet >.
-   * @paran errInfo JniErrorInfo.
+   * @paran errInfo TSErrorInfo.
    */
   void Read(SharedPointer< ResultSet >& resultSet, TSErrorInfo& errInfo);
 

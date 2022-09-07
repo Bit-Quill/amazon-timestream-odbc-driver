@@ -21,10 +21,8 @@ set(TARGET ignite-${PROJECT_NAME})
 
 find_package(Ignite)
 find_package(Threads)
-find_package(Java 1.8 REQUIRED)
-find_package(JNI REQUIRED)
 
-include_directories(SYSTEM ${IGNITE_INCLUDE_DIR} ${JNI_INCLUDE_DIRS})
+include_directories(SYSTEM ${IGNITE_INCLUDE_DIR})
 include_directories(../include)
 
 add_executable(${TARGET} src/put_get_example.cpp)
