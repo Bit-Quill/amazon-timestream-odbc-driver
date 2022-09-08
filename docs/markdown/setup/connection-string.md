@@ -1,5 +1,6 @@
 # Connection String Properties on New Timestream ODBC Driver
 
+## Topics
 - [Connection String Syntax and Options](#connection-string-syntax-and-options)
 
 - [Driver Connection Options](#driver-connection-options)
@@ -20,12 +21,10 @@
 
 - [Examples](#examples)
 
-- [Notes](#notes)
-
 - [Window Dialog](#window-dialog)
 
 # Connection String Syntax and Options
-`DRIVER={Amazon Timestream};<option>=<value>;`
+`DRIVER={Amazon Timestream ODBC Driver};<option>=<value>;`
 
 ### Driver Connection Options
 | Option | Description | Default |
@@ -96,10 +95,12 @@
 
 ## Examples
 
-### Connecting to an Amazon Timestream Cluster
+### Connecting to an Amazon Timestream Database
+
+#### Connecting With IAM Credentials
 
 ```
-Driver={Amazon Timestream};Auth=IAM;AccessKeyId=myAccessKeyId;secretKey=mySecretKey;SessionToken=mySessionToken;Region=us-east-2;
+Driver={Amazon Timestream ODBC Driver};Auth=IAM;AccessKeyId=myAccessKeyId;secretKey=mySecretKey;SessionToken=mySessionToken;Region=us-east-2;
 ```
 
 #### Notes
@@ -109,9 +110,20 @@ Driver={Amazon Timestream};Auth=IAM;AccessKeyId=myAccessKeyId;secretKey=mySecret
 3. Session token is `sessionToken`.
 4. Region is `us-east-2`. 
 
+#### Connecting With Profile
+
+```
+Driver={Amazon Timestream ODBC Driver};ProfileName=myProfileName;
+```
+
+#### Notes
+
+1. Authentication type (Auth) is AWS Profile by default if not specified.
+2. ProfileName is `myProfileName`. The driver will attempt to connect with credentials provided in `~/.aws/credentials` (or, if provided, the file in the environment variable `AWS_SHARED_CREDENTIALS_FILE`).
+
 ### Window Dialog
 
-The following are the screenshots of the ODBC driver UI.
+The following are the screenshots of the Windows ODBC driver UI.
 
 ![Design Screenshot 1](../images/windows-dsn-configuration-window-design-1.PNG)
 

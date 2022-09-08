@@ -1,6 +1,9 @@
 # Troubleshooting Guide
 
+## Topics
 - [Logs](#logs)
+- [PowerBI Desktop cannot load the Timestream ODBC driver library](#powerbi-desktop-cannot-load-the-timestream-odbc-driver-library)
+- [Cannot connect on Linux using user DSN](#cannot-connect-on-linux-using-user-dsn)
 
 ## Logs
 
@@ -45,3 +48,11 @@ to your connection string.
 - In MacOS/Linux/Unix, append `log_path="~/path/to/log/file";log_level=ERROR;` to your connection string, or append
 `log_path` and `log_level` as keywords in the ODBC manager. 
 - If you just want to change the log level, append `log_level=<desired-log-level>;` to your connection string.
+
+## PowerBI Desktop cannot load the Timestream ODBC driver library
+
+If you downloaded Power BI Desktop from the Microsoft Store, you may be unable to use the Amazon Timestream ODBC driver due to a loading issue. To address this, download Power BI Desktop from the [Download Center](https://www.microsoft.com/download/details.aspx?id=58494) instead of the Microsoft Store.
+
+## Cannot connect on Linux using user DSN
+
+If you have set the user DSN on Linux in `~/.odbc.ini`, but cannot connect via `isql`, try creating a system DSN in `/etc/odbc.ini` instead. Different flavors of Linux recognize different DSN files, and user DSNs might not be supported on some flavors.
