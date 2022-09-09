@@ -24,27 +24,66 @@
         Language='1033' Codepage='1252' Version='@CMAKE_PROJECT_VERSION@'>
 
         <Package Id='*' Keywords='Installer' Description="@WIX_PRODUCT_NAME@ Installer"
-            Comments='@WIX_COPYRIGHT_COMMENT@' Platform="@WIX_PACKAGE_PLATFORM@"
+            Platform="@WIX_PACKAGE_PLATFORM@"
             InstallerVersion='301' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
         <Media Id='1' Cabinet='package.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
         <Property Id='DiskPrompt' Value="@WIX_PRODUCT_NAME@ Installation [1]" />
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
-            <Directory Id='@WIX_PROGRAM_FILES_FOLDER_ID@' Name='ProgramFiles'>
+            <Directory Id='ProgramFiles' Name='@WIX_PROGRAM_FILES_FOLDER_ID@'>
                 <Directory Id='AmazonTimestream' Name='Amazon Timestream'>
                     <Directory Id='INSTALLDIR' Name='ODBC Driver'>
-                        <Component Id='Driver' Guid='@WIX_COMPONENT_ID@' Win64='@WIX_COMPONENT_IS_WIN64@'>
-                            <File Id='IgniteOdbcDll' Name='timestream.odbc.dll' DiskId='1' Source='@WIX_ODBC_LIBRARY_PATH@' KeyPath='yes'/>
+                        <Component Id='Driver' Guid='@WIX_COMPONENT_ID_ODBC_LIBRARY@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='TimestreamOdbcDll' Name='timestream.odbc.dll' DiskId='1' Source='@WIX_ODBC_LIBRARY_PATH@' KeyPath='yes'/>
 
                             <RegistryValue Root='HKLM' Key='Software\ODBC\ODBCINST.INI\ODBC Drivers' Name='Amazon Timestream ODBC Driver' Type='string' Value='Installed'/>
 
                             <RegistryKey Id='OdbcDriverRegInfo' Root='HKLM' Key='Software\ODBC\ODBCINST.INI\Amazon Timestream ODBC Driver' ForceCreateOnInstall='yes' ForceDeleteOnUninstall='yes'>
                                 <RegistryValue Type='string' Name='DriverODBCVer' Value='03.00'/>
-                                <RegistryValue Type='string' Name='Driver' Value='[#IgniteOdbcDll]'/>
-                                <RegistryValue Type='string' Name='Setup' Value='[#IgniteOdbcDll]'/>
+                                <RegistryValue Type='string' Name='Driver' Value='[#TimestreamOdbcDll]'/>
+                                <RegistryValue Type='string' Name='Setup' Value='[#TimestreamOdbcDll]'/>
                                 <RegistryValue Type='integer' Name='UsageCount' Value='1'/>
                             </RegistryKey>
+                        </Component>
+			<Component Id='sdk_core' Guid='@WIX_COMPONENT_ID_SDK_CORE@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='sdk_core' Name='aws-cpp-sdk-core.dll' DiskId='1' Source='@WIX_ODBC_SDK_CORE_PATH@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='sdk_ts_query' Guid='@WIX_COMPONENT_ID_SDK_TS_QUERY@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='sdk_ts_query' Name='aws-cpp-sdk-timestream-query.dll' DiskId='1' Source='@WIX_ODBC_SDK_TS_QUERY_PATH@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_auth' Guid='@WIX_COMPONENT_ID_AWS_C_AUTH@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_auth' Name='aws-c-auth.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_AUTH@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_cal' Guid='@WIX_COMPONENT_ID_AWS_C_CAL@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_cal' Name='aws-c-cal.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_CAL@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_common' Guid='@WIX_COMPONENT_ID_AWS_C_COMMON@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_common' Name='aws-c-common.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_COMMON@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_compression' Guid='@WIX_COMPONENT_ID_AWS_C_COMPRESSION@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_compression' Name='aws-c-compression.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_COMPRESSION@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_event_stream' Guid='@WIX_COMPONENT_ID_AWS_C_EVENT_STREAM@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_event_stream' Name='aws-c-event-stream.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_EVENT_STREAM@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_checksums' Guid='@WIX_COMPONENT_ID_AWS_CHECKSUMS@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_checksums' Name='aws-checksums.dll' DiskId='1' Source='@WIX_ODBC_AWS_CHECKSUMS@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_http' Guid='@WIX_COMPONENT_ID_AWS_C_HTTP@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_http' Name='aws-c-http.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_HTTP@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_io' Guid='@WIX_COMPONENT_ID_AWS_C_IO@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_io' Name='aws-c-io.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_IO@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_mqtt' Guid='@WIX_COMPONENT_ID_AWS_C_MQTT@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_mqtt' Name='aws-c-mqtt.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_MQTT@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_crt_cpp' Guid='@WIX_COMPONENT_ID_AWS_CRT_CPP@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_crt_cpp' Name='aws-crt-cpp.dll' DiskId='1' Source='@WIX_ODBC_AWS_CRT_CPP@' KeyPath='yes'/>
+                        </Component>
+			<Component Id='aws_c_s3' Guid='@WIX_COMPONENT_ID_AWS_C_S3@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='aws_c_s3' Name='aws-c-s3.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_S3@' KeyPath='yes'/>
                         </Component>
                     </Directory>
                 </Directory>
@@ -54,6 +93,19 @@
         <Feature Id='Complete' Title='ODBC Driver' Description='@WIX_PRODUCT_NAME@.' Level='1'
             ConfigurableDirectory='INSTALLDIR' Absent='disallow' AllowAdvertise='no' InstallDefault='local'>
             <ComponentRef Id='Driver' />
+            <ComponentRef Id='sdk_core' />
+            <ComponentRef Id='sdk_ts_query' />
+            <ComponentRef Id='aws_c_auth' />
+            <ComponentRef Id='aws_c_cal' />
+            <ComponentRef Id='aws_c_common' />
+            <ComponentRef Id='aws_c_compression' />
+            <ComponentRef Id='aws_c_event_stream' />
+            <ComponentRef Id='aws_checksums' />
+            <ComponentRef Id='aws_c_http' />
+            <ComponentRef Id='aws_c_io' />
+            <ComponentRef Id='aws_c_mqtt' />
+            <ComponentRef Id='aws_crt_cpp' />
+            <ComponentRef Id='aws_c_s3' />
         </Feature>
 
         <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />

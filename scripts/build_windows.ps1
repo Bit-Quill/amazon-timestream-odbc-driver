@@ -31,5 +31,5 @@ $DRIVER_BIN_DIR = "$DRIVER_BUILD_DIR\..\bin\$CONFIGURATION"
 New-Item -Path $DRIVER_BIN_DIR -ItemType Directory -Force | Out-Null
 
 if (Test-Path -Path $DRIVER_BUILD_DIR\$CONFIGURATION) {
-    Copy-Item $DRIVER_BUILD_DIR\$CONFIGURATION\* $DRIVER_BIN_DIR
+    Copy-Item $DRIVER_BUILD_DIR\$CONFIGURATION\* $DRIVER_BIN_DIR -force -recurse
 }
