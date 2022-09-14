@@ -69,6 +69,12 @@ SQLRETURN SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType, SQLPOINTER infoValue,
                 << infoValueMax << ", " << std::hex
                 << reinterpret_cast< size_t >(length));
 
+  // TODO Establish successful connection on iODBC
+  // https://bitquill.atlassian.net/browse/AT-1096
+  // Uncomment this line to connect on iODBC Driver Manager, but note that this
+  // line causes many test failures
+  // return SQL_SUCCESS;
+
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection)
@@ -542,6 +548,9 @@ SQLRETURN SQLFetch(SQLHSTMT stmt) {
 
   LOG_DEBUG_MSG("SQLFetch called");
 
+  // For AT-1095 PowerBI connect to Timestream
+  return SQL_NO_DATA;
+
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
@@ -564,6 +573,9 @@ SQLRETURN SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orientation,
 
   LOG_DEBUG_MSG("SQLFetchScroll called");
   LOG_INFO_MSG("Orientation: " << orientation << " Offset: " << offset);
+
+  // For AT-1095 PowerBI connect to Timestream
+  return SQL_NO_DATA;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -617,7 +629,9 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
     return SQL_INVALID_HANDLE;
   }
 
-  int32_t res = statement->GetColumnNumber();
+  // For AT-1095 PowerBI connect to Timestream
+  int32_t res = 0;
+  //int32_t res = statement->GetColumnNumber();
 
   if (columnNum) {
     *columnNum = static_cast< SQLSMALLINT >(res);
@@ -638,6 +652,9 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
   using odbc::Statement;
 
   LOG_DEBUG_MSG("SQLTables called");
+  
+  // For AT-1095 PowerBI connect to Timestream
+  return SQL_SUCCESS;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -714,6 +731,9 @@ SQLRETURN SQLMoreResults(SQLHSTMT stmt) {
   using odbc::Statement;
 
   LOG_DEBUG_MSG("SQLMoreResults called");
+
+  // For AT-1095 PowerBI connect to Timestream
+  return SQL_NO_DATA;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -794,6 +814,9 @@ SQLRETURN SQLColAttribute(SQLHSTMT stmt, SQLUSMALLINT columnNum,
   LOG_DEBUG_MSG("SQLColAttribute called: "
                 << fieldId << " (" << ColumnMeta::AttrIdToString(fieldId)
                 << ")");
+
+  // For AT-1095 PowerBI connect to Timestream
+  return SQL_SUCCESS;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -1354,6 +1377,9 @@ SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
   using odbc::app::ApplicationDataBuffer;
 
   LOG_DEBUG_MSG("SQLGetData called");
+
+  // For AT-1095 PowerBI connect to Timestream
+  return SQL_NO_DATA;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 

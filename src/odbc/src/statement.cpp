@@ -941,6 +941,9 @@ void Statement::MoreResults() {
 }
 
 SqlResult::Type Statement::InternalMoreResults() {
+  // For AT-1095 PowerBI connect to Timestream
+  return SqlResult::AI_SUCCESS;
+
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
 
@@ -1027,6 +1030,9 @@ int64_t Statement::AffectedRows() {
 }
 
 SqlResult::Type Statement::InternalAffectedRows(int64_t& rowCnt) {
+  // For AT-1095 PowerBI connect to Timestream
+  return SqlResult::AI_SUCCESS;
+
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
 

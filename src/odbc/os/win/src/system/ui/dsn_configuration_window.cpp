@@ -1010,6 +1010,8 @@ void DsnConfigurationWindow::RetrieveBasicAuthParameters(
   LOG_INFO_MSG("Retrieving arguments:");
   LOG_INFO_MSG("Session Token:                   " << sessionTokenStr);
   LOG_INFO_MSG("Profile Name: " << profileNameStr);
+  LOG_INFO_MSG("Access Key Id is " << (accessKeyIdStr.empty() ? "empty" : "not empty"));
+  LOG_INFO_MSG("Secret key is  " << (secretKeyStr.empty() ? "empty" : "not empty"));
   // username and password intentionally not logged for security reasons
 }
 
