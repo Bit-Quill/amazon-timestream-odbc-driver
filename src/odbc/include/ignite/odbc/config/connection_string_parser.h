@@ -39,6 +39,12 @@ class IGNITE_IMPORT_EXPORT ConnectionStringParser {
     /** Connection attribute keyword for Driver attribute. */
     static const std::string driver;
 
+    /** Connection attribute keyword for uid attribute. */
+    static const std::string uid;
+
+    /** Connection attribute keyword for pwd attribute. */
+    static const std::string pwd;
+
     /** Connection attribute keyword for accessKeyId attribute. */
     static const std::string accessKeyId;
 
@@ -57,8 +63,8 @@ class IGNITE_IMPORT_EXPORT ConnectionStringParser {
     /** Connection attribute keyword for connectionTimeout attribute. */
     static const std::string connectionTimeout;
 
-    /** Connection attribute keyword for maxRetryCount attribute. */
-    static const std::string maxRetryCount;
+    /** Connection attribute keyword for maxRetryCountClient attribute. */
+    static const std::string maxRetryCountClient;
 
     /** Connection attribute keyword for maxConnections attribute. */
     static const std::string maxConnections;

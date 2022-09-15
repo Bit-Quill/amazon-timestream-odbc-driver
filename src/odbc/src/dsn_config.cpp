@@ -123,6 +123,18 @@ SettableValue< bool > ReadDsnBool(const char* dsn, const std::string& key,
 
 void ReadDsnConfiguration(const char* dsn, Configuration& config,
                           diagnostic::DiagnosticRecordStorage* diag) {
+  SettableValue< std::string > uid =
+      ReadDsnString(dsn, ConnectionStringParser::Key::uid);
+
+  if (uid.IsSet() && !config.IsUidSet())
+    config.SetUid(uid.GetValue());
+
+  SettableValue< std::string > pwd =
+      ReadDsnString(dsn, ConnectionStringParser::Key::pwd);
+
+  if (pwd.IsSet() && !config.IsPwdSet())
+    config.SetPwd(pwd.GetValue());
+
   SettableValue< std::string > accessKeyId =
       ReadDsnString(dsn, ConnectionStringParser::Key::accessKeyId);
 
@@ -159,11 +171,11 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   if (reqTimeout.IsSet() && !config.IsConnectionTimeoutSet())
     config.SetConnectionTimeout(connectionTimeout.GetValue());
 
-  SettableValue< int32_t > maxRetryCount =
-      ReadDsnInt(dsn, ConnectionStringParser::Key::maxRetryCount);
+  SettableValue< int32_t > maxRetryCountClient =
+      ReadDsnInt(dsn, ConnectionStringParser::Key::maxRetryCountClient);
 
-  if (maxRetryCount.IsSet() && !config.IsMaxRetryCountSet())
-    config.SetMaxRetryCount(maxRetryCount.GetValue());
+  if (maxRetryCountClient.IsSet() && !config.IsMaxRetryCountClientSet())
+    config.SetMaxRetryCountClient(maxRetryCountClient.GetValue());
 
   SettableValue< int32_t > maxConnections =
       ReadDsnInt(dsn, ConnectionStringParser::Key::maxConnections);
@@ -251,7 +263,7 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
 
   if (logLevel.IsSet() && !config.IsLogLevelSet()) {
     LogLevel::Type level =
-        LogLevel::FromString(logLevel.GetValue(), LogLevel::Type::ERROR_LEVEL);
+        LogLevel::FromString(logLevel.GetValue(), LogLevel::Type::WARNING_LEVEL);
     config.SetLogLevel(level);
   }
 

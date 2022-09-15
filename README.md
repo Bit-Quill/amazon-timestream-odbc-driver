@@ -5,9 +5,9 @@
 The ODBC driver for the Amazon Timestream serverless time series database provides an 
 SQL-relational interface for developers and BI tool users.
 
-Full source code is provided. Users should build the library for intended platform.
+Full source code is provided. Users should be able build the library for intended platform.
 
-For build instructions please refer to markdown/setup/developer-guide.md.
+For build instructions please refer to [developer guide](docs/markdown/setup/developer-guide.md).
 
 For details on ODBC driver installation and usage please refer to rest of this document.
 

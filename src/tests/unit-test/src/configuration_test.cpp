@@ -42,14 +42,16 @@ using namespace boost::unit_test;
 namespace {
 const std::string testDriverName = "Test Driver";
 const std::string testDsn = "Test DSN";
+const std::string testUid = "testUid";
+const std::string testPwd = "testPwd";
 const std::string testAccessKeyId = "testAccessKeyId";
 const std::string testSecretKey = "testSecretKey";
 const std::string testSessionToken = "testSessionToken";
-const AuthType::Type testAuthType = AuthType::FromString("aws_profile");
+const AuthType::Type testAuthType = AuthType::FromString("okta");
 const std::string testProfileName = "test-profile";
 const int32_t testReqTimeoutMS = 300;
 const int32_t testConnectionTimeoutMS = 500;
-const int32_t testMaxRetryCount = 3;
+const int32_t testMaxRetryCountClient = 3;
 const int32_t testMaxConnections = 15;
 const std::string testEndpoint = "testEndpoint";
 const std::string testRegion = "testRegion";
@@ -167,13 +169,15 @@ void CheckInvalidBoolValue(const std::string& connectStr,
 
 void CheckConnectionConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetDriver(), testDriverName);
+  BOOST_CHECK_EQUAL(cfg.GetUid(), testUid);
+  BOOST_CHECK_EQUAL(cfg.GetPwd(), testPwd);
   BOOST_CHECK_EQUAL(cfg.GetAccessKeyId(), testAccessKeyId);
   BOOST_CHECK_EQUAL(cfg.GetSecretKey(), testSecretKey);
   BOOST_CHECK_EQUAL(cfg.GetSessionToken(), testSessionToken);
   BOOST_CHECK_EQUAL(cfg.GetProfileName(), testProfileName);
   BOOST_CHECK_EQUAL(cfg.GetReqTimeout(), testReqTimeoutMS);
   BOOST_CHECK_EQUAL(cfg.GetConnectionTimeout(), testConnectionTimeoutMS);
-  BOOST_CHECK_EQUAL(cfg.GetMaxRetryCount(), testMaxRetryCount);
+  BOOST_CHECK_EQUAL(cfg.GetMaxRetryCountClient(), testMaxRetryCountClient);
   BOOST_CHECK_EQUAL(cfg.GetMaxConnections(), testMaxConnections);
   BOOST_CHECK_EQUAL(cfg.GetEndpoint(), testEndpoint);
   BOOST_CHECK_EQUAL(cfg.GetRegion(), testRegion);
@@ -193,28 +197,29 @@ void CheckConnectionConfig(const Configuration& cfg) {
 
   // the expected string is in alphabetical order
   std::stringstream constructor;
-  constructor << "aad_app_id=" << testAadAppId << ';'
-              << "aad_client_secret=" << testAadClientSecret << ';'
-              << "aad_tenant=" << testAadTenant << ';'
-              << "access_key_id=" << testAccessKeyId << ';'
+  constructor << "aadapplicationid=" << testAadAppId << ';'
+              << "aadclientsecret=" << testAadClientSecret << ';'
+              << "aadtenant=" << testAadTenant << ';'
+              << "accesskeyid=" << testAccessKeyId << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
-              << "connection_timeout=" << testConnectionTimeoutMS << ';'
+              << "connectiontimeout=" << testConnectionTimeoutMS << ';'
               << "driver={" << testDriverName << "};"
-              << "endpoint=" << testEndpoint << ';' << "idp_arn=" << testIdPArn
-              << ';' << "idp_host=" << testIdPHost << ';'
-              << "idp_password=" << testIdPPassword << ';'
-              << "idp_user_name=" << testIdPUserName << ';'
-              << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
-              << "log_path=" << testLogPath << ';'
-              << "max_connections=" << testMaxConnections << ';'
-              << "max_retry_count=" << testMaxRetryCount << ';'
-              << "okta_app_id=" << testOktaAppId << ';'
-              << "profile_name=" << testProfileName << ";"
-              << "region=" << testRegion << ';'
-              << "request_timeout=" << testReqTimeoutMS << ';'
-              << "role_arn=" << testRoleArn << ';'
-              << "secret_key=" << testSecretKey << ';'
-              << "session_token=" << testSessionToken << ';';
+              << "endpointoverride=" << testEndpoint << ';'
+              << "idparn=" << testIdPArn << ';' << "idphost=" << testIdPHost
+              << ';' << "idppassword=" << testIdPPassword << ';'
+              << "idpusername=" << testIdPUserName << ';'
+              << "loglevel=" << LogLevel::ToString(testLogLevel) << ';'
+              << "logoutput=" << testLogPath << ';'
+              << "maxconnections=" << testMaxConnections << ';'
+              << "maxretrycountclient=" << testMaxRetryCountClient << ';'
+              << "oktaapplicationid=" << testOktaAppId << ';'
+              << "profilename=" << testProfileName << ";"
+              << "pwd=" << testPwd << ';' << "region=" << testRegion << ';'
+              << "requesttimeout=" << testReqTimeoutMS << ';'
+              << "rolearn=" << testRoleArn << ';'
+              << "secretkey=" << testSecretKey << ';'
+              << "sessiontoken=" << testSessionToken << ';' << "uid=" << testUid
+              << ';';
   const std::string& expectedStr = constructor.str();
 
   BOOST_CHECK_EQUAL(ignite::odbc::common::ToLower(cfg.ToConnectString()),
@@ -229,6 +234,8 @@ void CheckDsnConfig(const Configuration& cfg) {
   // path/level.
   BOOST_CHECK_EQUAL(cfg.GetDriver(), testDriverName);
   BOOST_CHECK_EQUAL(cfg.GetDsn(), testDsn);
+  BOOST_CHECK_EQUAL(cfg.GetUid(), Configuration::DefaultValue::uid);
+  BOOST_CHECK_EQUAL(cfg.GetPwd(), Configuration::DefaultValue::pwd);
   BOOST_CHECK_EQUAL(cfg.GetAccessKeyId(),
                     Configuration::DefaultValue::accessKeyId);
   BOOST_CHECK_EQUAL(cfg.GetSecretKey(), Configuration::DefaultValue::secretKey);
@@ -240,8 +247,8 @@ void CheckDsnConfig(const Configuration& cfg) {
                     Configuration::DefaultValue::reqTimeout);
   BOOST_CHECK_EQUAL(cfg.GetConnectionTimeout(),
                     Configuration::DefaultValue::connectionTimeout);
-  BOOST_CHECK_EQUAL(cfg.GetMaxRetryCount(),
-                    Configuration::DefaultValue::maxRetryCount);
+  BOOST_CHECK_EQUAL(cfg.GetMaxRetryCountClient(),
+                    Configuration::DefaultValue::maxRetryCountClient);
   BOOST_CHECK_EQUAL(cfg.GetMaxConnections(),
                     Configuration::DefaultValue::maxConnections);
   BOOST_CHECK_EQUAL(cfg.GetEndpoint(), Configuration::DefaultValue::endpoint);
@@ -264,11 +271,10 @@ void CheckDsnConfig(const Configuration& cfg) {
 BOOST_AUTO_TEST_SUITE(ConfigurationTestSuite)
 
 BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
-  // authType value is the default value (aws_profile) so custom credentials
-  // file will be parsed. Therefore there is no check for authType value in this
-  // test case.
   BOOST_CHECK_NE(testDriverName, Configuration::DefaultValue::driver);
   BOOST_CHECK_NE(testDsn, Configuration::DefaultValue::dsn);
+  BOOST_CHECK_NE(testUid, Configuration::DefaultValue::uid);
+  BOOST_CHECK_NE(testPwd, Configuration::DefaultValue::pwd);
   BOOST_CHECK_NE(testAccessKeyId, Configuration::DefaultValue::accessKeyId);
   BOOST_CHECK_NE(testSecretKey, Configuration::DefaultValue::secretKey);
   BOOST_CHECK_NE(testSessionToken, Configuration::DefaultValue::sessionToken);
@@ -276,11 +282,12 @@ BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
   BOOST_CHECK_NE(testReqTimeoutMS, Configuration::DefaultValue::reqTimeout);
   BOOST_CHECK_NE(testConnectionTimeoutMS,
                  Configuration::DefaultValue::connectionTimeout);
-  BOOST_CHECK_NE(testMaxRetryCount, Configuration::DefaultValue::maxRetryCount);
+  BOOST_CHECK_NE(testMaxRetryCountClient, Configuration::DefaultValue::maxRetryCountClient);
   BOOST_CHECK_NE(testMaxConnections,
                  Configuration::DefaultValue::maxConnections);
   BOOST_CHECK_NE(testEndpoint, Configuration::DefaultValue::endpoint);
   BOOST_CHECK_NE(testRegion, Configuration::DefaultValue::region);
+  BOOST_CHECK(testAuthType != Configuration::DefaultValue::authType);
   BOOST_CHECK_NE(testIdPHost, Configuration::DefaultValue::idPHost);
   BOOST_CHECK_NE(testIdPUserName, Configuration::DefaultValue::idPUserName);
   BOOST_CHECK_NE(testIdPPassword, Configuration::DefaultValue::idPPassword);
@@ -298,28 +305,28 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
 
   std::stringstream constructor;
 
-  constructor << "ACCESS_KEY_ID=" << testAccessKeyId << ';'
-              << "SECRET_KEY=" << testSecretKey << ';'
-              << "SESSION_TOKEN=" << testSessionToken << ';'
-              << "LOG_LEVEL=" << LogLevel::ToString(testLogLevel) << ';'
-              << "LOG_PATH=" << testLogPath << ';' 
+  constructor << "UID=" << testUid << ';' << "PWD=" << testPwd << ';'
+              << "ACCESSKEYID=" << testAccessKeyId << ';'
+              << "SECRETKEY=" << testSecretKey << ';'
+              << "SESSIONTOKEN=" << testSessionToken << ';'
+              << "LOGLEVEL=" << LogLevel::ToString(testLogLevel) << ';'
+              << "LOGOUTPUT=" << testLogPath << ';'
               << "AUTH=" << AuthType::ToString(testAuthType) << ';'
-              << "PROFILE_NAME=" << testProfileName << ';'
-              << "REQUEST_TIMEOUT=" << testReqTimeoutMS << ';'
-              << "CONNECTION_TIMEOUT=" << testConnectionTimeoutMS << ';'
-              << "MAX_RETRY_COUNT=" << testMaxRetryCount << ';'
-              << "MAX_CONNECTIONS=" << testMaxConnections << ';'
-              << "ENDPOINT=" << testEndpoint << ';' 
-              << "REGION=" << testRegion << ';' 
-              << "IDP_HOST=" << testIdPHost << ';'
-              << "IDP_USER_NAME=" << testIdPUserName << ';'
-              << "IDP_PASSWORD=" << testIdPPassword << ';'
-              << "IDP_ARN=" << testIdPArn << ';'
-              << "OKTA_APP_ID=" << testOktaAppId << ';'
-              << "ROLE_ARN=" << testRoleArn << ';'
-              << "AAD_APP_ID=" << testAadAppId << ';'
-              << "AAD_CLIENT_SECRET=" << testAadClientSecret << ';'
-              << "AAD_TENANT=" << testAadTenant << ';' << "DRIVER={"
+              << "PROFILENAME=" << testProfileName << ';'
+              << "REQUESTTIMEOUT=" << testReqTimeoutMS << ';'
+              << "CONNECTIONTIMEOUT=" << testConnectionTimeoutMS << ';'
+              << "MAXRETRYCOUNTCLIENT=" << testMaxRetryCountClient << ';'
+              << "MAXCONNECTIONS=" << testMaxConnections << ';'
+              << "ENDPOINTOVERRIDE=" << testEndpoint << ';'
+              << "REGION=" << testRegion << ';' << "IDPHOST=" << testIdPHost
+              << ';' << "IDPUSERNAME=" << testIdPUserName << ';'
+              << "IDPPASSWORD=" << testIdPPassword << ';'
+              << "IDPARN=" << testIdPArn << ';'
+              << "OKTAAPPLICATIONID=" << testOktaAppId << ';'
+              << "ROLEARN=" << testRoleArn << ';'
+              << "AADAPPLICATIONID=" << testAadAppId << ';'
+              << "AADCLIENTSECRET=" << testAadClientSecret << ';'
+              << "AADTENANT=" << testAadTenant << ';' << "DRIVER={"
               << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -334,28 +341,28 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
 
   std::stringstream constructor;
 
-  constructor << "access_key_id=" << testAccessKeyId << ';'
-              << "secret_key=" << testSecretKey << ';'
-              << "session_token=" << testSessionToken << ';'
-              << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
-              << "log_path=" << testLogPath << ';'
+  constructor << "uid=" << testUid << ';' << "pwd=" << testPwd << ';'
+              << "accesskeyid=" << testAccessKeyId << ';'
+              << "secretkey=" << testSecretKey << ';'
+              << "sessiontoken=" << testSessionToken << ';'
+              << "loglevel=" << LogLevel::ToString(testLogLevel) << ';'
+              << "logoutput=" << testLogPath << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
-              << "profile_name=" << testProfileName << ';'
-              << "request_timeout=" << testReqTimeoutMS << ';'
-              << "connection_timeout=" << testConnectionTimeoutMS << ';'
-              << "max_retry_count=" << testMaxRetryCount << ';'
-              << "max_connections=" << testMaxConnections << ';'
-              << "endpoint=" << testEndpoint << ';' 
-              << "region=" << testRegion << ';' 
-              << "idp_host=" << testIdPHost << ';'
-              << "idp_user_name=" << testIdPUserName << ';'
-              << "idp_password=" << testIdPPassword << ';'
-              << "idp_arn=" << testIdPArn << ';'
-              << "okta_app_id=" << testOktaAppId << ';'
-              << "role_arn=" << testRoleArn << ';'
-              << "aad_app_id=" << testAadAppId << ';'
-              << "aad_client_secret=" << testAadClientSecret << ';'
-              << "aad_tenant=" << testAadTenant << ';' << "driver={"
+              << "profilename=" << testProfileName << ';'
+              << "requesttimeout=" << testReqTimeoutMS << ';'
+              << "connectiontimeout=" << testConnectionTimeoutMS << ';'
+              << "maxretrycountclient=" << testMaxRetryCountClient << ';'
+              << "maxconnections=" << testMaxConnections << ';'
+              << "endpointoverride=" << testEndpoint << ';'
+              << "region=" << testRegion << ';' << "idphost=" << testIdPHost
+              << ';' << "idpusername=" << testIdPUserName << ';'
+              << "idppassword=" << testIdPPassword << ';'
+              << "idparn=" << testIdPArn << ';'
+              << "oktaapplicationid=" << testOktaAppId << ';'
+              << "rolearn=" << testRoleArn << ';'
+              << "aadapplicationid=" << testAadAppId << ';'
+              << "aadclientsecret=" << testAadClientSecret << ';'
+              << "aadtenant=" << testAadTenant << ';' << "driver={"
               << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -370,28 +377,28 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
 
   std::stringstream constructor;
 
-  constructor << "access_key_id=" << testAccessKeyId << ';'
-              << "secret_key=" << testSecretKey << ';'
-              << "session_token=" << testSessionToken << ';'
-              << "log_level=" << LogLevel::ToString(testLogLevel) << ';'
-              << "log_path=" << testLogPath << ';'
+  constructor << "uid=" << testUid << ';' << "pwd=" << testPwd << ';'
+              << "accesskeyid=" << testAccessKeyId << ';'
+              << "secretkey=" << testSecretKey << ';'
+              << "sessiontoken=" << testSessionToken << ';'
+              << "loglevel=" << LogLevel::ToString(testLogLevel) << ';'
+              << "logoutput=" << testLogPath << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
-              << "profile_name=" << testProfileName << ';'
-              << "request_timeout=" << testReqTimeoutMS << ';'
-              << "connection_timeout=" << testConnectionTimeoutMS << ';'
-              << "max_retry_count=" << testMaxRetryCount << ';'
-              << "max_connections=" << testMaxConnections << ';'
-              << "endpoint=" << testEndpoint << ';' 
-              << "region=" << testRegion << ';' 
-              << "idp_host=" << testIdPHost << ';'
-              << "idp_user_name=" << testIdPUserName << ';'
-              << "idp_password=" << testIdPPassword << ';'
-              << "idp_arn=" << testIdPArn << ';'
-              << "okta_app_id=" << testOktaAppId << ';'
-              << "role_arn=" << testRoleArn << ';'
-              << "aad_app_id=" << testAadAppId << ';'
-              << "aad_client_secret=" << testAadClientSecret << ';'
-              << "aad_tenant=" << testAadTenant << ';' << "driver={"
+              << "profilename=" << testProfileName << ';'
+              << "requesttimeout=" << testReqTimeoutMS << ';'
+              << "connectiontimeout=" << testConnectionTimeoutMS << ';'
+              << "maxretrycountclient=" << testMaxRetryCountClient << ';'
+              << "maxconnections=" << testMaxConnections << ';'
+              << "endpointoverride=" << testEndpoint << ';'
+              << "region=" << testRegion << ';' << "idphost=" << testIdPHost
+              << ';' << "idpusername=" << testIdPUserName << ';'
+              << "idppassword=" << testIdPPassword << ';'
+              << "idparn=" << testIdPArn << ';'
+              << "oktaapplicationid=" << testOktaAppId << ';'
+              << "rolearn=" << testRoleArn << ';'
+              << "aadapplicationid=" << testAadAppId << ';'
+              << "aadclientsecret=" << testAadClientSecret << ';'
+              << "aadtenant=" << testAadTenant << ';' << "driver={"
               << testDriverName << "};";
 
   std::string connectStr = constructor.str();
@@ -408,28 +415,28 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
 
   std::stringstream constructor;
 
-  constructor << "Access_Key_Id=" << testAccessKeyId << ';'
-              << "Secret_Key=" << testSecretKey << ';'
-              << "Session_Token=" << testSessionToken << ';'
-              << "Log_Level=" << LogLevel::ToString(testLogLevel) << ';'
-              << "Log_Path=" << testLogPath << ';'
+  constructor << "Uid=" << testUid << ';' << "Pwd=" << testPwd << ';'
+              << "AccessKeyId=" << testAccessKeyId << ';'
+              << "SecretKey=" << testSecretKey << ';'
+              << "SessionToken=" << testSessionToken << ';'
+              << "LogLevel=" << LogLevel::ToString(testLogLevel) << ';'
+              << "LogOutput=" << testLogPath << ';'
               << "Auth=" << AuthType::ToString(testAuthType) << ';'
-              << "Profile_Name=" << testProfileName << ';'
-              << "Request_Timeout=" << testReqTimeoutMS << ';'
-              << "Connection_Timeout=" << testConnectionTimeoutMS << ';'
-              << "Max_Retry_Count=" << testMaxRetryCount << ';'
-              << "Max_Connections=" << testMaxConnections << ';'
-              << "Endpoint=" << testEndpoint << ';' 
-              << "Region=" << testRegion << ';' 
-              << "IdP_Host=" << testIdPHost << ';'
-              << "IdP_User_Name=" << testIdPUserName << ';'
-              << "IdP_Password=" << testIdPPassword << ';'
-              << "IdP_Arn=" << testIdPArn << ';'
-              << "Okta_App_Id=" << testOktaAppId << ';'
-              << "Role_Arn=" << testRoleArn << ';'
-              << "Aad_App_Id=" << testAadAppId << ';'
-              << "Aad_Client_Secret=" << testAadClientSecret << ';'
-              << "Aad_Tenant=" << testAadTenant << ';' << "Driver={"
+              << "ProfileName=" << testProfileName << ';'
+              << "RequestTimeout=" << testReqTimeoutMS << ';'
+              << "ConnectionTimeout=" << testConnectionTimeoutMS << ';'
+              << "MaxRetryCountClient=" << testMaxRetryCountClient << ';'
+              << "MaxConnections=" << testMaxConnections << ';'
+              << "EndpointOverride=" << testEndpoint << ';'
+              << "Region=" << testRegion << ';' << "IdPHost=" << testIdPHost
+              << ';' << "IdPUserName=" << testIdPUserName << ';'
+              << "IdPPassword=" << testIdPPassword << ';'
+              << "IdPArn=" << testIdPArn << ';'
+              << "OktaApplicationID=" << testOktaAppId << ';'
+              << "RoleArn=" << testRoleArn << ';'
+              << "AadApplicationID=" << testAadAppId << ';'
+              << "AadClientSecret=" << testAadClientSecret << ';'
+              << "AadTenant=" << testAadTenant << ';' << "Driver={"
               << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -444,28 +451,30 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
 
   std::stringstream constructor;
 
-  constructor << "ACCESS_KEY_ID =" << testAccessKeyId << ';'
-              << "SECRET_KEY=" << testSecretKey << ';'
-              << "SESSION_TOKEN=" << testSessionToken << ';'
-              << "  LOG_LEVEL =" << LogLevel::ToString(testLogLevel) << "  ; "
-              << "LOG_PATH=  " << testLogPath << " ;"
+  constructor << "UID=      " << testUid << "      ;"
+              << "PWD   =  " << testPwd << ";  "
+              << "ACCESSKEYID =" << testAccessKeyId << ';'
+              << "SECRETKEY=" << testSecretKey << ';'
+              << "SESSIONTOKEN=" << testSessionToken << ';'
+              << "  LOGLEVEL =" << LogLevel::ToString(testLogLevel) << "  ; "
+              << "LOGOUTPUT=  " << testLogPath << " ;"
               << " AUTH=" << AuthType::ToString(testAuthType) << ';'
-              << "     PROFILE_NAME  = " << testProfileName << "    ; "
-              << "  REQUEST_TIMEOUT=" << testReqTimeoutMS << "  ;  "
-              << "CONNECTION_TIMEOUT=  " << testConnectionTimeoutMS << ";  "
-              << "MAX_RETRY_COUNT=  " << testMaxRetryCount << " ;"
-              << "MAX_CONNECTIONS=  " << testMaxConnections << "  ; "
-              << "ENDPOINT=" << testEndpoint << "  ; "
+              << "     PROFILENAME  = " << testProfileName << "    ; "
+              << "  REQUESTTIMEOUT=" << testReqTimeoutMS << "  ;  "
+              << "CONNECTIONTIMEOUT=  " << testConnectionTimeoutMS << ";  "
+              << "MAXRETRYCOUNTCLIENT=  " << testMaxRetryCountClient << " ;"
+              << "MAXCONNECTIONS=  " << testMaxConnections << "  ; "
+              << "ENDPOINTOVERRIDE=" << testEndpoint << "  ; "
               << "REGION=" << testRegion << "  ; "
-              << "IDP_HOST=" << testIdPHost << ";  "
-              << "IDP_USER_NAME=" << testIdPUserName << ";  "
-              << "IDP_PASSWORD=" << testIdPPassword << "  ; "
-              << "IDP_ARN=" << testIdPArn << " ;   "
-              << "OKTA_APP_ID=" << testOktaAppId << "  ;  "
-              << "ROLE_ARN=" << testRoleArn << ";  "
-              << "AAD_APP_ID=" << testAadAppId << ";  "
-              << "AAD_CLIENT_SECRET=" << testAadClientSecret << "  ; "
-              << "AAD_TENANT=" << testAadTenant << "    ;"
+              << "IDPHOST=" << testIdPHost << ";  "
+              << "IDPUSERNAME=" << testIdPUserName << ";  "
+              << "IDPPASSWORD=" << testIdPPassword << "  ; "
+              << "IDPARN=" << testIdPArn << " ;   "
+              << "OKTAAPPLICATIONID=" << testOktaAppId << "  ;  "
+              << "ROLEARN=" << testRoleArn << ";  "
+              << "AADAPPLICATIONID=" << testAadAppId << ";  "
+              << "AADCLIENTSECRET=" << testAadClientSecret << "  ; "
+              << "AADTENANT=" << testAadTenant << "    ;"
               << "DRIVER = {" << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -488,15 +497,19 @@ BOOST_AUTO_TEST_CASE(TestConnectStringValidAuthType) {
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectStringInvalidLogLevel) {
-  CheckInvalidLogLevel("log_level=debug_level;");
-  CheckInvalidLogLevel("log_level=off_level;");
+  CheckInvalidLogLevel("loglevel=debug;");
+  CheckInvalidLogLevel("loglevel=off;");
+  CheckInvalidLogLevel("loglevel=5;");
+  CheckInvalidLogLevel("loglevel=6;");
+  CheckInvalidLogLevel("loglevel=-1;");
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectStringValidLogLevel) {
-  CheckValidLogLevel("log_level=debug;", LogLevel::Type::DEBUG_LEVEL);
-  CheckValidLogLevel("log_level=info;", LogLevel::Type::INFO_LEVEL);
-  CheckValidLogLevel("log_level=error;", LogLevel::Type::ERROR_LEVEL);
-  CheckValidLogLevel("log_level=off;", LogLevel::Type::OFF);
+  CheckValidLogLevel("loglevel=4;", LogLevel::Type::DEBUG_LEVEL);
+  CheckValidLogLevel("loglevel=3;", LogLevel::Type::INFO_LEVEL);
+  CheckValidLogLevel("loglevel=2;", LogLevel::Type::WARNING_LEVEL);
+  CheckValidLogLevel("loglevel=1;", LogLevel::Type::ERROR_LEVEL);
+  CheckValidLogLevel("loglevel=0;", LogLevel::Type::OFF);
 }
 
 BOOST_AUTO_TEST_CASE(TestDsnStringUppercase) {
@@ -598,7 +611,8 @@ BOOST_AUTO_TEST_CASE(TestParseDriverVersion) {
   BOOST_CHECK_EQUAL(
       DsnConfigurationWindow::GetParsedDriverVersion("08.01.0001"), L"V.8.1.1");
   BOOST_CHECK_EQUAL(
-      DsnConfigurationWindow::GetParsedDriverVersion("88.88.8888"), L"V.88.88.8888");
+      DsnConfigurationWindow::GetParsedDriverVersion("88.88.8888"),
+      L"V.88.88.8888");
 }
 #endif
 

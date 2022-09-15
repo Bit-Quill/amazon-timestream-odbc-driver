@@ -729,7 +729,7 @@ int DsnConfigurationWindow::CreateAdvancedOptionsGroup(int posX, int posY,
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = std::to_wstring(config.GetMaxRetryCount());
+  wVal = std::to_wstring(config.GetMaxRetryCountClient());
   maxRetryCountClientLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH,
                                          ROW_HEIGHT, L"Max retry count client:",
                                          ChildId::MAX_RETRY_COUNT_CLIENT_LABEL);
@@ -775,7 +775,8 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
 
   // the order of add string needs to match the definition of the log_level.h
   // file
-  for (int i = 0; i <= 3; i++) {
+  int logLevelUpperLimit = static_cast< int >(LogLevel::Type::UNKNOWN);
+  for (int i = 0; i < logLevelUpperLimit; i++) {
     logLevelComboBox->AddString(
         LogLevel::ToCBString(static_cast< LogLevel::Type >(i)));
   }
@@ -1101,7 +1102,7 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
           : common::LexicalCast< int32_t >(connectionTimeoutStr);
   int32_t reqTimeout =
       reqTimeoutStr.empty() ? 0 : common::LexicalCast< int32_t >(reqTimeoutStr);
-  int32_t maxRetryCount =
+  int32_t maxRetryCountClient =
       maxRetryCountStr.empty()
           ? 0
           : common::LexicalCast< int32_t >(maxRetryCountStr);
@@ -1115,12 +1116,12 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
 
   cfg.SetConnectionTimeout(connectionTimeout);
   cfg.SetReqTimeout(reqTimeout);
-  cfg.SetMaxRetryCount(maxRetryCount);
+  cfg.SetMaxRetryCountClient(maxRetryCountClient);
   cfg.SetMaxConnections(maxCon);
 
   LOG_INFO_MSG("Connection timeout (ms):  " << connectionTimeout);
   LOG_INFO_MSG("Request timeout (ms): " << reqTimeout);
-  LOG_INFO_MSG("Max retry count:      " << maxRetryCount);
+  LOG_INFO_MSG("Max retry count client:      " << maxRetryCountClient);
   LOG_INFO_MSG("Max connections:      " << maxCon);
 }
 
@@ -1139,13 +1140,14 @@ void DsnConfigurationWindow::RetrieveLogParameters(
   std::string logLevelStr = utility::ToUtf8(logLevelWStr);
   std::string logPathStr = utility::ToUtf8(logPathWStr);
 
-  LogLevel::Type logLevel =
-      LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
+  LogLevel::Type logLevel = 
+      static_cast< LogLevel::Type >(logLevelComboBox->GetCBSelection());
 
   cfg.SetLogLevel(logLevel);
   cfg.SetLogPath(logPathStr);
 
   LOG_INFO_MSG("Log level:    " << logLevelStr);
+  LOG_DEBUG_MSG("LogLevel Type string from combobox" << logLevelStr);
   LOG_DEBUG_MSG("LogLevel::Type logLevel: " << static_cast< int >(logLevel));
   LOG_INFO_MSG("Log path:     " << logPathStr);
 }

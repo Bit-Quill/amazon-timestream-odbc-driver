@@ -406,11 +406,11 @@ SQLRETURN SQLConnect(SQLHDBC conn, SQLWCHAR* serverName,
                              &connection->GetDiagnosticRecords());
   if (userName) {
     std::string userNameStr = SqlWcharToString(userName, userNameLen);
-    config.SetAccessKeyId(userNameStr);
+    config.SetUid(userNameStr);
   }
   if (auth) {
     std::string passwordStr = SqlWcharToString(auth, authLen);
-    config.SetSecretKey(passwordStr);
+    config.SetPwd(passwordStr);
   }
 
   connection->Establish(config);

@@ -16,6 +16,7 @@
  */
 
 #include "ignite/odbc/config/connection_string_parser.h"
+#include "ignite/odbc/log.h"
 
 #include <vector>
 #include <fstream>
@@ -31,32 +32,34 @@ namespace odbc {
 namespace config {
 const std::string ConnectionStringParser::Key::dsn = "dsn";
 const std::string ConnectionStringParser::Key::driver = "driver";
-const std::string ConnectionStringParser::Key::accessKeyId = "access_key_id";
-const std::string ConnectionStringParser::Key::secretKey = "secret_key";
-const std::string ConnectionStringParser::Key::sessionToken = "session_token";
-const std::string ConnectionStringParser::Key::profileName = "profile_name";
-const std::string ConnectionStringParser::Key::reqTimeout = "request_timeout";
+const std::string ConnectionStringParser::Key::uid = "uid";
+const std::string ConnectionStringParser::Key::pwd = "pwd";
+const std::string ConnectionStringParser::Key::accessKeyId = "accesskeyid";
+const std::string ConnectionStringParser::Key::secretKey = "secretkey";
+const std::string ConnectionStringParser::Key::sessionToken = "sessiontoken";
+const std::string ConnectionStringParser::Key::profileName = "profilename";
+const std::string ConnectionStringParser::Key::reqTimeout = "requesttimeout";
 const std::string ConnectionStringParser::Key::connectionTimeout =
-    "connection_timeout";
-const std::string ConnectionStringParser::Key::maxRetryCount =
-    "max_retry_count";
+    "connectiontimeout";
+const std::string ConnectionStringParser::Key::maxRetryCountClient =
+    "maxretrycountclient";
 const std::string ConnectionStringParser::Key::maxConnections =
-    "max_connections";
-const std::string ConnectionStringParser::Key::endpoint = "endpoint";
+    "maxconnections";
+const std::string ConnectionStringParser::Key::endpoint = "endpointoverride";
 const std::string ConnectionStringParser::Key::region = "region";
 const std::string ConnectionStringParser::Key::authType = "auth";
-const std::string ConnectionStringParser::Key::idPHost = "idp_host";
-const std::string ConnectionStringParser::Key::idPUserName = "idp_user_name";
-const std::string ConnectionStringParser::Key::idPPassword = "idp_password";
-const std::string ConnectionStringParser::Key::idPArn = "idp_arn";
-const std::string ConnectionStringParser::Key::oktaAppId = "okta_app_id";
-const std::string ConnectionStringParser::Key::roleArn = "role_arn";
-const std::string ConnectionStringParser::Key::aadAppId = "aad_app_id";
+const std::string ConnectionStringParser::Key::idPHost = "idphost";
+const std::string ConnectionStringParser::Key::idPUserName = "idpusername";
+const std::string ConnectionStringParser::Key::idPPassword = "idppassword";
+const std::string ConnectionStringParser::Key::idPArn = "idparn";
+const std::string ConnectionStringParser::Key::oktaAppId = "oktaapplicationid";
+const std::string ConnectionStringParser::Key::roleArn = "rolearn";
+const std::string ConnectionStringParser::Key::aadAppId = "aadapplicationid";
 const std::string ConnectionStringParser::Key::aadClientSecret =
-    "aad_client_secret";
-const std::string ConnectionStringParser::Key::aadTenant = "aad_tenant";
-const std::string ConnectionStringParser::Key::logLevel = "log_level";
-const std::string ConnectionStringParser::Key::logPath = "log_path";
+    "aadclientsecret";
+const std::string ConnectionStringParser::Key::aadTenant = "aadtenant";
+const std::string ConnectionStringParser::Key::logLevel = "loglevel";
+const std::string ConnectionStringParser::Key::logPath = "logoutput";
 
 ConnectionStringParser::ConnectionStringParser(Configuration& cfg) : cfg(cfg) {
   // No-op.
@@ -243,12 +246,12 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     cfg.SetConnectionTimeout(static_cast< uint32_t >(numValue));
-  } else if (lKey == Key::maxRetryCount) {
+  } else if (lKey == Key::maxRetryCountClient) {
     if (value.empty()) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count attribute value is empty. Using "
+            MakeErrorMessage("Max Retry Count Client attribute value is empty. Using "
                              "default value.",
                              key, value));
       }
@@ -259,7 +262,7 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count attribute value contains "
+            MakeErrorMessage("Max Retry Count Client attribute value contains "
                              "unexpected characters."
                              " Using default value.",
                              key, value));
@@ -271,7 +274,7 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count attribute value is too large. "
+            MakeErrorMessage("Max Retry Count Client attribute value is too large. "
                              "Using default value.",
                              key, value));
       }
@@ -284,18 +287,18 @@ void ConnectionStringParser::HandleAttributePair(
     conv << value;
     conv >> numValue;
 
-    if (numValue <= 0 || numValue > UINT32_MAX) {
+    if (numValue < 0 || numValue > UINT32_MAX) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count attribute value is out of range. "
+            MakeErrorMessage("Max Retry Count Client attribute value is out of range. "
                              "Using default value.",
                              key, value));
       }
       return;
     }
 
-    cfg.SetMaxRetryCount(static_cast< uint32_t >(numValue));
+    cfg.SetMaxRetryCountClient(static_cast< uint32_t >(numValue));
   } else if (lKey == Key::maxConnections) {
     if (value.empty()) {
       if (diag) {
@@ -374,15 +377,23 @@ void ConnectionStringParser::HandleAttributePair(
     if (!cfg.GetIdPUserName().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing IDP_USER_NAME (have you specified it several times?");
+          "Re-writing IdPUserName (have you specified it several times?");
     }
+
+    if (!cfg.GetUid().empty()) {
+      LOG_WARNING_MSG("UID is already set, but IdPUserName is being set too. Only one of {UID, IdPUserName} is needed. UID will take precedence when making a connection.");
+    }    
 
     cfg.SetIdPUserName(value);
   } else if (lKey == Key::idPPassword) {
     if (!cfg.GetIdPPassword().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing IDP_PASSWORD (have you specified it several times?");
+          "Re-writing IdPPassword (have you specified it several times?");
+    }
+
+    if (!cfg.GetPwd().empty()) {
+      LOG_WARNING_MSG("PWD is already set, but IdPPassword is being set too. Only one of {PWD, IdPPassword} is needed. PWD will take precedence when making a connection.");
     }
 
     cfg.SetIdPPassword(value);
@@ -398,7 +409,7 @@ void ConnectionStringParser::HandleAttributePair(
     if (!cfg.GetAadClientSecret().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing AAD_CLIENT_SECRET (have you specified it several times?");
+          "Re-writing AADClientSecret (have you specified it several times?");
     }
 
     cfg.SetAadClientSecret(value);
@@ -411,7 +422,7 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
                               "Specified Log Level is not supported. "
-                              "Default value used ('error').");
+                              "Default value used ('2').");
       }
       return;
     }
@@ -421,11 +432,47 @@ void ConnectionStringParser::HandleAttributePair(
     cfg.SetLogPath(value);
   } else if (lKey == Key::driver) {
     cfg.SetDriver(value);
+  } else if (lKey == Key::uid) {
+    if (!cfg.GetUid().empty() && diag) {
+      diag->AddStatusRecord(
+          SqlState::S01S02_OPTION_VALUE_CHANGED,
+          "Re-writing UID (have you specified it several times?");
+    }
+
+    if (!cfg.GetAccessKeyId().empty()) {
+      LOG_WARNING_MSG("AccessKeyId is already set, but UID is being set too. Only one of {UID, AccessKeyId} is needed. UID will take precedence when making a connection.");
+    }
+
+    if (!cfg.GetIdPUserName().empty()) {
+      LOG_WARNING_MSG("IdPUserName is already set, but UID is being set too. Only one of {UID, IdPUserName} is needed. UID will take precedence when making a connection.");
+    }
+
+    cfg.SetUid(value);
+  } else if (lKey == Key::pwd) {
+    if (!cfg.GetPwd().empty() && diag) {
+      diag->AddStatusRecord(
+          SqlState::S01S02_OPTION_VALUE_CHANGED,
+          "Re-writing PWD (have you specified it several times?");
+    }
+
+    if (!cfg.GetSecretKey().empty()) {
+      LOG_WARNING_MSG("SecretKey is already set, but PWD is being set too. Only one of {PWD, SecretKey} is needed. PWD will take precedence when making a connection.");
+    }
+
+    if (!cfg.GetIdPPassword().empty()) {
+      LOG_WARNING_MSG("IdPPassword is already set, but PWD is being set too. Only one of {PWD, IdPPassword} is needed. PWD will take precedence when making a connection.");
+    }
+
+    cfg.SetPwd(value);
   } else if (lKey == Key::accessKeyId) {
     if (!cfg.GetAccessKeyId().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing ACCESS_KEY_ID (have you specified it several times?");
+          "Re-writing AccessKeyId (have you specified it several times?");
+    }
+
+    if (!cfg.GetUid().empty()) {
+      LOG_WARNING_MSG("UID is already set, but AccessKeyId is being set too. Only one of {UID, AccessKeyId} is needed. UID will take precedence when making a connection.");
     }
 
     cfg.SetAccessKeyId(value);
@@ -433,7 +480,11 @@ void ConnectionStringParser::HandleAttributePair(
     if (!cfg.GetSecretKey().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing SECRET_KEY (have you specified it several times?");
+          "Re-writing SecretKey (have you specified it several times?");
+    }
+
+    if (!cfg.GetPwd().empty()) {
+      LOG_WARNING_MSG("PWD is already set, but SecretKey is being set too. Only one of {PWD, SecretKey} is needed. PWD will take precedence when making a connection.");
     }
 
     cfg.SetSecretKey(value);
@@ -441,7 +492,7 @@ void ConnectionStringParser::HandleAttributePair(
     if (!cfg.GetSessionToken().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
-          "Re-writing SESSION_TOKEN (have you specified it several times?");
+          "Re-writing SessionToken (have you specified it several times?");
     }
 
     cfg.SetSessionToken(value);

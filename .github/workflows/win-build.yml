@@ -20,7 +20,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   VCPKG_ROOT: "c:/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
-  TIMESTREAM_LOG_LEVEL: "debug"
+  TIMESTREAM_LOG_LEVEL: "4"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
 
 jobs:

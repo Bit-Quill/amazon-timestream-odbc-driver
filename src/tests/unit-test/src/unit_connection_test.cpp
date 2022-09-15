@@ -43,6 +43,10 @@ using namespace ignite::odbc;
 // Connection (Basic Authentication) Settings
 const std::string Configuration::DefaultValue::dsn = DEFAULT_DSN;
 const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
+const std::string Configuration::DefaultValue::uid =
+    DEFAULT_UID; 
+    const std::string Configuration::DefaultValue::pwd =
+    DEFAULT_PWD;
 const std::string Configuration::DefaultValue::accessKeyId =
     DEFAULT_ACCESS_KEY_ID;
 const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
@@ -57,8 +61,8 @@ const std::string Configuration::DefaultValue::profileName =
 const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
 const int32_t Configuration::DefaultValue::connectionTimeout =
     DEFAULT_CONNECTION_TIMEOUT;
-const int32_t Configuration::DefaultValue::maxRetryCount =
-    DEFAULT_MAX_RETRY_COUNT;
+const int32_t Configuration::DefaultValue::maxRetryCountClient =
+    DEFAULT_MAX_RETRY_COUNT_CLIENT;
 const int32_t Configuration::DefaultValue::maxConnections =
     DEFAULT_MAX_CONNECTIONS;
 
@@ -123,7 +127,7 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
     using ignite::odbc::LogLevel;
 
     std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
-    std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
+    std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
 
     LogLevel::Type logLevel = LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
     config.SetLogLevel(logLevel);

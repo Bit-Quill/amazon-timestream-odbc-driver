@@ -110,6 +110,27 @@ BOOST_AUTO_TEST_CASE(TestLogStreamCreatedOnDefaultInstance) {
   // this boost check means that testData is in stringStream
   BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
 
+  // Attempt to write error log to log stream, which should work
+  testData = "debugLvlTest1" + std::to_string(randNum());
+  LOG_ERROR_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write warning log to log stream, which should work
+  testData = "debugLvlTest2" + std::to_string(randNum());
+  LOG_WARNING_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write info log to log stream, which should work
+  testData = "debugLvlTest3" + std::to_string(randNum());
+  LOG_INFO_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
   LOG_DEBUG_MSG(
       "TestLogStreamCreatedOnDefaultInstance ends. Log path/level changes are "
       "expected.");
@@ -176,8 +197,22 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithInfoLevel) {
   // Check that log stream is working
   BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
 
-  // Attempt to write debug log to log stream, which should fail
+  // Attempt to write error log to log stream, which should work
   testData = "infoLvlTest4" + std::to_string(randNum());
+  LOG_ERROR_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write warning log to log stream, which should work
+  testData = "infoLvlTest5" + std::to_string(randNum());
+  LOG_WARNING_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write debug log to log stream, which should fail
+  testData = "infoLvlTest6" + std::to_string(randNum());
   LOG_DEBUG_MSG_TO_STREAM(testData, &stringStream);
 
   // Check that the debug log is not logged
@@ -185,6 +220,99 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithInfoLevel) {
 
   LOG_INFO_MSG(
       "TestLogStreamWithInfoLevel ends. Log path/level changes are expected.");
+
+  // set the original log level / log path back
+  if (logVarSaved)
+    setLoggerVars(logger, origLogPath, origLogLevel);
+}
+
+BOOST_AUTO_TEST_CASE(TestLogStreamWithWarningLevel) {
+  std::minstd_rand randNum;
+  randNum.seed(31);
+
+  std::string logPath = DEFAULT_LOG_PATH;
+  LogLevel::Type logLevel = LogLevel::Type::WARNING_LEVEL;
+
+  std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();
+
+  // save the original log path / log level
+  boost::optional< std::string > origLogPath;
+  boost::optional< LogLevel::Type > origLogLevel;
+  bool logVarSaved = SaveLoggerVars(logger, origLogPath, origLogLevel);
+
+  // set log level and stream
+  logger->SetLogLevel(logLevel);
+  logger->SetLogPath(logPath);
+
+  // check log level
+  LogLevel::Type loggerLogLevel = logger->GetLogLevel();
+  BOOST_CHECK(logLevel == loggerLogLevel);
+
+  std::stringstream stringStream;
+  std::string testData;
+  testData = "warningLvlTest1" + std::to_string(randNum());
+
+  // Write to log file.
+  LOG_WARNING_MSG(
+      "TestLogStreamWithWarningLevel begins. Log path/level changes are "
+      "expected.");
+
+  LOG_WARNING_MSG(testData);
+
+  // Check that log file is working
+  BOOST_CHECK(logger->IsFileStreamOpen());
+  BOOST_CHECK(logger->IsEnabled());
+
+  // check that stringStream does not have testData
+  BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write debug log to log file, which should fail
+  testData = "warningLvlTest2" + std::to_string(randNum());
+  LOG_DEBUG_MSG(testData);
+
+  // Check that the debug log is not logged
+  BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write info log to log file, which should fail
+  testData = "warningLvlTest3" + std::to_string(randNum());
+  LOG_INFO_MSG(testData);
+
+  // Check that the info log is not logged
+  BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
+
+  testData = "warningLvlTest4" + std::to_string(randNum());
+  // Write to stream.
+  LOG_WARNING_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that logger is still enabled after writing to stream
+  BOOST_CHECK(logger->IsEnabled());
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write error log to log stream, which should work
+  testData = "warningLvlTest5" + std::to_string(randNum());
+  LOG_ERROR_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that log stream is working
+  BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write debug log to log stream, which should fail
+  testData = "warningLvlTest6" + std::to_string(randNum());
+  LOG_DEBUG_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that the debug log is not logged
+  BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
+
+  // Attempt to write info log to log stream, which should fail
+  testData = "warningLvlTest7" + std::to_string(randNum());
+  LOG_INFO_MSG_TO_STREAM(testData, &stringStream);
+
+  // Check that the debug log is not logged
+  BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
+
+  LOG_WARNING_MSG(
+      "TestLogStreamWithWarningLevel ends. Log path/level changes are expected.");
 
   // set the original log level / log path back
   if (logVarSaved)
@@ -242,10 +370,17 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithErrorLevel) {
   testData = "errLvlTest3" + std::to_string(randNum());
   LOG_INFO_MSG(testData);
 
-  // Check that the debug log is not logged
+  // Check that the info log is not logged
   BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
 
+  // Attempt to write warning log to log file, which should fail
   testData = "errLvlTest4" + std::to_string(randNum());
+  LOG_WARNING_MSG(testData);
+
+  // Check that the warning log is not logged
+  BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
+
+  testData = "errLvlTest5" + std::to_string(randNum());
   // Write to stream.
   LOG_ERROR_MSG_TO_STREAM(testData, &stringStream);
 
@@ -256,14 +391,14 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithErrorLevel) {
   BOOST_CHECK_NE(std::string::npos, stringStream.str().find(testData));
 
   // Attempt to write debug log to log stream, which should fail
-  testData = "errLvlTest5" + std::to_string(randNum());
+  testData = "errLvlTest6" + std::to_string(randNum());
   LOG_DEBUG_MSG_TO_STREAM(testData, &stringStream);
 
   // Check that the debug log is not logged
   BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
 
   // Attempt to write info log to log stream, which should fail
-  testData = "errLvlTest6" + std::to_string(randNum());
+  testData = "errLvlTest7" + std::to_string(randNum());
   LOG_INFO_MSG_TO_STREAM(testData, &stringStream);
 
   // Check that the info log is not logged

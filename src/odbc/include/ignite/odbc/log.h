@@ -55,6 +55,9 @@ using ignite::odbc::common::concurrent::CriticalSection;
         case ignite::odbc::LogLevel::Type::INFO_LEVEL:                        \
           msg_prefix = "INFO MSG: ";                                          \
           break;                                                              \
+        case ignite::odbc::LogLevel::Type::WARNING_LEVEL:                     \
+          msg_prefix = "WARNING MSG: ";                                       \
+          break;                                                              \
         case ignite::odbc::LogLevel::Type::ERROR_LEVEL:                       \
           msg_prefix = "ERROR MSG: ";                                         \
           break;                                                              \
@@ -98,7 +101,15 @@ using ignite::odbc::common::concurrent::CriticalSection;
   WRITE_MSG_TO_STREAM(param, ignite::odbc::LogLevel::Type::INFO_LEVEL, \
                       logStream)
 
-// Error messages display errors.
+// Warning messages display warnings
+#define LOG_WARNING_MSG(param) \
+  WRITE_LOG_MSG(param, ignite::odbc::LogLevel::Type::WARNING_LEVEL)
+
+#define LOG_WARNING_MSG_TO_STREAM(param, logStream)                       \
+  WRITE_MSG_TO_STREAM(param, ignite::odbc::LogLevel::Type::WARNING_LEVEL, \
+                      logStream)
+
+// Error messages display errors
 #define LOG_ERROR_MSG(param) \
   WRITE_LOG_MSG(param, ignite::odbc::LogLevel::Type::ERROR_LEVEL)
 
@@ -263,7 +274,7 @@ class IGNITE_IMPORT_EXPORT Logger {
   std::string logPath = DEFAULT_LOG_PATH;
 
   /** Log Level */
-  LogLevel::Type logLevel = LogLevel::Type::ERROR_LEVEL;
+  LogLevel::Type logLevel = LogLevel::Type::WARNING_LEVEL;
 
   /** Log file name */
   std::string logFileName;

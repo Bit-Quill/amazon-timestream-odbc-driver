@@ -35,6 +35,8 @@ namespace config {
 // Connection (Basic Authentication) Settings
 const std::string Configuration::DefaultValue::dsn = DEFAULT_DSN;
 const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
+const std::string Configuration::DefaultValue::uid = DEFAULT_UID;
+const std::string Configuration::DefaultValue::pwd = DEFAULT_PWD;
 const std::string Configuration::DefaultValue::accessKeyId =
     DEFAULT_ACCESS_KEY_ID;
 const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
@@ -49,8 +51,8 @@ const std::string Configuration::DefaultValue::profileName =
 const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
 const int32_t Configuration::DefaultValue::connectionTimeout =
     DEFAULT_CONNECTION_TIMEOUT;
-const int32_t Configuration::DefaultValue::maxRetryCount =
-    DEFAULT_MAX_RETRY_COUNT;
+const int32_t Configuration::DefaultValue::maxRetryCountClient =
+    DEFAULT_MAX_RETRY_COUNT_CLIENT;
 const int32_t Configuration::DefaultValue::maxConnections =
     DEFAULT_MAX_CONNECTIONS;
 
@@ -125,6 +127,69 @@ void Configuration::SetDriver(const std::string& driverName) {
   this->driver.SetValue(driverName);
 }
 
+const std::string& Configuration::GetDSNUserName() const {
+  if (!GetUid().empty())
+    return GetUid();
+
+  switch (GetAuthType()) {
+    case AuthType::Type::IAM:
+      return GetAccessKeyId();
+
+    case AuthType::Type::OKTA:
+    case AuthType::Type::AAD:
+      return GetIdPUserName();
+
+    default:
+      LOG_DEBUG_MSG("AuthType: " << AuthType::ToCBString(GetAuthType())
+                                 << ", \"" << GetUid()
+                                 << "\" is returned as username");
+      return GetUid();
+  }
+}
+
+const std::string& Configuration::GetDSNPassword() const {
+  if (!GetPwd().empty())
+    return GetPwd();
+
+  switch (GetAuthType()) {
+    case AuthType::Type::IAM:
+      return GetSecretKey();
+
+    case AuthType::Type::OKTA:
+    case AuthType::Type::AAD:
+      return GetIdPPassword();
+
+    default:
+      LOG_DEBUG_MSG("AuthType: " << AuthType::ToCBString(GetAuthType())
+                                 << ", GetPwd() returned as password");
+      return GetPwd();
+  }
+}
+
+const std::string& Configuration::GetUid() const {
+  return uid.GetValue();
+}
+
+void Configuration::SetUid(const std::string& uidValue) {
+  this->uid.SetValue(uidValue);
+}
+
+bool Configuration::IsUidSet() const {
+  return uid.IsSet();
+}
+
+const std::string& Configuration::GetPwd() const {
+  return pwd.GetValue();
+}
+
+void Configuration::SetPwd(const std::string& pwdValue) {
+  this->pwd.SetValue(pwdValue);
+}
+
+bool Configuration::IsPwdSet() const {
+  return pwd.IsSet();
+}
+
 const std::string& Configuration::GetProfileName() const {
   return profileName.GetValue();
 }
@@ -161,16 +226,16 @@ bool Configuration::IsConnectionTimeoutSet() const {
   return connectionTimeout.IsSet();
 }
 
-int32_t Configuration::GetMaxRetryCount() const {
-  return maxRetryCount.GetValue();
+int32_t Configuration::GetMaxRetryCountClient() const {
+  return maxRetryCountClient.GetValue();
 }
 
-void Configuration::SetMaxRetryCount(int32_t count) {
-  this->maxRetryCount.SetValue(count);
+void Configuration::SetMaxRetryCountClient(int32_t count) {
+  this->maxRetryCountClient.SetValue(count);
 }
 
-bool Configuration::IsMaxRetryCountSet() const {
-  return maxRetryCount.IsSet();
+bool Configuration::IsMaxRetryCountClientSet() const {
+  return maxRetryCountClient.IsSet();
 }
 
 int32_t Configuration::GetMaxConnections() const {
@@ -397,13 +462,16 @@ bool Configuration::IsSessionTokenSet() const {
 void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::dsn, dsn);
   AddToMap(res, ConnectionStringParser::Key::driver, driver);
+  AddToMap(res, ConnectionStringParser::Key::uid, uid);
+  AddToMap(res, ConnectionStringParser::Key::pwd, pwd);
   AddToMap(res, ConnectionStringParser::Key::accessKeyId, accessKeyId);
   AddToMap(res, ConnectionStringParser::Key::secretKey, secretKey);
   AddToMap(res, ConnectionStringParser::Key::sessionToken, sessionToken);
   AddToMap(res, ConnectionStringParser::Key::profileName, profileName);
   AddToMap(res, ConnectionStringParser::Key::reqTimeout, reqTimeout);
-  AddToMap(res, ConnectionStringParser::Key::connectionTimeout, connectionTimeout);
-  AddToMap(res, ConnectionStringParser::Key::maxRetryCount, maxRetryCount);
+  AddToMap(res, ConnectionStringParser::Key::connectionTimeout,
+           connectionTimeout);
+  AddToMap(res, ConnectionStringParser::Key::maxRetryCountClient, maxRetryCountClient);
   AddToMap(res, ConnectionStringParser::Key::maxConnections, maxConnections);
   AddToMap(res, ConnectionStringParser::Key::endpoint, endpoint);
   AddToMap(res, ConnectionStringParser::Key::region, region);
@@ -431,14 +499,17 @@ void Configuration::Validate() const {
   // https://bitquill.atlassian.net/browse/AT-1056
   if ((GetAuthType() == ignite::odbc::AuthType::Type::OKTA)
       || (GetAuthType() == ignite::odbc::AuthType::Type::AAD))
-        throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE, "Unsupported AUTH value");
+    throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
+                    "Unsupported AUTH value");
 
-  if ((GetAuthType() == ignite::odbc::AuthType::Type::IAM) && (!IsAccessKeyIdSet() || !IsSecretKeySet())) {
+  if ((GetAuthType() == ignite::odbc::AuthType::Type::IAM)
+      && (GetDSNUserName().empty() || GetDSNPassword().empty())) {
     throw OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
         "The following is required to connect:\n"
         "AUTH is \"IAM\" and "
-        "ACCESS_KEY_ID and SECRET_KEY");
+        "UID and PWD or"
+        "AccessKeyId and Secretkey");
   }
 }
 

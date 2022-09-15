@@ -465,13 +465,16 @@ void Connection::EnsureConnected() {
  */
 void UpdateConnectionRuntimeInfo(const config::Configuration& config,
                                  config::ConnectionInfo& info) {
-  // TODO retrieve Okta IdP username
+  // TODO retrieve Okta IdP username based on Auth value
   // https://bitquill.atlassian.net/browse/AT-1055
 
-  // TODO retrieve AAD IdP username
+  // TODO retrieve AAD IdP username based on Auth value
   // https://bitquill.atlassian.net/browse/AT-1056
 #ifdef SQL_USER_NAME
-  info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
+  if (config.IsUidSet())
+    info.SetInfo(SQL_USER_NAME, config.GetUid());
+  else
+    info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
 #endif
 #ifdef SQL_DATA_SOURCE_NAME
   info.SetInfo(SQL_DATA_SOURCE_NAME, config.GetDsn());
@@ -500,8 +503,8 @@ bool Connection::TryRestoreConnection(
       return false;
     }
   } else if (cfg.GetAuthType() == AuthType::Type::IAM) {
-    credentials.SetAWSAccessKeyId(cfg.GetAccessKeyId());
-    credentials.SetAWSSecretKey(cfg.GetSecretKey());
+    credentials.SetAWSAccessKeyId(cfg.GetDSNUserName());
+    credentials.SetAWSSecretKey(cfg.GetDSNPassword());
     credentials.SetSessionToken(cfg.GetSessionToken());  
   } else {
     // TODO support Okta authentication
@@ -524,7 +527,6 @@ bool Connection::TryRestoreConnection(
   Aws::Client::ClientConfiguration clientCfg;
   clientCfg.region = cfg.GetRegion();
   clientCfg.enableEndpointDiscovery = true;
-
 
   client_ = CreateTSQueryClient(credentials, clientCfg);
 

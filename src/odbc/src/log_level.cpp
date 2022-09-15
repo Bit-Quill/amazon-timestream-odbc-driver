@@ -21,38 +21,44 @@
 namespace ignite {
 namespace odbc {
 LogLevel::Type LogLevel::FromString(const std::string& val, Type dflt) {
-  std::string lowerVal = common::ToLower(val);
+  std::string logLevel = val;
+  common::StripSurroundingWhitespaces(logLevel);
 
-  common::StripSurroundingWhitespaces(lowerVal);
-
-  if (lowerVal == "debug")
+  if (logLevel == "4")
     return LogLevel::Type::DEBUG_LEVEL;
 
-  if (lowerVal == "info")
+  if (logLevel == "3")
     return LogLevel::Type::INFO_LEVEL;
 
-  if (lowerVal == "error")
+  if (logLevel == "2")
+    return LogLevel::Type::WARNING_LEVEL;
+
+  if (logLevel == "1")
     return LogLevel::Type::ERROR_LEVEL;
 
-  if (lowerVal == "off")
+  if (logLevel == "0")
     return LogLevel::Type::OFF;
 
   return dflt;
+
 }
 
 std::string LogLevel::ToString(Type val) {
   switch (val) {
     case LogLevel::Type::DEBUG_LEVEL:
-      return "debug";
+      return "4";
 
     case LogLevel::Type::INFO_LEVEL:
-      return "info";
+      return "3";
+
+    case LogLevel::Type::WARNING_LEVEL:
+      return "2";      
 
     case LogLevel::Type::ERROR_LEVEL:
-      return "error";
+      return "1";
 
     case LogLevel::Type::OFF:
-      return "off";
+      return "0";
 
     default:
       return "unknown";
@@ -66,6 +72,9 @@ std::wstring LogLevel::ToCBString(Type val) {
 
     case LogLevel::Type::INFO_LEVEL:
       return L"Info";
+
+    case LogLevel::Type::WARNING_LEVEL:
+      return L"Warning";      
 
     case LogLevel::Type::ERROR_LEVEL:
       return L"Error";

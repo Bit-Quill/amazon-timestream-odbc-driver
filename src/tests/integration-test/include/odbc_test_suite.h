@@ -419,7 +419,28 @@ struct OdbcTestSuite {
   SQLRETURN PrepareQuery(const std::string& qry);
 
   /**
-   * Creates the standard DSN connection string.
+   * Retrieve the IAM credentials from environment varibles
+   *
+   * @param accessKeyId AWSAccessKeyID
+   * @param secretKey AWSSecretkey
+   */
+  void GetIAMCredentials(std::string& accessKeyId,
+                         std::string& secretKey) const;
+
+  /**
+   * Creates the generic DSN connection string with uid/pwd and one of
+   * { accessKeyId/secretKey, idPUsername, idPPassword } if @param includeTSCred
+   * is set to true.
+   */
+  void CreateGenericDsnConnectionString(
+      std::string& connectionString, AuthType::Type testAuthType,
+      const std::string& uid, const std::string& pwd, bool includeTSCred = false,
+      const std::string& TSUsername = std::string(),
+      const std::string& TSPassword = std::string(),
+      const std::string& miscOptions = std::string()) const;
+
+  /**
+   * Creates the standard DSN connection string for AWS.
    */
   void CreateDsnConnectionStringForAWS(
       std::string& connectionString, const std::string& keyId = std::string(),
@@ -427,7 +448,7 @@ struct OdbcTestSuite {
       const std::string& miscOptions = std::string()) const;
 
   /**
-   * Creates the standard DSN connection string.
+   * Creates the standard DSN connection string for AWS.
    */
   void CreateDsnConnectionStringForAWS(
       std::string& connectionString, AuthType::Type testAuthType,

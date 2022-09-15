@@ -54,9 +54,9 @@ BOOST_AUTO_TEST_CASE(TestParsingCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream ODBC Driver};"
-            "AUTH=" + AuthType::ToString(testAuthType) + ";"
-            "PROFILE_NAME=" + profileName + ";";
+            "driver={Amazon Timestream ODBC Driver};"
+            "auth=" + AuthType::ToString(testAuthType) + ";"
+            "profileName=" + profileName + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-      "DRIVER={Amazon Timestream ODBC Driver};"
-      "PROFILE_NAME="
+      "driver={Amazon Timestream ODBC Driver};"
+      "profileName="
       + profileName + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
@@ -92,8 +92,8 @@ BOOST_AUTO_TEST_CASE(TestParsingNoCredentials, *disabled()) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-      "DRIVER={Amazon Timestream ODBC Driver};"
-      "AUTH="
+      "driver={Amazon Timestream ODBC Driver};"
+      "auth="
       + AuthType::ToString(testAuthType) + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
@@ -112,9 +112,9 @@ BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
   diagnostic::DiagnosticRecordStorage diag;
 
   std::string connectionString =
-            "DRIVER={Amazon Timestream ODBC Driver};"
-            "AUTH=" + AuthType::ToString(testAuthType) + ";"
-            "PROFILE_NAME=" + profileName + ";";
+            "driver={Amazon Timestream ODBC Driver};"
+            "auth=" + AuthType::ToString(testAuthType) + ";"
+            "profileName=" + profileName + ";";
 
   BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
 

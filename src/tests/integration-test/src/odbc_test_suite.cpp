@@ -169,21 +169,9 @@ void OdbcTestSuite::WriteDsnConfiguration(const std::string& dsn,
                                           std::string& password) {
   Configuration config;
   ParseConnectionString(connectionString, config);
-  AuthType::Type authType = config.GetAuthType();
 
-  if (authType == AuthType::Type::IAM) {
-    username = config.GetAccessKeyId();
-    password = config.GetSecretKey();
-  } else {
-    username = "";
-    password = "";
-  }
-
-  // TODO support Okta authentication and add if statements for auth type Okta
-  // https://bitquill.atlassian.net/browse/AT-1055
-
-  // TODO support AAD authentication and add if statements for auth type AAD
-  // https://bitquill.atlassian.net/browse/AT-1056
+  username = config.GetDSNUserName();
+  password = config.GetDSNPassword();
 
   // Update the DSN
   config.SetDsn(dsn);
@@ -778,7 +766,7 @@ int OdbcTestSuite::InsertTestBatch(int from, int to, int expectedToAffect,
 
 void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
   Connect(
-      "DRIVER={Amazon Timestream ODBC "
+      "driver={Amazon Timestream ODBC "
       "Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   // Inserting values.
@@ -840,7 +828,7 @@ void OdbcTestSuite::InsertBatchSelect(int recordsNum) {
 
 void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
   Connect(
-      "DRIVER={Amazon Timestream ODBC "
+      "driver={Amazon Timestream ODBC "
       "Driver};ADDRESS=127.0.0.1:11110;SCHEMA=cache");
 
   std::vector< SQLUSMALLINT > statuses(recordsNum, 42);
@@ -923,33 +911,100 @@ void OdbcTestSuite::InsertNonFullBatchSelect(int recordsNum, int splitAt) {
   BOOST_CHECK_EQUAL(recordsNum, selectedRecordsNum);
 }
 
+void OdbcTestSuite::GetIAMCredentials(std::string& accessKeyId,
+                                      std::string& secretKey) const {
+  accessKeyId = GetEnv("AWS_ACCESS_KEY_ID");
+  secretKey = GetEnv("AWS_SECRET_ACCESS_KEY");
+
+  if (accessKeyId.empty())
+    std::cout << "accessKeyId is empty, please set AWS_ACCESS_KEY_ID "
+                 "environment variable for tests to operate successfully"
+              << std::endl;
+  if (secretKey.empty())
+    std::cout << "secretKey is empty, please set AWS_SECRET_ACCESS_KEY "
+                 "environment variable for tests to operate successfully"
+              << std::endl;
+}
+
+void OdbcTestSuite::CreateGenericDsnConnectionString(
+    std::string& connectionString, AuthType::Type testAuthType,
+    const std::string& uid, const std::string& pwd, const bool includeTSCred,
+    const std::string& TSUsername, const std::string& TSPassword,
+    const std::string& miscOptions) const {
+  std::string sessionToken = GetEnv("AWS_SESSION_TOKEN", "");
+  std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
+  std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
+
+  connectionString =
+            "driver={Amazon Timestream ODBC Driver};"
+            "dsn={" + Configuration::DefaultValue::dsn + "};"
+            "auth=" + AuthType::ToString(testAuthType) + ";"
+            "uid=" + uid + ";"
+            "pwd=" + pwd + ";"
+            "logOutput=" + logPath + ";"
+            "logLevel=" + logLevel + ";";
+
+  if (testAuthType == AuthType::Type::IAM) {
+    connectionString.append("sessionToken=" + sessionToken + ";");
+  }
+
+  if (includeTSCred) {
+    // Append the Timestream credentials
+    std::string tsAuthentication = "";
+
+    switch (testAuthType) {
+      case AuthType::Type::IAM:
+        tsAuthentication = 
+            "accessKeyId=" + TSUsername + ";"
+            "secretKey=" + TSPassword + ";";
+        break;
+      case AuthType::Type::AAD:
+      case AuthType::Type::OKTA:
+        tsAuthentication = 
+            "idPUsername=" + TSUsername + ";"
+            "idPPassword=" + TSPassword + ";";
+      default:
+        break;
+    }
+
+    if (!tsAuthentication.empty())
+      connectionString.append(tsAuthentication);
+  }
+
+  if (!miscOptions.empty())
+    connectionString.append(miscOptions);
+}
+
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     std::string& connectionString, const std::string& keyId,
     const std::string& secret, const std::string& miscOptions) const {
-  std::string accessKeyId = common::GetEnv("AWS_ACCESS_KEY_ID");
-  std::string secretKey = common::GetEnv("AWS_SECRET_ACCESS_KEY");
-  std::string sessionToken = common::GetEnv("AWS_SESSION_TOKEN", "");
-  std::string region = common::GetEnv("AWS_REGION", "us-west-2");
-  std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
-  std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
+  std::string accessKeyId = GetEnv("AWS_ACCESS_KEY_ID");
+  std::string secretKey = GetEnv("AWS_SECRET_ACCESS_KEY");
+  std::string sessionToken = GetEnv("AWS_SESSION_TOKEN", "");
+  std::string region = GetEnv("AWS_REGION", "us-west-2");
+  std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
+  std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
 
   if (!keyId.empty()) {
     accessKeyId = keyId;
   }
   if (!secret.empty()) {
-    accessKeyId = secret;
+    secretKey = secret;
   }
+
+  // "DRIVER" is capitalized to allow TestSQLDriverConnect in
+  // api_robustness_test to pass.
 
   connectionString =
             "DRIVER={Amazon Timestream ODBC Driver};"
-            "DSN=" + Configuration::DefaultValue::dsn + ";"
-            "AUTH=" + AuthType::ToString(AuthType::Type::IAM) + ";"
-            "ACCESS_KEY_ID=" + accessKeyId + ";"
-            "SECRET_KEY=" + secretKey + ";"
-            "SESSION_TOKEN=" + sessionToken + ";"
-            "REGION=" + region + ";"
-            "LOG_PATH=" + logPath + ";"
-            "LOG_LEVEL=" + logLevel + ";";
+            "dsn={" + Configuration::DefaultValue::dsn + "};"
+            "auth=" + AuthType::ToString(AuthType::Type::IAM) + ";"
+            "accessKeyId=" + accessKeyId + ";"
+            "secretKey=" + secretKey + ";"
+            "sessionToken=" + sessionToken + ";"
+            "region=" + region + ";"
+            "logOutput=" + logPath + ";"
+            "logLevel=" + logLevel + ";";
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
@@ -958,18 +1013,18 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     std::string& connectionString, AuthType::Type testAuthType,
     const std::string& profileName, const std::string& miscOptions) const {
-  std::string region = common::GetEnv("AWS_REGION", "us-west-2");
-  std::string logPath = common::GetEnv("TIMESTREAM_LOG_PATH", "");
-  std::string logLevel = common::GetEnv("TIMESTREAM_LOG_LEVEL", "Error");
+  std::string region = GetEnv("AWS_REGION", "us-west-2");
+  std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
+  std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
 
   connectionString =
-            "DRIVER={Amazon Timestream ODBC Driver};"
-            "DSN=" + Configuration::DefaultValue::dsn + ";"
-            "AUTH=" + AuthType::ToString(testAuthType) + ";"
-            "PROFILE_NAME=" + profileName + ";"
-            "REGION=" + region + ";"
-            "LOG_PATH=" + logPath + ";"
-            "LOG_LEVEL=" + logLevel + ";";
+            "driver={Amazon Timestream ODBC Driver};"
+            "dsn={" + Configuration::DefaultValue::dsn + "};"
+            "auth=" + AuthType::ToString(testAuthType) + ";"
+            "profileName=" + profileName + ";"
+            "region=" + region + ";"
+            "logOutput=" + logPath + ";"
+            "logLevel=" + logLevel + ";";
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);

@@ -31,6 +31,8 @@
 
 #define DEFAULT_DSN "Timestream DSN"
 #define DEFAULT_DRIVER "Amazon Timestream ODBC Driver"
+#define DEFAULT_UID ""
+#define DEFAULT_PWD ""
 #define DEFAULT_ACCESS_KEY_ID ""
 #define DEFAULT_SECRET_KEY ""
 #define DEFAULT_SESSION_TOKEN ""
@@ -39,7 +41,7 @@
 
 #define DEFAULT_REQ_TIMEOUT 3000
 #define DEFAULT_CONNECTION_TIMEOUT 1000
-#define DEFAULT_MAX_RETRY_COUNT 0
+#define DEFAULT_MAX_RETRY_COUNT_CLIENT 0
 #define DEFAULT_MAX_CONNECTIONS 25
 
 #define DEFAULT_ENDPOINT ""
@@ -55,7 +57,7 @@
 #define DEFAULT_AAD_APP_ID ""
 #define DEFAULT_ACCESS_CLIENT_SECRET ""
 #define DEFAULT_AAD_TENANT ""
-#define DEFAULT_LOG_LEVEL LogLevel::Type::ERROR_LEVEL
+#define DEFAULT_LOG_LEVEL LogLevel::Type::WARNING_LEVEL
 
 namespace ignite {
 namespace odbc {
@@ -76,6 +78,12 @@ class IGNITE_IMPORT_EXPORT Configuration {
     /** Default value for Driver attribute. */
     static const std::string driver;
 
+    /** Default value for uid attribute. */
+    static const std::string uid;
+
+    /** Default value for pwd attribute. */
+    static const std::string pwd;
+
     /** Default value for accessKeyId attribute. */
     static const std::string accessKeyId;
 
@@ -94,8 +102,8 @@ class IGNITE_IMPORT_EXPORT Configuration {
     /** Default value for connectionTimeout attribute. */
     static const int32_t connectionTimeout;
 
-    /** Default value for maxRetryCount attribute. */
-    static const int32_t maxRetryCount;
+    /** Default value for maxRetryCountClient attribute. */
+    static const int32_t maxRetryCountClient;
 
     /** Default value for maxConnections attribute. */
     static const int32_t maxConnections;
@@ -194,6 +202,61 @@ class IGNITE_IMPORT_EXPORT Configuration {
    * @param driver Driver.
    */
   void SetDriver(const std::string& driverName);
+
+  /**
+   * Get username based on authType.
+   *
+   * @return username.
+   */
+  const std::string& GetDSNUserName() const;
+
+  /**
+   * Get password based on authType.
+   *
+   * @return password.
+   */
+  const std::string& GetDSNPassword() const;
+  /**
+   * Get uid.
+   *
+   * @return uid.
+   */
+  const std::string& GetUid() const;
+
+  /**
+   * Set uid.
+   *
+   * @param uidValue uid.
+   */
+  void SetUid(const std::string& uidValue);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsUidSet() const;
+
+  /**
+   * Get pwd.
+   *
+   * @return pwd.
+   */
+  const std::string& GetPwd() const;
+
+  /**
+   * Set pwd.
+   *
+   * @param pwdValue pwd.
+   */
+  void SetPwd(const std::string& pwdValue);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if the value set.
+   */
+  bool IsPwdSet() const;
 
   /**
    * Get accessKeyId.
@@ -326,21 +389,21 @@ class IGNITE_IMPORT_EXPORT Configuration {
    *
    * @return count Maximum # of retry attempts.
    */
-  int32_t GetMaxRetryCount() const;
+  int32_t GetMaxRetryCountClient() const;
 
   /**
    * Set maximum # of retry attempts.
    *
    * @param count Maximum # of retry attempts.
    */
-  void SetMaxRetryCount(int32_t count);
+  void SetMaxRetryCountClient(int32_t count);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsMaxRetryCountSet() const;
+  bool IsMaxRetryCountClientSet() const;
 
   /**
    * Get maximum # of connections.
@@ -699,6 +762,12 @@ class IGNITE_IMPORT_EXPORT Configuration {
   /** Driver Name. */
   SettableValue< std::string > driver = DefaultValue::driver;
 
+  /** UID. */
+  SettableValue< std::string > uid = DefaultValue::uid;
+
+  /** PWD. */
+  SettableValue< std::string > pwd = DefaultValue::pwd;
+
   /** Access Key Id. */
   SettableValue< std::string > accessKeyId = DefaultValue::accessKeyId;
 
@@ -718,7 +787,7 @@ class IGNITE_IMPORT_EXPORT Configuration {
   SettableValue< int32_t > connectionTimeout = DefaultValue::connectionTimeout;
 
   /** Max Retry Count.  */
-  SettableValue< int32_t > maxRetryCount = DefaultValue::maxRetryCount;
+  SettableValue< int32_t > maxRetryCountClient = DefaultValue::maxRetryCountClient;
 
   /** Max Connections.  */
   SettableValue< int32_t > maxConnections = DefaultValue::maxConnections;

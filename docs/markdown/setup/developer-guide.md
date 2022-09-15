@@ -26,7 +26,7 @@ C/C++ usage and formatting.
     The log path indicates the path to store the log file. The log file name has `timestream_odbc_YYYYMMDD.log` format, 
     where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
 
-    2. `TIMESTREAM_LOG_LEVEL`=`<log_level>`. The default is `error` level. (Choose from `debug`, `info`, `error`, `off`)
+    2. `TIMESTREAM_LOG_LEVEL`=`<log_level>`. The default is `2` (means WARNING Level). Possible values: {0, 1, 2, 3, 4}, meaning {OFF, ERROR, WARNING, INFO, DEBUG}
 
     More details about logging in [`support\troubleshooting-guide.md`](../support/troubleshooting-guide.md).
 

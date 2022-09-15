@@ -21,6 +21,8 @@
 
 - [Examples](#examples)
 
+- [Troubleshooting](#troubleshooting)
+
 - [Window Dialog](#window-dialog)
 
 # Connection String Syntax and Options
@@ -50,8 +52,8 @@
 
 | Option | Description | Default |
 |--------|-------------|---------------|
-| `UID` or `AccessKeyId` | The AWS user access key id. | `NONE` 
-| `PWD` or `SecretKey` | The AWS user secret access key. | `NONE` 
+| `UID` or `AccessKeyId` | The AWS user access key id. If both `UID` and `AccessKeyId` are provided in the connection string, the non-empty value with `UID` will be used. | `NONE` 
+| `PWD` or `SecretKey` | The AWS user secret access key. If both `PWD` and `SecretKey` are provided in the connection string, the non-empty value with `PWD` will be used. | `NONE` 
 | `SessionToken` | The temporary session token required to access a database with multi-factor authentication (MFA) enabled. | `NONE` 
 
 ### SAML-Based Authentication Options for Okta
@@ -59,8 +61,8 @@
 | Option | Description | Default |
 |--------|-------------|---------------|
 | `IdPHost` | The hostname of the specified IdP. | `NONE`
-| `UID` or `IdPUserName` | The user name for the specified IdP account. | `NONE`
-| `PWD` or `IdPPassword` | The password for the specified IdP account. | `NONE`
+| `UID` or `IdPUserName` | The user name for the specified IdP account. If both `UID` and `IdPUserName` are provided in the connection string, the non-empty value with `UID` will be used. | `NONE`
+| `PWD` or `IdPPassword` | The password for the specified IdP account. If both `PWD` and `IdPPassword` are provided in the connection string, the non-empty value with `PWD` will be used. | `NONE`
 | `OktaApplicationID` | The unique Okta-provided ID associated with the Timestream application. A place to find the AppId is in the entityID field provided in the application metadata. An example entityID=`"http://www.okta.com//<IdPAppID>"`| `NONE`
 | `RoleARN` | The Amazon Resource Name (ARN) of the role that the caller is assuming. | `NONE`
 | `IdPARN` | The Amazon Resource Name (ARN) of the SAML provider in IAM that describes the IdP. | `NONE`
@@ -90,7 +92,7 @@
 
 | Option | Description | Default |
 |--------|-------------|---------------|
-| `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3}<br /> meaning<br />{OFF, ERROR, INFO, DEBUG} | `1` (means ERROR)
+| `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3, 4}<br /> meaning<br />{OFF, ERROR, WARNING, INFO, DEBUG} | `1` (means ERROR)
 | `LogOutput` | Folder to store the log file | Windows: `%USERPROFILE%`, or if not available, `%HOMEDRIVE%%HOMEPATH%` <br /> macOS/Linux: `getpwuid()`, or if not available, `$HOME` 
 
 ## Examples
@@ -120,6 +122,14 @@ Driver={Amazon Timestream ODBC Driver};ProfileName=myProfileName;
 
 1. Authentication type (Auth) is AWS Profile by default if not specified.
 2. ProfileName is `myProfileName`. The driver will attempt to connect with credentials provided in `~/.aws/credentials` (or, if provided, the file in the environment variable `AWS_SHARED_CREDENTIALS_FILE`).
+
+## Troubleshooting
+
+Note: When the username / password are already specified in the DSN, there is no need to specify them again when the ODBC driver manager asks for them.
+
+| Error code | Message | Explanation |
+|------------|---------|-------|
+| 01S02 | Re-writing < connection string option > (have you specified it several times? | When user passes < connection string option > more than once in the connection string, this error will happen. Please do not pass in the same connection option more than once in the connection string. When making a connection with a DSN and a connection string, if a connection option is already specified in the DSN, it is not recommended to specify it again in the connection string. 
 
 ### Window Dialog
 
