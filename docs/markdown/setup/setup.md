@@ -18,9 +18,12 @@ You need to do the following:
 
 2. Create an IAM user with Timestream access and use the IAM credentials with the driver. For more information, see [Create an IAM user with Timestream access](https://docs.aws.amazon.com/timestream/latest/developerguide/accessing.html#getting-started.prereqs.iam-user).
 
-### Timestream ODBC Driver
+### Timestream ODBC Driver Download
 Download the Timestream ODBC driver [here](https://github.com/aws/amazon-timestream-odbc-driver/releases). Choose the proper installer
-(e.g., `timestream-odbc-1.0.0.msi`).
+(e.g., `timestream-odbc-installer-x64.exe`). 
+
+### Timestream ODBC Driver Installation
+- [Windows Installation Guide](windows-installation-guide.md)
 
 ### DSN Configuration
 Click on the following links for DSN configuration help in specifc platforms.
