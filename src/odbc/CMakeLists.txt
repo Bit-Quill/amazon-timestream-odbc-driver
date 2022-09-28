@@ -19,6 +19,9 @@ project(timestream-odbc)
 
 set(TARGET ${PROJECT_NAME})
 
+include(InstallRequiredSystemLibraries)
+include(CPackComponent)
+
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 find_package(ODBC REQUIRED)
@@ -166,6 +169,8 @@ else()
     target_link_libraries(${TARGET})
 endif()
 
+set(CPACK_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
+
 if (WIN32 AND ${WITH_ODBC_MSI})
     find_program(WIX_CANDLE candle)
     if(NOT WIX_CANDLE)
@@ -310,6 +315,58 @@ if (WIN32 AND ${WITH_ODBC_MSI})
 	COMMAND ${WIX_CANDLE} ${WIX_INSTALLER_BUNDLE_PREFIX}.wxs -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj
 	COMMAND ${WIX_LIGHT} ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_EXE_PREFIX}.exe
     )
+elseif(UNIX)
+    #set(CMAKE_INSTALL_PREFIX "/usr/lib64")
+
+    # General package info
+    set(BITNESS 64)
+    set(CPACK_PACKAGE_FILE_NAME "AmazonTimestreamODBC${BITNESS}-${CPACK_PACKAGE_VERSION}")
+    if (BITNESS EQUAL 32)
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+    else()
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+    endif()
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_FILE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}.deb")
+
+    # Deb installers fail if there's a space in the directory or package name
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "AmazonTimestreamODBCDriver${BITNESS}-bit")
+    set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+
+    # TODO: Need to update both of these.
+    set(CPACK_PACKAGE_CONTACT "user@sample.com")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "User Name")
+    set(CPACK_PACKAGE_DESCRIPTION "AmazonTimestreamODBCDriver-${BITNESS}-bit")
+
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${CPACK_PACKAGE_NAME}")
+    set(CPACK_PACKAGE_VENDOR "Amazon")
+    set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
+
+    # CPack doesn't allow extensionless licenses, need to make a copy with an extension, .txt is appropriate
+    #set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_ROOT}/LICENSE.txt")
+    #configure_file("${PROJECT_ROOT}/LICENSE" "${PROJECT_ROOT}/LICENSE.txt" COPYONLY)
+
+    # Set up components for installer
+    cpack_add_component(Docs
+	    DISPLAY_NAME "Documentation"
+	    DESCRIPTION "Documentation about Amazon Timestream ODBC Driver"
+    )
+    cpack_add_component(Driver
+	    DISPLAY_NAME "Driver"
+	    DESCRIPTION "Library files for running the Amazon Timestream ODBC Driver"
+        REQUIRED
+    )
+
+    # Install library and shell script 
+    install(TARGETS ${TARGET} DESTINATION lib64/timestream-odbc${BITNESS} COMPONENT "Driver")
+    install(FILES "${PROJECT_ROOT}/scripts/postinst_unix.sh" DESTINATION lib64/timestream-odbc${BITNESS} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE COMPONENT "Driver")
+
+    # Install documentation files
+    install(FILES "${PROJECT_ROOT}/LICENSE" DESTINATION "lib64/timestream-odbc${BITNESS}" COMPONENT "Docs")
+    install(FILES "${PROJECT_ROOT}/docs/markdown/setup/linux-dsn-configuration.md" DESTINATION "lib64/timestream-odbc${BITNESS}" COMPONENT "Docs")
+
 endif()
 
 target_include_directories(${TARGET} INTERFACE include)
@@ -337,3 +394,5 @@ endif()
 set(VERSIONINFO ${CMAKE_PROJECT_VERSION_MAJOR},${CMAKE_PROJECT_VERSION_MINOR},${CMAKE_PROJECT_VERSION_PATCH})
 set(VERSIONINFO_STR ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH})
 configure_file("version.rc.in" "version.rc" @ONLY)
+
+include(CPack)

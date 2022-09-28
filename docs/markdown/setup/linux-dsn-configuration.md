@@ -26,9 +26,9 @@ sudo yum install unixODBC
 
 ## Adding a Driver Entry
 
-Users can automatically add the driver by running `./scripts/register_driver_unix.sh`, or by doing the steps listed below.
-
 ### Manually editing the odbcinst.ini file ###
+If /etc/odbcinst.ini does not contain Amazon Timestream ODBC Driver info, please add a driver entry following the steps below.
+
 Use a text editor from the Unix shell to edit the odbcinst.ini file such as vi.
 
 **To create a System Driver Entry run:**
@@ -44,8 +44,8 @@ Use a text editor from the Unix shell to edit the odbcinst.ini file such as vi.
 Amazon Timestream ODBC Driver  = Installed
 
 [Amazon Timestream ODBC Driver]
-Driver = /usr/lib/timestream-odbc/libtimestream-odbc.so
-Setup  = /usr/lib/timestream-odbc/libtimestream-odbc.so
+Driver = /usr/lib64/timestream-odbc64/libtimestream-odbc.so
+Setup  = /usr/lib64/timestream-odbc64/libtimestream-odbc.so
 ```
 
 ### Manually editing the odbc.ini file ###

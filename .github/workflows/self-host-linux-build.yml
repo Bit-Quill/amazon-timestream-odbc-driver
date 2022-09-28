@@ -20,7 +20,6 @@ env:
   VCPKG_ROOT: "${{github.workspace}}/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
-  JAVA_HOME: "/usr/lib/jvm/java-17-amazon-corretto/"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
 
 jobs:
@@ -28,14 +27,6 @@ jobs:
     runs-on: [self-hosted, Linux, x64]
     steps:
     - uses: actions/checkout@v2
-    - name: Get Java distribution
-      run: | 
-        sudo apt-get -y install software-properties-common
-        wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
-        sudo apt-add-repository 'deb https://apt.corretto.aws stable main'
-        sudo apt-get update
-        sudo apt-get install -y java-17-amazon-corretto-jdk
-        
     - name: Get latest version of CMake
       uses: lukka/get-cmake@latest
 
@@ -91,6 +82,12 @@ jobs:
     - name: configure-and-build-driver
       run: |
         ./build_linux_release64_deb.sh
+
+    - name: upload-package
+      uses: actions/upload-artifact@v2
+      with:
+        name: AmazonTimestreamODBC_2.0.0_amd64
+        path: cmake-build64/AmazonTimestreamODBC_2.0.0_amd64.deb
 
     - name: register-odbc-driver
       run: |
@@ -151,13 +148,8 @@ jobs:
     runs-on: [self-hosted, Linux, x64]
     steps:
     - uses: actions/checkout@v2
-    - name: Get Java distribution
+    - name: Get gcov
       run: | 
-        sudo apt-get -y install software-properties-common
-        wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
-        sudo apt-add-repository 'deb https://apt.corretto.aws stable main'
-        sudo apt-get update
-        sudo apt-get install -y java-17-amazon-corretto-jdk
         pip install gcovr
 
     - name: Get latest version of CMake
@@ -215,6 +207,12 @@ jobs:
     - name: configure-and-build-driver
       run: |
         ./build_linux_debug64.sh
+
+    - name: upload-package
+      uses: actions/upload-artifact@v2
+      with:
+        name: AmazonTimestreamODBC_2.0.0_amd64
+        path: cmake-build64/AmazonTimestreamODBC_2.0.0_amd64.deb
 
     - name: register-odbc-driver
       run: |

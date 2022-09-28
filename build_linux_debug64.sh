@@ -25,4 +25,14 @@ if [ $RET_CODE -ne 0 ]; then
    exit $RET_CODE
 fi
 
+make package
+
+RET_CODE=$?
+
+if [ $RET_CODE -ne 0 ]; then
+   echo "Error occurred while building package. Exiting."
+   exit $RET_CODE
+fi
+
+cp *.deb $DRIVER_BIN_DIR
 cd ..
