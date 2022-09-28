@@ -65,13 +65,13 @@ std::mutex Connection::mutex_;
 bool Connection::awsSDKReady_ = false;
 std::atomic< int > Connection::refCount_(0);
 
-Connection::Connection(Environment* env)
-    : env_(env), info_(config_) {
+Connection::Connection(Environment* env) : env_(env), info_(config_) {
   // The AWS SDK for C++ must be initialized by calling Aws::InitAPI.
   // It should only be initialized only once during the application running
-  // All Connections in different thread must wait before the InitAPI is finished.
+  // All Connections in different thread must wait before the InitAPI is
+  // finished.
   if (!awsSDKReady_) {
-    // Use awsSDKReady_ and mutex_ to guarantee InitAPI is executed before all 
+    // Use awsSDKReady_ and mutex_ to guarantee InitAPI is executed before all
     // Connection objects start to run.
     std::lock_guard< std::mutex > lock(mutex_);
     if (!awsSDKReady_) {
@@ -107,11 +107,11 @@ const config::ConnectionInfo& Connection::GetInfo() const {
 
 void Connection::GetInfo(config::ConnectionInfo::InfoType type, void* buf,
                          short buflen, short* reslen) {
-  LOG_MSG("SQLGetInfo called: "
-          << type << " (" << config::ConnectionInfo::InfoTypeToString(type)
-          << "), " << std::hex << reinterpret_cast< size_t >(buf) << ", "
-          << buflen << ", " << std::hex << reinterpret_cast< size_t >(reslen)
-          << std::dec);
+  LOG_INFO_MSG("SQLGetInfo called: "
+               << type << " (" << config::ConnectionInfo::InfoTypeToString(type)
+               << "), " << std::hex << reinterpret_cast< size_t >(buf) << ", "
+               << buflen << ", " << std::hex
+               << reinterpret_cast< size_t >(reslen) << std::dec);
 
   IGNITE_ODBC_API_CALL(InternalGetInfo(type, buf, buflen, reslen));
 }
@@ -123,9 +123,14 @@ SqlResult::Type Connection::InternalGetInfo(
 
   SqlResult::Type res = info.GetInfo(type, buf, buflen, reslen);
 
-  if (res != SqlResult::AI_SUCCESS)
+  if (res != SqlResult::AI_SUCCESS) {
+    std::stringstream ss;
+    ss << "SQLGetInfo input " << type << " is not implemented.";
+
+    std::string s = ss.str();
     AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                    "Not implemented.");
+                    ss.str());
+  }
 
   return res;
 }
@@ -270,7 +275,7 @@ void Connection::TransactionCommit() {
 }
 
 SqlResult::Type Connection::InternalTransactionCommit() {
-  std::string schema = ""; //TO-DO schema is not used now
+  std::string schema = "";  // TO-DO schema is not used now
 
   app::ParameterSet empty;
 
@@ -304,7 +309,7 @@ void Connection::TransactionRollback() {
 }
 
 SqlResult::Type Connection::InternalTransactionRollback() {
-  std::string schema = ""; //TO-DO schema is not used now
+  std::string schema = "";  // TO-DO schema is not used now
 
   app::ParameterSet empty;
 
@@ -481,12 +486,11 @@ void UpdateConnectionRuntimeInfo(const config::Configuration& config,
 #endif
 }
 
-bool Connection::TryRestoreConnection(
-    const config::Configuration& cfg, IgniteError& err) {
+bool Connection::TryRestoreConnection(const config::Configuration& cfg,
+                                      IgniteError& err) {
   Aws::Auth::AWSCredentials credentials;
 
-  if (cfg.GetAuthType()
-      == AuthType::Type::AWS_PROFILE) {
+  if (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE) {
     Aws::Auth::ProfileConfigFileAWSCredentialsProvider credProvider(
         cfg.GetProfileName().data());
     credentials = credProvider.GetAWSCredentials();
@@ -505,7 +509,7 @@ bool Connection::TryRestoreConnection(
   } else if (cfg.GetAuthType() == AuthType::Type::IAM) {
     credentials.SetAWSAccessKeyId(cfg.GetDSNUserName());
     credentials.SetAWSSecretKey(cfg.GetDSNPassword());
-    credentials.SetSessionToken(cfg.GetSessionToken());  
+    credentials.SetSessionToken(cfg.GetSessionToken());
   } else {
     // TODO support Okta authentication
     // https://bitquill.atlassian.net/browse/AT-1055
@@ -519,7 +523,7 @@ bool Connection::TryRestoreConnection(
     err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
                       "AuthType is not AWS_PROFILE or IAM, but "
                       "TryRestoreConnection is called.");
-                      
+
     Close();
     return false;
   }
@@ -542,8 +546,10 @@ bool Connection::TryRestoreConnection(
                             << error.GetMessage());
 
     err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
-            std::string(error.GetExceptionName()).append(": ")
-            .append(error.GetMessage()).c_str());
+                      std::string(error.GetExceptionName())
+                          .append(": ")
+                          .append(error.GetMessage())
+                          .c_str());
 
     Close();
     return false;
@@ -574,10 +580,10 @@ int32_t Connection::RetrieveTimeout(void* value) {
 
 std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
 Connection::CreateTSQueryClient(
-    const Aws::Auth::AWSCredentials& credentials, 
+    const Aws::Auth::AWSCredentials& credentials,
     const Aws::Client::ClientConfiguration& clientCfg) {
   return std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
-      credentials, clientCfg);  
+      credentials, clientCfg);
 }
 }  // namespace odbc
 }  // namespace ignite

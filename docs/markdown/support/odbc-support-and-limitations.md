@@ -195,6 +195,8 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_CREATE_TABLE | SQL_CT_CREATE_TABLE, SQL_CT_COLUMN_CONSTRAINT | no |
 | SQL_CREATE_TRANSLATION | 0 (not supported) | no |
 | SQL_CREATE_VIEW | 0 (not supported) | no |
+| SQL_CURSOR_COMMIT_BEHAVIOR | SQL_CB_CLOSE | no |
+| SQL_CURSOR_ROLLBACK_BEHAVIOR | SQL_CB_CLOSE | no |
 | SQL_CURSOR_SENSITIVITY | SQL_INSENSITIVE | no |
 | SQL_DDL_INDEX | 0 (not supported) | no |
 | SQL_DEFAULT_TXN_ISOLATION | SQL_TXN_REPEATABLE_READ | no |

@@ -322,6 +322,12 @@ const char* ConnectionInfo::InfoTypeToString(InfoType type) {
 #ifdef SQL_CREATE_VIEW
     DBG_STR_CASE(SQL_CREATE_VIEW);
 #endif  // SQL_CREATE_VIEW
+#ifdef SQL_CURSOR_COMMIT_BEHAVIOR
+    DBG_STR_CASE(SQL_CURSOR_COMMIT_BEHAVIOR);
+#endif  // SQL_CURSOR_COMMIT_BEHAVIOR
+#ifdef SQL_CURSOR_ROLLBACK_BEHAVIOR
+    DBG_STR_CASE(SQL_CURSOR_ROLLBACK_BEHAVIOR);
+#endif  // SQL_CURSOR_ROLLBACK_BEHAVIOR
 #ifdef SQL_CURSOR_SENSITIVITY
     DBG_STR_CASE(SQL_CURSOR_SENSITIVITY);
 #endif  // SQL_CURSOR_SENSITIVITY
@@ -596,7 +602,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // Driver version. At a minimum, the version is of the form ##.##.####, where
   // the first two digits are the major version, the next two digits are the
   // minor version, and the last four digits are the release version.
-  strParams[SQL_DRIVER_VER] = TS_DRIVER_VERSION; 
+  strParams[SQL_DRIVER_VER] = TS_DRIVER_VERSION;
 
 #endif  // SQL_DRIVER_VER
 #ifdef SQL_DBMS_VER
@@ -1766,6 +1772,41 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   intParams[SQL_CREATE_VIEW] = 0;  // I.e., not supported
 #endif  // SQL_CREATE_VIEW
 
+#ifdef SQL_CURSOR_COMMIT_BEHAVIOR
+  // Value that indicates how a COMMIT operation affects cursors and
+  // prepared statements in the data source (the behavior of the data source
+  // when you commit a transaction).
+  // The value of this attribute will reflect the current state of the next
+  // setting: SQL_COPT_SS_PRESERVE_CURSORS.
+  // SQL_CB_DELETE = Close cursors and delete prepared statements.
+  //    To use the cursor again, the application must reprepare and re-execute
+  //    the statement.
+  // SQL_CB_CLOSE = Close cursors. For prepared statements, the application
+  //    can call SQLExecute on the statement without calling SQLPrepare again.
+  //    The default for the SQL ODBC driver is SQL_CB_CLOSE. This means that the
+  //    SQL ODBC driver will close your cursor(s) when you commit a transaction.
+  // SQL_CB_PRESERVE = Preserve cursors in the same position as before the
+  //    COMMIT operation. The application can continue to fetch data, or it can
+  //    close the cursor and re-execute the statement without repreparing it.
+  intParams[SQL_CURSOR_COMMIT_BEHAVIOR] = SQL_CB_CLOSE;
+#endif  // SQL_CURSOR_COMMIT_BEHAVIOR
+
+#ifdef SQL_CURSOR_ROLLBACK_BEHAVIOR
+  // Value that indicates how a ROLLBACK operation affects cursors and prepared
+  // statements in the data source:
+  // SQL_CB_DELETE = Close cursors and delete prepared statements.
+  //    To use the cursor again, the application must reprepare and re-execute
+  //    the statement.
+  // SQL_CB_CLOSE = Close cursors. For prepared statements, the
+  //    application can call SQLExecute on the statement without calling
+  //    SQLPrepare again.
+  // SQL_CB_PRESERVE = Preserve cursors in the same position as before
+  //    the ROLLBACK operation. The application can continue to fetch data, or
+  //    it can close the cursor and re-execute the statement without repreparing
+  //    it.
+  intParams[SQL_CURSOR_ROLLBACK_BEHAVIOR] = SQL_CB_CLOSE;
+#endif  // SQL_CURSOR_ROLLBACK_BEHAVIOR
+
 #ifdef SQL_CURSOR_SENSITIVITY
   // Value that indicates the support for cursor sensitivity:
   // SQL_INSENSITIVE = All cursors on the statement handle show the result set
@@ -2071,9 +2112,9 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // attributes; for the second subset, see SQL_FORWARD_ONLY_CURSOR_ATTRIBUTES2.
   //
   // The following bitmasks are used to determine which attributes are
-  // supported: 
-  // SQL_CA1_NEXT 
-  // SQL_CA1_LOCK_EXCLUSIVE 
+  // supported:
+  // SQL_CA1_NEXT
+  // SQL_CA1_LOCK_EXCLUSIVE
   // SQL_CA1_LOCK_NO_CHANGE
   // SQL_CA1_LOCK_UNLOCK
   // SQL_CA1_POS_POSITION
@@ -2099,8 +2140,8 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // attributes; for the first subset, see SQL_FORWARD_ONLY_CURSOR_ATTRIBUTES1.
   //
   // The following bitmasks are used to determine which attributes are
-  // supported: 
-  // SQL_CA2_READ_ONLY_CONCURRENCY 
+  // supported:
+  // SQL_CA2_READ_ONLY_CONCURRENCY
   // SQL_CA2_LOCK_CONCURRENCY
   // SQL_CA2_OPT_ROWVER_CONCURRENCY
   // SQL_CA2_OPT_VALUES_CONCURRENCY
@@ -2458,7 +2499,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_TXN_ISOLATION_OPTION
   // A bitmask enumerating the transaction isolation levels available from the
   // driver or data source. The following bitmasks are used together with the
-  // flag to determine which options are supported: 
+  // flag to determine which options are supported:
   // SQL_TXN_READ_UNCOMMITTED
   // SQL_TXN_READ_COMMITTED
   // SQL_TXN_REPEATABLE_READ
@@ -2541,9 +2582,9 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // DEPRECATED. Included for backward-compatibility.
   // A bitmask enumerating the concurrency control options supported for the
   // cursor. The following bitmasks are used to determine which options are
-  // supported: 
+  // supported:
   // SQL_SCCO_READ_ONLY = Cursor is read-only. No updates are
-  // allowed. 
+  // allowed.
   // SQL_SCCO_LOCK = Cursor uses the lowest level of locking sufficient
   // to ensure that the row can be updated.
   // SQL_SCCO_OPT_ROWVER = Cursor uses optimistic concurrency control, comparing
@@ -2660,9 +2701,9 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // clause and the nonaggregated columns in the select list:
   //
   // SQL_GB_COLLATE = A COLLATE clause can be specified at the end of each
-  // grouping column. (ODBC 3.0) 
+  // grouping column. (ODBC 3.0)
   // SQL_GB_NOT_SUPPORTED = GROUP BY clauses are not
-  // supported. (ODBC 2.0) 
+  // supported. (ODBC 2.0)
   // SQL_GB_GROUP_BY_EQUALS_SELECT = The GROUP BY clause
   // must contain all nonaggregated columns in the
   //     select list. It cannot contain any other columns.

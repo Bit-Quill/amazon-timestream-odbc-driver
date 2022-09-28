@@ -98,6 +98,14 @@ C/C++ usage and formatting.
     `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
 8. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
 
+#### Known issues
+
+When [iODBC Administrator](https://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/Downloads) is installed on the local machine, performance test executable is unable to build with the error 'odbcinst.h' file not found. The workaround is to copy `/Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h` to `/Library/Frameworks/iODBC.framework/Headers/odbcinst.h`, then the build should succeed.
+```
+# example command
+sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Frameworks/iODBC.framework/Headers
+```
+
 ## Linux
 
 ### Using docker
