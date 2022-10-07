@@ -48,7 +48,6 @@ jobs:
         brew install cmake
         brew install openssl
         brew install boost
-        brew install aws-sdk-cpp
 
     - name: create-credentials-files
       run: |
@@ -64,6 +63,13 @@ jobs:
         ./build_mac_release64.sh
       env:
         OPENSSL_ROOT_DIR: /usr/local/opt/openssl
+
+    - name: upload-package
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamODBC-2.0.0.pkg
+        path: ./cmake-build64/AmazonTimestreamODBC-2.0.0.pkg
+
     # - name: prepare-dsn
     #   run: |
     #     sudo mkdir /Library/ODBC

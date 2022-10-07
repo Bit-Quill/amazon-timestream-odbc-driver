@@ -1,0 +1,28 @@
+#!/bin/bash
+
+PKG_INSTALL_DIR=/Applications/timestream-odbc
+FINAL_INSTALL_DIR=/Library/ODBC/timestream-odbc
+
+# Remove install directory if it already exists
+if [ -d "${FINAL_INSTALL_DIR}" ]; then
+    # Fail if FINAL_INSTALL_DIR is not set for whatever reason
+    if [ -z ${FINAL_INSTALL_DIR} ]; then exit 1; fi
+    rm -rf ${FINAL_INSTALL_DIR}
+fi
+
+# Move PKG installed folders to intended install directory
+mkdir -p ${FINAL_INSTALL_DIR}
+mv ${PKG_INSTALL_DIR}/lib ${FINAL_INSTALL_DIR}/lib
+mv ${PKG_INSTALL_DIR}/doc ${FINAL_INSTALL_DIR}/doc
+
+ODBCINST_INI=/Library/ODBC/odbcinst.ini
+INSTALLED=`grep "Amazon Timestream ODBC Driver" /Library/ODBC/odbcinst.ini`
+if [ -z "${INSTALLED}" ]
+then
+    sed -i -e "s/\[ODBC Drivers\]/\[ODBC Drivers\]\nAmazon Timestream ODBC Driver = Installed/g" $ODBCINST_INI
+    echo -e "\n[Amazon Timestream ODBC Driver]" >> $ODBCINST_INI
+    echo "Driver = ${FINAL_INSTALL_DIR}/lib/libtimestream-odbc.dylib" >> $ODBCINST_INI
+    echo "Setup = ${FINAL_INSTALL_DIR}/lib/libtimestream-odbc.dylib" >> $ODBCINST_INI
+else 
+    echo "Amazon Timestream ODBC Driver might have been installed, please check $ODBCINST_INI!"
+fi

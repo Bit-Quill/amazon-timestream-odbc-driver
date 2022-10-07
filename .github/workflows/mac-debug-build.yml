@@ -47,7 +47,6 @@ jobs:
         brew install cmake
         brew install openssl
         brew install boost
-        brew install aws-sdk-cpp
         pip3 install gcovr
 
 # if action `EnricoMi/publish-unit-test-result-action/composite@v1.30`
@@ -71,6 +70,12 @@ jobs:
         ./build_mac_debug64.sh
       env:
         OPENSSL_ROOT_DIR: /usr/local/opt/openssl
+
+    - name: upload-package
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamODBC-2.0.0.pkg
+        path: ./cmake-build64/AmazonTimestreamODBC-2.0.0.pkg
 
     # - name: prepare-dsn
     #   run: |

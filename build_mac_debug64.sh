@@ -1,3 +1,15 @@
+#build AWS SDK static library
+cd src
+git clone --recurse-submodules -b "1.9.79" "https://github.com/aws/aws-sdk-cpp.git"
+cd aws-sdk-cpp
+mkdir install
+mkdir build
+cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX="../install" -DTARGET_ARCH="APPLE" -DCMAKE_BUILD_TYPE="Debug" -DBUILD_ONLY="core;sts;timestream-query" -DCUSTOM_MEMORY_MANAGEMENT="OFF" -DENABLE_TESTING="OFF" -DBUILD_SHARED_LIBS="OFF" -DCPP_STANDARD="17"
+make -j 4
+make install
+cd ../../../
+
 BUILD_DIR=cmake-build64
 BUILD_TYPE=Debug
 PROJECT_DIR=$(pwd)
@@ -14,8 +26,18 @@ make  -j 4
 RET_CODE=$?
 
 if [ $RET_CODE -ne 0 ]; then
-   echo "Error occurred while building project. Exiting."
+   echo "Error occurred while building macOS x64 project. Exiting."
+   exit $RET_CODE
+fi
+
+make package
+
+RET_CODE=$?
+
+if [ $RET_CODE -ne 0 ]; then
+   echo "Error occurred while building macOS x64 installer. Exiting."
    exit $RET_CODE
 fi
 
 cd ..
+

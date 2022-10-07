@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -23,6 +22,9 @@ include(InstallRequiredSystemLibraries)
 include(CPackComponent)
 
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message(STATUS "INSTALL_ROOT: ${INSTALL_ROOT}")
+
+set(CMAKE_INSTALL_PREFIX ${INSTALL_ROOT})
 
 find_package(ODBC REQUIRED)
 find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
@@ -38,7 +40,6 @@ endif()
 include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 include_directories(include)
-
 
 set(SOURCES src/app/application_data_buffer.cpp
         src/app/parameter.cpp
@@ -315,9 +316,18 @@ if (WIN32 AND ${WITH_ODBC_MSI})
 	COMMAND ${WIX_CANDLE} ${WIX_INSTALLER_BUNDLE_PREFIX}.wxs -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj
 	COMMAND ${WIX_LIGHT} ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_EXE_PREFIX}.exe
     )
-elseif(UNIX)
-    #set(CMAKE_INSTALL_PREFIX "/usr/lib64")
+elseif(APPLE)
+    set(CPACK_PACKAGE_FILE_NAME "AmazonTimestreamODBC-${CPACK_PACKAGE_VERSION}")
+    set(CPACK_PACKAGE_NAME "Amazon Timestream ODBC Driver ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
+    set(CPACK_GENERATOR "productbuild")
 
+    # This script will be run once the Driver component has finished installing.
+    set(CPACK_POSTFLIGHT_DRIVER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/install/mac/postinstall")
+
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/install/mac/README.txt")
+    set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_CURRENT_SOURCE_DIR}/install/mac/Welcome.txt")
+elseif(UNIX)
     # General package info
     set(BITNESS 64)
     set(CPACK_PACKAGE_FILE_NAME "AmazonTimestreamODBC${BITNESS}-${CPACK_PACKAGE_VERSION}")
@@ -339,14 +349,16 @@ elseif(UNIX)
     set(CPACK_PACKAGE_DESCRIPTION "AmazonTimestreamODBCDriver-${BITNESS}-bit")
 
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+endif()
 
+if(UNIX)
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${CPACK_PACKAGE_NAME}")
     set(CPACK_PACKAGE_VENDOR "Amazon")
     set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
 
     # CPack doesn't allow extensionless licenses, need to make a copy with an extension, .txt is appropriate
-    #set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_ROOT}/LICENSE.txt")
-    #configure_file("${PROJECT_ROOT}/LICENSE" "${PROJECT_ROOT}/LICENSE.txt" COPYONLY)
+    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_ROOT}/LICENSE.txt")
+    configure_file("${PROJECT_ROOT}/LICENSE" "${PROJECT_ROOT}/LICENSE.txt" COPYONLY)
 
     # Set up components for installer
     cpack_add_component(Docs
@@ -356,17 +368,25 @@ elseif(UNIX)
     cpack_add_component(Driver
 	    DISPLAY_NAME "Driver"
 	    DESCRIPTION "Library files for running the Amazon Timestream ODBC Driver"
-        REQUIRED
+        REQUIRED 
     )
 
-    # Install library and shell script 
-    install(TARGETS ${TARGET} DESTINATION lib64/timestream-odbc${BITNESS} COMPONENT "Driver")
-    install(FILES "${PROJECT_ROOT}/scripts/postinst_unix.sh" DESTINATION lib64/timestream-odbc${BITNESS} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE COMPONENT "Driver")
+    if(APPLE)
+        install(TARGETS ${TARGET} DESTINATION "timestream-odbc/lib" COMPONENT "Driver")
+    
+        # Install documentation files
+        install(FILES "${PROJECT_ROOT}/LICENSE" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
+        install(FILES "${PROJECT_ROOT}/docs/markdown/setup/connection-string.md" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
+        install(FILES "${PROJECT_ROOT}/docs/markdown/setup/macOS-dsn-configuration.md" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
+    else()
+        # Install library and shell script 
+        install(TARGETS ${TARGET} DESTINATION lib64/timestream-odbc${BITNESS} COMPONENT "Driver")
+        install(FILES "${PROJECT_ROOT}/scripts/postinst_unix.sh" DESTINATION lib64/timestream-odbc${BITNESS} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE COMPONENT "Driver")
 
-    # Install documentation files
-    install(FILES "${PROJECT_ROOT}/LICENSE" DESTINATION "lib64/timestream-odbc${BITNESS}" COMPONENT "Docs")
-    install(FILES "${PROJECT_ROOT}/docs/markdown/setup/linux-dsn-configuration.md" DESTINATION "lib64/timestream-odbc${BITNESS}" COMPONENT "Docs")
-
+        # Install documentation files
+        install(FILES "${PROJECT_ROOT}/LICENSE" DESTINATION "lib64/timestream-odbc${BITNESS}" COMPONENT "Docs")
+        install(FILES "${PROJECT_ROOT}/docs/markdown/setup/linux-dsn-configuration.md" DESTINATION "lib64/timestream-odbc${BITNESS}" COMPONENT "Docs")
+    endif()
 endif()
 
 target_include_directories(${TARGET} INTERFACE include)

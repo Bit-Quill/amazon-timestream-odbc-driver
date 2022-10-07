@@ -75,7 +75,7 @@ Connection::Connection(Environment* env) : env_(env), info_(config_) {
     // Connection objects start to run.
     std::lock_guard< std::mutex > lock(mutex_);
     if (!awsSDKReady_) {
-      // TODO: make this loglevel configurable?:wq
+      // TODO: make this loglevel configurable?
       // https://bitquill.atlassian.net/browse/AT-1054
       options_.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Warn;
 

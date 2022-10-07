@@ -8,8 +8,8 @@ In order to use the Timestream ODBC Driver, [ODBC Manager](http://www.odbcmanage
 2. Go to the **Drivers** tab.
 3. Click **Add...**.
     * **Driver Name**: The driver name used for ODBC connections (ex. `Amazon Timestream ODBC Driver`)
-    * **Driver File**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/bin/libtimestream-odbc.dylib`)
-    * **Setup File**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/bin/libtimestream-odbc.dylib`)
+    * **Driver File**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/lib/libtimestream-odbc.dylib`)
+    * **Setup File**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/lib/libtimestream-odbc.dylib`)
     * Set as a **User** or **System** driver
 4. Click **OK** to save the options.
 
@@ -21,19 +21,18 @@ To give the application permission to save the Driver & DSN configurations, run 
 1. Go to the **ODBC Drivers** tab.
 2. Click **Add a driver**.
     * **Description of the Driver**: The driver name used for ODBC connections (ex. `Amazon Timestream ODBC Driver`)
-    * **Driver File Name**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/bin/libtimestream-odbc.dylib`)
-    * **Setup File Name**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/bin/libtimestream-odbc.dylib`)
+    * **Driver File Name**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/lib/libtimestream-odbc.dylib`)
+    * **Setup File Name**: The path to the driver file (default installed path: `/Library/ODBC/timestream-odbc/lib/libtimestream-odbc.dylib`)
     * Set as a **System** driver
 3. Click **OK** to save the options.
 
-### Manually editing odbcinst.ini ###
+### Add a Driver Entry ###
+If /Library/ODBC/odbcinst.ini does not have an Amazon Timestream ODBC Driver entry, you can add it following the steps below.
+
 Use a text editor from Terminal to edit the odbcinst.ini file such as vi.
 
 **To create a System Driver Entry run:**
 `sudo vi /Library/ODBC/odbcinst.ini`
-
-**To create a User Driver Entry run:**
-`vi ~/Library/ODBC/odbcinst.ini`
 
 **To add the driver entries:**
 1. Add `Amazon Timestream ODBC Driver` in the `[ODBC Drivers]` section.
@@ -45,7 +44,8 @@ Use a text editor from Terminal to edit the odbcinst.ini file such as vi.
 Amazon Timestream ODBC Driver  = Installed
 
 [Amazon Timestream ODBC Driver]
-Driver = /Library/ODBC/timestream-odbc/bin/libtimestream-odbc.dylib
+Driver = /Library/ODBC/timestream-odbc/lib/libtimestream-odbc.dylib
+Setup = /Library/ODBC/timestream-odbc/lib/libtimestream-odbc.dylib
 ```
 
 ## Adding a DSN Entry

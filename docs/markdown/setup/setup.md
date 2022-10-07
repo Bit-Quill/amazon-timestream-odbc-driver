@@ -24,6 +24,7 @@ Download the Timestream ODBC driver [here](https://github.com/aws/amazon-timestr
 
 ### Timestream ODBC Driver Installation
 - [Windows Installation Guide](windows-installation-guide.md)
+- [MacOS Installation Guide](macOS-installation-guide.md)
 - [Linux Installation Guide](linux-installation-guide.md)
 
 ### DSN Configuration
