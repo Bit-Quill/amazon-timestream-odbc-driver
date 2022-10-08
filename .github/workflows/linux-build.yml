@@ -85,6 +85,17 @@ jobs:
       run: |
         ./build_linux_release64_deb.sh
 
+    - name: update-environment-with-ODBC_DRIVER_VERSION
+      run: |
+        read -r ODBC_DRIVER_VERSION < ./src/ODBC_DRIVER_VERSION.txt
+        echo "ODBC_DRIVER_VERSION=$ODBC_DRIVER_VERSION" >> $GITHUB_ENV
+
+    - name: upload-package
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamODBC_${{env.ODBC_DRIVER_VERSION}}_RELEASE_amd64
+        path: cmake-build64/AmazonTimestreamODBC_${{env.ODBC_DRIVER_VERSION}}_RELEASE_amd64.deb
+
     - name: register-odbc-driver
       run: |
         chmod +r -R ${{env.ODBC_LIB_PATH}}
@@ -202,7 +213,18 @@ jobs:
 
     - name: configure-and-build-driver
       run: |
-        ./build_linux_debug64.sh
+        ./build_linux_debug64_deb.sh
+
+    - name: update-environment-with-ODBC_DRIVER_VERSION
+      run: |
+        read -r ODBC_DRIVER_VERSION < ./src/ODBC_DRIVER_VERSION.txt
+        echo "ODBC_DRIVER_VERSION=$ODBC_DRIVER_VERSION" >> $GITHUB_ENV
+
+    - name: upload-package
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamODBC_${{env.ODBC_DRIVER_VERSION}}_DEBUG_amd64
+        path: cmake-build64/AmazonTimestreamODBC_${{env.ODBC_DRIVER_VERSION}}_DEBUG_amd64.deb
 
     - name: register-odbc-driver
       run: |

@@ -1,29 +1,5 @@
 # Linux - Configuring a DSN
 
-## Prerequisites
-In order to use the Timestream ODBC Driver, [unixODBC](http://www.unixodbc.org/) must be installed.
-
-### Installing on Ubuntu 64 bit
-
-```
-sudo apt update
-sudo apt install unixodbc
-```
-
-### Installing on Amazon Linux 2 64 bit
-
-```
-sudo yum update
-sudo yum install unixODBC
-```
-
-### Installing on Linux via Docker 64 bit
-
-```
-[sudo] apt update
-[sudo] apt install unixodbc unixodbc-dev
-```
-
 ## Adding a Driver Entry
 
 ### Manually editing the odbcinst.ini file ###

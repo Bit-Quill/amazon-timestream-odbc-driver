@@ -330,25 +330,44 @@ elseif(APPLE)
 elseif(UNIX)
     # General package info
     set(BITNESS 64)
-    set(CPACK_PACKAGE_FILE_NAME "AmazonTimestreamODBC${BITNESS}-${CPACK_PACKAGE_VERSION}")
-    if (BITNESS EQUAL 32)
-        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+
+    if (INSTALLER_TYPE STREQUAL "DEB")
+        if (BITNESS EQUAL 32)
+            set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+        else()
+            set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+        endif()
+        set(CPACK_GENERATOR "DEB")
+        set(CPACK_DEBIAN_FILE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}.deb")
+
+        # Deb installers fail if there's a space in the directory or package name
+        set(CPACK_PACKAGE_INSTALL_DIRECTORY "AmazonTimestreamODBCDriver${BITNESS}-bit")
+	set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+
+        # TODO: Need to update both of these.
+        set(CPACK_PACKAGE_CONTACT "user@sample.com")
+        set(CPACK_DEBIAN_PACKAGE_MAINTAINER "User Name")
+        set(CPACK_PACKAGE_DESCRIPTION "AmazonTimestreamODBCDriver-${CMAKE_BUILD_TYPE}-${BITNESS}-bit")
+
+        set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    elseif(INSTALLER_TYPE STREQUAL "RPM")
+        if (BITNESS EQUAL 32)
+            set(CPACK_RPM_PACKAGE_ARCHITECTURE i386)
+        else()
+            set(CPACK_RPM_PACKAGE_ARCHITECTURE x86_64)
+        endif()
+        set(CPACK_GENERATOR RPM)
+        set(CPACK_RPM_FILE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_RPM_PACKAGE_ARCHITECTURE}.rpm")
+
+        set(CPACK_PACKAGE_INSTALL_DIRECTORY "Amazon Timestream ODBC Driver ${BITNESS}-bit")
+        set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_RPM_PACKAGE_ARCHITECTURE}")
+
+        set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE 1)
+        set(CPACK_RPM_COMPONENT_INSTALL ON)
+        set(CPACK_TEMPORARY_PACKAGE_FILE_NAME "${CMAKE_BINARY_DIR}/_CPack_Packages/Linux/RPM/RPMS/${CMAKE_SYSTEM_PROCESSOR}/${CPACK_PACKAGE_FILE_NAME}.rpm")
     else()
-        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+        message(FATAL_ERROR "INSTALLER_TYPE '${INSTALLER_TYPE}' must be DEB or RPM for Linux installer." )
     endif()
-    set(CPACK_GENERATOR "DEB")
-    set(CPACK_DEBIAN_FILE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}.deb")
-
-    # Deb installers fail if there's a space in the directory or package name
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "AmazonTimestreamODBCDriver${BITNESS}-bit")
-    set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
-
-    # TODO: Need to update both of these.
-    set(CPACK_PACKAGE_CONTACT "user@sample.com")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "User Name")
-    set(CPACK_PACKAGE_DESCRIPTION "AmazonTimestreamODBCDriver-${BITNESS}-bit")
-
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 endif()
 
 if(UNIX)

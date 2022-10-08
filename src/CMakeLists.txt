@@ -16,7 +16,11 @@
 #
 
 cmake_minimum_required(VERSION 3.20)
-project(Timestream-ODBC VERSION 2.0.0)
+
+# Update version number in ODBC_DRIVER_VERSION.txt file.
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/ODBC_DRIVER_VERSION.txt" ODBC_DRIVER_VERSION)
+string(STRIP ${ODBC_DRIVER_VERSION} ODBC_DRIVER_VERSION)
+project(Timestream-ODBC VERSION ${ODBC_DRIVER_VERSION})
 
 set(aws-cpp-sdk-timestream-query_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/cmake/aws-cpp-sdk-timestream-query")
 set(aws-cpp-sdk-sts_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/cmake/aws-cpp-sdk-sts")

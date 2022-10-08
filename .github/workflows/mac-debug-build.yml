@@ -71,11 +71,16 @@ jobs:
       env:
         OPENSSL_ROOT_DIR: /usr/local/opt/openssl
 
+    - name: update-environment-with-ODBC_DRIVER_VERSION
+      run: |
+        read -r ODBC_DRIVER_VERSION < ./src/ODBC_DRIVER_VERSION.txt
+        echo "ODBC_DRIVER_VERSION=$ODBC_DRIVER_VERSION" >> $GITHUB_ENV
+
     - name: upload-package
       uses: actions/upload-artifact@v3
       with:
-        name: AmazonTimestreamODBC-2.0.0.pkg
-        path: ./cmake-build64/AmazonTimestreamODBC-2.0.0.pkg
+        name: AmazonTimestreamODBC-${{env.ODBC_DRIVER_VERSION}}.pkg
+        path: ./cmake-build64/AmazonTimestreamODBC-${{env.ODBC_DRIVER_VERSION}}.pkg
 
     # - name: prepare-dsn
     #   run: |

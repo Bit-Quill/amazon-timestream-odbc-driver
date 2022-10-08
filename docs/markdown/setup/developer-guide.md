@@ -129,7 +129,7 @@ sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Fram
     && ./vcpkg/bootstrap-vcpkg.sh \
     && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
     ```
-   3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64.sh` or `./build_linux_release64_deb.sh`
+   3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
    4. Run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
    5. Set environment variable REPOSITORY_ROOT to your repository root
@@ -148,7 +148,7 @@ sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Fram
 If a windows host machine is used, it is possible to have an issue with end of line character in the *.sh files. 
 There are two ways to fix the issue.
    1. Ensure that your github is checking out the files as Unix-style https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
-   2. Alternatively you can convert the end-of-line using the following command `tr -d '\015' < build_linux_debug64.sh > build_linux_debug64_lf.sh` and run `./build_linux_debug64_lf.sh` to build.
+   2. Alternatively you can convert the end-of-line using the following command `tr -d '\015' < build_linux_debug64_deb.sh > build_linux_debug64_deb_lf.sh` and run `./build_linux_debug64_deb_lf.sh` to build.
       1. Note that the command will need to be executed for all scripts that you will run in the container (register_driver_unix.sh,env_variables_check.sh and any other that you might need).
 ### Using Ubuntu 64bit
 
@@ -190,7 +190,7 @@ There are two ways to fix the issue.
 ```
    3. Set all necessary environment variables and run the following command to register the ODBC driver. 
       `./scripts/register_driver_unix.sh`
-   4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64.sh`
+   4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
    5. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
    6. Set environment variable REPOSITORY_ROOT to your repository root
 
@@ -210,3 +210,6 @@ If you want to check a detailed report generate the with `--html-details` option
 
 ### Windows
 OpenCppCoverage is used to generate code coverage for windows, for more information check it in the official (documentation)[https://github.com/OpenCppCoverage/OpenCppCoverage]
+
+## Versioning
+1. To set the version of the ODBC driver, update the `src/ODBC_DRIVER_VERSION.txt` file with the appropriate version.
