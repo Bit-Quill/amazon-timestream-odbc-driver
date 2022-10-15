@@ -1,1 +1,1 @@
-./scripts/build_linux.sh 64 RELEASE RPM
+./scripts/build_linux64.sh RELEASE RPM

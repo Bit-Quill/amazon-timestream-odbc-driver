@@ -329,7 +329,7 @@ elseif(APPLE)
     set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_CURRENT_SOURCE_DIR}/install/mac/Welcome.txt")
 elseif(UNIX)
     # General package info
-    set(BITNESS ${CMAKE_BITNESS})
+    set(BITNESS 64)
 
     if (INSTALLER_TYPE STREQUAL "DEB")
         if (BITNESS EQUAL 32)
