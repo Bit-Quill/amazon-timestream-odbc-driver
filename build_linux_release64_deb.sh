@@ -1,2 +1,2 @@
-./scripts/build_linux64.sh RELEASE DEB
+./scripts/build_linux.sh 64 RELEASE DEB
 
