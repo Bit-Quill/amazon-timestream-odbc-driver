@@ -72,3 +72,5 @@ leaks_itodbc_results
 src/out
 tools/ODBCcli/out
 src/tests/input/credentials
+scripts/postinst_unix32.sh
+scripts/postinst_unix64.sh

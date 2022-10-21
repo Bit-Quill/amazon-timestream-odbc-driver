@@ -1,6 +1,9 @@
 #!/bin/bash
 
-ODBC_LIB_PATH="/usr/lib64/timestream-odbc64"
+#The following line will be replaced by sed in src/odbc/CMakeList.txt 
+#to different actual path when build the installer for 32-bit and 64-bit
+#ODBC_LIB_PATH
+
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   ODBC_LIB_FILENAME="$ODBC_LIB_PATH/libtimestream-odbc.so"
 elif [[ "$OSTYPE" == "darwin"* ]]; then

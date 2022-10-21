@@ -1,1 +1,1 @@
-./scripts/build_linux64.sh DEBUG DEB
+./scripts/build_linux.sh 64 DEBUG DEB

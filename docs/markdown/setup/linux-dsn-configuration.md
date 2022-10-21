@@ -14,6 +14,16 @@ Use a text editor from the Unix shell to edit the odbcinst.ini file such as vi.
 1. Add `Amazon Timestream ODBC Driver` in the `[ODBC Drivers]` section.
 2. Add the `[Amazon Timestream ODBC Driver]` section.
 
+#### Sample odbcinst.ini file for 32-bit Linux
+```
+[ODBC Drivers]
+Amazon Timestream ODBC Driver  = Installed
+
+[Amazon Timestream ODBC Driver]
+Driver = /usr/lib/timestream-odbc32/libtimestream-odbc.so
+Setup  = /usr/lib/timestream-odbc32/libtimestream-odbc.so
+```
+
 #### Sample odbcinst.ini file for 64-bit Linux
 ```
 [ODBC Drivers]
@@ -85,7 +95,7 @@ SessionToken   =
 
 ## Testing Connections
 
-### Testing the 64-bit Timestream ODBC Driver for Linux
+### Testing Timestream ODBC Driver for Linux
 Use [isql](https://www.systutorials.com/docs/linux/man/1-isql/#:~:text=isql%20is%20a%20command%20line,with%20built%2Din%20Unicode%20support) to test the connections and run a sample query. For example, to connect to the timestream-aws-profile DSN, 
 * Type `isql timestream-aws-profile` to make a connection and enter interactive mode.
 

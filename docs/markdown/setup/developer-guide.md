@@ -202,6 +202,44 @@ There are two ways to fix the issue.
    9. You are ready to run the tests.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
       E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
+
+### Build Linux 32-bit Deb/Rpm package on Ubuntu 64bit
+1. Run the following commands to install needed packages 
+```
+   sudo dpkg --add-architecture i386
+   sudo apt update 
+   sudo apt install unixodbc-dev:i386 odbcinst1debian2:i386 libodbc1:i386 libcurl4-openssl-dev:i386 libssl-dev:i386 uuid-dev:i386 cpp:i386 cpp-9:i386 gcc:i386 g++:i386 zlib1g-dev:i386 linux-headers-$(uname -r) gcc-multilib:i386 g++-multilib:i386 cmake g++-9:i386 gcc-9:i386 gcc-9-multilib:i386 g++-9-multilib:i386 binutils:i386 make:i386
+```
+2. Install git
+
+    `sudo apt install git`
+3. Install Cmake 3.24
+```
+   sudo apt install pip
+   sudo pip install cmake
+```
+4. Install lcov for Debug build only. It needs to build from source https://github.com/linux-test-project/lcov.
+```
+   git clone git@github.com:linux-test-project/lcov.git
+   cd lcov
+   sudo make install
+```
+5. Build and install Boost. It needs to build from source 
+```
+   wget https://boostorg.jfrog.io/artifactory/main/release/1.75.0/source/boost_1_75_0.tar.gz
+   tar xf boost_1_75_0.tar.gz
+   cd boost_1_75_0
+   ./bootstrap.sh \
+   --libdir=/usr/local/lib \
+   --with-libraries=system,thread,test,chrono,regex,date_time,filesystem,locale,random,atomic,log,program_options,exception
+   ./b2 -j 8
+   sudo ./b2 install
+```
+6. [Optional] Install rpm if you want to build RPM package from Ubuntu.
+      
+   `sudo apt install rpm`
+7. Run one of the build scripts to build the DEB or RPM package. E.g. `./build_linux_release32_deb.sh`
+
 ## Code Coverage
 
 ### MacOS/Linux
