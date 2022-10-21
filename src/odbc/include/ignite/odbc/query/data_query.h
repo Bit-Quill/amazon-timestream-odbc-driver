@@ -21,6 +21,14 @@
 #include "ignite/odbc/app/parameter_set.h"
 #include "ignite/odbc/query/query.h"
 
+#include <aws/timestream-query/model/QueryRequest.h>
+#include <aws/timestream-query/model/QueryResult.h>
+#include <aws/timestream-query/model/ColumnInfo.h>
+
+using Aws::TimestreamQuery::Model::ColumnInfo;
+using Aws::TimestreamQuery::Model::QueryRequest;
+using Aws::TimestreamQuery::Model::QueryResult;
+
 namespace ignite {
 namespace odbc {
 /** Connection forward-declaration. */
@@ -30,7 +38,7 @@ namespace query {
 /**
  * Query.
  */
-class DataQuery : public Query {
+class IGNITE_IMPORT_EXPORT DataQuery : public Query {
  public:
   /**
    * Constructor.
@@ -139,26 +147,11 @@ class DataQuery : public Query {
   SqlResult::Type MakeRequestExecute();
 
   /**
-   * Make query close request.
-   *
-   * @return Result.
-   */
-  SqlResult::Type MakeRequestClose();
-
-  /**
    * Make data fetch request and use response to set internal state.
    *
    * @return Result.
    */
   SqlResult::Type MakeRequestFetch();
-
-
-  /**
-   * Make next result set request and use response to set internal state.
-   *
-   * @return Result.
-   */
-  SqlResult::Type MakeRequestMoreResults();
 
   /**
    * Make result set metadata request.
@@ -166,6 +159,13 @@ class DataQuery : public Query {
    * @return Result.
    */
   SqlResult::Type MakeRequestResultsetMeta();
+
+  /**
+   * Set result set meta by reading AWS Timestream column metadata vector.
+   *
+   * @param tsVector Aws::TimestreamQuery::Model::ColumnInfo vector.
+   */
+  void ReadColumnMetadataVector(const Aws::Vector< ColumnInfo > tsVector);
 
   /**
    * Process column conversion operation result.
@@ -177,7 +177,7 @@ class DataQuery : public Query {
    */
   SqlResult::Type ProcessConversionResult(app::ConversionResult::Type convRes,
                                           int32_t rowIdx, int32_t columnIdx);
-  
+
   /**
    * Set result set meta.
    *
@@ -202,14 +202,16 @@ class DataQuery : public Query {
   const app::ParameterSet& params_;
 
   /** Result set metadata is available */
-  bool resultMetaAvailable_ = false;
+  bool resultMetaAvailable_;
 
   /** Result set metadata. */
   meta::ColumnMetaVector resultMeta_{};
 
-  /** Cursor. */
-  // need to create one cursor_ for timestream
-  //std::unique_ptr< DocumentDbCursor > cursor_{};
+  /** Current TS Query Request. */
+  QueryRequest request_;
+
+  /** Current TS Query Result. */
+  std::shared_ptr< QueryResult > result_;
 
   /** Timeout. */
   int32_t& timeout_;

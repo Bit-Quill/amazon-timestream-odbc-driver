@@ -203,6 +203,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo, *disabled()) {
   BOOST_REQUIRE(result == SqlResult::AI_SUCCESS);
 #endif  // SQL_MAX_CONCURRENT_ACTIVITIES
 
+#ifndef _WIN32
 #ifdef SQL_CURSOR_COMMIT_BEHAVIOR
   result =
       info.GetInfo(SQL_CURSOR_COMMIT_BEHAVIOR, buffer, sizeof(buffer), &reslen);
@@ -214,6 +215,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo, *disabled()) {
                         &reslen);
   BOOST_REQUIRE(result == SqlResult::AI_SUCCESS);
 #endif  // SQL_CURSOR_ROLLBACK_BEHAVIOR
+#endif // ifndef _WIN32
 
 #ifdef SQL_TXN_CAPABLE
   result = info.GetInfo(SQL_TXN_CAPABLE, buffer, sizeof(buffer), &reslen);

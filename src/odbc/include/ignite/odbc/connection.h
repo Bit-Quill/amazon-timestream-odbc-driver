@@ -130,6 +130,13 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   void Deregister();
 
   /**
+   * Get the Timestream query client.
+   *
+   * @return Shared Pointer to Timestream query client.
+   */
+  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > GetClient() const;
+
+  /**
    * Create statement associated with the connection.
    *
    * @return Pointer to valid instance on success and NULL on failure.

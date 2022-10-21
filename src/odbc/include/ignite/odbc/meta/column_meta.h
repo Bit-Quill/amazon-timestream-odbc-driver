@@ -28,13 +28,20 @@
 
 #include "ignite/odbc/impl/binary/binary_reader_impl.h"
 #include "ignite/odbc/common_types.h"
+#include "ignite/odbc/log.h"
 #include "ignite/odbc/result_set.h"
 #include "ignite/odbc/protocol_version.h"
 #include "ignite/odbc/utility.h"
 #include "ignite/odbc/ts_error.h"
 
+#include <aws/core/utils/memory/stl/AWSVector.h>
+#include <aws/timestream-query/model/ColumnInfo.h>
+#include <aws/timestream-query/model/ScalarType.h>
+
 using ignite::odbc::ResultSet;
 using ignite::odbc::common::concurrent::SharedPointer;
+using Aws::TimestreamQuery::Model::ColumnInfo;
+using Aws::TimestreamQuery::Model::ScalarType;
 
 namespace ignite {
 namespace odbc {
@@ -79,7 +86,11 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * Default constructor.
    */
   ColumnMeta()
-      : dataType(), nullability(), precision(), scale(), ordinalPosition() {
+      : nullability(Nullability::NULLABILITY_UNKNOWN),
+        isAutoIncrement("NO"),
+        precision(-1),
+        scale(-1),
+        ordinalPosition(-1) {
     // No-op.
   }
 
@@ -99,6 +110,7 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
         tableName(tableName),
         columnName(columnName),
         dataType(dataType),
+        isAutoIncrement("NO"),
         precision(-1),
         decimalDigits(-1),
         scale(-1),
@@ -163,6 +175,11 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    */
   void Read(SharedPointer< ResultSet >& resultSet, int32_t& prevPosition,
             TSErrorInfo& errInfo);
+  /**
+   * Read using reader.
+   * @param tsVector Vector containing metadata for one row.
+   */
+  void ReadMetadata(const ColumnInfo &tsVector);
 
   /**
    * Get catalog name.
@@ -216,7 +233,7 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * Get the column is auto increment.
    * @return Column is auto increment.
    */
-  const boost::optional< std::string >& GetIsAutoIncrement() const {
+  const std::string GetIsAutoIncrement() const {
     return isAutoIncrement;
   }
 
@@ -226,6 +243,19 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    */
   boost::optional< int16_t > GetDataType() const {
     return dataType;
+  }
+
+  /**
+   * Get data type.
+   * @return ScalarType type.
+   */
+  ScalarType GetScalarType() const {
+    if (!dataType) {
+      LOG_WARNING_MSG("dataType is not set. Returning ScalarType::NOT_SET");
+      return ScalarType::NOT_SET;
+    }
+
+    return static_cast< ScalarType >(*dataType);
   }
 
   /**
@@ -306,7 +336,8 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
   boost::optional< std::string > columnDef;
 
   /** Column is auto incremented */
-  boost::optional< std::string > isAutoIncrement;
+  // Timestream columns are not auto increment
+  std::string isAutoIncrement;
 
   /** Data type. */
   boost::optional< int16_t > dataType;

@@ -181,8 +181,9 @@ TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
   if (sqlType == SQL_ALL_TYPES) {
     // replace TS_INVALID_TYPE with correct type when implement
     types.push_back(TS_INVALID_TYPE);
-  } else
-    types.push_back(*SqlTypeToBinary(sqlType));
+  } else {
+    types.push_back(static_cast< int8_t >(SqlTypeToBinary(sqlType)));
+  }
 }
 
 TypeInfoQuery::~TypeInfoQuery() {
@@ -238,9 +239,9 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
   }
 
   if (cursor == types.end()) {
-    diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
-                         "Cursor has reached end of the result set.");
-
+    std::string errMsg = "Cursor has reached end of the result set.";
+    diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
+    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 

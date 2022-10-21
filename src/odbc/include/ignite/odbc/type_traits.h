@@ -24,6 +24,9 @@
 
 #include <boost/optional.hpp>
 #include <ignite/odbc/common/common.h>
+#include <aws/timestream-query/model/ScalarType.h>
+
+using Aws::TimestreamQuery::Model::ScalarType;
 
 namespace ignite {
 namespace odbc {
@@ -115,50 +118,20 @@ struct OdbcNativeType {
  */
 class IGNITE_IMPORT_EXPORT SqlTypeName {
  public:
-  /** SMALLINT SQL type name constant. */
-  static const std::string SMALLINT;
-
   /** INTEGER SQL type name constant. */
   static const std::string INTEGER;
-
-  /** DECIMAL SQL type name constant. */
-  static const std::string DECIMAL;
-
-  /** FLOAT SQL type name constant. */
-  static const std::string FLOAT;
-
-  /** REAL SQL type name constant. */
-  static const std::string REAL;
 
   /** DOUBLE SQL type name constant. */
   static const std::string DOUBLE;
 
-  /** NUMERIC SQL type name constant. */
-  static const std::string NUMERIC;
-
   /** BIT SQL type name constant. */
   static const std::string BIT;
-
-  /** TINYINT SQL type name constant. */
-  static const std::string TINYINT;
 
   /** BIGINT SQL type name constant. */
   static const std::string BIGINT;
 
-  /** VARCHAR SQL type name constant. */
-  static const std::string VARCHAR;
-
-  /** LONGVARCHAR SQL type name constant. */
-  static const std::string LONGVARCHAR;
-
-  /** BINARY SQL type name constant. */
-  static const std::string BINARY;
-
-  /** VARBINARY SQL type name constant. */
-  static const std::string VARBINARY;
-
-  /** LONGVARBINARY SQL type name constant. */
-  static const std::string LONGVARBINARY;
+  /** WVARCHAR SQL type name constant. */
+  static const std::string WVARCHAR;
 
   /** DATE SQL type name constant. */
   static const std::string DATE;
@@ -169,11 +142,11 @@ class IGNITE_IMPORT_EXPORT SqlTypeName {
   /** TIME SQL type name constant. */
   static const std::string TIME;
 
-  /** GUID SQL type name constant. */
-  static const std::string GUID;
+  /** INTERVAL_DAY_TO_SECOND SQL type name constant. */
+  static const std::string INTERVAL_DAY_TO_SECOND;
 
-  /** NULL SQL type name constant. */
-  static const std::string SQL_NULL;
+  /** INTERVAL_YEAR_TO_MONTH SQL type name constant. */
+  static const std::string INTERVAL_YEAR_TO_MONTH;
 };
 
 /**
@@ -207,7 +180,7 @@ bool IsSqlTypeSupported(boost::optional< int16_t > type);
  * @param sqlType SQL type.
  * @return Binary type.
  */
-boost::optional< int16_t > SqlTypeToBinary(boost::optional< int16_t > sqlType);
+ScalarType SqlTypeToBinary(boost::optional< int16_t > sqlType);
 
 /**
  * Convert ODBC type to driver type alias.

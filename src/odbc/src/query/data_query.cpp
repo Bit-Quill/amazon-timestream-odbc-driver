@@ -33,6 +33,8 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
       connection_(connection),
       sql_(sql),
       params_(params),
+      resultMetaAvailable_(false),
+      result_(nullptr),
       timeout_(timeout) {
   // No-op.
 
@@ -40,16 +42,14 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
 }
 
 DataQuery::~DataQuery() {
+  LOG_DEBUG_MSG("~DataQuery is called, and exiting");
 }
 
 SqlResult::Type DataQuery::Execute() {
   LOG_DEBUG_MSG("Execute is called");
 
-  // not implemented
-  /* for timestream implementation reference
-  if (cursor_.get())
+  if (result_.get())
     InternalClose();
-  */
 
   LOG_DEBUG_MSG("Execute exiting");
 
@@ -78,7 +78,41 @@ const meta::ColumnMetaVector* DataQuery::GetMeta() {
 SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   LOG_DEBUG_MSG("FetchNextRow is called");
 
-  // not implemented
+  // TODO [AT-1138] complete implementation for get data
+  // https://bitquill.atlassian.net/browse/AT-1138
+  // purpose of function: put data in columnBindings
+  // (see commented out for loop that uses `columnBindings`)
+
+  if (!result_.get()) {
+    LOG_ERROR_MSG("result_ object is empty");
+    return SqlResult::AI_ERROR;
+  }
+
+  std::string nextToken = result_->GetNextToken();
+
+  request_.SetNextToken(nextToken);
+
+  Aws::TimestreamQuery::Model::QueryOutcome outcome =
+      connection_.GetClient()->Query(request_);
+
+  if (!outcome.IsSuccess()) {
+    auto error = outcome.GetError();
+    LOG_DEBUG_MSG("ERROR: " << error.GetExceptionName() << ": "
+                            << error.GetMessage());
+
+    diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+                         "AWS API ERROR: " + error.GetExceptionName() + ": "
+                             + error.GetMessage());
+
+    InternalClose();
+    return SqlResult::AI_ERROR;
+  }
+  // outcome is successful, update `result_`
+  result_ = std::make_shared< QueryResult >(outcome.GetResult());
+
+  // AT-1138 todo fetch the data using `result_`
+
+  // OLD code
   /* for timestream implementation reference
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
@@ -148,8 +182,19 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
                                      app::ApplicationDataBuffer& buffer) {
   LOG_DEBUG_MSG("GetColumn is called");
 
-  // not implemented
-  /* for timestream implementation reference
+  // TODO [AT-1138] implement get column data
+  // https://bitquill.atlassian.net/browse/AT-1138
+  //
+  // Purpose of this function: get current row from results_,
+  // then get the column with index `columnIdx`, and
+  // put the data inside buffer pointer.
+  //
+  // Note that re-using DocumentDbColumn would be non-trivial,
+  // since it uses bsoncxx::document::element, and we
+  // don't have it in Timestream.
+  //
+  // for timestream implementation reference
+  /*
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -176,11 +221,16 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
       row->ReadColumnToBuffer(columnIdx, buffer);
 
   SqlResult::Type result = ProcessConversionResult(convRes, 0, columnIdx);
+
+  return result;
   */
+  buffer.PutNull();
 
   LOG_DEBUG_MSG("GetColumn exiting");
+  LOG_DEBUG_MSG(
+      "AI_NO_DATA is returned by default. TODO implement function in AT-1138");
 
-  return SqlResult::AI_ERROR;
+  return SqlResult::AI_NO_DATA;
 }
 
 SqlResult::Type DataQuery::Close() {
@@ -192,42 +242,36 @@ SqlResult::Type DataQuery::Close() {
 SqlResult::Type DataQuery::InternalClose() {
   LOG_DEBUG_MSG("InternalClose is called");
 
-  // not implemented
-  /* for timestream implementation reference
-  if (!cursor_.get()) {
-    LOG_DEBUG_MSG("InternalClose exiting");
-
-    return SqlResult::AI_SUCCESS;
-  }
-
-  SqlResult::Type result = MakeRequestClose();
-  if (result == SqlResult::AI_SUCCESS) {
-    cursor_.reset();
-  }
-  */
+  result_.reset();
 
   LOG_DEBUG_MSG("InternalClose exiting");
 
-  return SqlResult::AI_ERROR;
+  return SqlResult::AI_SUCCESS;
 }
 
 bool DataQuery::DataAvailable() const {
   LOG_DEBUG_MSG("DataAvailable is called, and exiting");
+  // TODO [AT-1138] indicate whether there is data available.
+  // https://bitquill.atlassian.net/browse/AT-1138
 
   // not implemented
- 
+
   // for timestream implementation reference
-  //return cursor_.get() && cursor_->HasData();
+  // return result_.get() && result_->GetRows();
   return false;
 }
 
 int64_t DataQuery::AffectedRows() const {
-  LOG_DEBUG_MSG("AffectedRows is called, and exiting");
+  // Return zero by default, since number of affected rows is non-zero only
+  // if we're executing update statements, which is not supported
+  LOG_DEBUG_MSG("AffectedRows is called, and exiting. 0 is returned.");
 
   return 0;
 }
 
 SqlResult::Type DataQuery::NextResultSet() {
+  // TODO [AT-1134] Implement SQLMoreResults
+  // https://bitquill.atlassian.net/browse/AT-1134
   LOG_DEBUG_MSG("NextResultSet is called");
 
   InternalClose();
@@ -238,49 +282,120 @@ SqlResult::Type DataQuery::NextResultSet() {
 }
 
 SqlResult::Type DataQuery::MakeRequestExecute() {
+  // This function is called by Execute() and does the actual querying
   LOG_DEBUG_MSG("MakeRequestExecute is called");
 
-  // not implemented
- 
-  // for timestream implementation reference
-  //cursor_.reset(); 
+  // Populate `result_` and the fetching is done in MakeRequestFetch.
+  LOG_INFO_MSG("sql query: " << sql_);
+
+  request_.SetQueryString(sql_);
+
+  Aws::TimestreamQuery::Model::QueryOutcome outcome =
+      connection_.GetClient()->Query(request_);
+
+  if (!outcome.IsSuccess()) {
+    auto error = outcome.GetError();
+
+    diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+                         "AWS API ERROR: " + error.GetExceptionName() + ": "
+                             + error.GetMessage());
+
+    InternalClose();
+
+    LOG_ERROR_MSG("MakeRequestExecute exiting with error msg: "
+                  << error.GetExceptionName() << ": " << error.GetMessage());
+    return SqlResult::AI_ERROR;
+  }
+  // outcome is successful, update result_
+  result_ = std::make_shared< QueryResult >(outcome.GetResult());
 
   LOG_DEBUG_MSG("MakeRequestExecute exiting");
 
   return MakeRequestFetch();
 }
 
-SqlResult::Type DataQuery::MakeRequestClose() {
-  LOG_DEBUG_MSG("MakeRequestClose is called, and exiting");
-
-  return SqlResult::AI_ERROR;
-}
-
 SqlResult::Type DataQuery::MakeRequestFetch() {
   LOG_DEBUG_MSG("MakeRequestFetch is called");
 
-  // not implemented
+  // TODO [AT-1138] implement get data
+  // https://bitquill.atlassian.net/browse/AT-1138
+  // pre-requisite: result_ has been populated
+
+  if (!result_.get()) {
+    diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
+                         "result_ is a null pointer");
+    LOG_DEBUG_MSG("result_ pointer is not populated.");
+    return SqlResult::AI_ERROR;
+  }
+
+  Aws::Vector< ColumnInfo > columnInfo = result_->GetColumnInfo();
+
+  if (!resultMetaAvailable_) {
+    ReadColumnMetadataVector(columnInfo);
+  }
+
+  // TODO [AT-1138] fetch the data
 
   LOG_DEBUG_MSG("MakeRequestFetch exiting");
 
-  return SqlResult::AI_ERROR;
-}
-
-
-SqlResult::Type DataQuery::MakeRequestMoreResults() {
-  LOG_DEBUG_MSG("MakeRequestMoreResults is called, and exiting");
-
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_NO_DATA;
 }
 
 SqlResult::Type DataQuery::MakeRequestResultsetMeta() {
   LOG_DEBUG_MSG("MakeRequestResultsetMeta is called");
 
-  // not implemented
+  QueryRequest request;
+  request.SetQueryString(sql_);
+
+  Aws::TimestreamQuery::Model::QueryOutcome outcome =
+      connection_.GetClient()->Query(request);
+
+  if (!outcome.IsSuccess()) {
+    auto const error = outcome.GetError();
+
+    diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+                         "AWS API ERROR: " + error.GetExceptionName() + ": "
+                             + error.GetMessage());
+
+    InternalClose();
+
+    LOG_ERROR_MSG("MakeRequestResultsetMeta exiting with error msg: "
+                  << error.GetExceptionName() << ": " << error.GetMessage());
+    return SqlResult::AI_ERROR;
+  }
+  // outcome is successful
+  QueryResult result = outcome.GetResult();
+  Aws::Vector< ColumnInfo > columnInfo = result.GetColumnInfo();
+
+  ReadColumnMetadataVector(columnInfo);
 
   LOG_DEBUG_MSG("MakeRequestResultsetMeta exiting");
 
-  return SqlResult::AI_ERROR;
+  return SqlResult::AI_SUCCESS;
+}
+
+void DataQuery::ReadColumnMetadataVector(
+    const Aws::Vector< ColumnInfo > tsVector) {
+  LOG_DEBUG_MSG("ReadColumnMetadataVector is called");
+
+  using ignite::odbc::meta::ColumnMeta;
+  resultMeta_.clear();
+
+  if (tsVector.empty()) {
+    LOG_ERROR_MSG(
+        "ReadColumnMetadataVector exiting without reading Timestream vector");
+    LOG_INFO_MSG("reason: tsVector is empty");
+
+    return;
+  }
+
+  for (ColumnInfo tsMetadata : tsVector) {
+    resultMeta_.emplace_back(ColumnMeta());
+    resultMeta_.back().ReadMetadata(tsMetadata);
+  }
+  resultMetaAvailable_ = true;
+
+  LOG_DEBUG_MSG("ReadColumnMetadataVector exiting");
 }
 
 SqlResult::Type DataQuery::ProcessConversionResult(
@@ -376,9 +491,11 @@ SqlResult::Type DataQuery::ProcessConversionResult(
 void DataQuery::SetResultsetMeta(const meta::ColumnMetaVector& value) {
   LOG_DEBUG_MSG("SetResultsetMeta is called");
 
+  // assign `resultMeta_` with contents of `value`
   resultMeta_.assign(value.begin(), value.end());
   resultMetaAvailable_ = true;
 
+  // the nested forloops are for logging purposes
   for (size_t i = 0; i < resultMeta_.size(); ++i) {
     meta::ColumnMeta& meta = resultMeta_.at(i);
     if (meta.GetDataType()) {

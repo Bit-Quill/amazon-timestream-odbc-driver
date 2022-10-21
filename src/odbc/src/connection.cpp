@@ -210,6 +210,11 @@ void Connection::Deregister() {
   env_->DeregisterConnection(this);
 }
 
+std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
+Connection::GetClient() const {
+  return client_;
+}
+
 SqlResult::Type Connection::InternalRelease() {
   if (!client_) {
     AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.");

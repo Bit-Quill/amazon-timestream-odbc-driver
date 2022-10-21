@@ -34,7 +34,7 @@ using ignite::odbc::meta::ColumnMeta;
 using ignite::odbc::meta::Nullability;
 using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(TestGetAttribute, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // Only SQL_DESC_* fields are tested in this test.
   // This is because those are the fields that would be passed to
   // SQLColAttribute function.
@@ -44,7 +44,8 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute, *disabled()) {
   std::string table("table");
   std::string column("column");
 
-  ColumnMeta columnMeta(schema, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMeta(schema, table, column,
+                        static_cast< int16_t >(ScalarType::VARCHAR),
                         Nullability::NULLABLE);
 
   SQLLEN intVal;
@@ -101,12 +102,12 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute, *disabled()) {
   // test SQL_DESC_TYPE_NAME
   found = columnMeta.GetAttribute(SQL_DESC_TYPE_NAME, resVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(resVal, SqlTypeName::VARCHAR);
+  BOOST_CHECK_EQUAL(resVal, SqlTypeName::WVARCHAR);
 
   // test SQL_DESC_LOCAL_TYPE_NAME
   found = columnMeta.GetAttribute(SQL_DESC_LOCAL_TYPE_NAME, resVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(resVal, SqlTypeName::VARCHAR);
+  BOOST_CHECK_EQUAL(resVal, SqlTypeName::WVARCHAR);
 
   // fields SQL_COLUMN_PRECISION and SQL_DESC_SCALE are not tested
   // for retrieving string values

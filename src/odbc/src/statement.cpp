@@ -121,6 +121,13 @@ int* Statement::GetColumnBindOffsetPtr() {
 }
 
 int32_t Statement::GetColumnNumber() {
+  // The if statement is for successful connection on PowerBI
+  // After all early returns in odbc.cpp is removed, remove this if statement
+  if (!currentQuery.get()) {
+    LOG_DEBUG_MSG("Current query is not found.");
+    return 0;
+  }
+
   int32_t res;
 
   IGNITE_ODBC_API_CALL(InternalGetColumnNumber(res));
@@ -131,8 +138,12 @@ int32_t Statement::GetColumnNumber() {
 SqlResult::Type Statement::InternalGetColumnNumber(int32_t& res) {
   const meta::ColumnMetaVector* meta = GetMeta();
 
-  if (!meta)
+  if (!meta) {
+    LOG_DEBUG_MSG("meta object is not found");
+    res = 0;
+
     return SqlResult::AI_ERROR;
+  }
 
   res = static_cast< int32_t >(meta->size());
 
@@ -163,7 +174,7 @@ SqlResult::Type Statement::InternalBindParameter(
             << paramIdx << ']';
 
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, builder.str());
-
+    LOG_ERROR_MSG(builder.str());
     return SqlResult::AI_ERROR;
   }
 
@@ -545,9 +556,9 @@ void Statement::GetColumnData(uint16_t columnIdx,
 SqlResult::Type Statement::InternalGetColumnData(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
   if (!currentQuery.get()) {
-    AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
-                    "Cursor is not in the open state.");
-
+    std::string errMsg = "Cursor is not in the open state.";
+    AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
+    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 
@@ -622,12 +633,19 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
 
   if (parameters.GetParamSetSize() > 1
       && currentQuery->GetType() == query::QueryType::DATA) {
+    // Notes for future implementation: in DocumentDB, a batch query is the same as a data query.
+    // Therefore it is ok for DocDB to use DataQuery here. 
+    LOG_DEBUG_MSG("QueryType is DATA. Current query set to BatchQuery.");
+
     query::DataQuery& qry = static_cast< query::DataQuery& >(*currentQuery);
 
     currentQuery.reset(new query::BatchQuery(*this, connection, qry.GetSql(),
                                              parameters, timeout));
   } else if (parameters.GetParamSetSize() == 1
              && currentQuery->GetType() == query::QueryType::BATCH) {
+    // Notes for future implementation: BatchQuery is not implemented.   
+    LOG_DEBUG_MSG("QueryType is BATCH. Current query set to DataQuery.");
+
     query::BatchQuery& qry = static_cast< query::BatchQuery& >(*currentQuery);
 
     currentQuery.reset(new query::DataQuery(*this, connection, qry.GetSql(),
@@ -880,8 +898,9 @@ SqlResult::Type Statement::InternalFetchRow() {
     *rowsFetched = 0;
 
   if (!currentQuery.get()) {
-    AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
-                    "Cursor is not in the open state");
+    std::string errMsg = "Cursor is not in the open state.";
+    AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
+    LOG_ERROR_MSG(errMsg);
 
     return SqlResult::AI_ERROR;
   }
@@ -942,7 +961,7 @@ void Statement::MoreResults() {
 
 SqlResult::Type Statement::InternalMoreResults() {
   // For AT-1095 PowerBI connect to Timestream
-  return SqlResult::AI_SUCCESS;
+  return SqlResult::AI_NO_DATA;
 
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
@@ -965,10 +984,16 @@ SqlResult::Type Statement::InternalGetColumnAttribute(
     int16_t* reslen, SqlLen* numbuf) {
   const meta::ColumnMetaVector* meta = GetMeta();
 
-  LOG_MSG("Collumn ID: " << colIdx << ", Attribute ID: " << attrId);
+  LOG_INFO_MSG("Column ID: " << colIdx << ", Attribute ID: " << attrId
+                             << " (" << meta::ColumnMeta::AttrIdToString(attrId)
+                             << ")");
 
-  if (!meta)
+  if (!meta) {
+    LOG_ERROR_MSG(
+        "meta object is not found. Returning "
+        "SqlResult::AI_ERROR.");
     return SqlResult::AI_ERROR;
+  }
 
   if (colIdx > meta->size() || colIdx < 1) {
     AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
@@ -1031,6 +1056,7 @@ int64_t Statement::AffectedRows() {
 
 SqlResult::Type Statement::InternalAffectedRows(int64_t& rowCnt) {
   // For AT-1095 PowerBI connect to Timestream
+  rowCnt = 0;
   return SqlResult::AI_SUCCESS;
 
   if (!currentQuery.get()) {

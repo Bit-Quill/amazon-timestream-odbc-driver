@@ -26,35 +26,15 @@ using namespace ignite::odbc::impl::binary;
 namespace ignite {
 namespace odbc {
 namespace type_traits {
-const std::string SqlTypeName::SMALLINT("SMALLINT");
-
 const std::string SqlTypeName::INTEGER("INTEGER");
-
-const std::string SqlTypeName::DECIMAL("DECIMAL");
-
-const std::string SqlTypeName::FLOAT("FLOAT");
-
-const std::string SqlTypeName::REAL("REAL");
 
 const std::string SqlTypeName::DOUBLE("DOUBLE");
 
-const std::string SqlTypeName::NUMERIC("NUMERIC");
-
 const std::string SqlTypeName::BIT("BIT");
-
-const std::string SqlTypeName::TINYINT("TINYINT");
 
 const std::string SqlTypeName::BIGINT("BIGINT");
 
-const std::string SqlTypeName::VARCHAR("VARCHAR");
-
-const std::string SqlTypeName::LONGVARCHAR("LONGVARCHAR");
-
-const std::string SqlTypeName::BINARY("BINARY");
-
-const std::string SqlTypeName::VARBINARY("VARBINARY");
-
-const std::string SqlTypeName::LONGVARBINARY("LONGVARBINARY");
+const std::string SqlTypeName::WVARCHAR("WVARCHAR");
 
 const std::string SqlTypeName::DATE("DATE");
 
@@ -62,9 +42,10 @@ const std::string SqlTypeName::TIMESTAMP("TIMESTAMP");
 
 const std::string SqlTypeName::TIME("TIME");
 
-const std::string SqlTypeName::GUID("GUID");
+const std::string SqlTypeName::INTERVAL_DAY_TO_SECOND("INTERVAL_DAY_TO_SECOND");
 
-const std::string SqlTypeName::SQL_NULL("NULL");
+const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH(
+    "INTERVAL_YEAR_TO_MONTH");
 
 #ifdef _DEBUG
 
@@ -118,8 +99,45 @@ const char* StatementAttrIdToString(long id) {
 
 const boost::optional< std::string > BinaryTypeToSqlTypeName(
     boost::optional< int16_t > binaryType) {
-  // not implemented
-  return boost::none;
+  if (!binaryType)
+    return boost::none;
+
+  ScalarType scalarType = static_cast< ScalarType >(*binaryType);
+
+  switch (scalarType) {
+    case ScalarType::BOOLEAN:
+      return SqlTypeName::BIT;
+
+    case ScalarType::INTEGER:
+      return SqlTypeName::INTEGER;
+
+    case ScalarType::BIGINT:
+      return SqlTypeName::BIGINT;
+
+    case ScalarType::DOUBLE:
+      return SqlTypeName::DOUBLE;
+
+    case ScalarType::DATE:
+      return SqlTypeName::DATE;
+
+    case ScalarType::TIME:
+      return SqlTypeName::TIME;
+
+    case ScalarType::TIMESTAMP:
+      return SqlTypeName::TIMESTAMP;
+
+    case ScalarType::INTERVAL_DAY_TO_SECOND:
+      return SqlTypeName::INTERVAL_DAY_TO_SECOND;
+
+    case ScalarType::INTERVAL_YEAR_TO_MONTH:
+      return SqlTypeName::INTERVAL_YEAR_TO_MONTH;
+
+    case ScalarType::VARCHAR:
+    case ScalarType::NOT_SET:
+    case ScalarType::UNKNOWN:
+    default:
+      return SqlTypeName::WVARCHAR;
+  }
 }
 
 bool IsApplicationTypeSupported(boost::optional< int16_t > type) {
@@ -177,9 +195,44 @@ bool IsSqlTypeSupported(boost::optional< int16_t > type) {
   }
 }
 
-boost::optional< int16_t > SqlTypeToBinary(boost::optional< int16_t > sqlType) {
-  // not implemented
-  return boost::none;
+ScalarType SqlTypeToBinary(boost::optional< int16_t > sqlType) {
+  if (!sqlType)
+    return ScalarType::UNKNOWN;
+
+  switch (*sqlType) {
+    case SQL_BIT:
+      return ScalarType::BOOLEAN;
+
+    case SQL_INTEGER:
+      return ScalarType::INTEGER;
+
+    case SQL_BIGINT:
+      return ScalarType::BIGINT;
+
+    case SQL_DOUBLE:
+      return ScalarType::DOUBLE;
+
+    case SQL_TYPE_DATE:
+      return ScalarType::DATE;
+
+    case SQL_TYPE_TIME:
+      return ScalarType::TIME;
+
+    case SQL_TYPE_TIMESTAMP:
+      return ScalarType::TIMESTAMP;
+
+    case SQL_INTERVAL_DAY_TO_SECOND:
+      return ScalarType::INTERVAL_DAY_TO_SECOND;
+
+    case SQL_INTERVAL_YEAR_TO_MONTH:
+      return ScalarType::INTERVAL_YEAR_TO_MONTH;
+
+    case SQL_WVARCHAR:
+      return ScalarType::VARCHAR;
+
+    default:
+      return ScalarType::UNKNOWN;
+  }
 }
 
 OdbcNativeType::Type ToDriverType(int16_t type) {
@@ -257,11 +310,50 @@ OdbcNativeType::Type ToDriverType(int16_t type) {
 
 boost::optional< int16_t > BinaryToSqlType(
     boost::optional< int16_t > binaryType) {
-  // not implemented
-  return boost::none;
+  if (!binaryType)
+    return boost::none;
+
+  ScalarType scalarType = static_cast< ScalarType >(*binaryType);
+
+  switch (scalarType) {
+    case ScalarType::BOOLEAN:
+      return SQL_BIT;
+
+    case ScalarType::INTEGER:
+      return SQL_INTEGER;
+
+    case ScalarType::BIGINT:
+      return SQL_BIGINT;
+
+    case ScalarType::DOUBLE:
+      return SQL_DOUBLE;
+
+    case ScalarType::DATE:
+      return SQL_TYPE_DATE;
+
+    case ScalarType::TIME:
+      return SQL_TYPE_TIME;
+
+    case ScalarType::TIMESTAMP:
+      return SQL_TYPE_TIMESTAMP;
+
+    case ScalarType::INTERVAL_DAY_TO_SECOND:
+      return SQL_INTERVAL_DAY_TO_SECOND;
+
+    case ScalarType::INTERVAL_YEAR_TO_MONTH:
+      return SQL_INTERVAL_YEAR_TO_MONTH;
+
+    case ScalarType::VARCHAR:
+    case ScalarType::NOT_SET:
+    case ScalarType::UNKNOWN:
+    default:
+      return SQL_WVARCHAR;
+  }
 }
 
 int16_t BinaryTypeNullability(int16_t) {
+  // TODO [AT-1032] set nullability (can reference from TS JDBC)
+  // https://bitquill.atlassian.net/browse/AT-1032
   return SQL_NULLABLE_UNKNOWN;
 }
 

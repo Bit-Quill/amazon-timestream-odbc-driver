@@ -56,10 +56,8 @@ using namespace ignite::odbc;
 // Connection (Basic Authentication) Settings
 const std::string Configuration::DefaultValue::dsn = DEFAULT_DSN;
 const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
-const std::string Configuration::DefaultValue::uid =
-    DEFAULT_UID; 
-    const std::string Configuration::DefaultValue::pwd =
-    DEFAULT_PWD;
+const std::string Configuration::DefaultValue::uid = DEFAULT_UID;
+const std::string Configuration::DefaultValue::pwd = DEFAULT_PWD;
 const std::string Configuration::DefaultValue::accessKeyId =
     DEFAULT_ACCESS_KEY_ID;
 const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
@@ -108,35 +106,15 @@ std::shared_ptr< Logger > Logger::logger_;
 using namespace type_traits;
 
 // mirrored from src/odbc/src/type_traits.cpp
-const std::string SqlTypeName::SMALLINT("SMALLINT");
-
 const std::string SqlTypeName::INTEGER("INTEGER");
-
-const std::string SqlTypeName::DECIMAL("DECIMAL");
-
-const std::string SqlTypeName::FLOAT("FLOAT");
-
-const std::string SqlTypeName::REAL("REAL");
 
 const std::string SqlTypeName::DOUBLE("DOUBLE");
 
-const std::string SqlTypeName::NUMERIC("NUMERIC");
-
 const std::string SqlTypeName::BIT("BIT");
-
-const std::string SqlTypeName::TINYINT("TINYINT");
 
 const std::string SqlTypeName::BIGINT("BIGINT");
 
-const std::string SqlTypeName::VARCHAR("VARCHAR");
-
-const std::string SqlTypeName::LONGVARCHAR("LONGVARCHAR");
-
-const std::string SqlTypeName::BINARY("BINARY");
-
-const std::string SqlTypeName::VARBINARY("VARBINARY");
-
-const std::string SqlTypeName::LONGVARBINARY("LONGVARBINARY");
+const std::string SqlTypeName::WVARCHAR("WVARCHAR");
 
 const std::string SqlTypeName::DATE("DATE");
 
@@ -144,9 +122,10 @@ const std::string SqlTypeName::TIMESTAMP("TIMESTAMP");
 
 const std::string SqlTypeName::TIME("TIME");
 
-const std::string SqlTypeName::GUID("GUID");
+const std::string SqlTypeName::INTERVAL_DAY_TO_SECOND("INTERVAL_DAY_TO_SECOND");
 
-const std::string SqlTypeName::SQL_NULL("NULL");
+const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH(
+    "INTERVAL_YEAR_TO_MONTH");
 
 // mirrored from src/odbc/src/config/connection_string_parser.cpp
 const std::string ConnectionStringParser::Key::dsn = "dsn";
@@ -311,41 +290,38 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
   SQLSMALLINT outStrLen;
 
   // Normal connect.
-  SQLRETURN ret = SQLDriverConnect(
-      dbc, NULL, &connectStr[0], connectStrLen,
-      outStr, ODBC_BUFFER_SIZE, &outStrLen, SQL_DRIVER_COMPLETE);
+  SQLRETURN ret =
+      SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, outStr,
+                       ODBC_BUFFER_SIZE, &outStrLen, SQL_DRIVER_COMPLETE);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
   SQLDisconnect(dbc);
 
   // Null out string resulting length.
-  SQLDriverConnect(dbc, NULL, &connectStr[0],
-                   connectStrLen, outStr,
+  SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, outStr,
                    ODBC_BUFFER_SIZE, 0, SQL_DRIVER_COMPLETE);
   SQLDisconnect(dbc);
 
   // Null out string buffer length.
-  SQLDriverConnect(dbc, NULL, &connectStr[0],
-                   connectStrLen, outStr, 0,
+  SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, outStr, 0,
                    &outStrLen, SQL_DRIVER_COMPLETE);
   SQLDisconnect(dbc);
 
   // Null out string.
-  SQLDriverConnect(dbc, NULL, &connectStr[0],
-                   connectStrLen, 0,
+  SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, 0,
                    ODBC_BUFFER_SIZE, &outStrLen, SQL_DRIVER_COMPLETE);
   SQLDisconnect(dbc);
 
   // Null all.
-  SQLDriverConnect(dbc, NULL, &connectStr[0],
-                   connectStrLen, 0, 0, 0,
+  SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, 0, 0, 0,
                    SQL_DRIVER_COMPLETE);
   SQLDisconnect(dbc);
 
   // Reduced output buffer length. Test boundary condition of output buffer
-  // 9 is chosen as arbitrary number guaranteed to be smaller than the actual string
+  // 9 is chosen as arbitrary number guaranteed to be smaller than the actual
+  // string
   SQLSMALLINT reducedOutStrLen = 9;
-  ret = SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, outStr, reducedOutStrLen + 1,
-                         &outStrLen, SQL_DRIVER_COMPLETE);
+  ret = SQLDriverConnect(dbc, NULL, &connectStr[0], connectStrLen, outStr,
+                         reducedOutStrLen + 1, &outStrLen, SQL_DRIVER_COMPLETE);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
   BOOST_REQUIRE_EQUAL(outStrLen, reducedOutStrLen);
   std::vector< SQLWCHAR > expectedOutStr(connectStr.begin(),
@@ -357,10 +333,10 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
   }
 
   // The following behavior should be considered when changing this test:
-  // The ODBC Driver Manager on Windows changes the input connection string 
-  // before passing it to the SQLDriverConnect function. 
-  // I.e., "driver=...", "uid=...", "pwd=..." becomes "DRIVER=...", "UID=...", "PWD=..."
-  // and are moved to the head of the connection string.
+  // The ODBC Driver Manager on Windows changes the input connection string
+  // before passing it to the SQLDriverConnect function.
+  // I.e., "driver=...", "uid=...", "pwd=..." becomes "DRIVER=...", "UID=...",
+  // "PWD=..." and are moved to the head of the connection string.
   BOOST_CHECK_EQUAL_COLLECTIONS(actualOutStr.begin(), actualOutStr.end(),
                                 expectedOutStr.begin(), expectedOutStr.end());
   SQLDisconnect(dbc);
@@ -370,14 +346,14 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
 BOOST_AUTO_TEST_CASE(TestSQLConnect) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
-
   connectToLocalServer("odbc-test");
 
   SQLWCHAR buffer[ODBC_BUFFER_SIZE];
   SQLSMALLINT resLen = 0;
 
   // Everything is ok.
-  SQLRETURN ret = SQLGetInfo(dbc, SQL_DRIVER_NAME, buffer, sizeof(buffer), &resLen);
+  SQLRETURN ret =
+      SQLGetInfo(dbc, SQL_DRIVER_NAME, buffer, sizeof(buffer), &resLen);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
@@ -429,19 +405,19 @@ BOOST_AUTO_TEST_CASE(TestSQLPrepare, *disabled()) {
   SQLCloseCursor(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLExecDirect, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
-
   connectToLocalServer("odbc-test");
 
-  std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+  std::vector< SQLWCHAR > sql = MakeSqlBuffer("SELECT 1");
 
   // Everything is ok.
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  // TODO [AT-1138] enable following line after SQLExecDirect can get data
+  // https://bitquill.atlassian.net/browse/AT-1138
+  //ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   SQLCloseCursor(stmt);
 
@@ -742,7 +718,8 @@ BOOST_AUTO_TEST_CASE(TestSQLNativeSql, *disabled()) {
 
   // Confirm boundary condition.
   SQLINTEGER reducedLength = 8;
-  ret = SQLNativeSql(dbc, sql.data(), SQL_NTS, buffer, reducedLength + 1, &resLen);
+  ret = SQLNativeSql(dbc, sql.data(), SQL_NTS, buffer, reducedLength + 1,
+                     &resLen);
   BOOST_CHECK_EQUAL(SQL_SUCCESS_WITH_INFO, ret);
   BOOST_CHECK_EQUAL(reducedLength, resLen);
 
@@ -756,7 +733,8 @@ BOOST_AUTO_TEST_CASE(TestSQLNativeSql, *disabled()) {
   BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 
   // Res size is null.
-  ret = SQLNativeSql(dbc, sql.data(), SQL_NTS, buffer, ODBC_BUFFER_SIZE, nullptr);
+  ret =
+      SQLNativeSql(dbc, sql.data(), SQL_NTS, buffer, ODBC_BUFFER_SIZE, nullptr);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
   // Value is null.
@@ -764,7 +742,8 @@ BOOST_AUTO_TEST_CASE(TestSQLNativeSql, *disabled()) {
   BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 
   // Buffer is null.
-  ret = SQLNativeSql(dbc, sql.data(), SQL_NTS, nullptr, ODBC_BUFFER_SIZE, &resLen);
+  ret = SQLNativeSql(dbc, sql.data(), SQL_NTS, nullptr, ODBC_BUFFER_SIZE,
+                     &resLen);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
   BOOST_CHECK_EQUAL(sql.size() - 1, resLen);
 
@@ -1109,8 +1088,8 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec, *disabled()) {
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 
   // Should return message length.
-  ret = SQLGetDiagRec(SQL_HANDLE_STMT, stmt, 1, state, &nativeError, message,
-                      0, &messageLen);
+  ret = SQLGetDiagRec(SQL_HANDLE_STMT, stmt, 1, state, &nativeError, message, 0,
+                      &messageLen);
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
 
   // Check boundary condition on reduced output buffer.
@@ -1312,7 +1291,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
                        &message[messageLen + 1]);
   // variable actualMessage is to be used in AD-841
 
-  #if 0
+#if 0
   // TODO: [AD-841](https://bitquill.atlassian.net/browse/AD-841)
   // Check boundary condition with reduced buffer size.
   ret = SQLGetTypeInfo(stmt, SQL_INTERVAL_MONTH);

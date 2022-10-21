@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionIncompleteBasicProperties) {
   ExpectConnectionReject(dsn, username, password, "01S00",
                          "The following is required to connect:\n"
                          "AUTH is \"IAM\" and "
-                         "UID and PWD or"
+                         "UID and PWD or "
                          "AccessKeyId and Secretkey");
 
   Disconnect();
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnectionIncompleteBasicProperties) {
   ExpectConnectionReject(connectionString, "01S00",
                          "The following is required to connect:\n"
                          "AUTH is \"IAM\" and "
-                         "UID and PWD or"
+                         "UID and PWD or "
                          "AccessKeyId and Secretkey");
 
   Disconnect();

@@ -508,7 +508,7 @@ void Configuration::Validate() const {
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
         "The following is required to connect:\n"
         "AUTH is \"IAM\" and "
-        "UID and PWD or"
+        "UID and PWD or "
         "AccessKeyId and Secretkey");
   }
 }

@@ -1772,6 +1772,8 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   intParams[SQL_CREATE_VIEW] = 0;  // I.e., not supported
 #endif  // SQL_CREATE_VIEW
 
+#ifndef _WIN32
+
 #ifdef SQL_CURSOR_COMMIT_BEHAVIOR
   // Value that indicates how a COMMIT operation affects cursors and
   // prepared statements in the data source (the behavior of the data source
@@ -1804,8 +1806,10 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   //    the ROLLBACK operation. The application can continue to fetch data, or
   //    it can close the cursor and re-execute the statement without repreparing
   //    it.
-  intParams[SQL_CURSOR_ROLLBACK_BEHAVIOR] = SQL_CB_CLOSE;
+  intParams[SQL_CURSOR_ROLLBACK_BEHAVIOR] = SQL_CB_PRESERVE;
 #endif  // SQL_CURSOR_ROLLBACK_BEHAVIOR
+
+#endif // ifndef _WIN32
 
 #ifdef SQL_CURSOR_SENSITIVITY
   // Value that indicates the support for cursor sensitivity:

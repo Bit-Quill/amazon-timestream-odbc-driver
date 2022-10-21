@@ -143,12 +143,15 @@ Driver         = Amazon Timestream ODBC Driver
 Region         = us-east-1
 LogLevel       = 0
 Auth           = IAM
-UID            = 
-PWD            = 
+AccessKeyId    = 
+SecretKey      = 
 SessionToken   = 
 ```
 
-## Troubleshooting
+## Known Issues
+### iODBC Administrator: "UID/PWD required to connect error" when UID/PWD are saved in the DSN
+
+When you do not enter the username and password in **iODBC Administrator** pop-up, **iODBC Administrator** will still pass `uid="";pwd="";` inside the connection string to the driver, thus overwriting the saved uid/pwd value in the DSN. We recommend not putting uid/pwd in the DSNs when you're working with **iODBC Administrator**. 
 
 ### iODBC Administrator: “General installer error” when saving new ODBC Driver
 

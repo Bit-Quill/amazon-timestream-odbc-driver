@@ -32,7 +32,7 @@ jobs:
 
     - name: run-cppcheck
       run: |
-        sudo apt install cppcheck
+        sudo apt install -y cppcheck
         sh run_cppcheck.sh
   
     - name: upload-cppcheck-results
@@ -46,7 +46,7 @@ jobs:
       if: success()
       run: |
         sudo apt update
-        sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
+        sudo apt install -y libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
    
     - name: get-vcpkg-dependencies
       run: |
@@ -162,7 +162,7 @@ jobs:
 
     - name: run-cppcheck
       run: |
-        sudo apt install cppcheck
+        sudo apt install -y cppcheck
         sh run_cppcheck.sh
   
     - name: upload-cppcheck-results
@@ -176,7 +176,7 @@ jobs:
       if: success()
       run: |
         sudo apt update
-        sudo apt install libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
+        sudo apt install -y libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
 
     - name: get-vcpkg-dependencies
       run: |

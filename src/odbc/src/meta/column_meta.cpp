@@ -24,6 +24,8 @@
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/type_traits.h"
 
+#include <aws/timestream-query/model/Type.h>
+
 namespace ignite {
 namespace odbc {
 namespace meta {
@@ -74,7 +76,9 @@ const char* ColumnMeta::AttrIdToString(uint16_t id) {
 
 SqlLen Nullability::ToSql(boost::optional< int32_t > nullability) {
   if (!nullability) {
-    assert(false);
+    LOG_WARNING_MSG(
+        "nullability is not defined. Returning SQL_NULLABLE_UNKNOWN by "
+        "default");
     return SQL_NULLABLE_UNKNOWN;
   }
   switch (*nullability) {
@@ -109,6 +113,8 @@ const std::string IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
 
 void ColumnMeta::Read(SharedPointer< ResultSet >& resultSet,
                       int32_t& prevPosition, TSErrorInfo& errInfo) {
+  // TODO [AT-1032] remove this function after SQLColumns is adapted
+  // https://bitquill.atlassian.net/browse/AT-1032
   resultSet.Get()->GetString(TABLE_CAT, catalogName, errInfo);
   resultSet.Get()->GetString(TABLE_SCHEM, schemaName, errInfo);
   resultSet.Get()->GetString(TABLE_NAME, tableName, errInfo);
@@ -124,12 +130,17 @@ void ColumnMeta::Read(SharedPointer< ResultSet >& resultSet,
   } else {
     prevPosition = *ordinalPosition;
   }
-  resultSet.Get()->GetString(IS_AUTOINCREMENT, isAutoIncrement, errInfo);
+  // resultSet.Get()->GetString(IS_AUTOINCREMENT, isAutoIncrement, errInfo);
 }
 
-bool isCharType(int16_t dataType) {
-  // not implemented
-  return false;
+void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
+  using Aws::TimestreamQuery::Model::Type;
+
+  Type columnType = tsMetadata.GetType();
+
+  // columnName and scalarType are the only 2 piece of info from Type object
+  columnName = tsMetadata.GetName();
+  dataType = static_cast< int16_t >(columnType.GetScalarType());
 }
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
@@ -168,13 +179,13 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       return true;
     }
 
-    case SQL_DESC_LITERAL_PREFIX: {
-      // not implemented
-      return true;
-    }
-
+    case SQL_DESC_LITERAL_PREFIX:
+      // value should be "'" if data type is VARCHAR,
+      // and "0x" if data type is binary, but Timestream does not have
+      // binary data type, so SQL_DESC_LITERAL_PREFIX would have same
+      // result as SQL_DESC_LITERAL_SUFFIX
     case SQL_DESC_LITERAL_SUFFIX: {
-      if (dataType && isCharType(*dataType))
+      if (GetScalarType() == ScalarType::VARCHAR)
         value = "'";
       else
         value.clear();
@@ -236,7 +247,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
     }
 
     case SQL_DESC_AUTO_UNIQUE_VALUE: {
-      if (isAutoIncrement && (*isAutoIncrement == "YES"))
+      if (isAutoIncrement == "YES")
         value = SQL_TRUE;
       else
         value = SQL_FALSE;
@@ -245,7 +256,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
     }
 
     case SQL_DESC_CASE_SENSITIVE: {
-      if (dataType && isCharType(*dataType))
+      if (GetScalarType() == ScalarType::VARCHAR)
         value = SQL_TRUE;
       else
         value = SQL_FALSE;
@@ -274,25 +285,21 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
       // SQL_DESC_LENGTH is either the maximum or actual character length of a
       // character string or binary data type
     case SQL_COLUMN_LENGTH: {
-      if (dataType) {
-        if (boost::optional< int > val =
-                type_traits::BinaryTypeTransferLength(dataType))
-          value = *val;
-      }
+      if (boost::optional< int > val =
+              type_traits::BinaryTypeTransferLength(dataType))
+        value = *val;
 
       break;
     }
 
     case SQL_DESC_OCTET_LENGTH: {
       // SQL_DESC_OCTET_LENGTH is SQL_DESC_LENGTH in bytes
-      if (dataType) {
-        if (boost::optional< int > val =
-                type_traits::BinaryTypeTransferLength(dataType)) {
-          // multiply SQL_DESC_LENGTH by bytes per char if needed
-          if (*val != SQL_NO_TOTAL)
-            *val *= sizeof(char);
-          value = *val;
-        }
+      if (boost::optional< int > val =
+              type_traits::BinaryTypeTransferLength(dataType)) {
+        // multiply SQL_DESC_LENGTH by bytes per char if needed
+        if (*val != SQL_NO_TOTAL)
+          *val *= sizeof(char);
+        value = *val;
       }
 
       break;
@@ -314,13 +321,23 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
 
     case SQL_DESC_PRECISION:
     case SQL_COLUMN_PRECISION: {
-      // not implemented
+      if (dataType && (!precision || *precision == -1)) {
+        if (boost::optional< int > val =
+                type_traits::BinaryTypeColumnSize(dataType))
+          value = *val;
+      } else if (precision)
+        value = *precision;
       break;
     }
 
     case SQL_DESC_SCALE:
     case SQL_COLUMN_SCALE: {
-      // not implemented
+      if (dataType && (!scale || *scale == -1)) {
+        if (boost::optional< int16_t > val =
+                type_traits::BinaryTypeDecimalDigits(dataType))
+          value = *val;
+      } else if (scale)
+        value = *scale;
       break;
     }
 
@@ -352,7 +369,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
       return false;
   }
 
-  LOG_MSG("value: " << value);
+  LOG_DEBUG_MSG("value: " << value);
 
   return true;
 }

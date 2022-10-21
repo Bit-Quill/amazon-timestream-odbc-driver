@@ -154,9 +154,9 @@ SqlResult::Type TableMetadataQuery::GetColumn(
   }
 
   if (cursor == meta.end()) {
-    diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
-                         "Cursor has reached end of the result set.");
-
+    std::string errMsg = "Cursor has reached end of the result set.";
+    diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
+    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 

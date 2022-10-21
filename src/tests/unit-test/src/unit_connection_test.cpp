@@ -93,7 +93,7 @@ const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
 std::shared_ptr< Logger > Logger::logger_;
 
 // mirrored from src/odbc/src/type_traits.cpp
-const std::string type_traits::SqlTypeName::VARCHAR("VARCHAR");
+const std::string type_traits::SqlTypeName::WVARCHAR("WVARCHAR");
 #endif
 
 /**

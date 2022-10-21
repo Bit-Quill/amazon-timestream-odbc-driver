@@ -629,9 +629,7 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
     return SQL_INVALID_HANDLE;
   }
 
-  // For AT-1095 PowerBI connect to Timestream
-  int32_t res = 0;
-  //int32_t res = statement->GetColumnNumber();
+  int32_t res = statement->GetColumnNumber();
 
   if (columnNum) {
     *columnNum = static_cast< SQLSMALLINT >(res);
@@ -644,6 +642,8 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
 }
 
 /** If NULL tableName is passed, it will automatically be converted to "%". */
+// TODO Adapt SQLTables
+// https://bitquill.atlassian.net/browse/AT-1033
 SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -651,9 +651,11 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT tableTypeLen) {
   using odbc::Statement;
 
-  LOG_DEBUG_MSG("SQLTables called");
-  
+  LOG_DEBUG_MSG("SQLTables called. SQL_SUCCESS is returned by default.");
+
   // For AT-1095 PowerBI connect to Timestream
+  // This line would cause Statement functions like GetColumnNumber to have
+  // an empty currentQuery object, since query is not executed.
   return SQL_SUCCESS;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -688,6 +690,8 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
 
 /** If NULL tableName is passed, it will automatically be converted to "%".
  * If NULL columnName is passed, it will automatically be converted to "%". */
+// TODO Adapt SQLColumns
+// https://bitquill.atlassian.net/browse/AT-1032
 SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                      SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                      SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -815,8 +819,8 @@ SQLRETURN SQLColAttribute(SQLHSTMT stmt, SQLUSMALLINT columnNum,
                 << fieldId << " (" << ColumnMeta::AttrIdToString(fieldId)
                 << ")");
 
-  // For AT-1095 PowerBI connect to Timestream
-  return SQL_SUCCESS;
+  // TODO adapt SQLColumns
+  // https://bitquill.atlassian.net/browse/AT-1032
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -1377,9 +1381,6 @@ SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
   using odbc::app::ApplicationDataBuffer;
 
   LOG_DEBUG_MSG("SQLGetData called");
-
-  // For AT-1095 PowerBI connect to Timestream
-  return SQL_NO_DATA;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
