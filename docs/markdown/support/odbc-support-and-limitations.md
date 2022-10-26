@@ -83,7 +83,7 @@ Note that the following table describes the planned functionality for the GA rel
 | SQLRowCount | yes | Defined as SQL_ROWCOUNT_UNKNOWN
 | SQLSetConnectOption | yes |
 | SQLSetParam | no (error) | No parameter support
-| SQLSetScrollOptions | yes |
+| SQLSetScrollOptions | no | Deprecated
 | SQLSetStmtOption | yes |
 | SQLTransact | no (error) | Driver does not support transactions
 
