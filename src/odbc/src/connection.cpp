@@ -39,6 +39,8 @@
 
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
+#include <aws/timestream-write/model/ListDatabasesRequest.h>
+#include <aws/timestream-write/model/ListDatabasesResult.h>
 #include <aws/core/utils/logging/LogLevel.h>
 #include <aws/core/auth/AWSCredentialsProvider.h>
 
@@ -173,10 +175,19 @@ SqlResult::Type Connection::InternalEstablish(
     const config::Configuration& cfg) {
   config_ = cfg;
 
-  if (client_) {
+  if (queryClient_ && writeClient_) {
     AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.");
 
     return SqlResult::AI_ERROR;
+  } else if (queryClient_ || writeClient_) {
+    // only one of the clients is valid
+    LOG_ERROR_MSG("Only one of queryClient_ and writeClient_ has been set." 
+    "Both clients need to be valid to be properly connected.");
+    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, "Driver is not able to fully connect.");
+
+    Close();
+
+    return SqlResult::AI_ERROR;    
   }
 
   try {
@@ -211,13 +222,20 @@ void Connection::Deregister() {
 }
 
 std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
-Connection::GetClient() const {
-  return client_;
+Connection::GetQueryClient() const {
+  return queryClient_;
+}
+
+std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
+Connection::GetWriteClient() const {
+  return writeClient_;
 }
 
 SqlResult::Type Connection::InternalRelease() {
-  if (!client_) {
+  if (!queryClient_ || !writeClient_) {
     AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.");
+
+    Close();
 
     // It is important to return SUCCESS_WITH_INFO and not ERROR here, as if we
     // return an error, Windows Driver Manager may decide that connection is not
@@ -231,8 +249,12 @@ SqlResult::Type Connection::InternalRelease() {
 }
 
 void Connection::Close() {
-  if (client_) {
-    client_.reset();
+  if (queryClient_) {
+    queryClient_.reset();
+  }
+
+  if (writeClient_) {
+    writeClient_.reset();
   }
 }
 
@@ -537,17 +559,38 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   clientCfg.region = cfg.GetRegion();
   clientCfg.enableEndpointDiscovery = true;
 
-  client_ = CreateTSQueryClient(credentials, clientCfg);
+  queryClient_ = CreateTSQueryClient(credentials, clientCfg);
+  writeClient_ = CreateTSWriteClient(credentials, clientCfg);
 
-  // try a simple query
+  // try a simple query with query client
   Aws::TimestreamQuery::Model::QueryRequest queryRequest;
   queryRequest.SetQueryString("SELECT 1");
 
   Aws::TimestreamQuery::Model::QueryOutcome outcome =
-      client_->Query(queryRequest);
+      queryClient_->Query(queryRequest);
   if (!outcome.IsSuccess()) {
     auto error = outcome.GetError();
     LOG_DEBUG_MSG("ERROR: " << error.GetExceptionName() << ": "
+                            << error.GetMessage());
+
+    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
+                      std::string(error.GetExceptionName())
+                          .append(": ")
+                          .append(error.GetMessage())
+                          .c_str());
+
+    Close();
+    return false;
+  }
+
+  // try a list databases request with write client
+  Aws::TimestreamWrite::Model::ListDatabasesRequest dbRequest;
+  Aws::TimestreamWrite::Model::ListDatabasesOutcome dbOutcome =
+      writeClient_->ListDatabases(dbRequest);
+
+  if (!dbOutcome.IsSuccess()) {
+    auto error = dbOutcome.GetError();
+    LOG_DEBUG_MSG("ListDatabases ERROR: " << error.GetExceptionName() << ": "
                             << error.GetMessage());
 
     err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
@@ -588,6 +631,14 @@ Connection::CreateTSQueryClient(
     const Aws::Auth::AWSCredentials& credentials,
     const Aws::Client::ClientConfiguration& clientCfg) {
   return std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
+      credentials, clientCfg);
+}
+
+std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
+Connection::CreateTSWriteClient(
+    const Aws::Auth::AWSCredentials& credentials,
+    const Aws::Client::ClientConfiguration& clientCfg) {
+  return std::make_shared< Aws::TimestreamWrite::TimestreamWriteClient >(
       credentials, clientCfg);
 }
 }  // namespace odbc

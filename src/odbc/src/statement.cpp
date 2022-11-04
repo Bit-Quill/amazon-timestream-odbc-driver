@@ -901,7 +901,6 @@ SqlResult::Type Statement::InternalFetchRow() {
     std::string errMsg = "Cursor is not in the open state.";
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
     LOG_ERROR_MSG(errMsg);
-
     return SqlResult::AI_ERROR;
   }
 
@@ -960,9 +959,6 @@ void Statement::MoreResults() {
 }
 
 SqlResult::Type Statement::InternalMoreResults() {
-  // For AT-1095 PowerBI connect to Timestream
-  return SqlResult::AI_NO_DATA;
-
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
 

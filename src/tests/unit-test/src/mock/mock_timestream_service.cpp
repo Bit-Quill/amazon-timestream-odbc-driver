@@ -34,7 +34,7 @@ void MockTimestreamService::CreateMockTimestreamService() {
   if (!instance_) {
     std::lock_guard< std::mutex > lock(mutex_);
     if (!instance_) {
-      instance_ = new MockTimestreamService; 
+      instance_ = new MockTimestreamService;
     }
   }
 }
@@ -54,14 +54,13 @@ MockTimestreamService ::~MockTimestreamService() {
 }
 
 void MockTimestreamService::AddCredential(const Aws::String& keyId,
-                                    const Aws::String& secretKey) {
+                                          const Aws::String& secretKey) {
   credMap_[keyId] = secretKey;
 }
 
 void MockTimestreamService::RemoveCredential(const Aws::String& keyId) {
   credMap_.erase(keyId);
 }
-
 
 bool MockTimestreamService::Authenticate(const Aws::String& keyId,
                                          const Aws::String& secretKey) {
@@ -97,5 +96,18 @@ Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamService::HandleQueryReq(
   }
 }
 
+Aws::TimestreamWrite::Model::ListDatabasesOutcome
+MockTimestreamService::HandleDatabasesReq(
+    const Aws::TimestreamWrite::Model::ListDatabasesRequest& request) const {
+  // set up ListDatabasesOutcome
+  Aws::TimestreamWrite::Model::ListDatabasesResult result;
+
+  Aws::TimestreamWrite::Model::Database database;
+  database.SetDatabaseName("mockDatabase");
+
+  result.AddDatabases(database);
+
+  return Aws::TimestreamWrite::Model::ListDatabasesOutcome(result);
+}
 }  // namespace odbc
 }  // namespace ignite

@@ -47,7 +47,7 @@ RUN apt-get -y update \
 #install aws-sdk-dependencies
 RUN git clone https://github.com/Microsoft/vcpkg.git \
     && ./vcpkg/bootstrap-vcpkg.sh \
-    && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
+    && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
 
 ENV REPOSITORY_ROOT /timestream-odbc/
 ENV VCPKG_ROOT /timestream-odbc/vcpkg

@@ -43,6 +43,26 @@ int SqlResultToReturnCode(SqlResult::Type result) {
   }
 }
 
+SqlResult::Type ReturnCodeToSqlResult(int retCode) {
+  switch (retCode) {
+    case SQL_SUCCESS:
+      return SqlResult::AI_SUCCESS;
+
+    case SQL_SUCCESS_WITH_INFO:
+      return SqlResult::AI_SUCCESS_WITH_INFO;
+
+    case SQL_NO_DATA:
+      return SqlResult::AI_NO_DATA;
+
+    case SQL_NEED_DATA:
+      return SqlResult::AI_NEED_DATA;
+
+    case SQL_ERROR:
+    default:
+      return SqlResult::AI_ERROR;
+  }
+}
+
 DiagnosticField::Type DiagnosticFieldToInternal(int16_t field) {
   switch (field) {
     case SQL_DIAG_CURSOR_ROW_COUNT:

@@ -57,6 +57,9 @@ struct SqlState {
     /** Undefined state. Internal, should never be exposed to user. */
     UNKNOWN,
 
+    /** General warning. */
+    S01000_GENERAL_WARNING,
+
     /** Output data has been truncated. */
     S01004_DATA_TRUNCATED,
 
@@ -389,6 +392,14 @@ struct ResponseStatus {
  * @return ODBC result type.
  */
 int SqlResultToReturnCode(SqlResult::Type result);
+
+/**
+ * Convert ODBC SQL return code into internal Ignite type.
+ *
+ * @param ODBC result type. 
+ * @return result Internal result type.
+ */
+SqlResult::Type ReturnCodeToSqlResult(int retCode);
 
 /**
  * Convert ODBC field type to internal DiagnosticField::Type type value.

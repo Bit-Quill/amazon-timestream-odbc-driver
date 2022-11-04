@@ -124,8 +124,7 @@ const std::string SqlTypeName::TIME("TIME");
 
 const std::string SqlTypeName::INTERVAL_DAY_TO_SECOND("INTERVAL_DAY_TO_SECOND");
 
-const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH(
-    "INTERVAL_YEAR_TO_MONTH");
+const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH("INTERVAL_YEAR_TO_MONTH");
 
 // mirrored from src/odbc/src/config/connection_string_parser.cpp
 const std::string ConnectionStringParser::Key::dsn = "dsn";
@@ -180,6 +179,9 @@ struct ApiRobustnessTestSuiteFixture : public odbc::OdbcTestSuite {
     CheckSQLStatementDiagnosticError("HYC00");
   }
 
+  /**
+   * Connect to Timestream
+   */
   void connectToTS() {
     std::string dsnConnectionString;
     CreateDsnConnectionStringForAWS(dsnConnectionString);
@@ -422,7 +424,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
 
   // TODO [AT-1138] enable following line after SQLExecDirect can get data
   // https://bitquill.atlassian.net/browse/AT-1138
-  //ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  // ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   SQLCloseCursor(stmt);
 
@@ -510,7 +512,7 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeys, *disabled()) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLTables, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLTables) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -525,18 +527,20 @@ BOOST_AUTO_TEST_CASE(TestSQLTables, *disabled()) {
   SQLRETURN ret =
       SQLTables(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
                 tableName.data(), SQL_NTS, tableType.data(), SQL_NTS);
-
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Sizes are nulls.
-  SQLTables(dbc, catalogName.data(), 0, schemaName.data(), 0, tableName.data(),
-            0, tableType.data(), 0);
+  ret = SQLTables(stmt, catalogName.data(), 0, schemaName.data(), 0,
+                  tableName.data(), 0, tableType.data(), 0);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Values are nulls.
-  SQLTables(dbc, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS);
+  ret = SQLTables(stmt, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // All nulls.
-  SQLTables(dbc, 0, 0, 0, 0, 0, 0, 0, 0);
+  ret = SQLTables(stmt, 0, 0, 0, 0, 0, 0, 0, 0);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
@@ -558,14 +562,14 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Sizes are nulls.
-  SQLColumns(dbc, catalogName.data(), 0, schemaName.data(), 0, tableName.data(),
-             0, columnName.data(), 0);
+  SQLColumns(stmt, catalogName.data(), 0, schemaName.data(), 0,
+             tableName.data(), 0, columnName.data(), 0);
 
   // Values are nulls.
-  SQLColumns(dbc, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS);
+  SQLColumns(stmt, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS);
 
   // All nulls.
-  SQLColumns(dbc, 0, 0, 0, 0, 0, 0, 0, 0);
+  SQLColumns(stmt, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys, *disabled()) {

@@ -52,6 +52,9 @@
 			<Component Id='sdk_ts_query' Guid='@WIX_COMPONENT_ID_SDK_TS_QUERY@' Win64='@WIX_COMPONENT_IS_WIN64@'>
                             <File Id='sdk_ts_query' Name='aws-cpp-sdk-timestream-query.dll' DiskId='1' Source='@WIX_ODBC_SDK_TS_QUERY_PATH@' KeyPath='yes'/>
                         </Component>
+			<Component Id='sdk_ts_write' Guid='@WIX_COMPONENT_ID_SDK_TS_WRITEY@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                            <File Id='sdk_ts_write' Name='aws-cpp-sdk-timestream-write.dll' DiskId='1' Source='@WIX_ODBC_SDK_TS_WRITE_PATH@' KeyPath='yes'/>
+                        </Component>                        
 			<Component Id='aws_c_auth' Guid='@WIX_COMPONENT_ID_AWS_C_AUTH@' Win64='@WIX_COMPONENT_IS_WIN64@'>
                             <File Id='aws_c_auth' Name='aws-c-auth.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_AUTH@' KeyPath='yes'/>
                         </Component>
@@ -95,6 +98,7 @@
             <ComponentRef Id='Driver' />
             <ComponentRef Id='sdk_core' />
             <ComponentRef Id='sdk_ts_query' />
+            <ComponentRef Id='sdk_ts_write' />
             <ComponentRef Id='aws_c_auth' />
             <ComponentRef Id='aws_c_cal' />
             <ComponentRef Id='aws_c_common' />

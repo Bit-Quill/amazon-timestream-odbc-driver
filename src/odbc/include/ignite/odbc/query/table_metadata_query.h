@@ -20,6 +20,10 @@
 
 #include "ignite/odbc/meta/table_meta.h"
 #include "ignite/odbc/query/query.h"
+#include "ignite/odbc/statement.h"
+
+using Aws::TimestreamWrite::Model::ListDatabasesOutcome;
+using Aws::TimestreamWrite::Model::ListTablesOutcome;
 
 namespace ignite {
 namespace odbc {
@@ -124,6 +128,50 @@ class TableMetadataQuery : public Query {
   SqlResult::Type MakeRequestGetTablesMeta();
 
   /**
+   * Get the list of all schemas (databases).
+   * 
+   * @return Operation result
+   */
+  SqlResult::Type getSchemas();
+
+  /**
+   * Get the list of all tables.
+   * 
+   * @return Operation result
+   */
+  SqlResult::Type getTables();
+
+  /**
+   * Update metadata by adding tables from database named databaseName
+   *
+   * @param database name
+   * @return Operation result
+   */
+  SqlResult::Type getTablesWithDBName(std::string& databaseName);
+
+  /**
+   * Check and log error from ListDatabasesOutcome
+   * Only run this function if dbOutcome has error
+   * 
+   * @param dbOutcome ListDatabasesOutcome
+   */
+  SqlResult::Type checkOutcomeError(ListDatabasesOutcome const& dbOutcome);
+
+
+  /**
+   * Check and log error from ListTablesOutcome
+   * Only run this function if tbOutcome has error
+   *
+   * @param dbOutcome ListTablesOutcome
+   */
+  SqlResult::Type checkOutcomeError(ListTablesOutcome const& tbOutcome);
+
+  /**
+   * Check if meta object is empty and print logs of it.
+   */
+  SqlResult::Type checkMeta();
+
+  /**
    * Trims leading space from a string.
    *
    * @return the string with leading spaces trimmed.
@@ -174,6 +222,15 @@ class TableMetadataQuery : public Query {
   /** Fetched flag. */
   bool fetched;
 
+  /** Return a list of catalogs flag. */
+  bool all_catalogs;
+
+  /** Return a list of schemas flag. */
+  bool all_schemas;
+
+  /** Return a list of supported table types flag. */
+  bool all_table_types;
+  
   /** Fetched metadata. */
   meta::TableMetaVector meta;
 

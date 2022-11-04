@@ -16,6 +16,7 @@
  */
 
 #include "ignite/odbc/meta/table_meta.h"
+#include "ignite/odbc/log.h"
 
 namespace ignite {
 namespace odbc {
@@ -26,34 +27,52 @@ const std::string TABLE_NAME = "TABLE_NAME";
 const std::string TABLE_TYPE = "TABLE_TYPE";
 const std::string REMARKS = "REMARKS";
 
-void TableMeta::Read(SharedPointer< ResultSet >& resultSet,
-                     TSErrorInfo& errInfo) {
-  resultSet.Get()->GetString(TABLE_CAT, catalogName, errInfo);
-  resultSet.Get()->GetString(TABLE_SCHEM, schemaName, errInfo);
-  resultSet.Get()->GetString(TABLE_NAME, tableName, errInfo);
-  resultSet.Get()->GetString(TABLE_TYPE, tableType, errInfo);
-  resultSet.Get()->GetString(REMARKS, remarks, errInfo);
+void TableMeta::Read(Table& tb) {
+  tableName = tb.GetTableName();
+  schemaName = tb.GetDatabaseName();
+  // Timestream only has table type "TABLE"
+  tableType = "TABLE";
+  // Timestream does not have catalog or table remarks, so those
+  // values are kept as boost::none to indicate that they are empty
+}
+void TableMeta::Read(Database& db) {
+  schemaName = db.GetDatabaseName();
 }
 
-void ReadTableMetaVector(SharedPointer< ResultSet >& resultSet,
+void TableMeta::Read(std::string& tbType) {
+  tableType = tbType;
+}
+
+void ReadTableMetaVector(const std::string& tableName,
+                         const Aws::Vector< Table >& tbVector,
                          TableMetaVector& meta) {
-  meta.clear();
-  if (!resultSet.IsValid()) {
-    return;
-  }
+  // Parse through Table vector
+  for (Table tb : tbVector) {
+    std::string curTableName = tb.GetTableName();
 
-  TSErrorInfo errInfo;
-  bool hasNext = false;
-  TSErrorCode errCode;
-  do {
-    errCode = resultSet.Get()->Next(hasNext, errInfo);
-    if (!hasNext || errCode != TSErrorCode::TS_ERR_SUCCESS) {
-      break;
+    // TODO [AT-1154] Make server handle search patterns
+    // and remove the code for search pattern here
+    // https://bitquill.atlassian.net/browse/AT-1154
+
+    if (tableName.empty() || tableName == "%" || tableName == curTableName) {
+      meta.emplace_back(TableMeta());
+      meta.back().Read(tb);
+    } else {
+      LOG_DEBUG_MSG("current table name ("
+                    << curTableName << ") does not equal provided table name ("
+                    << tableName
+                    << "), so it will not be included in the resultset.");
     }
+  }
+}
 
+void ReadDatabaseMetaVector(const Aws::Vector< Database >& dbVector,
+                         TableMetaVector& meta) {
+  // Parse through Database vector
+  for (Database db : dbVector) {
     meta.emplace_back(TableMeta());
-    meta.back().Read(resultSet, errInfo);
-  } while (hasNext);
+    meta.back().Read(db);
+  }
 }
 }  // namespace meta
 }  // namespace odbc

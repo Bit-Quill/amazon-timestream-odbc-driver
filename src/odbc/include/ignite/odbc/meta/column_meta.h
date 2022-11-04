@@ -101,6 +101,31 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * @param tableName Table name.
    * @param columnName Column name.
    * @param typeName Type name.
+   * @param scalarType Data type.
+   */
+  ColumnMeta(const std::string& schemaName, const std::string& tableName,
+             const std::string& columnName, ScalarType scalarType,
+             Nullability::Type nullability)
+      : schemaName(schemaName),
+        tableName(tableName),
+        columnName(columnName),
+        dataType(static_cast<int16_t>(scalarType)),
+        isAutoIncrement("NO"),
+        precision(-1),
+        decimalDigits(-1),
+        scale(-1),
+        nullability(nullability),
+        ordinalPosition(-1) {
+    // No-op.
+  }
+
+  /**
+   * Constructor.
+   *
+   * @param schemaName Schema name.
+   * @param tableName Table name.
+   * @param columnName Column name.
+   * @param typeName Type name.
    * @param dataType Data type.
    */
   ColumnMeta(const std::string& schemaName, const std::string& tableName,

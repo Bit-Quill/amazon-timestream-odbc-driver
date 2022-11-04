@@ -53,7 +53,7 @@ C/C++ usage and formatting.
 3. [WiX Installer (3.11)](https://wixtoolset.org/releases/)
    1. Ensure to add path to WiX executables (e.g. `C:\Program Files (x86)\WiX Toolset v3.11\bin`)
 4. Boost Test Framework
-   1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query]:x64-windows" --recurse`
+   1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
 5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
 6. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
@@ -127,7 +127,7 @@ sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Fram
    ```
    git clone https://github.com/Microsoft/vcpkg.git \
     && ./vcpkg/bootstrap-vcpkg.sh \
-    && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse
+    && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
     ```
    3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
    4. Run the following command to register the ODBC driver. 
@@ -185,7 +185,7 @@ There are two ways to fix the issue.
            cd <odbc-repo> \
            git clone https://github.com/Microsoft/vcpkg.git \
            && ./vcpkg/bootstrap-vcpkg.sh \
-           && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query]" --recurse \
+           && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse \
            export VCPKG_ROOT=<odbc-repo>/vcpkg
 ```
    3. Set all necessary environment variables and run the following command to register the ODBC driver. 

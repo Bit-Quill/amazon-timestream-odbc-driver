@@ -35,6 +35,7 @@
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
 #include <aws/timestream-query/TimestreamQueryClient.h>
+#include <aws/timestream-write/TimestreamWriteClient.h>
 
 using ignite::odbc::common::concurrent::SharedPointer;
 
@@ -134,7 +135,15 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    *
    * @return Shared Pointer to Timestream query client.
    */
-  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > GetClient() const;
+  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > GetQueryClient() const;
+
+  /**
+   * Get the Timestream write client.
+   *
+   * @return Shared Pointer to Timestream write client.
+   */
+  std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
+  GetWriteClient() const;
 
   /**
    * Create statement associated with the connection.
@@ -264,6 +273,18 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > 
       CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
           const Aws::Client::ClientConfiguration& clientCfg); 
+
+  /**
+   * Create TimestreamWriteClient object.
+   *
+   * @param credentials AWS IAM credentials.
+   * @param clientCfg AWS client configuration.
+   * @return a shared_ptr to created TimestreamWriteClient object.
+   */
+  virtual std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
+  CreateTSWriteClient(
+      const Aws::Auth::AWSCredentials& credentials,
+      const Aws::Client::ClientConfiguration& clientCfg);
 
   /**
    * Create statement associated with the connection.
@@ -512,7 +533,14 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   config::ConnectionInfo info_;
 
   /** Timestream query client. */
-  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > client_;
+  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > queryClient_;
+
+  /** Timestream write client. */
+  /** In order to retrieve all database information and all table information,
+   * TimestreamWriteClient is used for its API functions ListDatabases and
+   * ListTables. Although it is a write client, the current code only uses it
+   * for query purposes in this read-only driver. */
+  std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient > writeClient_;
 
   /** Aws SDK options. */
   Aws::SDKOptions options_;

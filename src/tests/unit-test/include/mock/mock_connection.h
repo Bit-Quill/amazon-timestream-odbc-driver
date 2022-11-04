@@ -58,6 +58,18 @@ class MockConnection : public Connection {
   virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
   CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
                       const Aws::Client::ClientConfiguration& clientCfg);
+
+  /**
+   * Create MockTimestreamWriteClient object.
+   *
+   * @param credentials Aws IAM credentials.
+   * @param clientCfg Aws client configuration.
+   * @param cfg connection configuration.
+   * @return a shared_ptr to created MockTimestreamWriteClient object.
+   */
+  virtual std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
+  CreateTSWriteClient(const Aws::Auth::AWSCredentials& credentials,
+                      const Aws::Client::ClientConfiguration& clientCfg);
 };
 }  // namespace odbc
 }  // namespace ignite

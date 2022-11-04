@@ -25,7 +25,7 @@ endif()
 find_package(Boost 1.53 REQUIRED COMPONENTS unit_test_framework chrono thread system regex)
 
 find_package(ODBC REQUIRED)
-find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
+find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query timestream-write)
 if (UNIX AND NOT APPLE)
     find_package(ZLIB REQUIRED)
 endif()
@@ -53,6 +53,7 @@ set(SOURCES
          src/mock/mock_connection.cpp
          src/mock/mock_statement.cpp
          src/mock/mock_timestream_query_client.cpp
+         src/mock/mock_timestream_write_client.cpp
          src/mock/mock_timestream_service.cpp
         )
 

@@ -31,6 +31,9 @@
 using ignite::odbc::IgniteError;
 using ignite::odbc::common::concurrent::SharedPointer;
 
+// TODO Adapt SQLColumns
+// https://bitquill.atlassian.net/browse/AT-1032
+
 namespace {
 struct ResultColumn {
   enum Type {
@@ -170,6 +173,11 @@ ColumnMetadataQuery::~ColumnMetadataQuery() {
 }
 
 SqlResult::Type ColumnMetadataQuery::Execute() {
+  // TODO [AT-1032] remove stub result
+  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                       "SQLColumns is not implemented.");
+  return SqlResult::AI_SUCCESS_WITH_INFO;
+
   if (executed)
     Close();
 
@@ -191,6 +199,11 @@ const meta::ColumnMetaVector* ColumnMetadataQuery::GetMeta() {
 
 SqlResult::Type ColumnMetadataQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
+  //TODO [AT-1032] remove default return of SQL_NO_DATA
+  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                       "SQLColumns is not implemented.");
+  return SqlResult::AI_NO_DATA;
+
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");

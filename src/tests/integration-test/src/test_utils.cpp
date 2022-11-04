@@ -76,7 +76,7 @@ std::string GetOdbcErrorMessage(SQLSMALLINT handleType, SQLHANDLE handle,
   if (!res.empty()) {
     res.append(": ").append(utility::SqlWcharToString(message));
   } else {
-    res = "No results";
+    res = "Cannot find ODBC error message";
   }
 
   return res;

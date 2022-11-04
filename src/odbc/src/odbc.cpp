@@ -548,9 +548,6 @@ SQLRETURN SQLFetch(SQLHSTMT stmt) {
 
   LOG_DEBUG_MSG("SQLFetch called");
 
-  // For AT-1095 PowerBI connect to Timestream
-  return SQL_NO_DATA;
-
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
@@ -642,8 +639,6 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
 }
 
 /** If NULL tableName is passed, it will automatically be converted to "%". */
-// TODO Adapt SQLTables
-// https://bitquill.atlassian.net/browse/AT-1033
 SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -651,12 +646,7 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT tableTypeLen) {
   using odbc::Statement;
 
-  LOG_DEBUG_MSG("SQLTables called. SQL_SUCCESS is returned by default.");
-
-  // For AT-1095 PowerBI connect to Timestream
-  // This line would cause Statement functions like GetColumnNumber to have
-  // an empty currentQuery object, since query is not executed.
-  return SQL_SUCCESS;
+  LOG_DEBUG_MSG("SQLTables called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -735,9 +725,6 @@ SQLRETURN SQLMoreResults(SQLHSTMT stmt) {
   using odbc::Statement;
 
   LOG_DEBUG_MSG("SQLMoreResults called");
-
-  // For AT-1095 PowerBI connect to Timestream
-  return SQL_NO_DATA;
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 

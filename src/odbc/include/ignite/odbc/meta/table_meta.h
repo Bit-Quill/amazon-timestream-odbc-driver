@@ -32,6 +32,10 @@
 #include "ignite/odbc/utility.h"
 #include "ignite/odbc/ts_error.h"
 
+#include <aws/timestream-write/TimestreamWriteClient.h>
+
+using Aws::TimestreamWrite::Model::Database;
+using Aws::TimestreamWrite::Model::Table;
 using ignite::odbc::ResultSet;
 using ignite::odbc::common::concurrent::SharedPointer;
 
@@ -100,10 +104,22 @@ class TableMeta {
   }
 
   /**
-   * Read using reader.
-   * @param resultSet SharedPointer< ResultSet >.
+   * Read table object from AWS SDK.
+   * @param tb Table.
    */
-  void Read(SharedPointer< ResultSet >& resultSet, TSErrorInfo& errInfo);
+  void Read(Table& tb);
+
+  /**
+   * Read database object from AWS SDK.
+   * @param db Database.
+   */
+  void Read(Database& db);
+
+  /**
+   * Read table type
+   * @param tbType string for table type.
+   */
+  void Read(std::string& tbType);
 
   /**
    * Get catalog name.
@@ -167,11 +183,22 @@ typedef std::vector< TableMeta > TableMetaVector;
 
 /**
  * Read tables metadata collection.
- * @param resultSet SharedPointer< ResultSet >.
+ * @param tableName table name for result set
+ * @param tbVector Aws::Vector< Table >.
  * @param meta Collection.
  */
-void ReadTableMetaVector(SharedPointer< ResultSet >& resultSet,
+void ReadTableMetaVector(const std::string& tableName,
+                         const Aws::Vector< Table >& tbVector,
                          TableMetaVector& meta);
+
+/**
+ * Read database metadata collection.
+ * Will make meta contain a list of valid schemas for the data source
+ * @param dbVector Aws::Vector< Database >.
+ * @param meta Collection.
+ */
+void ReadDatabaseMetaVector(const Aws::Vector< Database >& tbVector,
+                            TableMetaVector& meta);
 }  // namespace meta
 }  // namespace odbc
 }  // namespace ignite

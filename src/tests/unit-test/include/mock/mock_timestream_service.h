@@ -22,6 +22,8 @@
 #include <aws/core/auth/AWSCredentials.h>
 #include <aws/timestream-query/TimestreamQueryClient.h>
 #include <aws/timestream-query/model/QueryRequest.h>
+#include <aws/timestream-write/TimestreamWriteClient.h>
+#include <aws/timestream-write/model/ListDatabasesRequest.h>
 
 namespace ignite {
 namespace odbc {
@@ -76,12 +78,20 @@ class MockTimestreamService {
   bool Authenticate(const Aws::String& keyId, const Aws::String& secretKey);
 
   /**
-   * Handle query request from client
+   * Handle query request from query client
    *
    * @param request Query request
    */
   Aws::TimestreamQuery::Model::QueryOutcome HandleQueryReq(
       const Aws::TimestreamQuery::Model::QueryRequest &request) const;
+
+  /**
+   * Handle list databases request from write client
+   *
+   * @param request ListDatabases request
+   */
+  Aws::TimestreamWrite::Model::ListDatabasesOutcome HandleDatabasesReq(
+      const Aws::TimestreamWrite::Model::ListDatabasesRequest& request) const;
 
  private:
   /**

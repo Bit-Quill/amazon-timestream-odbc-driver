@@ -30,6 +30,9 @@ const std::string ORIGIN_ODBC_3_0 = "ODBC 3.0";
 /** SQL state unknown constant. */
 const std::string STATE_UNKNOWN = "";
 
+/** SQL state 01000 constant. */
+const std::string STATE_01000 = "01000";
+
 /** SQL state 01004 constant. */
 const std::string STATE_01004 = "01004";
 
@@ -268,6 +271,9 @@ const std::string& DiagnosticRecord::GetServerName() const {
 
 const std::string& DiagnosticRecord::GetSqlState() const {
   switch (sqlState) {
+    case SqlState::S01000_GENERAL_WARNING:
+      return STATE_01000;
+
     case SqlState::S01004_DATA_TRUNCATED:
       return STATE_01004;
 

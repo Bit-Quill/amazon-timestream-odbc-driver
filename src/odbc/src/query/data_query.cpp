@@ -93,7 +93,7 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   request_.SetNextToken(nextToken);
 
   Aws::TimestreamQuery::Model::QueryOutcome outcome =
-      connection_.GetClient()->Query(request_);
+      connection_.GetQueryClient()->Query(request_);
 
   if (!outcome.IsSuccess()) {
     auto error = outcome.GetError();
@@ -291,7 +291,7 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
   request_.SetQueryString(sql_);
 
   Aws::TimestreamQuery::Model::QueryOutcome outcome =
-      connection_.GetClient()->Query(request_);
+      connection_.GetQueryClient()->Query(request_);
 
   if (!outcome.IsSuccess()) {
     auto error = outcome.GetError();
@@ -348,7 +348,7 @@ SqlResult::Type DataQuery::MakeRequestResultsetMeta() {
   request.SetQueryString(sql_);
 
   Aws::TimestreamQuery::Model::QueryOutcome outcome =
-      connection_.GetClient()->Query(request);
+      connection_.GetQueryClient()->Query(request);
 
   if (!outcome.IsSuccess()) {
     auto const error = outcome.GetError();
