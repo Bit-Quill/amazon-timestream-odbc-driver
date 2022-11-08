@@ -319,17 +319,18 @@ inline Date CTimeToDate(time_t ctime) {
  * Convert standard C type time_t to Time.
  *
  * @param ctime Standard C type time_t.
+ * @param ns Nanosecond.
  * @return Corresponding value of Time.
  */
-inline Time CTimeToTime(time_t ctime) {
-  return Time(ctime * 1000);
+inline Time CTimeToTime(time_t ctime, int32_t ns) {
+  return Time(ctime, ns);
 }
 
 /**
  * Convert standard C type time_t to Timestamp type.
  *
  * @param ctime Standard C type time_t.
- * @param ns Nanoseconds second fraction.
+ * @param ns Nanosecond.
  * @return Corresponding value of Timestamp.
  */
 inline Timestamp CTimeToTimestamp(time_t ctime, int32_t ns) {
@@ -352,12 +353,13 @@ inline Date CTmToDate(const tm& ctime) {
  * Convert standard C type struct tm to Time type.
  *
  * @param ctime Standard C type struct tm.
+ * @param ns Nanosecond.
  * @return Corresponding value of Time.
  */
-inline Time CTmToTime(const tm& ctime) {
+inline Time CTmToTime(const tm& ctime, int32_t ns=0) {
   time_t time = common::IgniteTimeGm(ctime);
 
-  return CTimeToTime(time);
+  return CTimeToTime(time, ns);
 }
 
 /**
@@ -415,9 +417,10 @@ IGNITE_FRIEND_EXPORT Date MakeDateLocal(int year = 1900, int month = 1,
  * @param hour Hour.
  * @param min Minute.
  * @param sec Second.
+ * @param ns Nanosecond.
  * @return Time.
  */
-IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour = 0, int min = 0, int sec = 0);
+IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour = 0, int min = 0, int sec = 0, int ns = 0);
 
 /**
  * Make Time in human understandable way.
@@ -427,9 +430,11 @@ IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour = 0, int min = 0, int sec = 0);
  * @param hour Hour.
  * @param min Minute.
  * @param sec Second.
+ * @param ns Nanosecond.
  * @return Time.
  */
-IGNITE_FRIEND_EXPORT Time MakeTimeLocal(int hour = 0, int min = 0, int sec = 0);
+IGNITE_FRIEND_EXPORT Time MakeTimeLocal(int hour = 0, int min = 0, int sec = 0,
+                                        int ns = 0);
 
 /**
  * Make Timestamp in human understandable way.

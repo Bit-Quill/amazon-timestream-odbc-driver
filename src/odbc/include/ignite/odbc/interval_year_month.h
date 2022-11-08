@@ -17,11 +17,11 @@
 
 /**
  * @file
- * Declares ignite::odbc::Time class.
+ * Declares ignite::odbc::IntervalYearMonth class.
  */
 
-#ifndef _IGNITE_ODBC_TIME
-#define _IGNITE_ODBC_TIME
+#ifndef _IGNITE_ODBC_INTERVAL_YEAR_MONTH
+#define _IGNITE_ODBC_INTERVAL_YEAR_MONTH
 
 #include <ignite/odbc/common/common.h>
 #include <stdint.h>
@@ -29,37 +29,24 @@
 namespace ignite {
 namespace odbc {
 /**
- * %Time type.
+ * IntervalYearMonth type.
  */
-class IGNITE_IMPORT_EXPORT Time {
+class IGNITE_IMPORT_EXPORT IntervalYearMonth {
  public:
-  /**
-   * Default constructor.
-   */
-  Time();
-
   /**
    * Copy constructor.
    *
    * @param another Another instance.
    */
-  Time(const Time& another);
+  IntervalYearMonth(const IntervalYearMonth& another);
 
   /**
    * Constructor.
    *
-   * @param ms Time in milliseconds since 00:00:00 UTC.
+   * @param year Number of years.
+   * @param month Number of months.
    */
-  Time(int64_t ms);
-
-  /**
-   * Constructor.
-   *
-   * @param sec Number of seconds since 00:00:00 UTC.
-   * @param ns Fractional second component in nanoseconds.
-   *     Must be in range [0..999999999].
-   */
-  Time(int32_t sec, int32_t ns);
+  IntervalYearMonth(int32_t year, int32_t month);
 
   /**
    * Copy operator.
@@ -67,28 +54,25 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param another Another instance.
    * @return This.
    */
-  Time& operator=(const Time& another);
+  IntervalYearMonth& operator=(const IntervalYearMonth& another);
 
   /**
-   * Returns number of milliseconds since 00:00:00 UTC.
+   * Returns number of years.
    *
-   * @return Number of milliseconds since 00:00:00 UTC.
+   * @return number of years
    */
-  int64_t GetMilliseconds() const;
+  int32_t GetYear() const {
+    return year_;
+  }
 
   /**
-   * Returns number of seconds since 00:00:00 UTC.
+   * Returns number of months
    *
-   * @return Number of seconds since 00:00:00 UTC.
+   * @return Number of months
    */
-  int32_t GetSeconds() const;
-
-  /**
-   * Returns number of nanoseconds - fractional seconds component.
-   *
-   * @return Fractional second component expressed in nanoseconds.
-   */
-  int32_t GetSecondFraction() const;
+  int32_t GetMonth() const {
+    return month_;
+  }
 
   /**
    * Comparison operator override.
@@ -97,8 +81,8 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param val2 Second value.
    * @return True if equal.
    */
-  friend bool IGNITE_IMPORT_EXPORT operator==(const Time& val1,
-                                              const Time& val2);
+  friend bool IGNITE_IMPORT_EXPORT operator==(const IntervalYearMonth& val1,
+                                              const IntervalYearMonth& val2);
 
   /**
    * Comparison operator override.
@@ -107,8 +91,8 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param val2 Second value.
    * @return True if not equal.
    */
-  friend bool IGNITE_IMPORT_EXPORT operator!=(const Time& val1,
-                                              const Time& val2);
+  friend bool IGNITE_IMPORT_EXPORT operator!=(const IntervalYearMonth& val1,
+                                              const IntervalYearMonth& val2);
 
   /**
    * Comparison operator override.
@@ -117,8 +101,8 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param val2 Second value.
    * @return True if less.
    */
-  friend bool IGNITE_IMPORT_EXPORT operator<(const Time& val1,
-                                             const Time& val2);
+  friend bool IGNITE_IMPORT_EXPORT operator<(const IntervalYearMonth& val1,
+                                             const IntervalYearMonth& val2);
 
   /**
    * Comparison operator override.
@@ -127,8 +111,8 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param val2 Second value.
    * @return True if less or equal.
    */
-  friend bool IGNITE_IMPORT_EXPORT operator<=(const Time& val1,
-                                              const Time& val2);
+  friend bool IGNITE_IMPORT_EXPORT operator<=(const IntervalYearMonth& val1,
+                                              const IntervalYearMonth& val2);
 
   /**
    * Comparison operator override.
@@ -137,8 +121,8 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param val2 Second value.
    * @return True if gretter.
    */
-  friend bool IGNITE_IMPORT_EXPORT operator>(const Time& val1,
-                                             const Time& val2);
+  friend bool IGNITE_IMPORT_EXPORT operator>(const IntervalYearMonth& val1,
+                                             const IntervalYearMonth& val2);
 
   /**
    * Comparison operator override.
@@ -147,16 +131,17 @@ class IGNITE_IMPORT_EXPORT Time {
    * @param val2 Second value.
    * @return True if gretter or equal.
    */
-  friend bool IGNITE_IMPORT_EXPORT operator>=(const Time& val1,
-                                              const Time& val2);
+  friend bool IGNITE_IMPORT_EXPORT operator>=(const IntervalYearMonth& val1,
+                                              const IntervalYearMonth& val2);
 
  private:
-  /** Number of seconds since 00:00:00 UTC. */
-  int32_t seconds;
+  /** Number of years. */
+  int32_t year_;
 
-  /** Fractional second component in nanoseconds. */
-  int32_t fractionNs;
+  /** Number of months. */
+  int32_t month_;
 };
 }  // namespace odbc
 }  // namespace ignite
-#endif  //_IGNITE_ODBC_TIME
+
+#endif  //_IGNITE_ODBC_INTERVAL_YEAR_MONTH

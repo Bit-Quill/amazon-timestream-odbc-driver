@@ -136,11 +136,18 @@ void ColumnMeta::Read(SharedPointer< ResultSet >& resultSet,
 void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
   using Aws::TimestreamQuery::Model::Type;
 
+  columnInfo = tsMetadata;
+
   Type columnType = tsMetadata.GetType();
 
   // columnName and scalarType are the only 2 piece of info from Type object
   columnName = tsMetadata.GetName();
-  dataType = static_cast< int16_t >(columnType.GetScalarType());
+  if (columnType.ScalarTypeHasBeenSet()) {
+    dataType = static_cast< int16_t >(columnType.GetScalarType());
+  } else {
+    dataType =
+        static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::VARCHAR);
+  }
 }
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {

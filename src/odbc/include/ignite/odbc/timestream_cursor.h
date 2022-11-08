@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef _IGNITE_ODBC_CURSOR
-#define _IGNITE_ODBC_CURSOR
+#ifndef _IGNITE_ODBC_TIMESTREAM_CURSOR
+#define _IGNITE_ODBC_TIMESTREAM_CURSOR
 
 #include <stdint.h>
 
@@ -25,25 +25,33 @@
 
 #include "ignite/odbc/common_types.h"
 #include "ignite/odbc/result_page.h"
-#include "ignite/odbc/row.h"
+#include "ignite/odbc/timestream_row.h"
+#include "ignite/odbc/meta/column_meta.h"
+
+#include <aws/core/utils/memory/stl/AWSVector.h>
+#include <aws/timestream-query/model/Row.h>
+
+using Aws::TimestreamQuery::Model::Row;
 
 namespace ignite {
 namespace odbc {
 /**
  * Query result cursor.
  */
-class Cursor {
+class TimestreamCursor {
  public:
   /**
    * Constructor.
-   * @param queryId ID of the executed query.
+   * @param rowVec Aws Row vector.
+   * @param columnMetadataVec Column metadata vector.
    */
-  Cursor(int64_t queryId);
+  TimestreamCursor(const Aws::Vector< Row >& rowVec,
+                   const meta::ColumnMetaVector& columnMetadataVec);
 
   /**
    * Destructor.
    */
-  ~Cursor();
+  ~TimestreamCursor();
 
   /**
    * Move cursor to the next result row.
@@ -53,13 +61,6 @@ class Cursor {
   bool Increment();
 
   /**
-   * Check if the cursor needs data update.
-   *
-   * @return True if the cursor needs data update.
-   */
-  bool NeedDataUpdate() const;
-
-  /**
    * Check if the cursor has data.
    *
    * @return True if the cursor has data.
@@ -67,52 +68,29 @@ class Cursor {
   bool HasData() const;
 
   /**
-   * Check whether cursor closed remotely.
-   *
-   * @return true, if the cursor closed remotely.
-   */
-  bool IsClosedRemotely() const;
-
-  /**
-   * Get query ID.
-   *
-   * @return Query ID.
-   */
-  int64_t GetQueryId() const {
-    return queryId;
-  }
-
-  /**
-   * Update current cursor page data.
-   *
-   * @param newPage New result page.
-   */
-  void UpdateData(std::shared_ptr< ResultPage >& newPage);
-
-  /**
    * Get current row.
    *
    * @return Current row. Returns zero if cursor needs data update or has no
    * more data.
    */
-  Row* GetRow();
+  TimestreamRow* GetRow();
 
  private:
-  IGNITE_NO_COPY_ASSIGNMENT(Cursor);
+  IGNITE_NO_COPY_ASSIGNMENT(TimestreamCursor);
 
-  /** Cursor id. */
-  int64_t queryId;
+  /** The iterator to beginning of cursor */
+  Aws::Vector< Row >::const_iterator iterator_;
 
-  /** Current page. */
-  std::shared_ptr< ResultPage > currentPage;
+  /** The iterator to end of cursor */
+  const Aws::Vector< Row >::const_iterator iteratorEnd_;
 
-  /** Row position in current page. */
-  int32_t currentPagePos;
+  /** The column metadata vector*/
+  const meta::ColumnMetaVector& columnMetadataVec_;
 
-  /** Current row. */
-  std::unique_ptr< Row > currentRow;
+  /** The current row */
+  std::unique_ptr< TimestreamRow > currentRow_;
 };
 }  // namespace odbc
 }  // namespace ignite
 
-#endif  //_IGNITE_ODBC_CURSOR
+#endif  //_IGNITE_ODBC_TIMESTREAM_CURSOR

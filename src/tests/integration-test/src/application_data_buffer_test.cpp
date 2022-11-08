@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric, *disabled()) {
     BOOST_CHECK_EQUAL(0, buf.val[i]);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDateToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDateToString) {
   char strBuf[64];
   SqlLen reslen = 0;
 
@@ -531,21 +531,51 @@ BOOST_AUTO_TEST_CASE(TestPutDateToString, *disabled()) {
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen), std::string("1999-02-22"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDateToWString, *disabled()) {
-  SQLWCHAR strBuf[64];
+BOOST_AUTO_TEST_CASE(TestPutDateToStringEdgeCase) {
+  char strBuf[sizeof("YYYY-MM-DD") - 1];
   SqlLen reslen = 0;
 
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf, sizeof(strBuf),
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
   Date date = common::MakeDateGmt(1999, 2, 22);
 
   appBuf.PutDate(date);
 
-  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("1999-02-22"));
+  BOOST_CHECK_EQUAL(std::string(strBuf), std::string("1999-02-2"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDateToDate, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDateToWString) {
+  SQLWCHAR strBuf[64];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  Date date = common::MakeDateGmt(1999, 2, 22);
+
+  appBuf.PutDate(date);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("1999-02-22"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutDateToWStringEdgeCase) {
+  SQLWCHAR strBuf[sizeof("YYYY-MM-DD") - 1];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  Date date = common::MakeDateGmt(1999, 2, 22);
+
+  appBuf.PutDate(date);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("1999-02-2"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutDateToDate) {
   SQL_DATE_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
@@ -561,7 +591,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToDate, *disabled()) {
   BOOST_CHECK_EQUAL(27, buf.day);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDateToTimestamp, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDateToTimestamp) {
   SQL_TIMESTAMP_STRUCT buf;
 
   SqlLen reslen = sizeof(buf);
@@ -582,42 +612,74 @@ BOOST_AUTO_TEST_CASE(TestPutDateToTimestamp, *disabled()) {
   BOOST_CHECK_EQUAL(0, buf.fraction);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimeToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimeToString) {
   char strBuf[64];
   SqlLen reslen = 0;
 
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Time time = common::MakeTimeGmt(7, 15, 0);
+  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
 
   appBuf.PutTime(time);
 
-  BOOST_CHECK_EQUAL(std::string(strBuf, reslen), std::string("07:15:00"));
+  BOOST_CHECK_EQUAL(std::string(strBuf, reslen),
+                    std::string("07:15:00.123456789"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimeToWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimeToStringEdgeCase) {
+  char strBuf[sizeof("HH:MM:SS.xxxxxxxxx") - 1];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
+                               &reslen);
+
+  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
+
+  appBuf.PutTime(time);
+
+  BOOST_CHECK_EQUAL(std::string(strBuf),
+                    std::string("07:15:00.12345678"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutTimeToWString) {
   SQLWCHAR strBuf[64];
   SqlLen reslen = 0;
 
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf, sizeof(strBuf),
-                               &reslen);
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
 
-  Time time = common::MakeTimeGmt(7, 15, 0);
+  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
 
   appBuf.PutTime(time);
 
-  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("07:15:00"));
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("07:15:00.123456789"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimeToTime, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimeToWStringEdgeCase) {
+  SQLWCHAR strBuf[sizeof("HH:MM:SS.xxxxxxxxx") - 1];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
+
+  appBuf.PutTime(time);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("07:15:00.12345678"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutTimeToTime) {
   SQL_TIME_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIME, &buf, sizeof(buf),
                                &reslen);
 
-  Time time = common::MakeTimeGmt(23, 51, 1);
+  Time time = common::MakeTimeGmt(23, 51, 1, 123456789);
 
   appBuf.PutTime(time);
 
@@ -626,37 +688,85 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToTime, *disabled()) {
   BOOST_CHECK_EQUAL(1, buf.second);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimestampToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimeToTimestamp) {
+  SQL_TIMESTAMP_STRUCT buf;
+  SqlLen reslen = sizeof(buf);
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIMESTAMP, &buf, sizeof(buf),
+                               &reslen);
+
+  Time time = common::MakeTimeGmt(23, 51, 1, 123456789);
+
+  appBuf.PutTime(time);
+
+  BOOST_CHECK_EQUAL(23, buf.hour);
+  BOOST_CHECK_EQUAL(51, buf.minute);
+  BOOST_CHECK_EQUAL(1, buf.second);
+  BOOST_CHECK_EQUAL(123456789, buf.fraction);
+}
+
+BOOST_AUTO_TEST_CASE(TestPutTimestampToString) {
   char strBuf[64];
   SqlLen reslen = 0;
 
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59);
+  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen),
-                    std::string("2018-11-01 17:45:59"));
+                    std::string("2018-11-01 17:45:59.123456789"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimestampToWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimestampToStringEdgeCase) {
+  char strBuf[sizeof("YYYY-MM-DD HH:MM:SS.xxxxxxxxx")-1];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
+                               &reslen);
+
+  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+
+  appBuf.PutTimestamp(date);
+
+  BOOST_CHECK_EQUAL(std::string(strBuf),
+                    std::string("2018-11-01 17:45:59.12345678"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutTimestampToWString) {
   SQLWCHAR strBuf[64];
   SqlLen reslen = 0;
 
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf, sizeof(strBuf),
-                               &reslen);
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
 
-  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59);
+  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
-                    std::string("2018-11-01 17:45:59"));
+                    std::string("2018-11-01 17:45:59.123456789"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimestampToDate, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimestampToWStringEdgeCase) {
+  SQLWCHAR strBuf[sizeof("YYYY-MM-DD HH:MM:SS.xxxxxxxxx")-1];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  Timestamp date =
+      common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+
+  appBuf.PutTimestamp(date);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("2018-11-01 17:45:59.12345678"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutTimestampToDate) {
   SQL_DATE_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
@@ -672,7 +782,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToDate, *disabled()) {
   BOOST_CHECK_EQUAL(14, buf.day);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimestampToTime, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimestampToTime) {
   SQL_TIME_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
@@ -688,7 +798,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTime, *disabled()) {
   BOOST_CHECK_EQUAL(51, buf.second);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutTimestampToTimestamp, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutTimestampToTimestamp) {
   SQL_TIMESTAMP_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
@@ -706,6 +816,155 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTimestamp, *disabled()) {
   BOOST_CHECK_EQUAL(34, buf.minute);
   BOOST_CHECK_EQUAL(51, buf.second);
   BOOST_CHECK_EQUAL(573948623, buf.fraction);
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToIntervalYearMonth) {
+  SQL_YEAR_MONTH_STRUCT buf;
+  SqlLen reslen = sizeof(buf);
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_INTERVAL_YEAR_MONTH, &buf,
+                               sizeof(buf), &reslen);
+
+  IntervalYearMonth interval(4, 10);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(4, buf.year);
+  BOOST_CHECK_EQUAL(10, buf.month);
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToString) {
+  char strBuf[64];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
+                               &reslen);
+
+  IntervalYearMonth interval(4, 10);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(std::string(strBuf, reslen), std::string("4-10"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToStringEdgeCase) {
+  char strBuf[4];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
+                               &reslen);
+
+  IntervalYearMonth interval(4, 10);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(std::string(strBuf), std::string("4-1"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWString) {
+  SQLWCHAR strBuf[64];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  IntervalYearMonth interval(4, 10);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("4-10"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWStringEdgeCase) {
+  SQLWCHAR strBuf[4];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  IntervalYearMonth interval(4, 10);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("4-1"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToIntervalDaySecond) {
+  SQL_DAY_SECOND_STRUCT buf;
+  SqlLen reslen = sizeof(buf);
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_INTERVAL_DAY_SECOND, &buf,
+                               sizeof(buf), &reslen);
+
+  IntervalDaySecond interval(3, 10, 25, 55, 123456789);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(3, buf.day);
+  BOOST_CHECK_EQUAL(10, buf.hour);
+  BOOST_CHECK_EQUAL(25, buf.minute);
+  BOOST_CHECK_EQUAL(55, buf.second);
+  BOOST_CHECK_EQUAL(123456789, buf.fraction);
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToString) {
+  char strBuf[64];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
+                               &reslen);
+
+  IntervalDaySecond interval(3, 10, 25, 55, 123456789);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(std::string(strBuf, reslen),
+                    std::string("3 10:25:55.123456789"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToStringEdgeCase) {
+  char strBuf[20];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
+                               &reslen);
+
+  IntervalDaySecond interval(3, 10, 25, 55, 123456789);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(std::string(strBuf),
+                    std::string("3 10:25:55.12345678"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWString) {
+  SQLWCHAR strBuf[64];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  IntervalDaySecond interval(3, 10, 25, 55, 123456789);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("3 10:25:55.123456789"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWStringEdgeCase) {
+  SQLWCHAR strBuf[20];
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
+                               sizeof(strBuf), &reslen);
+
+  IntervalDaySecond interval(3, 10, 25, 55, 123456789);
+
+  appBuf.PutInterval(interval);
+
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
+                    std::string("3 10:25:55.12345678"));
 }
 
 BOOST_AUTO_TEST_CASE(TestGetGuidFromString, *disabled()) {

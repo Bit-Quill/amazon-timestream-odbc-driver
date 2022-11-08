@@ -203,24 +203,20 @@ SQLSMALLINT unsupportedC[] = {SQL_C_INTERVAL_YEAR,
                               SQL_C_INTERVAL_HOUR,
                               SQL_C_INTERVAL_MINUTE,
                               SQL_C_INTERVAL_SECOND,
-                              SQL_C_INTERVAL_YEAR_TO_MONTH,
                               SQL_C_INTERVAL_DAY_TO_HOUR,
                               SQL_C_INTERVAL_DAY_TO_MINUTE,
-                              SQL_C_INTERVAL_DAY_TO_SECOND,
                               SQL_C_INTERVAL_HOUR_TO_MINUTE,
                               SQL_C_INTERVAL_HOUR_TO_SECOND,
                               SQL_C_INTERVAL_MINUTE_TO_SECOND};
 
 SQLSMALLINT unsupportedSql[] = {SQL_INTERVAL_MONTH,
                                 SQL_INTERVAL_YEAR,
-                                SQL_INTERVAL_YEAR_TO_MONTH,
                                 SQL_INTERVAL_DAY,
                                 SQL_INTERVAL_HOUR,
                                 SQL_INTERVAL_MINUTE,
                                 SQL_INTERVAL_SECOND,
                                 SQL_INTERVAL_DAY_TO_HOUR,
                                 SQL_INTERVAL_DAY_TO_MINUTE,
-                                SQL_INTERVAL_DAY_TO_SECOND,
                                 SQL_INTERVAL_HOUR_TO_MINUTE,
                                 SQL_INTERVAL_HOUR_TO_SECOND,
                                 SQL_INTERVAL_MINUTE_TO_SECOND};
@@ -422,9 +418,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
   // Everything is ok.
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
-  // TODO [AT-1138] enable following line after SQLExecDirect can get data
-  // https://bitquill.atlassian.net/browse/AT-1138
-  // ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   SQLCloseCursor(stmt);
 

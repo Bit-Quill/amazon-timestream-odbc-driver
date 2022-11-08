@@ -105,6 +105,12 @@ struct OdbcNativeType {
     /** Alias for the SQL_C_GUID type. */
     AI_GUID,
 
+    /** Alias for the SQL_YEAR_MONTH_STRUCT type. */
+    AI_INTERVAL_YEAR_MONTH,
+
+    /** Alias for the SQL_DAY_SECOND_STRUCT type. */
+    AI_INTERVAL_DAY_SECOND,
+
     /** Alias for the SQL_DEFAULT. */
     AI_DEFAULT,
 

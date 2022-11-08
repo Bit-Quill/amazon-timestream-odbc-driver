@@ -78,7 +78,6 @@ set(SOURCES src/app/application_data_buffer.cpp
 	src/impl/interop/interop_output_stream.cpp
 	src/impl/handle_registry.cpp
         src/connection.cpp
-        src/cursor.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
         src/diagnostic/diagnostic_record_storage.cpp
@@ -107,10 +106,8 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/ssl_mode.cpp
         src/protocol_version.cpp
         src/result_page.cpp
-        src/row.cpp
         src/nested_tx_mode.cpp
         src/message.cpp
-        src/column.cpp
         src/statement.cpp
         src/type_traits.cpp
         src/utility.cpp
@@ -120,7 +117,12 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/guid.cpp
         src/time.cpp
         src/timestamp.cpp
-        src/ts_error.cpp)
+        src/timestream_column.cpp
+        src/timestream_cursor.cpp
+        src/timestream_row.cpp
+        src/ts_error.cpp
+	src/interval_year_month.cpp
+        src/interval_day_second.cpp)
 
 if (WIN32)
     set(OS_INCLUDE os/win/include)

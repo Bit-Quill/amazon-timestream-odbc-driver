@@ -18,6 +18,7 @@
 #ifndef _IGNITE_ODBC_QUERY_DATA_QUERY
 #define _IGNITE_ODBC_QUERY_DATA_QUERY
 
+#include "ignite/odbc/timestream_cursor.h"
 #include "ignite/odbc/app/parameter_set.h"
 #include "ignite/odbc/query/query.h"
 
@@ -161,11 +162,18 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
   SqlResult::Type MakeRequestResultsetMeta();
 
   /**
+   * Fetch one page resultset.
+   * @param isFirst Flag indicating if the page to be fetched is the first page or not.
+   * @return Result.
+   */
+  SqlResult::Type FetchOnePage(bool isFirst);
+
+  /**
    * Set result set meta by reading AWS Timestream column metadata vector.
    *
    * @param tsVector Aws::TimestreamQuery::Model::ColumnInfo vector.
    */
-  void ReadColumnMetadataVector(const Aws::Vector< ColumnInfo > tsVector);
+  void ReadColumnMetadataVector(const Aws::Vector< ColumnInfo >& tsVector);
 
   /**
    * Process column conversion operation result.
@@ -205,13 +213,16 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
   bool resultMetaAvailable_;
 
   /** Result set metadata. */
-  meta::ColumnMetaVector resultMeta_{};
+  meta::ColumnMetaVector resultMeta_;
 
   /** Current TS Query Request. */
   QueryRequest request_;
 
   /** Current TS Query Result. */
   std::shared_ptr< QueryResult > result_;
+
+  /** Cursor. */
+  std::unique_ptr< TimestreamCursor > cursor_;
 
   /** Timeout. */
   int32_t& timeout_;

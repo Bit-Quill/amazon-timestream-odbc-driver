@@ -191,13 +191,15 @@ struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(QueriesTestSuite, QueriesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
-  std::vector< SQLWCHAR > request =
-      MakeSqlBuffer("SELECT * FROM \"queries_test_001\"");
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, time, flag, rebuffering_ratio, video_startup_time, date(TIMESTAMP '2022-07-07 17:44:43.771000000'), current_time, interval '4' year + interval '2' month,"
+      "interval '6' day + interval '4' hour, current_timestamp from data_queries_test_db.TestScalarTypes order by device_id limit 1");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -207,282 +209,239 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData, *disabled()) {
   const int32_t buf_size = 1024;
   SQLWCHAR id[buf_size]{};
   SQLLEN id_len = 0;
-  SQLWCHAR fieldDecimal128[buf_size]{};
-  SQLLEN fieldDecimal128_len = 0;
-  double fieldDouble = 0;
-  SQLLEN fieldDouble_len = 0;
-  SQLWCHAR fieldString[buf_size]{};
-  SQLLEN fieldString_len = 0;
-  SQLWCHAR fieldObjectId[buf_size]{};
-  SQLLEN fieldObjectId_len = 0;
-  bool fieldBoolean = false;
-  SQLLEN fieldBoolean_len = 0;
-  DATE_STRUCT fieldDate{};
-  SQLLEN fieldDate_len = 0;
-  SQLINTEGER fieldInt;
-  SQLLEN fieldInt_len = 0;
-  SQLBIGINT fieldLong;
-  SQLLEN fieldLong_len = 0;
-  SQLWCHAR fieldMaxKey[buf_size];
-  SQLLEN fieldMaxKey_len = 0;
-  SQLWCHAR fieldMinKey[buf_size];
-  SQLLEN fieldMinKey_len = 0;
-  SQLWCHAR fieldNull[buf_size];
-  SQLLEN fieldNull_len = 0;
-  SQLCHAR fieldBinary[buf_size];
-  SQLLEN fieldBinary_len = 0;
-
-  // Fetch 1st row
-  ret = SQLFetch(stmt);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 2, SQL_C_WCHAR, fieldDecimal128,
-                   sizeof(fieldDecimal128), &fieldDecimal128_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
-                   &fieldDouble_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 4, SQL_C_WCHAR, fieldString, sizeof(fieldString),
-                   &fieldString_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 5, SQL_C_WCHAR, fieldObjectId, sizeof(fieldObjectId),
-                   &fieldObjectId_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 6, SQL_C_BIT, &fieldBoolean, sizeof(fieldBoolean),
-                   &fieldBoolean_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 7, SQL_C_TYPE_DATE, &fieldDate, sizeof(fieldDate),
-                   &fieldDate_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 8, SQL_C_SLONG, &fieldInt, sizeof(fieldInt),
-                   &fieldInt_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 9, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
-                   &fieldLong_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 10, SQL_C_WCHAR, fieldMaxKey, sizeof(fieldMaxKey),
-                   &fieldMaxKey_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 11, SQL_C_WCHAR, fieldMinKey, sizeof(fieldMinKey),
-                   &fieldMinKey_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 12, SQL_C_WCHAR, fieldNull, sizeof(fieldNull),
-                   &fieldNull_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 13, SQL_C_BINARY, fieldBinary, sizeof(fieldBinary),
-                   &fieldBinary_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  BOOST_CHECK_NE(SQL_NULL_DATA, id_len);
-  BOOST_CHECK_EQUAL("62196dcc4d91892191475139",
-                    utility::SqlWcharToString(id, id_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDecimal128_len);
-  BOOST_CHECK_EQUAL(
-      "340282350000000000000",
-      utility::SqlWcharToString(fieldDecimal128, fieldDecimal128_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDouble_len);
-  BOOST_CHECK_EQUAL(1.7976931348623157e308, fieldDouble);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldString_len);
-  BOOST_CHECK_EQUAL("some Text", utility::SqlWcharToString(
-                                     fieldString, fieldString_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldObjectId_len);
-  BOOST_CHECK_EQUAL(
-      "62196dcc4d9189219147513a",
-      utility::SqlWcharToString(fieldObjectId, fieldObjectId_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldBoolean_len);
-  BOOST_CHECK_EQUAL(true, fieldBoolean);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDate_len);
-  BOOST_CHECK_EQUAL(2020, fieldDate.year);
-  BOOST_CHECK_EQUAL(1, fieldDate.month);
-  BOOST_CHECK_EQUAL(1, fieldDate.day);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldInt_len);
-  BOOST_CHECK_EQUAL(2147483647, fieldInt);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldLong_len);
-  BOOST_CHECK_EQUAL(9223372036854775807, fieldLong);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldMaxKey_len);
-  BOOST_CHECK_EQUAL(
-      "MAXKEY", utility::SqlWcharToString(fieldMaxKey, fieldMaxKey_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldMinKey_len);
-  BOOST_CHECK_EQUAL(
-      "MINKEY", utility::SqlWcharToString(fieldMinKey, fieldMinKey_len, true));
-  BOOST_CHECK_EQUAL(SQL_NULL_DATA, fieldNull_len);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldBinary_len);
-  BOOST_CHECK_EQUAL(3, fieldBinary_len);
-  BOOST_CHECK_EQUAL(fieldBinary[0], 0);
-  BOOST_CHECK_EQUAL(fieldBinary[1], 1);
-  BOOST_CHECK_EQUAL(fieldBinary[2], 2);
-
-  // Fetch 2nd row - not exist
-  ret = SQLFetch(stmt);
-  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
-}
-
-BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol, *disabled()) {
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-  Connect(dsnConnectionString);
-  SQLRETURN ret;
-  std::vector< SQLWCHAR > request =
-      MakeSqlBuffer("SELECT * FROM \"queries_test_001\"");
-
-  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-  if (!SQL_SUCCEEDED(ret)) {
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  }
-  const int32_t buf_size = 1024;
-  SQLWCHAR id[buf_size]{};
-  SQLLEN id_len = 0;
-  SQLWCHAR fieldDecimal128[buf_size]{};
-  SQLLEN fieldDecimal128_len = 0;
-  double fieldDouble = 0;
-  SQLLEN fieldDouble_len = 0;
-  SQLWCHAR fieldString[buf_size]{};
-  SQLLEN fieldString_len = 0;
-  SQLWCHAR fieldObjectId[buf_size]{};
-  SQLLEN fieldObjectId_len = 0;
-  bool fieldBoolean = false;
-  SQLLEN fieldBoolean_len = 0;
-  DATE_STRUCT fieldDate{};
-  SQLLEN fieldDate_len = 0;
-  SQLINTEGER fieldInt;
-  SQLLEN fieldInt_len = 0;
-  SQLBIGINT fieldLong;
-  SQLLEN fieldLong_len = 0;
-  SQLWCHAR fieldMaxKey[buf_size];
-  SQLLEN fieldMaxKey_len = 0;
-  SQLWCHAR fieldMinKey[buf_size];
-  SQLLEN fieldMinKey_len = 0;
-  SQLWCHAR fieldNull[buf_size];
-  SQLLEN fieldNull_len = 0;
-  SQLCHAR fieldBinary[buf_size];
-  SQLLEN fieldBinary_len = 0;
 
   ret = SQLBindCol(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, fieldDecimal128,
-                   sizeof(fieldDecimal128), &fieldDecimal128_len);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
-                   &fieldDouble_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 4, SQL_C_WCHAR, fieldString, sizeof(fieldString),
-                   &fieldString_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 5, SQL_C_WCHAR, fieldObjectId, sizeof(fieldObjectId),
-                   &fieldObjectId_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 6, SQL_C_BIT, &fieldBoolean, sizeof(fieldBoolean),
+
+  bool fieldBoolean = false;
+  SQLLEN fieldBoolean_len = 0;
+  ret = SQLBindCol(stmt, 3, SQL_C_BIT, &fieldBoolean, sizeof(fieldBoolean),
                    &fieldBoolean_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 7, SQL_C_TYPE_DATE, &fieldDate, sizeof(fieldDate),
-                   &fieldDate_len);
+
+  double fieldDouble = 0;
+  SQLLEN fieldDouble_len = 0;
+  ret = SQLBindCol(stmt, 4, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
+                   &fieldDouble_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 8, SQL_C_SLONG, &fieldInt, sizeof(fieldInt),
-                   &fieldInt_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 9, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
+
+  SQLBIGINT fieldLong;
+  SQLLEN fieldLong_len = 0;
+  ret = SQLBindCol(stmt, 5, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
                    &fieldLong_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 10, SQL_C_WCHAR, fieldMaxKey, sizeof(fieldMaxKey),
-                   &fieldMaxKey_len);
+
+  DATE_STRUCT fieldDate{};
+  SQLLEN fieldDate_len = 0;
+  ret = SQLBindCol(stmt, 6, SQL_C_TYPE_DATE, &fieldDate, sizeof(fieldDate),
+                   &fieldDate_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 11, SQL_C_WCHAR, fieldMinKey, sizeof(fieldMinKey),
-                   &fieldMinKey_len);
+
+  TIME_STRUCT timeValue;
+  SQLLEN timeValue_len = 0;
+  ret = SQLBindCol(stmt, 7, SQL_C_TYPE_TIME, &timeValue, sizeof(timeValue),
+                   &timeValue_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 12, SQL_C_WCHAR, fieldNull, sizeof(fieldNull),
-                   &fieldNull_len);
+
+  SQL_YEAR_MONTH_STRUCT yearMonth;
+  SQLLEN yearMonth_len = 0;
+  ret = SQLBindCol(stmt, 8, SQL_C_INTERVAL_YEAR_TO_MONTH, &yearMonth,
+                   sizeof(yearMonth), &yearMonth_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLBindCol(stmt, 13, SQL_C_BINARY, fieldBinary, sizeof(fieldBinary),
-                   &fieldBinary_len);
+
+  SQL_DAY_SECOND_STRUCT daySecond;
+  SQLLEN daySecond_len = 0;
+  ret = SQLBindCol(stmt, 9, SQL_C_INTERVAL_DAY_TO_SECOND, &daySecond,
+                   sizeof(daySecond), &daySecond_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT current_timestamp;
+  SQLLEN current_timestamp_len = 0;
+  ret = SQLBindCol(stmt, 10, SQL_C_TYPE_TIMESTAMP, &current_timestamp,
+                   sizeof(current_timestamp), &current_timestamp_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
   // Fetch 1st row
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  BOOST_CHECK_NE(SQL_NULL_DATA, id_len);
-  BOOST_CHECK_EQUAL("62196dcc4d91892191475139",
+  BOOST_CHECK_EQUAL("00000001",
                     utility::SqlWcharToString(id, id_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDecimal128_len);
-  BOOST_CHECK_EQUAL(
-      "340282350000000000000",
-      utility::SqlWcharToString(fieldDecimal128, fieldDecimal128_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDouble_len);
-  BOOST_CHECK_EQUAL(1.7976931348623157e308, fieldDouble);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldString_len);
-  BOOST_CHECK_EQUAL("some Text", utility::SqlWcharToString(
-                                     fieldString, fieldString_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldObjectId_len);
-  BOOST_CHECK_EQUAL(
-      "62196dcc4d9189219147513a",
-      utility::SqlWcharToString(fieldObjectId, fieldObjectId_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldBoolean_len);
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 20);
   BOOST_CHECK_EQUAL(true, fieldBoolean);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDate_len);
-  BOOST_CHECK_EQUAL(2020, fieldDate.year);
-  BOOST_CHECK_EQUAL(1, fieldDate.month);
-  BOOST_CHECK_EQUAL(1, fieldDate.day);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldInt_len);
-  BOOST_CHECK_EQUAL(2147483647, fieldInt);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldLong_len);
-  BOOST_CHECK_EQUAL(9223372036854775807, fieldLong);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldMaxKey_len);
-  BOOST_CHECK_EQUAL(
-      "MAXKEY", utility::SqlWcharToString(fieldMaxKey, fieldMaxKey_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldMinKey_len);
-  BOOST_CHECK_EQUAL(
-      "MINKEY", utility::SqlWcharToString(fieldMinKey, fieldMinKey_len, true));
-  BOOST_CHECK_EQUAL(SQL_NULL_DATA, fieldNull_len);
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldBinary_len);
-  BOOST_CHECK_EQUAL(3, fieldBinary_len);
-  BOOST_CHECK_EQUAL(fieldBinary[0], 0);
-  BOOST_CHECK_EQUAL(fieldBinary[1], 1);
-  BOOST_CHECK_EQUAL(fieldBinary[2], 2);
+  BOOST_CHECK_EQUAL(0.1, fieldDouble);
+  BOOST_CHECK_EQUAL(1, fieldLong);
+
+  BOOST_CHECK_EQUAL(fieldDate.year, 2022);
+  BOOST_CHECK_EQUAL(fieldDate.month, 7);
+  BOOST_CHECK_EQUAL(fieldDate.day, 7);
+
+  BOOST_CHECK_EQUAL(timeValue.hour, current_timestamp.hour);
+  BOOST_CHECK_EQUAL(timeValue.minute, current_timestamp.minute);
+  BOOST_CHECK_EQUAL(timeValue.second, current_timestamp.second);
+
+  BOOST_CHECK_EQUAL(yearMonth.year, 4);
+  BOOST_CHECK_EQUAL(yearMonth.month, 2);
+
+  BOOST_CHECK_EQUAL(daySecond.day, 6);
+  BOOST_CHECK_EQUAL(daySecond.hour, 4);
 
   // Fetch 2nd row - not exist
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "SELECT * FROM \"queries_test_002\" ORDER BY \"queries_test_002__id\"");
+      "select device_id, time, flag, rebuffering_ratio, video_startup_time, "
+      "date(TIMESTAMP '2022-07-07 17:44:43.771000000'), current_time, interval "
+      "'4' year + interval '2' month,"
+      "interval '6' day + interval '4' hour, current_timestamp from "
+      "data_queries_test_db.TestScalarTypes order by device_id limit 1");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
 
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
   const int32_t buf_size = 1024;
   SQLWCHAR id[buf_size]{};
   SQLLEN id_len = 0;
-  //"\"fieldDecimal128\": \"$fieldDecimal128\", "
-  SQLWCHAR fieldDecimal128[buf_size]{};
-  SQLLEN fieldDecimal128_len = 0;
+
+  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  bool fieldBoolean = false;
+  SQLLEN fieldBoolean_len = 0;
+  ret = SQLGetData(stmt, 3, SQL_C_BIT, &fieldBoolean, sizeof(fieldBoolean),
+                   &fieldBoolean_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  double fieldDouble = 0;
+  SQLLEN fieldDouble_len = 0;
+  ret = SQLGetData(stmt, 4, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
+                   &fieldDouble_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLBIGINT fieldLong;
+  SQLLEN fieldLong_len = 0;
+  ret = SQLGetData(stmt, 5, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
+                   &fieldLong_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  DATE_STRUCT fieldDate{};
+  SQLLEN fieldDate_len = 0;
+  ret = SQLGetData(stmt, 6, SQL_C_TYPE_DATE, &fieldDate, sizeof(fieldDate),
+                   &fieldDate_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  TIME_STRUCT timeValue;
+  SQLLEN timeValue_len = 0;
+  ret = SQLGetData(stmt, 7, SQL_C_TYPE_TIME, &timeValue, sizeof(timeValue),
+                   &timeValue_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS_WITH_INFO, ret);
+
+  SQL_YEAR_MONTH_STRUCT yearMonth;
+  SQLLEN yearMonth_len = 0;
+  ret = SQLGetData(stmt, 8, SQL_C_INTERVAL_YEAR_TO_MONTH, &yearMonth,
+                   sizeof(yearMonth), &yearMonth_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_DAY_SECOND_STRUCT daySecond;
+  SQLLEN daySecond_len = 0;
+  ret = SQLGetData(stmt, 9, SQL_C_INTERVAL_DAY_TO_SECOND, &daySecond,
+                   sizeof(daySecond), &daySecond_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT current_timestamp;
+  SQLLEN current_timestamp_len = 0;
+  ret = SQLGetData(stmt, 10, SQL_C_TYPE_TIMESTAMP, &current_timestamp,
+                   sizeof(current_timestamp), &current_timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000001", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 20);
+  BOOST_CHECK_EQUAL(true, fieldBoolean);
+  BOOST_CHECK_EQUAL(0.1, fieldDouble);
+  BOOST_CHECK_EQUAL(1, fieldLong);
+
+  BOOST_CHECK_EQUAL(fieldDate.year, 2022);
+  BOOST_CHECK_EQUAL(fieldDate.month, 7);
+  BOOST_CHECK_EQUAL(fieldDate.day, 7);
+
+  BOOST_CHECK_EQUAL(timeValue.hour, current_timestamp.hour);
+  BOOST_CHECK_EQUAL(timeValue.minute, current_timestamp.minute);
+  BOOST_CHECK_EQUAL(timeValue.second, current_timestamp.second);
+
+  BOOST_CHECK_EQUAL(yearMonth.year, 4);
+  BOOST_CHECK_EQUAL(yearMonth.month, 2);
+
+  BOOST_CHECK_EQUAL(daySecond.day, 6);
+  BOOST_CHECK_EQUAL(daySecond.hour, 4);
+
+  // Fetch 2nd row - not exist
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+}
+
+BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, time from data_queries_test_db.TestScalarTypes order by device_id limit 3");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
 
   // Fetch 1st row
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
+  const int32_t buf_size = 1024;
+  SQLWCHAR id[buf_size]{};
+  SQLLEN id_len = 0;
+
   ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 2, SQL_C_WCHAR, fieldDecimal128,
-                   sizeof(fieldDecimal128), &fieldDecimal128_len);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  BOOST_CHECK_NE(SQL_NULL_DATA, id_len);
-  BOOST_CHECK_EQUAL("62196dcc4d91892191475139",
-                    utility::SqlWcharToString(id, id_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDecimal128_len);
-  BOOST_CHECK_EQUAL(
-      "340282350000000000000",
-      utility::SqlWcharToString(fieldDecimal128, fieldDecimal128_len, true));
+  BOOST_CHECK_EQUAL("00000001", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 20);
 
   // Fetch 2nd row
   ret = SQLFetch(stmt);
@@ -490,13 +449,15 @@ BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData, *disabled()) {
 
   ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 2, SQL_C_WCHAR, fieldDecimal128,
-                   sizeof(fieldDecimal128), &fieldDecimal128_len);
 
-  BOOST_CHECK_NE(SQL_NULL_DATA, id_len);
-  BOOST_CHECK_EQUAL("62196dcc4d9189219147513a",
-                    utility::SqlWcharToString(id, id_len, true));
-  BOOST_CHECK_EQUAL(SQL_NULL_DATA, fieldDecimal128_len);
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000002", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 21);
 
   // Fetch 3rd row
   ret = SQLFetch(stmt);
@@ -504,20 +465,260 @@ BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData, *disabled()) {
 
   ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  ret = SQLGetData(stmt, 2, SQL_C_WCHAR, fieldDecimal128,
-                   sizeof(fieldDecimal128), &fieldDecimal128_len);
 
-  BOOST_CHECK_NE(SQL_NULL_DATA, id_len);
-  BOOST_CHECK_EQUAL("62196dcc4d9189219147513b",
-                    utility::SqlWcharToString(id, id_len, true));
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldDecimal128_len);
-  BOOST_CHECK_EQUAL(
-      "340282350000000000000",
-      utility::SqlWcharToString(fieldDecimal128, fieldDecimal128_len, true));
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000003", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 22);
 
   // Fetch 4th row - not exist
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLFetchTimeStampAsOtherTypes) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select time as firstTime, time, time, time from data_queries_test_db.TestScalarTypes order by firstTime");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR timestampChar[buf_size]{};
+  SQLLEN timestampChar_len = 0;
+
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, timestampChar, sizeof(timestampChar),
+                   &timestampChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR timestampWchar[buf_size]{};
+  SQLLEN timestampWchar_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, &timestampWchar,
+                   sizeof(timestampWchar), &timestampWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  DATE_STRUCT fieldDate{};
+  SQLLEN fieldDate_len = 0;
+  ret = SQLBindCol(stmt, 3, SQL_C_TYPE_DATE, &fieldDate, sizeof(fieldDate),
+                   &fieldDate_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  TIME_STRUCT timeValue;
+  SQLLEN timeValue_len = 0;
+  ret = SQLBindCol(stmt, 4, SQL_C_TYPE_TIME, &timeValue, sizeof(timeValue),
+                   &timeValue_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("2022-10-20 19:01:02.000000000",
+                    utility::SqlCharToString(timestampChar, timestampChar_len));
+  BOOST_CHECK_EQUAL("2022-10-20 19:01:02.000000000",
+      utility::SqlWcharToString(timestampWchar, timestampWchar_len));
+
+  BOOST_CHECK_EQUAL(fieldDate.year, 2022);
+  BOOST_CHECK_EQUAL(fieldDate.month, 10);
+  BOOST_CHECK_EQUAL(fieldDate.day, 20);
+
+  BOOST_CHECK_EQUAL(timeValue.hour, 19);
+  BOOST_CHECK_EQUAL(timeValue.minute, 1);
+  BOOST_CHECK_EQUAL(timeValue.second, 2);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLFetchTimeAsOtherTypes) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select current_time, current_time, current_time, current_time");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR timestampChar[buf_size]{};
+  SQLLEN timestampChar_len = 0;
+
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, timestampChar, sizeof(timestampChar),
+                   &timestampChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR timestampWchar[buf_size]{};
+  SQLLEN timestampWchar_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, &timestampWchar,
+                   sizeof(timestampWchar), &timestampWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLBindCol(stmt, 3, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  TIME_STRUCT timeValue;
+  SQLLEN timeValue_len = 0;
+  ret = SQLBindCol(stmt, 4, SQL_C_TYPE_TIME, &timeValue, sizeof(timeValue),
+                   &timeValue_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL(
+      utility::SqlCharToString(timestampChar, timestampChar_len),
+      utility::SqlWcharToString(timestampWchar, timestampWchar_len));
+
+  BOOST_CHECK_EQUAL(timeValue.hour, timestamp.hour);
+  BOOST_CHECK_EQUAL(timeValue.minute, timestamp.minute);
+  BOOST_CHECK_EQUAL(timeValue.second, timestamp.second);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLFetchDateAsOtherTypes) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select date(TIMESTAMP '2022-07-07 17:44:43.771000000'),"
+      "date(TIMESTAMP '2022-07-07 17:44:43.771000000'),"
+      "date(TIMESTAMP '2022-07-07 17:44:43.771000000')");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR timestampChar[buf_size]{};
+  SQLLEN timestampChar_len = 0;
+
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, timestampChar, sizeof(timestampChar),
+                   &timestampChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR timestampWchar[buf_size]{};
+  SQLLEN timestampWchar_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, &timestampWchar,
+                   sizeof(timestampWchar), &timestampWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLBindCol(stmt, 3, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("2022-07-07",
+                    utility::SqlCharToString(timestampChar, timestampChar_len));
+  BOOST_CHECK_EQUAL("2022-07-07",
+      utility::SqlWcharToString(timestampWchar, timestampWchar_len));
+
+  BOOST_CHECK_EQUAL(2022, timestamp.year);
+  BOOST_CHECK_EQUAL(7, timestamp.month);
+  BOOST_CHECK_EQUAL(7, timestamp.day);
+  BOOST_CHECK_EQUAL(0, timestamp.hour);
+  BOOST_CHECK_EQUAL(0, timestamp.minute);
+  BOOST_CHECK_EQUAL(0, timestamp.second);
+  BOOST_CHECK_EQUAL(0, timestamp.fraction);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalYearMonthAsOtherTypes) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request =
+      MakeSqlBuffer("SELECT interval '3' year + interval '11' month, interval '3' year + interval '11' month");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR yearMonthChar[buf_size]{};
+  SQLLEN yearMonthChar_len = 0;
+
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, &yearMonthChar, sizeof(yearMonthChar),
+                   &yearMonthChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  
+  SQLWCHAR yearMonthWchar[buf_size]{};
+  SQLLEN yearMonthWchar_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, &yearMonthWchar,
+                   sizeof(yearMonthWchar), &yearMonthWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("3-11",
+                    utility::SqlCharToString(yearMonthChar, yearMonthChar_len));
+
+  BOOST_CHECK_EQUAL("3-11", utility::SqlWcharToString(yearMonthWchar, yearMonthWchar_len));
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalDayMonthAsOtherTypes) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "SELECT interval '6' day + interval '0' hour, interval '0' day + interval '4' hour");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR daySecondChar[buf_size]{};
+  SQLLEN daySecondChar_len = 0;
+
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, &daySecondChar, sizeof(daySecondChar),
+                   &daySecondChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR daySecondWchar[buf_size]{};
+  SQLLEN daySecondWchar_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, &daySecondWchar,
+                   sizeof(daySecondWchar), &daySecondWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("6 00:00:00.000000000",
+                    utility::SqlCharToString(daySecondChar, daySecondChar_len));
+
+  BOOST_CHECK_EQUAL("0 04:00:00.000000000", utility::SqlWcharToString(daySecondWchar, daySecondWchar_len));
 }
 
 BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {

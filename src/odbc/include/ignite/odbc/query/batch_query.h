@@ -19,7 +19,6 @@
 #define _IGNITE_ODBC_QUERY_BATCH_QUERY
 
 #include "ignite/odbc/app/parameter_set.h"
-#include "ignite/odbc/cursor.h"
 #include "ignite/odbc/query/query.h"
 
 namespace ignite {

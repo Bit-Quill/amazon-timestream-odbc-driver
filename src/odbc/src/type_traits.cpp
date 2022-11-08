@@ -303,6 +303,12 @@ OdbcNativeType::Type ToDriverType(int16_t type) {
     case SQL_C_DEFAULT:
       return OdbcNativeType::AI_DEFAULT;
 
+    case SQL_C_INTERVAL_YEAR_TO_MONTH:
+      return OdbcNativeType::AI_INTERVAL_YEAR_MONTH;
+
+    case SQL_C_INTERVAL_DAY_TO_SECOND:
+      return OdbcNativeType::AI_INTERVAL_DAY_SECOND;
+
     default:
       return OdbcNativeType::AI_UNSUPPORTED;
   }

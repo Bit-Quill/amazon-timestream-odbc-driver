@@ -15,45 +15,49 @@
  * limitations under the License.
  */
 
-#ifndef _IGNITE_ODBC_ROW
-#define _IGNITE_ODBC_ROW
+#ifndef _IGNITE_ODBC_TIMESTREAM_ROW
+#define _IGNITE_ODBC_TIMESTREAM_ROW
 
 #include <stdint.h>
 
 #include <vector>
 
 #include "ignite/odbc/app/application_data_buffer.h"
-#include "ignite/odbc/column.h"
+#include "ignite/odbc/meta/column_meta.h"
+#include "ignite/odbc/timestream_column.h"
 
-using namespace ignite::odbc::impl::interop;
-using namespace ignite::odbc::impl::binary;
+#include <aws/timestream-query/model/Row.h>
+
+using Aws::TimestreamQuery::Model::Row;
 
 namespace ignite {
 namespace odbc {
 /**
  * Query result row.
  */
-class Row {
+class TimestreamRow {
  public:
   /**
    * Constructor.
-   *
+   * @param row Aws Row data.
+   * @param columnMetadataVec Column metadata vector.
    * @param pageData Page data.
    */
-  Row(InteropUnpooledMemory& pageData);
+  TimestreamRow(const Row& row,
+                const meta::ColumnMetaVector& columnMetadataVec);
 
   /**
    * Destructor.
    */
-  ~Row();
+  ~TimestreamRow() = default;
 
   /**
-   * Get row size in columns.
+   * Get column number in a row.
    *
-   * @return Row size.
+   * @return number of columns.
    */
-  int32_t GetSize() const {
-    return size;
+  int32_t GetColumnSize() const {
+    return columnMetadataVec_.size();
   }
 
   /**
@@ -64,23 +68,18 @@ class Row {
    * @return Conversion result.
    */
   app::ConversionResult::Type ReadColumnToBuffer(
-      uint16_t columnIdx, app::ApplicationDataBuffer& dataBuf);
+      uint32_t columnIdx, app::ApplicationDataBuffer& dataBuf);
 
   /**
-   * Move to next row.
+   * Updates the row and columns with a new row.
    *
-   * @return True on success.
+   * @param row New row.
+   * @return Conversion result.
    */
-  bool MoveToNext();
+  void Update(const Row& row);
 
  private:
-  IGNITE_NO_COPY_ASSIGNMENT(Row);
-
-  /**
-   * Reinitialize row state using stream data.
-   * @note Stream must be positioned at the beginning of the row.
-   */
-  void Reinit();
+  IGNITE_NO_COPY_ASSIGNMENT(TimestreamRow);
 
   /**
    * Get columns by its index.
@@ -94,8 +93,8 @@ class Row {
    * @param columnIdx Column index.
    * @return Reference to specified column.
    */
-  Column& GetColumn(uint16_t columnIdx) {
-    return columns[columnIdx - 1];
+  TimestreamColumn& GetColumn(uint32_t columnIdx) {
+    return columns_[columnIdx - 1];
   }
 
   /**
@@ -105,30 +104,18 @@ class Row {
    * @return True if the column is discovered and false if it can not
    * be discovered.
    */
-  bool EnsureColumnDiscovered(uint16_t columnIdx);
-
-  /** Row position in current page. */
-  int32_t rowBeginPos;
-
-  /** Current position in row. */
-  int32_t pos;
-
-  /** Row size in columns. */
-  int32_t size;
-
-  /** Memory that contains current row data. */
-  InteropUnpooledMemory& pageData;
-
-  /** Page data input stream. */
-  InteropInputStream stream;
-
-  /** Data reader. */
-  BinaryReaderImpl reader;
+  bool EnsureColumnDiscovered(uint32_t columnIdx);
 
   /** Columns. */
-  std::vector< Column > columns;
+  std::vector< TimestreamColumn > columns_;
+
+  /** The current row */
+  Row row_;
+
+  /** The column metadata */
+  const meta::ColumnMetaVector& columnMetadataVec_;
 };
 }  // namespace odbc
 }  // namespace ignite
 
-#endif  //_IGNITE_ODBC_ROW
+#endif  //_IGNITE_ODBC_TIMESTREAM_ROW

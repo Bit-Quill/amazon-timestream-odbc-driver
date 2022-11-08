@@ -33,6 +33,7 @@ namespace ignite {
 namespace odbc {
 namespace app {
 using impl::binary::BinaryUtils;
+using namespace type_traits;
 
 ApplicationDataBuffer::ApplicationDataBuffer()
     : type(type_traits::OdbcNativeType::AI_UNSUPPORTED),
@@ -667,11 +668,17 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
       if (resLenPtr)
         *resLenPtr = valLen;
 
-      if (buffer)
-        strftime(buffer, GetSize(), "%Y-%m-%d", &tmTime);
+      if (buffer) {
+        char tmpStr[32]{};
+        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year+1900, tmTime.tm_mon+1,
+                tmTime.tm_mday);
+        strncpy(buffer, tmpStr, std::min(buflen, static_cast<SqlLen>(valLen+1)));
 
-      if (static_cast< SqlLen >(valLen) + 1 > GetSize())
-        return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        if (static_cast< SqlLen >(valLen) + 1 > buflen) {
+          buffer[buflen - 1] = 0;
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
 
       return ConversionResult::Type::AI_SUCCESS;
     }
@@ -684,12 +691,12 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
         *resLenPtr = valLen;
 
       if (buffer) {
-        std::string tmp(valLen + 1, 0);
-
-        strftime(&tmp[0], tmp.size(), "%Y-%m-%d", &tmTime);
+        char tmpStr[32]{};
+        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year+1900, tmTime.tm_mon+1,
+                tmTime.tm_mday);
 
         bool isTruncated = false;
-        utility::CopyStringToBuffer(&tmp[0], buffer, GetSize(), isTruncated);
+        utility::CopyStringToBuffer(tmpStr, buffer, GetSize(), isTruncated, true);
       }
 
       if (static_cast< SqlLen >(valLen) + 1 > GetSize())
@@ -707,19 +714,6 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
       if (resLenPtr)
         *resLenPtr = static_cast< SqlLen >(sizeof(SQL_DATE_STRUCT));
-
-      return ConversionResult::Type::AI_SUCCESS;
-    }
-
-    case OdbcNativeType::AI_TTIME: {
-      SQL_TIME_STRUCT* buffer = reinterpret_cast< SQL_TIME_STRUCT* >(dataPtr);
-
-      buffer->hour = tmTime.tm_hour;
-      buffer->minute = tmTime.tm_min;
-      buffer->second = tmTime.tm_sec;
-
-      if (resLenPtr)
-        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_TIME_STRUCT));
 
       return ConversionResult::Type::AI_SUCCESS;
     }
@@ -742,25 +736,21 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
       return ConversionResult::Type::AI_SUCCESS;
     }
 
-    case OdbcNativeType::AI_BINARY:
-    case OdbcNativeType::AI_DEFAULT:
-    case OdbcNativeType::AI_SIGNED_TINYINT:
-    case OdbcNativeType::AI_BIT:
-    case OdbcNativeType::AI_UNSIGNED_TINYINT:
-    case OdbcNativeType::AI_SIGNED_SHORT:
-    case OdbcNativeType::AI_UNSIGNED_SHORT:
-    case OdbcNativeType::AI_SIGNED_LONG:
-    case OdbcNativeType::AI_UNSIGNED_LONG:
-    case OdbcNativeType::AI_SIGNED_BIGINT:
-    case OdbcNativeType::AI_UNSIGNED_BIGINT:
-    case OdbcNativeType::AI_FLOAT:
-    case OdbcNativeType::AI_DOUBLE:
-    case OdbcNativeType::AI_NUMERIC:
     default:
       break;
   }
 
   return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
+}
+
+std::string ApplicationDataBuffer::GetTimestampString(tm& tmTime,
+                                                      int32_t fraction, const char* pattern) {
+  char result[64]{};
+  size_t writtenLen = strftime(result, 64, pattern, &tmTime);
+
+  sprintf(result + writtenLen, "%09d", fraction);
+
+  return std::string(result);
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
@@ -771,11 +761,9 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
     return PutNull();
 }
 
-ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
-    const Timestamp& value) {
-  using namespace type_traits;
-
+ConversionResult::Type ApplicationDataBuffer::PutTimestamp(const Timestamp& value) {
   tm tmTime;
+  memset(&tmTime, 0, sizeof(tm));
 
   common::TimestampToCTm(value, tmTime);
 
@@ -784,41 +772,44 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
 
   switch (type) {
     case OdbcNativeType::AI_CHAR: {
-      const size_t valLen = sizeof("HHHH-MM-DD HH:MM:SS") - 1;
+      const size_t valLen = sizeof("HHHH-MM-DD HH:MM:SS.xxxxxxxxx");
 
       if (resLenPtr)
-        *resLenPtr = valLen;
+        *resLenPtr = valLen - 1;
 
       char* buffer = reinterpret_cast< char* >(dataPtr);
+      if (buffer) {
+        std::string tmpStr = GetTimestampString(
+            tmTime, value.GetSecondFraction(), "%Y-%m-%d %H:%M:%S.");
+        strncpy(buffer, tmpStr.c_str(), std::min(static_cast< SqlLen >(valLen), buflen));
 
-      if (buffer)
-        strftime(buffer, GetSize(), "%Y-%m-%d %H:%M:%S", &tmTime);
-
-      if (static_cast< SqlLen >(valLen) + 1 > GetSize())
-        return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
-
-      return ConversionResult::Type::AI_SUCCESS;
+        if (static_cast< SqlLen >(valLen) > buflen) {
+          buffer[buflen - 1] = 0;
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
+      return ConversionResult::Type::AI_SUCCESS;     
     }
 
     case OdbcNativeType::AI_WCHAR: {
-      const size_t valLen = sizeof("HHHH-MM-DD HH:MM:SS") - 1;
+      const size_t valLen = sizeof("HHHH-MM-DD HH:MM:SS.xxxxxxxxx");
 
       if (resLenPtr)
-        *resLenPtr = valLen;
+        *resLenPtr = valLen - 1;
 
       SQLWCHAR* buffer = reinterpret_cast< SQLWCHAR* >(dataPtr);
 
       if (buffer) {
-        std::string tmp(GetSize(), 0);
-
-        strftime(&tmp[0], GetSize(), "%Y-%m-%d %H:%M:%S", &tmTime);
+        std::string tmpStr = GetTimestampString(
+            tmTime, value.GetSecondFraction(), "%Y-%m-%d %H:%M:%S.");
 
         bool isTruncated = false;
-        utility::CopyStringToBuffer(&tmp[0], buffer, GetSize(), isTruncated);
-      }
+        utility::CopyStringToBuffer(&tmpStr[0], buffer, buflen, isTruncated, true);
 
-      if (static_cast< SqlLen >(valLen) + 1 > GetSize())
-        return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        if (isTruncated) {
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
 
       return ConversionResult::Type::AI_SUCCESS;
     }
@@ -861,26 +852,18 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
       buffer->second = tmTime.tm_sec;
       buffer->fraction = value.GetSecondFraction();
 
+      LOG_DEBUG_MSG("buffer content is "
+                    << buffer->year << " " << buffer->month << " "
+                    << buffer->day << " " << buffer->hour << ":"
+                    << buffer->minute << ":" << buffer->second << "."
+                    << buffer->fraction);
+
       if (resLenPtr)
         *resLenPtr = static_cast< SqlLen >(sizeof(SQL_TIMESTAMP_STRUCT));
 
       return ConversionResult::Type::AI_SUCCESS;
     }
 
-    case OdbcNativeType::AI_BINARY:
-    case OdbcNativeType::AI_DEFAULT:
-    case OdbcNativeType::AI_SIGNED_TINYINT:
-    case OdbcNativeType::AI_BIT:
-    case OdbcNativeType::AI_UNSIGNED_TINYINT:
-    case OdbcNativeType::AI_SIGNED_SHORT:
-    case OdbcNativeType::AI_UNSIGNED_SHORT:
-    case OdbcNativeType::AI_SIGNED_LONG:
-    case OdbcNativeType::AI_UNSIGNED_LONG:
-    case OdbcNativeType::AI_SIGNED_BIGINT:
-    case OdbcNativeType::AI_UNSIGNED_BIGINT:
-    case OdbcNativeType::AI_FLOAT:
-    case OdbcNativeType::AI_DOUBLE:
-    case OdbcNativeType::AI_NUMERIC:
     default:
       break;
   }
@@ -901,6 +884,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
 
   tm tmTime;
 
+  memset(&tmTime, 0, sizeof(tm));
   common::TimeToCTm(value, tmTime);
 
   SqlLen* resLenPtr = GetResLen();
@@ -908,41 +892,47 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
 
   switch (type) {
     case OdbcNativeType::AI_CHAR: {
-      const size_t valLen = sizeof("HH:MM:SS") - 1;
+      const size_t valLen = sizeof("HH:MM:SS.xxxxxxxxx");
 
       if (resLenPtr)
-        *resLenPtr = sizeof("HH:MM:SS") - 1;
+        *resLenPtr = valLen - 1;
 
       char* buffer = reinterpret_cast< char* >(dataPtr);
 
-      if (buffer)
-        strftime(buffer, GetSize(), "%H:%M:%S", &tmTime);
+      if (buffer) {
+        std::string tmpStr =
+            GetTimestampString(tmTime, value.GetSecondFraction(), "%H:%M:%S.");
+        strncpy(buffer, &tmpStr[0],
+                std::min(static_cast< SqlLen >(valLen), buflen));
 
-      if (static_cast< SqlLen >(valLen) + 1 > GetSize())
-        return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        if (static_cast< SqlLen >(valLen) > buflen) {
+          buffer[buflen - 1] = 0;
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
 
       return ConversionResult::Type::AI_SUCCESS;
     }
 
     case OdbcNativeType::AI_WCHAR: {
-      const size_t valLen = sizeof("HH:MM:SS") - 1;
+      const size_t valLen = sizeof("HH:MM:SS.xxxxxxxxx");
 
       if (resLenPtr)
-        *resLenPtr = sizeof("HH:MM:SS") - 1;
+        *resLenPtr = valLen - 1;
 
       SQLWCHAR* buffer = reinterpret_cast< SQLWCHAR* >(dataPtr);
 
       if (buffer) {
-        std::string tmp(GetSize(), 0);
-
-        strftime(&tmp[0], GetSize(), "%H:%M:%S", &tmTime);
+        std::string tmpStr = GetTimestampString(
+            tmTime, value.GetSecondFraction(), "%H:%M:%S.");
 
         bool isTruncated = false;
-        utility::CopyStringToBuffer(&tmp[0], buffer, GetSize(), isTruncated);
-      }
+        utility::CopyStringToBuffer(&tmpStr[0], buffer, buflen, isTruncated, true);
 
-      if (static_cast< SqlLen >(valLen) + 1 > GetSize())
-        return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        if (isTruncated) {
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
 
       return ConversionResult::Type::AI_SUCCESS;
     }
@@ -957,7 +947,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
       if (resLenPtr)
         *resLenPtr = static_cast< SqlLen >(sizeof(SQL_TIME_STRUCT));
 
-      return ConversionResult::Type::AI_SUCCESS;
+      return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
     }
 
     case OdbcNativeType::AI_TTIMESTAMP: {
@@ -970,7 +960,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
       buffer->hour = tmTime.tm_hour;
       buffer->minute = tmTime.tm_min;
       buffer->second = tmTime.tm_sec;
-      buffer->fraction = 0;
+      buffer->fraction = value.GetSecondFraction();
 
       if (resLenPtr)
         *resLenPtr = static_cast< SqlLen >(sizeof(SQL_TIMESTAMP_STRUCT));
@@ -978,21 +968,149 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
       return ConversionResult::Type::AI_SUCCESS;
     }
 
-    case OdbcNativeType::AI_BINARY:
-    case OdbcNativeType::AI_DEFAULT:
-    case OdbcNativeType::AI_SIGNED_TINYINT:
-    case OdbcNativeType::AI_BIT:
-    case OdbcNativeType::AI_UNSIGNED_TINYINT:
-    case OdbcNativeType::AI_SIGNED_SHORT:
-    case OdbcNativeType::AI_UNSIGNED_SHORT:
-    case OdbcNativeType::AI_SIGNED_LONG:
-    case OdbcNativeType::AI_UNSIGNED_LONG:
-    case OdbcNativeType::AI_SIGNED_BIGINT:
-    case OdbcNativeType::AI_UNSIGNED_BIGINT:
-    case OdbcNativeType::AI_FLOAT:
-    case OdbcNativeType::AI_DOUBLE:
-    case OdbcNativeType::AI_NUMERIC:
-    case OdbcNativeType::AI_TDATE:
+    default:
+      break;
+  }
+
+  return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
+}
+
+ConversionResult::Type ApplicationDataBuffer::PutInterval(
+    const IntervalYearMonth& value) {
+  using namespace type_traits;
+
+  SqlLen* resLenPtr = GetResLen();
+  void* dataPtr = GetData();
+
+  switch (type) {
+    case OdbcNativeType::AI_CHAR: {
+      char tmp[32]{};
+      sprintf(tmp, "%d-%d", value.GetYear(), value.GetMonth());
+      SqlLen resLen = static_cast<SqlLen>(strlen(tmp));
+
+      if (resLenPtr)
+        *resLenPtr = resLen;
+
+      char* buffer = reinterpret_cast< char* >(dataPtr);
+      if (buffer) {
+        strncpy(buffer, tmp, std::min(resLen + 1, buflen));
+
+        if (resLen + 1 > buflen) {
+          buffer[buflen - 1] = 0;
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
+
+      return ConversionResult::Type::AI_SUCCESS;
+    }
+
+    case OdbcNativeType::AI_WCHAR: {
+      char tmp[32]{};
+      sprintf(tmp, "%d-%d", value.GetYear(), value.GetMonth());
+      SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
+
+      if (resLenPtr)
+        *resLenPtr = resLen;
+
+      SQLWCHAR* buffer = reinterpret_cast< SQLWCHAR* >(dataPtr);
+      if (buffer) {
+        bool isTruncated = false;
+        utility::CopyStringToBuffer(tmp, buffer, buflen, isTruncated, true);
+
+        if (isTruncated)
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+      }
+
+      return ConversionResult::Type::AI_SUCCESS;
+    }
+
+    case OdbcNativeType::AI_INTERVAL_YEAR_MONTH: {
+      SQL_YEAR_MONTH_STRUCT* buffer =
+          reinterpret_cast< SQL_YEAR_MONTH_STRUCT* >(dataPtr);
+
+      buffer->year = value.GetYear();
+      buffer->month = value.GetMonth();
+
+      if (resLenPtr)
+        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_YEAR_MONTH_STRUCT));
+
+      return ConversionResult::Type::AI_SUCCESS;
+    }
+
+    default:
+      break;
+  }
+
+  return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
+}
+
+ConversionResult::Type ApplicationDataBuffer::PutInterval(
+    const IntervalDaySecond& value) {
+  using namespace type_traits;
+
+  SqlLen* resLenPtr = GetResLen();
+  void* dataPtr = GetData();
+
+  switch (type) {
+    case OdbcNativeType::AI_CHAR: {
+      char tmp[32]{};
+      sprintf(tmp, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
+              value.GetMinute(), value.GetSecond(), value.GetFraction());
+      SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
+
+      if (resLenPtr)
+        *resLenPtr = resLen;
+
+      char* buffer = reinterpret_cast< char* >(dataPtr);
+      if (buffer) {
+        strncpy(buffer, tmp, std::min(resLen + 1, buflen));
+
+        if (resLen + 1 > buflen) {
+          buffer[buflen - 1] = 0;
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+        }
+      }
+
+      return ConversionResult::Type::AI_SUCCESS;
+    }
+
+    case OdbcNativeType::AI_WCHAR: {
+      char tmp[32]{};
+      sprintf(tmp, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
+              value.GetMinute(), value.GetSecond(), value.GetFraction());
+      SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
+
+      if (resLenPtr)
+        *resLenPtr = resLen;
+
+      SQLWCHAR* buffer = reinterpret_cast< SQLWCHAR* >(dataPtr);
+      if (buffer) {
+        bool isTruncated = false;
+        utility::CopyStringToBuffer(tmp, buffer, buflen, isTruncated, true);
+
+        if (isTruncated)
+          return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+      }
+
+      return ConversionResult::Type::AI_SUCCESS;
+    }
+
+    case OdbcNativeType::AI_INTERVAL_DAY_SECOND: {
+      SQL_DAY_SECOND_STRUCT* buffer =
+          reinterpret_cast< SQL_DAY_SECOND_STRUCT* >(dataPtr);
+
+      buffer->day = value.GetDay();
+      buffer->hour = value.GetHour();
+      buffer->minute = value.GetMinute();
+      buffer->second = value.GetSecond();
+      buffer->fraction = value.GetFraction();
+
+      if (resLenPtr)
+        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_DAY_SECOND_STRUCT));
+
+      return ConversionResult::Type::AI_SUCCESS;
+    }
+
     default:
       break;
   }

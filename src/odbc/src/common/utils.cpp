@@ -117,7 +117,7 @@ IGNITE_FRIEND_EXPORT Date MakeDateLocal(int year, int month, int day, int hour,
   return CTimeToDate(localTime);
 }
 
-IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour, int min, int sec) {
+IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour, int min, int sec, int ns) {
   tm date;
 
   std::memset(&date, 0, sizeof(date));
@@ -129,10 +129,10 @@ IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour, int min, int sec) {
   date.tm_min = min;
   date.tm_sec = sec;
 
-  return CTmToTime(date);
+  return CTmToTime(date, ns);
 }
 
-IGNITE_FRIEND_EXPORT Time MakeTimeLocal(int hour, int min, int sec) {
+IGNITE_FRIEND_EXPORT Time MakeTimeLocal(int hour, int min, int sec, int ns) {
   tm date;
 
   std::memset(&date, 0, sizeof(date));
@@ -146,7 +146,7 @@ IGNITE_FRIEND_EXPORT Time MakeTimeLocal(int hour, int min, int sec) {
 
   time_t localTime = common::IgniteTimeLocal(date);
 
-  return CTimeToTime(localTime);
+  return CTimeToTime(localTime, ns);
 }
 
 IGNITE_FRIEND_EXPORT Timestamp MakeTimestampGmt(int year, int month, int day,

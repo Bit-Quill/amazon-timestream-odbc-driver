@@ -30,6 +30,8 @@
 
 #include "ignite/odbc/common_types.h"
 #include "ignite/odbc/type_traits.h"
+#include "ignite/odbc/interval_year_month.h"
+#include "ignite/odbc/interval_day_second.h"
 
 namespace ignite {
 namespace odbc {
@@ -307,8 +309,7 @@ class ApplicationDataBuffer {
    * @param value Value to put.
    * @return Conversion result.
    */
-  ConversionResult::Type PutTimestamp(
-      const boost::optional< Timestamp >& value);
+  ConversionResult::Type PutTimestamp(const boost::optional< Timestamp >& value);
 
   /**
    * Put timestamp to buffer.
@@ -334,6 +335,22 @@ class ApplicationDataBuffer {
    */
   ConversionResult::Type PutTime(const Time& value);
 
+  /**
+   * Put interval year to month to buffer.
+   *
+   * @param value Value to put.
+   * @return Conversion result.
+   */
+  ConversionResult::Type PutInterval(const IntervalYearMonth& value);
+
+  /**
+   * Put interval day to second to buffer.
+   *
+   * @param value Value to put.
+   * @return Conversion result.
+   */
+  ConversionResult::Type PutInterval(
+      const IntervalDaySecond& value);
   /**
    * Get string.
    *
@@ -572,6 +589,15 @@ class ApplicationDataBuffer {
    */
   template < typename T >
   T* ApplyOffset(T* ptr, size_t elemSize) const;
+
+  /**
+   * Get Timestamp in string format
+   * @param tmTime The timestamp data without nanosecond 
+   * @param fraction The nanosecond
+   * @param pattern The result string format pattern
+   * @return timestamp in string format "YYYY-MM--DD hh:mm:ss.xxxxxxxxx"
+   */
+  std::string GetTimestampString(tm& tmTime, int32_t fraction, const char* pattern);
 
   /** Underlying data type. */
   type_traits::OdbcNativeType::Type type;

@@ -155,7 +155,8 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * Copy constructor.
    */
   ColumnMeta(const ColumnMeta& other)
-      : catalogName(other.catalogName),
+      : columnInfo(other.columnInfo),
+        catalogName(other.catalogName),
         schemaName(other.schemaName),
         tableName(other.tableName),
         columnName(other.columnName),
@@ -175,6 +176,7 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * Copy operator.
    */
   ColumnMeta& operator=(const ColumnMeta& other) {
+    columnInfo = other.columnInfo;
     catalogName = other.catalogName;
     schemaName = other.schemaName;
     tableName = other.tableName;
@@ -204,7 +206,16 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * Read using reader.
    * @param tsVector Vector containing metadata for one row.
    */
-  void ReadMetadata(const ColumnInfo &tsVector);
+  void ReadMetadata(const ColumnInfo& tsVector);
+
+  
+  /**
+   * Get Aws ColumnInfo.
+   * @return Aws ColumnInfo.
+   */
+  const boost::optional< Aws::TimestreamQuery::Model::ColumnInfo >& GetColumnInfo() const {
+    return columnInfo;
+  }
 
   /**
    * Get catalog name.
@@ -342,6 +353,10 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
   bool GetAttribute(uint16_t fieldId, SqlLen& value) const;
 
  private:
+
+  /** Aws columnInfo. */
+  boost::optional<Aws::TimestreamQuery::Model::ColumnInfo> columnInfo;
+
   /** Catalog name. */
   boost::optional< std::string > catalogName;
 

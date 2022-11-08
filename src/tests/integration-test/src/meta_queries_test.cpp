@@ -623,10 +623,6 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion, *disabled()) {
   BOOST_CHECK_EQUAL(intVal, 10);
 }
 
-// TODO enable those tests on Linux after SQLExecDirect can get the data
-// (remove the #if, #endif statements)
-// https://bitquill.atlassian.net/browse/AT-1138
-#if !(defined(__linux) || defined(__linux__) || defined(linux))
 BOOST_AUTO_TEST_CASE(TestColAttributeWithOneTable) {
   connectToTS();
 
@@ -1171,7 +1167,6 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale, *disabled()) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
-#endif  // !(defined(__linux) || defined(__linux__) || defined(linux))
 
 BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare, *disabled()) {
   connectToTS();
