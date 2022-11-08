@@ -98,12 +98,35 @@ C/C++ usage and formatting.
     `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
 8. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
 
-#### Known issues
+### Known issues
 
+### 'odbcinst.h' file not found
 When [iODBC Administrator](https://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/Downloads) is installed on the local machine, performance test executable is unable to build with the error 'odbcinst.h' file not found. The workaround is to copy `/Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h` to `/Library/Frameworks/iODBC.framework/Headers/odbcinst.h`, then the build should succeed.
 ```
 # example command
 sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Frameworks/iODBC.framework/Headers
+```
+
+### Cannot build with macOS SDK 13
+Currently, AWS SDK CPP is incompatible with SDK 13. The workaround is to set the SDK folder to a compatible SDK (e.g., SDK 12.3) that is before SDK 13, and upgrade the sdk version. 
+
+1. Set environment MACOSX_DEPLOYMENT_TARGET to a compatible SDK version. (e.g., `export MACOSX_DEPLOYMENT_TARGET=12.3`)
+
+2. Set the SDK folder location and minimum SDK version by appending `-DCMAKE_OSX_SYSROOT=<Path/to/SDK> -DCMAKE_OSX_DEPLOYMENT_TARGET=<SDK_Version>` to `cmake ...` command in `build_mac_*64.sh`. The change needs to be applied to both aws-sdk-cpp build and ODBC driver build. 
+```
+# example command for machines with macOS SDK 12.3. Replace aws-sdk-cpp cmake command in build_mac_debug64.sh with the following:
+cmake ../ -DCMAKE_INSTALL_PREFIX="../install" -DTARGET_ARCH="APPLE" -DCMAKE_BUILD_TYPE="Debug" -DBUILD_ONLY="core;sts;timestream-query;timestream-write" -DCUSTOM_MEMORY_MANAGEMENT="OFF" -DENABLE_TESTING="OFF" -DBUILD_SHARED_LIBS="OFF" -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=12.3
+```
+
+```
+# example command for machines with macOS SDK 12.3. Replace ODBC driver cmake command in build_mac_debug64.sh with the following:
+cmake ../src -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCODE_COVERAGE="ON" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON"  -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=12.3
+```
+
+3. Set `sysroot` in `src/CMakeLists.txt`
+```
+# example command. Replace current `set(CMAKE_CXX_FLAGS ...)` with the following
+set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_IMPL -DIGNITE_FRIEND -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS")
 ```
 
 ## Linux

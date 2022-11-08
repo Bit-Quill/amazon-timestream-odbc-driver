@@ -39,6 +39,7 @@ if ((UNIX AND (CMAKE_SIZEOF_VOID_P EQUAL 4)) OR APPLE)
     set(aws-checksums_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/aws-checksums/cmake")
     set(aws-c-event-stream_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/aws-c-event-stream/cmake")
     set(aws-c-s3_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/aws-c-s3/cmake")
+    set(aws-c-sdkutils_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/aws-c-sdkutils/cmake")
     set(AWSSDK_DIR "${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib/cmake/AWSSDK")
 endif()
 
