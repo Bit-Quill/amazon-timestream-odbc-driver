@@ -52,8 +52,10 @@ namespace odbc {
 struct OdbcTestSuite {
   /**
    * Prepare environment.
+   * 
+   * @param odbcVer ODBC Version to test, default is ODBC3
    */
-  void Prepare();
+  void Prepare(int32_t odbcVer = SQL_OV_ODBC3);
 
   /**
    * Establish connection to node using provided handles.
@@ -69,8 +71,9 @@ struct OdbcTestSuite {
    * Establish connection to node using default handles.
    *
    * @param connectStr Connection string.
+   * @param odbcVer ODBC Version, default is ODBC3
    */
-  void Connect(const std::string& connectStr);
+  void Connect(const std::string& connectStr, int32_t odbcVer = SQL_OV_ODBC3);
 
   /**
    * Establish connection to node using default handles.
@@ -142,6 +145,11 @@ struct OdbcTestSuite {
                                      const std::string& password,
                                      const std::string& expectedState,
                                      const std::string& expectedError);
+
+  /**
+   * Connect to Timestream (ODBC Ver is 3 by default)
+   */
+  void ConnectToTS(int odbcVer = SQL_OV_ODBC3);
 
   /**
    * Disconnect.

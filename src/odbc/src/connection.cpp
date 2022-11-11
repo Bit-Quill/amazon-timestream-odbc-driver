@@ -365,6 +365,17 @@ SqlResult::Type Connection::InternalTransactionRollback() {
   return SqlResult::AI_SUCCESS;
 }
 
+int32_t Connection::GetEnvODBCVer() {
+  SQLINTEGER version;
+  SqlLen outResLen;
+
+  app::ApplicationDataBuffer outBuffer(type_traits::OdbcNativeType::AI_SIGNED_LONG, &version,
+                                  0, &outResLen);
+  env_->GetAttribute(SQL_ATTR_ODBC_VERSION, outBuffer);
+
+  return outBuffer.GetInt32();
+}
+
 void Connection::GetAttribute(int attr, void* buf, SQLINTEGER bufLen,
                               SQLINTEGER* valueLen) {
   IGNITE_ODBC_API_CALL(InternalGetAttribute(attr, buf, bufLen, valueLen));

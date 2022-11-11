@@ -110,6 +110,18 @@ TableMetadataQuery::TableMetadataQuery(
   all_table_types = tableType && *tableType == SQL_ALL_TABLE_TYPES && catalog
                     && catalog->empty() && schema && schema->empty()
                     && table.empty();
+  
+  int32_t odbcVer = connection.GetEnvODBCVer();
+
+// driver needs to have have 2.0 column names for applications (e.g., Excel on macOS) 
+// that expect ODBC driver ver 2.0. 
+  std::string catalog_meta_name = "TABLE_CAT";
+  std::string schema_meta_name = "TABLE_SCHEM";
+  if (odbcVer == SQL_OV_ODBC2) {
+    // For backwards compatibility with ODBC 2.0
+    catalog_meta_name = "TABLE_QUALIFIER";
+    schema_meta_name = "TABLE_OWNER";
+  }
 
   if (all_catalogs) {
     /**
@@ -123,10 +135,10 @@ TableMetadataQuery::TableMetadataQuery(
         "CatalogName equals SQL_ALL_CATALOGS, and SchemaName and TableName are "
         "empty strings."
         "All columns except the TABLE_CAT column contain NULLs.");
-    columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", ScalarType::VARCHAR,
+    columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
-        sch, tbl, "TABLE_SCHEM", ScalarType::VARCHAR, Nullability::NULLABLE));
+        sch, tbl, schema_meta_name, ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
         sch, tbl, "TABLE_NAME", ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
@@ -144,10 +156,10 @@ TableMetadataQuery::TableMetadataQuery(
         "SchemaName equals SQL_ALL_SCHEMAS, and CatalogName and TableName are "
         "empty strings."
         "All columns except the TABLE_SCHEM column contain NULLs.");
-    columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", ScalarType::VARCHAR,
+    columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
-        sch, tbl, "TABLE_SCHEM", ScalarType::VARCHAR, Nullability::NO_NULL));
+        sch, tbl, schema_meta_name, ScalarType::VARCHAR, Nullability::NO_NULL));
     columnsMeta.push_back(ColumnMeta(
         sch, tbl, "TABLE_NAME", ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
@@ -165,10 +177,10 @@ TableMetadataQuery::TableMetadataQuery(
         "TableType equals SQL_ALL_TABLE_TYPES and CatalogName, SchemaName, and "
         "TableName are empty strings."
         "All columns except the TABLE_TYPE column contain NULLs.");
-    columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", ScalarType::VARCHAR,
+    columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
-        sch, tbl, "TABLE_SCHEM", ScalarType::VARCHAR, Nullability::NULLABLE));
+        sch, tbl, schema_meta_name, ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
         sch, tbl, "TABLE_NAME", ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
@@ -176,10 +188,10 @@ TableMetadataQuery::TableMetadataQuery(
     columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
   } else {
-    columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", ScalarType::VARCHAR,
+    columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
-        sch, tbl, "TABLE_SCHEM", ScalarType::VARCHAR, Nullability::NULLABLE));
+        sch, tbl, schema_meta_name, ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
         sch, tbl, "TABLE_NAME", ScalarType::VARCHAR, Nullability::NO_NULL));
     columnsMeta.push_back(ColumnMeta(

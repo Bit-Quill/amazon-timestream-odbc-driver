@@ -53,23 +53,12 @@ struct AttributesTestSuiteFixture : odbc::OdbcTestSuite {
    * Destructor.
    */
   ~AttributesTestSuiteFixture() override = default;
-
-  /**
-   * Connect to AWS Timestream database
-   */
-  void connectToTS() {
-    std::string dsnConnectionString;
-    CreateDsnConnectionStringForAWS(dsnConnectionString);
-
-    Connect(dsnConnectionString);
-  }
-
 };
 
 BOOST_FIXTURE_TEST_SUITE(AttributesTestSuite, AttributesTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadGet) {
-  connectToTS();
+  ConnectToTS();
 
   SQLUINTEGER dead;
   SQLRETURN ret;
@@ -83,7 +72,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadGet) {
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadSet) {
-  connectToTS();
+  ConnectToTS();
 
   SQLUINTEGER dead = SQL_CD_TRUE;
   SQLRETURN ret;
@@ -166,7 +155,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeLoginTimeout) {
 #endif
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutGet) {
-  connectToTS();
+  ConnectToTS();
 
   SQLUINTEGER timeout;
   SQLRETURN ret;
@@ -179,7 +168,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutGet) {
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutSet) {
-  connectToTS();
+  ConnectToTS();
 
   SQLRETURN ret;
 
@@ -198,7 +187,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutSet) {
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitGet) {
-  connectToTS();
+  ConnectToTS();
 
   SQLUINTEGER autoCommit;
   SQLRETURN ret;
@@ -211,7 +200,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitGet) {
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitSet) {
-  connectToTS();
+  ConnectToTS();
 
   SQLRETURN ret;
 
@@ -231,7 +220,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitSet) {
 
 //TODO: enable this test for https://bitquill.atlassian.net/browse/AT-1150
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionOption, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   SQLRETURN ret;
 
@@ -249,7 +238,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionOption, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   SQLULEN timeout = -1;
   SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT, &timeout, 0, 0);
@@ -273,13 +262,12 @@ BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout, *disabled()) {
 /**
  * Check that environment returns expected version of ODBC standard.
  *
- * 1. Start node.
- * 2. Establish connection using ODBC driver.
- * 3. Get current ODBC version from env handle.
- * 4. Check that version is of the expected value.
+ * 1. Establish connection using ODBC driver.
+ * 2. Get current ODBC version from env handle.
+ * 3. Check that version is of the expected value.
  */
 BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttrDriverVersion) {
-  connectToTS();
+  ConnectToTS();
 
   SQLINTEGER version;
   SQLRETURN ret = SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, &version, 0, 0);
@@ -287,6 +275,18 @@ BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttrDriverVersion) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_ENV, env);
 
   BOOST_CHECK_EQUAL(version, SQL_OV_ODBC3);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttrDriverVersionODBC2) {
+  // set ODBC version to 2 and check the value is correct.
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLINTEGER version;
+  SQLRETURN ret = SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, &version, 0, 0);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_ENV, env);
+
+  BOOST_CHECK_EQUAL(version, SQL_OV_ODBC2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

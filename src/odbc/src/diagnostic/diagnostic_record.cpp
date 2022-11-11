@@ -129,6 +129,9 @@ const std::string STATE_HY009 = "HY009";
 /** SQL state HY010 constant. */
 const std::string STATE_HY010 = "HY010";
 
+/** SQL state HY023 constant. */
+const std::string STATE_HY023 = "HY023";
+
 /** SQL state HY090 constant. */
 const std::string STATE_HY090 = "HY090";
 
@@ -223,6 +226,7 @@ const std::string& DiagnosticRecord::GetSubclassOrigin() const {
     odbcSubclasses.insert("42S12");
     odbcSubclasses.insert("42S21");
     odbcSubclasses.insert("42S22");
+    odbcSubclasses.insert("HY023");
     odbcSubclasses.insert("HY095");
     odbcSubclasses.insert("HY097");
     odbcSubclasses.insert("HY098");
@@ -366,6 +370,9 @@ const std::string& DiagnosticRecord::GetSqlState() const {
 
     case SqlState::SHY010_SEQUENCE_ERROR:
       return STATE_HY010;
+
+    case SqlState::SHY023_INVALID_ATTRIBUTE_VALUE:
+      return STATE_HY023;
 
     case SqlState::SHY090_INVALID_STRING_OR_BUFFER_LENGTH:
       return STATE_HY090;

@@ -120,13 +120,30 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
   EnvironmentAttribute::Type attribute = EnvironmentAttributeToInternal(attr);
 
   switch (attribute) {
+    // TODO Investigate the correct return behavior of ODBC_VERSION
+    // https://bitquill.atlassian.net/browse/AT-1180
     case EnvironmentAttribute::ODBC_VERSION: {
       int32_t version =
           static_cast< int32_t >(reinterpret_cast< intptr_t >(value));
 
-      if (version != odbcVersion) {
-        AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
-                        "ODBC version is not supported.");
+      // TODO [SPIKE] After allowing ODBC Version to be set as 2,
+      // we may need to support more ODBC Ver 2 functionalities,
+      // as currently we do not have backward comaptibility for 
+      // ODBC Ver 2.
+      // https://bitquill.atlassian.net/browse/AT-1166
+
+      if (version == SQL_OV_ODBC2 || version == SQL_OV_ODBC3) {
+        odbcVersion = version;
+        LOG_INFO_MSG("ODBC version has been set to ODBC " << version);
+      } else {
+        std::stringstream ss;
+        ss << "The value of ODBC version(" << version
+           << ") is not supported and the default value(" << odbcVersion
+           << ") will be used.";
+
+        LOG_WARNING_MSG(ss.str());
+        AddStatusRecord(
+            SqlState::S01S02_OPTION_VALUE_CHANGED, ss.str().data());
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }

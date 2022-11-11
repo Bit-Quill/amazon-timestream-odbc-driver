@@ -148,7 +148,7 @@ struct ApiRobustnessTestSuiteFixture : public odbc::OdbcTestSuite {
    * @param orientation Fetch orientation.
    */
   void CheckFetchScrollUnsupportedOrientation(SQLUSMALLINT orientation) {
-    connectToTS();
+    ConnectToTS();
 
     int32_t intField = -1;
 
@@ -177,16 +177,6 @@ struct ApiRobustnessTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK(ret == SQL_ERROR);
 
     CheckSQLStatementDiagnosticError("HYC00");
-  }
-
-  /**
-   * Connect to Timestream
-   */
-  void connectToTS() {
-    std::string dsnConnectionString;
-    CreateDsnConnectionStringForAWS(dsnConnectionString);
-
-    Connect(dsnConnectionString);
   }
 
   /**
@@ -344,7 +334,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
 BOOST_AUTO_TEST_CASE(TestSQLConnect) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
-  connectToTS();
+  ConnectToTS();
 
   SQLWCHAR buffer[ODBC_BUFFER_SIZE];
   SQLSMALLINT resLen = 0;
@@ -372,7 +362,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnect) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLPrepare) {
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"sampleDB\".IoTMulti");
@@ -411,7 +401,7 @@ BOOST_AUTO_TEST_CASE(TestSQLPrepare) {
 BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql = MakeSqlBuffer("SELECT 1");
 
@@ -441,7 +431,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
 BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
@@ -469,7 +459,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLNumResultCols, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
@@ -491,7 +481,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNumResultCols, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLForeignKeys, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > fkTableName = MakeSqlBuffer("jni_test_001_sub_doc");
 
@@ -510,7 +500,7 @@ BOOST_AUTO_TEST_CASE(TestSQLTables) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > catalogName = {0};
   std::vector< SQLWCHAR > schemaName = {0};
@@ -541,7 +531,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > catalogName = {0};
   std::vector< SQLWCHAR > schemaName = {0};
@@ -567,7 +557,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > catalogName = {0};
   std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("odbc-test");
@@ -599,7 +589,7 @@ BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
-  connectToTS();
+  ConnectToTS();
 
   SQLINTEGER ind1;
   SQLLEN len1 = 0;
@@ -648,7 +638,7 @@ BOOST_AUTO_TEST_CASE(TestSQLBindParameter, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   SQLINTEGER ind1;
   SQLLEN len1 = 0;
@@ -710,7 +700,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNativeSql) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"sampleDB\".IoTMulti");
@@ -762,7 +752,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttribute, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
@@ -806,14 +796,14 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttribute, *disabled()) {
   SQLColAttribute(stmt, 1, SQL_DESC_COUNT, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLDescribeCol, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLDescribeCol) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+      MakeSqlBuffer("select * from data_queries_test_db.TestScalarTypes");
 
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
@@ -881,7 +871,7 @@ BOOST_AUTO_TEST_CASE(TestSQLRowCount, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
@@ -904,7 +894,7 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeysSegFault, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > catalogName = {0};
   std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("cache");
@@ -1002,7 +992,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   SQLWCHAR buffer[ODBC_BUFFER_SIZE];
   SQLINTEGER resLen = 0;
@@ -1023,7 +1013,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   SQLULEN val = 1;
 
@@ -1043,7 +1033,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr, *disabled()) {
 BOOST_AUTO_TEST_CASE(TestSQLGetDiagField, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
-  connectToTS();
+  ConnectToTS();
 
   // Should fail.
   SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_INTERVAL_MONTH);
@@ -1069,7 +1059,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagField, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   SQLWCHAR state[ODBC_BUFFER_SIZE];
   SQLINTEGER nativeError = 0;
@@ -1133,7 +1123,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetData, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
       MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
@@ -1177,7 +1167,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   SQLWCHAR buffer[ODBC_BUFFER_SIZE];
   SQLINTEGER resLen = 0;
@@ -1198,7 +1188,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   std::vector< SQLWCHAR > catalogName = {0};
   std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("cache");
@@ -1276,7 +1266,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
-  connectToTS();
+  ConnectToTS();
 
   SQLWCHAR state[6] = {0};
   SQLINTEGER nativeCode = 0;
@@ -1348,7 +1338,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
 #endif
 
 BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords, *disabled()) {
-  connectToTS();
+  ConnectToTS();
 
   SQLHANDLE hnd;
 
@@ -1373,7 +1363,7 @@ BOOST_AUTO_TEST_CASE(TestManyFds, *disabled()) {
   for (int i = 0; i < FDS_NUM; ++i)
     fds[i] = tmpfile();
 
-  connectToTS();
+  ConnectToTS();
 
   for (int i = 0; i < FDS_NUM; ++i) {
     if (fds[i])

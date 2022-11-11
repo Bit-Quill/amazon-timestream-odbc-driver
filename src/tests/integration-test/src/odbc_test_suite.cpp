@@ -56,15 +56,15 @@ BOOST_GLOBAL_FIXTURE(OdbcConfig);
 
 namespace ignite {
 namespace odbc {
-void OdbcTestSuite::Prepare() {
+void OdbcTestSuite::Prepare(int32_t odbcVer) {
   // Allocate an environment handle
   SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
 
   BOOST_REQUIRE(env != NULL);
 
   // We want ODBC 3 support
-  SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION,
-                reinterpret_cast< void* >(SQL_OV_ODBC3), 0);
+  SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, reinterpret_cast< void* >(odbcVer),
+                0);
 
   // Allocate a connection handle
   SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
@@ -101,8 +101,8 @@ void OdbcTestSuite::Connect(SQLHDBC& conn, SQLHSTMT& statement,
   BOOST_REQUIRE(statement != NULL);
 }
 
-void OdbcTestSuite::Connect(const std::string& connectStr) {
-  Prepare();
+void OdbcTestSuite::Connect(const std::string& connectStr, int32_t odbcVer) {
+  Prepare(odbcVer);
 
   // Connect string
   std::vector< SQLWCHAR > connectStr0(connectStr.begin(), connectStr.end());
@@ -246,6 +246,16 @@ std::string OdbcTestSuite::ExpectConnectionReject(
                        == expectedError);
 
   return GetOdbcErrorState(SQL_HANDLE_DBC, dbc);
+}
+
+/**
+ * Connect to Timestream
+ */
+void OdbcTestSuite::ConnectToTS(int32_t odbcVer) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+
+  Connect(dsnConnectionString, odbcVer);
 }
 
 void OdbcTestSuite::Disconnect() {

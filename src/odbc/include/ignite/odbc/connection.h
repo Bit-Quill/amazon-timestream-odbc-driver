@@ -257,6 +257,11 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   void SetAttribute(int attr, void* value, SQLINTEGER valueLen);
 
+  /**
+   * Return the ODBC Version from env_
+   */
+  int32_t GetEnvODBCVer();
+
  protected:
   /**
    * Constructor.
