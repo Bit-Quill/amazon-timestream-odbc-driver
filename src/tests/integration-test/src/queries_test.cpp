@@ -721,6 +721,190 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalDayMonthAsOtherTypes) {
   BOOST_CHECK_EQUAL("0 04:00:00.000000000", utility::SqlWcharToString(daySecondWchar, daySecondWchar_len));
 }
 
+BOOST_AUTO_TEST_CASE(TestTimeSeriesSingleResultUsingBindCol) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "SELECT region, az, vpc, instance_id,"
+      "CREATE_TIME_SERIES(time, measure_value::double) as cpu_utilization, "
+      "CREATE_TIME_SERIES(time, measure_value::double) as cpu_utilization2 "
+      "FROM data_queries_test_db.TestComplexTypes WHERE "
+      "measure_name='cpu_utilization' "
+      "GROUP BY region, az, vpc, instance_id order by instance_id");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR timeSeriesChar[buf_size]{};
+  SQLLEN timeSeriesChar_len = 0;
+
+  // fetch result as a string
+  ret = SQLBindCol(stmt, 5, SQL_C_CHAR, timeSeriesChar, sizeof(timeSeriesChar),
+                   &timeSeriesChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR timeSeriesWchar[buf_size]{};
+  SQLLEN timeSeriesWchar_len = 0;
+
+  // fetch result as a unicode string
+  ret = SQLBindCol(stmt, 6, SQL_C_WCHAR, timeSeriesWchar,
+                   sizeof(timeSeriesWchar), &timeSeriesWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  std::string expected = "[{time: 2019-12-04 19:00:00.000000000, value: 35.2},";
+  expected += "{time: 2019-12-04 19:01:00.000000000, value: 38.2},";
+  expected += "{time: 2019-12-04 19:02:00.000000000, value: 45.3}]";
+
+  BOOST_CHECK_EQUAL(
+      expected, utility::SqlCharToString(timeSeriesChar, timeSeriesChar_len));
+
+  BOOST_CHECK_EQUAL(expected, utility::SqlWcharToString(
+                                  timeSeriesWchar, timeSeriesWchar_len, true));
+}
+
+BOOST_AUTO_TEST_CASE(TestArraySingleResultUsingBindCol) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request =
+      MakeSqlBuffer("select Array[1,2,3], Array[1,2,3], Array[], Array[]");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR arrayChar1[buf_size]{};
+  SQLLEN arrayChar1_len = 0;
+
+  // fetch result as a string
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, arrayChar1, sizeof(arrayChar1),
+                   &arrayChar1_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR arrayWchar1[buf_size]{};
+  SQLLEN arrayWchar1_len = 0;
+  
+  // fetch result as a unicode string
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, arrayWchar1, sizeof(arrayWchar1),
+                   &arrayWchar1_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLCHAR arrayChar2[buf_size]{};
+  SQLLEN arrayChar2_len = 0;
+
+  // fetch result as a string
+  ret = SQLBindCol(stmt, 3, SQL_C_CHAR, arrayChar2, sizeof(arrayChar2),
+                   &arrayChar2_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR arrayWchar2[buf_size]{};
+  SQLLEN arrayWchar2_len = 0;
+
+  // fetch result as a unicode string
+  ret = SQLBindCol(stmt, 4, SQL_C_WCHAR, arrayWchar2, sizeof(arrayWchar2),
+                   &arrayWchar2_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("[1,2,3]",
+                    utility::SqlCharToString(arrayChar1, arrayChar1_len));
+  BOOST_CHECK_EQUAL(
+      "[1,2,3]", utility::SqlWcharToString(arrayWchar1, arrayWchar1_len, true));
+  BOOST_CHECK_EQUAL("-", utility::SqlCharToString(arrayChar2, arrayChar2_len));
+  BOOST_CHECK_EQUAL(
+      "-", utility::SqlWcharToString(arrayWchar2, arrayWchar2_len, true));
+}
+
+BOOST_AUTO_TEST_CASE(TestRowSingleResultUsingBindCol) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer("SELECT (1,2,3), (1,2,3)");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR rowChar[buf_size]{};
+  SQLLEN rowChar_len = 0;
+
+  // fetch result as a string
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, rowChar, sizeof(rowChar), &rowChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR rowWchar[buf_size]{};
+  SQLLEN rowWchar_len = 0;
+
+  // fetch result as a unicode string
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, rowWchar, sizeof(rowWchar),
+                   &rowWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("(1,2,3)", utility::SqlCharToString(rowChar, rowChar_len));
+  BOOST_CHECK_EQUAL("(1,2,3)",
+                    utility::SqlWcharToString(rowWchar, rowWchar_len, true));
+}
+
+BOOST_AUTO_TEST_CASE(TestNullSingleResultUsingBindCol) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer("select null, null");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  const int32_t buf_size = 1024;
+  SQLCHAR nullChar[buf_size]{};
+  SQLLEN nullChar_len = 0;
+
+  // fetch result as a string
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, nullChar, sizeof(nullChar),
+                   &nullChar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLWCHAR nullWchar[buf_size]{};
+  SQLLEN nullWchar_len = 0;
+
+  // fetch result as a unicode string
+  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, nullWchar, sizeof(nullWchar),
+                   &nullWchar_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("-", utility::SqlCharToString(nullChar, nullChar_len));
+  BOOST_CHECK_EQUAL("-",
+                    utility::SqlWcharToString(nullWchar, nullWchar_len, true));
+}
+
 BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);

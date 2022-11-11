@@ -20,14 +20,16 @@
 #include <time.h>
 #include "ignite/odbc/timestream_column.h"
 #include "ignite/odbc/utility.h"
-#include "ignite/odbc/interval_year_month.h"
-#include "ignite/odbc/interval_day_second.h"
 #include <aws/timestream-query/model/ColumnInfo.h>
+#include <aws/timestream-query/model/TimeSeriesDataPoint.h>
 
+using Aws::TimestreamQuery::Model::TimeSeriesDataPoint;
 using Aws::TimestreamQuery::Model::ScalarType;
+using ignite::odbc::type_traits::OdbcNativeType;
 
 namespace ignite {
 namespace odbc {
+#define BUFFER_SIZE 1024
 
 void TimestreamColumn::Update(const Row& row) {
   row_ = row;
@@ -57,25 +59,36 @@ ConversionResult::Type TimestreamColumn::ReadToBuffer(ApplicationDataBuffer& dat
   return retval;
 }
 
-ConversionResult::Type TimestreamColumn::ParseDatum(Datum& datum, ApplicationDataBuffer& dataBuf) const {
+ConversionResult::Type TimestreamColumn::ParseDatum(
+    const Datum& datum,
+    ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseDatum is called");
 
-  ConversionResult::Type retval;
+  ConversionResult::Type retval = ConversionResult::Type::AI_FAILURE;
   if (datum.ScalarValueHasBeenSet()) {
     retval = ParseScalarType(datum, dataBuf);
+  } else if (datum.TimeSeriesValueHasBeenSet()) {
+    retval = ParseTimeSeriesType(datum, dataBuf);
+  } else if (datum.ArrayValueHasBeenSet()) {
+    retval = ParseArrayType(datum, dataBuf); 
+  } else if (datum.RowValueHasBeenSet()) {
+    retval = ParseRowType(datum, dataBuf); 
+  } else if (datum.NullValueHasBeenSet()) {
+    dataBuf.PutString("-");
+    retval = ConversionResult::Type::AI_SUCCESS;
   } else {
-    //TODO: handle complex type here 
-    //https://bitquill.atlassian.net/browse/AT-1159
-    LOG_ERROR_MSG("Non scalar value is found");
-    retval = ConversionResult::Type::AI_FAILURE;
+    LOG_ERROR_MSG("Unsupported data type");
   }
 
   LOG_DEBUG_MSG("ParseDatum exiting");
   return retval;
 }
 
-ConversionResult::Type TimestreamColumn::ParseScalarType(Datum& datum, ApplicationDataBuffer& dataBuf) const {
+ConversionResult::Type TimestreamColumn::ParseScalarType(
+    const Aws::TimestreamQuery::Model::Datum& datum,
+                     ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseScalarType is called");
+
   Aws::String value = datum.GetScalarValue();
   LOG_DEBUG_MSG("value is "<< value);
 
@@ -175,6 +188,113 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(Datum& datum, Applicati
   }
 
   LOG_DEBUG_MSG("ParseScalarType exiting");
+  return convRes;
+}
+
+ConversionResult::Type TimestreamColumn::ParseTimeSeriesType(
+    const Datum& datum,
+    ApplicationDataBuffer& dataBuf) const {
+  LOG_DEBUG_MSG("ParseTimeSeriesType is called");
+
+  const Aws::Vector< TimeSeriesDataPoint >& valueVec = datum.GetTimeSeriesValue();
+
+  std::string result = "[";
+  for (const auto& itr : valueVec) {
+    result += "{time: ";
+    if (itr.TimeHasBeenSet()) {
+      result += itr.GetTime();
+    }
+    result += ", value: ";
+
+    if (itr.ValueHasBeenSet()) {
+      char buf[BUFFER_SIZE]{};
+      SqlLen resLen;
+      ApplicationDataBuffer tmpBuf(OdbcNativeType::Type::AI_CHAR,
+                                   static_cast< void* >(buf), BUFFER_SIZE,
+                                   &resLen);
+      ParseDatum(itr.GetValue(), tmpBuf);
+      result += buf;
+    }
+
+    result += "},";
+  }
+  if (!valueVec.empty()) {
+    result.pop_back();
+  }
+  result += "]";
+
+  ConversionResult::Type convRes = dataBuf.PutString(result);
+
+  LOG_DEBUG_MSG("ParseTimeSeriesType exiting");
+  return convRes;
+}
+
+ConversionResult::Type TimestreamColumn::ParseArrayType(
+    const Datum& datum,
+    ApplicationDataBuffer& dataBuf) const {
+  LOG_DEBUG_MSG("ParseArrayType is called");
+
+  const Aws::Vector< Datum >& valueVec = datum.GetArrayValue();
+
+  std::string result("");
+  if (valueVec.empty()) {
+    result = "-";
+  } else {
+    result = "[";
+    for (const auto& itr : valueVec) {
+      char buf[BUFFER_SIZE]{};
+      SqlLen resLen;
+      ApplicationDataBuffer tmpBuf(OdbcNativeType::Type::AI_CHAR,
+                                   static_cast< void* >(buf), BUFFER_SIZE,
+                                   &resLen);
+      ParseDatum(itr, tmpBuf);
+      result += buf;
+
+      result += ",";
+    }
+    result.pop_back();
+    result += "]";  
+  }
+
+  ConversionResult::Type convRes = dataBuf.PutString(result);
+
+  LOG_DEBUG_MSG("ParseArrayType exiting");
+  return convRes;
+}
+
+ConversionResult::Type TimestreamColumn::ParseRowType(
+    const Datum& datum,
+    ApplicationDataBuffer& dataBuf) const {
+  LOG_DEBUG_MSG("ParseRowType is called");
+
+  const Row& row = datum.GetRowValue();
+
+  if (!row.DataHasBeenSet()) {
+    LOG_DEBUG_MSG("No data is set for the row");
+    return ConversionResult::Type::AI_NO_DATA;
+  }
+
+  const Aws::Vector< Datum >& valueVec = row.GetData();
+  std::string result = "(";
+  for (const auto& itr : valueVec) {
+    char buf[BUFFER_SIZE]{};
+    SqlLen resLen;
+    ApplicationDataBuffer tmpBuf(OdbcNativeType::Type::AI_CHAR,
+                                 static_cast< void* >(buf), BUFFER_SIZE,
+                                 &resLen);
+    ParseDatum(itr, tmpBuf);
+    result += buf;
+
+    result += ",";
+  }
+  if (!valueVec.empty()) {
+    result.pop_back();
+  }
+  result += ")";
+
+  ConversionResult::Type convRes = dataBuf.PutString(result);
+
+  LOG_DEBUG_MSG("ParseRowType exiting");
   return convRes;
 }
 }  // namespace odbc

@@ -64,7 +64,7 @@ class TimestreamColumn {
    * Updates the reference to the current row.
    * @param row The new row that owns this column.
    */
-  void Update(const Aws::TimestreamQuery::Model::Row& row);
+  void Update(const Row& row);
 
   /**
    * Destructor.
@@ -87,7 +87,7 @@ class TimestreamColumn {
    * @param dataBuf Application data buffer.
    * @return Operation result.
    */
-  ConversionResult::Type ParseDatum(Datum& datum,
+  ConversionResult::Type ParseDatum(const Datum& datum,
                                     ApplicationDataBuffer& dataBuf) const;
 
   /**
@@ -98,7 +98,40 @@ class TimestreamColumn {
    * @return Operation result.
    */
   ConversionResult::Type ParseScalarType(
-      Datum& datum,
+      const Datum& datum,
+      ApplicationDataBuffer& dataBuf) const;
+
+  /**
+   * Parse TimeSeries data type in datum and save result to dataBuf.
+   *
+   * @param datum Aws datum which contains the result data
+   * @param dataBuf Application data buffer.
+   * @return Operation result.
+   */
+  ConversionResult::Type ParseTimeSeriesType(
+      const Datum& datum,
+      ApplicationDataBuffer& dataBuf) const;
+
+  /**
+   * Parse Array data type in datum and save result to dataBuf.
+   *
+   * @param datum Aws datum which contains the result data
+   * @param dataBuf Application data buffer.
+   * @return Operation result.
+   */
+  ConversionResult::Type ParseArrayType(
+      const Datum& datum,
+      ApplicationDataBuffer& dataBuf) const;
+
+  /**
+   * Parse Row data type in datum and save result to dataBuf.
+   *
+   * @param datum Aws datum which contains the result data
+   * @param dataBuf Application data buffer.
+   * @return Operation result.
+   */
+  ConversionResult::Type ParseRowType(
+      const Datum& datum,
       ApplicationDataBuffer& dataBuf) const;
 
   /** The row that owns this column */

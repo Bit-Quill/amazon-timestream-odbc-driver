@@ -295,3 +295,34 @@ Related function: `SQLSetStmtAttr`
 To support BI tools that may use the SQLPrepare interface in auto-generated queries, the driver
 supports the use of SQLPrepare. However, the use of parameters in queries (values left as ?) is not supported in SQLPrepare, SQLExecute and SQLExecDirect. 
 
+## Timestream Data Types
+Timestream SQL support scalar types int, bigint, boolean, double, varchar, date, time, timestamp, interval_year_month and interval_day_second. Their values could be fetched based using their corresponding SQL data types or as a string/unicode string.
+
+Besides complex data types are also supported. Complex types include Array, Row and Timeseries. These complex types data could only be fetched as a string using our driver. 
+
+### Timeseries format
+Wrapped in "[]". Each item is wrapped in "{}" and separated from each other by ",". 
+
+#### Example
+```
+"[{time: 2019-12-04 19:00:00.000000000, value: 35.2},{time: 2019-12-04 19:01:00.000000000, value: 38.2},{time: 2019-12-04 19:02:00.000000000, value: 45.3}]";
+```
+
+### Array Format
+Wrapped in "[]". Each element is separated by ",".
+
+#### Example
+```
+[1,2,3]
+```
+### Row Format
+Wrapped in "()". Each element is separated by ",".
+
+#### Example
+```
+(1,2,3)
+```
+
+For null it could only be fetched as a string and the result is "-".
+
+Please refer to [Timestream Data Types](https://docs.aws.amazon.com/timestream/latest/developerguide/supported-data-types.html) for more info.

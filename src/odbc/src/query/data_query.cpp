@@ -358,13 +358,6 @@ void DataQuery::ReadColumnMetadataVector(
   }
 
   for (ColumnInfo tsMetadata : tsVector) {
-    // do not support non-scalar type
-    if (!tsMetadata.GetType().ScalarTypeHasBeenSet()) {
-      resultMeta_.clear();
-      LOG_ERROR_MSG(
-          "ReadColumnMetadataVector exiting due to non-scalar type is found");
-      return;
-    }
     resultMeta_.emplace_back(ColumnMeta());
     resultMeta_.back().ReadMetadata(tsMetadata);
   }
