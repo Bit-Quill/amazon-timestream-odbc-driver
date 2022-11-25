@@ -274,3 +274,6 @@ OpenCppCoverage is used to generate code coverage for windows, for more informat
 
 ## Versioning
 1. To set the version of the ODBC driver, update the `src/ODBC_DRIVER_VERSION.txt` file with the appropriate version.
+
+## Data Population for Testing
+[Data Population Guide](data-population-guide.md)

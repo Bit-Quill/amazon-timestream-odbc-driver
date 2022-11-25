@@ -1504,7 +1504,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsNoneForUnsupportedTableType) {
 BOOST_AUTO_TEST_CASE(TestGetSchemasWithSQLTables) {
   // tests special case: get a list of schemas with SQLTables
   // To avoid test failures due to unrelated database changes,
-  // this test checks the first three databases only.
+  // this test checks the specified three databases only.
 
   // TODO [AT-1163] Check all databases after we make sure that
   // there will be no more database changes
@@ -1524,32 +1524,30 @@ BOOST_AUTO_TEST_CASE(TestGetSchemasWithSQLTables) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  // If the test fails due to database name changes, update this vector
-  // to have the names of first three databases under the account in alphabetical order
-  std::vector< std::string > databaseNames = { "data_queries_test_db", "meta_queries_test_db", "sampleDB"};
+  std::map< std::string, bool > databaseMap;
+  databaseMap["data_queries_test_db"] = false;
+  databaseMap["meta_queries_test_db"] = false;
+  databaseMap["sampleDB"] = false;
 
-  for (int j = 0; j < databaseNames.size(); j++) {
+  // check all databases
+  for (;;) {
     ret = SQLFetch(stmt);
 
-    if (!SQL_SUCCEEDED(ret)) {
+    if (ret == SQL_NO_DATA) {
+      break;
+    } else if (!SQL_SUCCEEDED(ret)) {
       BOOST_CHECK(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO);
 
       std::string sqlMessage = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
       if (sqlMessage.empty()) {
         sqlMessage.append("SQLFetch returned: " + std::to_string(ret));
       }
-      // Handle the case of ret equals SQL_NO_DATA
-      if (ret == SQL_NO_DATA) {
-        sqlMessage = "SQL_NO_DATA is returned from SQLFetch. " + sqlMessage;
-      }
-      BOOST_FAIL(sqlMessage);
     }
 
     SQLWCHAR buf[1024];
     SQLLEN bufLen = sizeof(buf);
 
     SQLUSMALLINT columnIndex = 2;
-    std::string expectedValue = databaseNames.at(j);
     for (int i = 1; i <= columnIndex; i++) {
       ret = SQLGetData(stmt, i, SQL_C_WCHAR, buf, sizeof(buf), &bufLen);
 
@@ -1557,13 +1555,17 @@ BOOST_AUTO_TEST_CASE(TestGetSchemasWithSQLTables) {
         BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
       std::string actualValueStr = utility::SqlWcharToString(buf, bufLen);
-      if (i == columnIndex && !expectedValue.empty()) {
-        BOOST_CHECK_EQUAL(expectedValue, actualValueStr);
-      } else {
-        // check that columnIndex 1,3,4 (corresponds to CatalogName, TableName, and TableType)
-        // are empty
-        BOOST_CHECK_EQUAL("", actualValueStr);
+      if (databaseMap.find(actualValueStr) != databaseMap.end()) {
+        databaseMap[actualValueStr] = true;
       }
+    }
+  }
+
+  // check all specified databased be found
+  for (auto &itr : databaseMap) {
+    if (!itr.second) {
+      std::string sqlMessage = "Database " + itr.first + " not found";
+      BOOST_FAIL(sqlMessage);
     }
   }
 }

@@ -299,7 +299,7 @@ SqlResult::Type DataQuery::MakeRequestFetch() {
   SqlResult::Type retval = SqlResult::AI_SUCCESS;
 
   if (result_->GetRows().empty()) {
-    retval = SqlResult::AI_NO_DATA; 
+    retval = SqlResult::AI_NO_DATA;
   } else {
     cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
   }

@@ -988,6 +988,92 @@ BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
   BOOST_CHECK_EQUAL(9, actual_rows);
 }
 
+// This test needs to be refined when Jira
+// https://bitquill.atlassian.net/browse/AT-1145 is done
+// It will be used to test pagination fetching
+/*
+BOOST_AUTO_TEST_CASE(TestSQLFetchPagination, *disabled()) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select time, index, cpu_utilization from "
+      "data_queries_test_db.TestMultiMeasureBigTable order by time");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+
+  // There is no data for pagination after the sql statement is executed
+  BOOST_CHECK_EQUAL(SQL_SUCCESS_WITH_INFO, ret);
+  BOOST_CHECK_NE(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt)
+                     .find("No data is returned in this execution"),
+                 std::string::npos);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLBIGINT fieldLong;
+  SQLLEN fieldLong_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
+                   &fieldLong_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  double fieldDouble = 0;
+  SQLLEN fieldDouble_len = 0;
+  ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
+                   &fieldDouble_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Get 1st page
+  ret = SQLMoreResults(stmt);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  // Get 1st row of current page
+  ret = SQLFetch(stmt);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  // verify result
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 11);
+  BOOST_CHECK_EQUAL(timestamp.day, 9);
+  BOOST_CHECK_EQUAL(timestamp.hour, 23);
+  BOOST_CHECK_EQUAL(timestamp.minute, 51);
+  BOOST_CHECK_EQUAL(timestamp.second, 56);
+  BOOST_CHECK_EQUAL(60.502944999999997, fieldDouble);
+  BOOST_CHECK_EQUAL(1, fieldLong);
+
+  // Get 2nd page
+  ret = SQLMoreResults(stmt);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  // Get 1st row of current page
+  ret = SQLFetch(stmt);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  // verify result
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 11);
+  BOOST_CHECK_EQUAL(timestamp.day, 10);
+  BOOST_CHECK_EQUAL(timestamp.hour, 0);
+  BOOST_CHECK_EQUAL(timestamp.minute, 0);
+  BOOST_CHECK_EQUAL(timestamp.second, 9);
+  BOOST_CHECK_EQUAL(26.380199999999999, fieldDouble);
+  BOOST_CHECK_EQUAL(9591, fieldLong);
+
+  ret = SQLFreeStmt(stmt, SQL_CLOSE);
+
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+}
+*/
+
 BOOST_AUTO_TEST_CASE(TestTwoRowsInt8, *disabled()) {
   CheckTwoRowsInt< signed char >(SQL_C_STINYINT);
 }
