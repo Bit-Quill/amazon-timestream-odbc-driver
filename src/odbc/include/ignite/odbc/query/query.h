@@ -89,8 +89,7 @@ class Query {
    * @param columnBindings Application buffers to put data to.
    * @return Operation result.
    */
-  virtual SqlResult::Type FetchNextRow(
-      app::ColumnBindingMap& columnBindings) = 0;
+  virtual SqlResult::Type FetchNextRow(app::ColumnBindingMap& columnBindings) = 0;
 
   /**
    * Get data of the specified column in the result set.

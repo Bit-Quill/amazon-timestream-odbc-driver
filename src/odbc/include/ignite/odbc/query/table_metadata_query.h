@@ -22,6 +22,8 @@
 #include "ignite/odbc/query/query.h"
 #include "ignite/odbc/statement.h"
 
+#include <regex>
+
 using Aws::TimestreamWrite::Model::ListDatabasesOutcome;
 using Aws::TimestreamWrite::Model::ListTablesOutcome;
 
@@ -36,6 +38,26 @@ namespace query {
  */
 class TableMetadataQuery : public Query {
  public:
+
+  struct ResultColumn {
+    enum Type {
+      /** Catalog name. NULL if not applicable to the data source. */
+      TABLE_CAT = 1,
+
+      /** Schema name. NULL if not applicable to the data source. */
+      TABLE_SCHEM,
+
+      /** Table name. */
+      TABLE_NAME,
+
+      /** Table type. */
+      TABLE_TYPE,
+
+      /** A description of the column. */
+      REMARKS
+    };
+  };
+
   /**
    * Constructor.
    *
@@ -172,27 +194,6 @@ class TableMetadataQuery : public Query {
   SqlResult::Type checkMeta();
 
   /**
-   * Trims leading space from a string.
-   *
-   * @return the string with leading spaces trimmed.
-   */
-  std::string ltrim(const std::string& s);
-
-  /**
-   * Trims trailing space from a string.
-   *
-   * @return the string with trailing spaces trimmed.
-   */
-  std::string rtrim(const std::string& s);
-
-  /**
-   * Trims leading and trailing space from a string.
-   *
-   * @return the string with leading and trailing spaces trimmed.
-   */
-  std::string trim(const std::string& s);
-
-  /**
    * Remove outer matching quotes from a string. They can be either single (')
    * or double (") quotes. They must be the left- and right-most characters in
    * the string.
@@ -239,6 +240,8 @@ class TableMetadataQuery : public Query {
 
   /** Columns metadata. */
   meta::ColumnMetaVector columnsMeta;
+
+  std::regex schema_regex;
 };
 }  // namespace query
 }  // namespace odbc

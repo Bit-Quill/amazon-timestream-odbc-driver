@@ -18,8 +18,9 @@
 #ifndef _IGNITE_ODBC_QUERY_COLUMN_METADATA_QUERY
 #define _IGNITE_ODBC_QUERY_COLUMN_METADATA_QUERY
 
-#include "ignite/odbc/meta/column_meta.h"
 #include "ignite/odbc/query/query.h"
+#include "ignite/odbc/query/data_query.h"
+#include "ignite/odbc/query/table_metadata_query.h"
 
 namespace ignite {
 namespace odbc {
@@ -121,6 +122,17 @@ class ColumnMetadataQuery : public Query {
    */
   SqlResult::Type MakeRequestGetColumnsMeta();
 
+  /**
+   * Make get columns metadata requets and use response to set internal state for a table.
+   *
+   * @param schemaName Schema name
+   * @param tableName Table name
+   * 
+   * @return Operation result.
+   */
+  SqlResult::Type MakeRequestGetColumnsMetaPerTable(
+      const std::string& schemaName, const std::string& tableName);
+
   /** Connection associated with the statement. */
   Connection& connection;
 
@@ -150,6 +162,12 @@ class ColumnMetadataQuery : public Query {
 
   /** Columns metadata. */
   meta::ColumnMetaVector columnsMeta;
+
+  /** DataQuery pointer for "describe" command to run **/
+  std::shared_ptr< DataQuery > dataQuery_;
+
+  /** TableMetadataQuery pointer for fetching table **/
+  std::shared_ptr< TableMetadataQuery > tableMetadataQuery_;
 };
 }  // namespace query
 }  // namespace odbc

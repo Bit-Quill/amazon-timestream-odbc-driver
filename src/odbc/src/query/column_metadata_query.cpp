@@ -31,9 +31,6 @@
 using ignite::odbc::IgniteError;
 using ignite::odbc::common::concurrent::SharedPointer;
 
-// TODO Adapt SQLColumns
-// https://bitquill.atlassian.net/browse/AT-1032
-
 namespace {
 struct ResultColumn {
   enum Type {
@@ -95,7 +92,6 @@ struct ResultColumn {
   };
 };
 }  // namespace
-
 namespace ignite {
 namespace odbc {
 namespace query {
@@ -125,47 +121,44 @@ ColumnMetadataQuery::ColumnMetadataQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  // replace TS_INVALID_TYPE with correct type when implement
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_CAT", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_SCHEM", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TABLE_NAME", ScalarType::VARCHAR,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", ScalarType::VARCHAR,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "DATA_TYPE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DATA_TYPE", ScalarType::INTEGER,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "TYPE_NAME", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TYPE_NAME", ScalarType::VARCHAR,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", ScalarType::INTEGER,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "BUFFER_LENGTH", TS_INVALID_TYPE,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DECIMAL_DIGITS", TS_INVALID_TYPE,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX", TS_INVALID_TYPE,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "NULLABLE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "BUFFER_LENGTH",
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DECIMAL_DIGITS",
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX",
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", ScalarType::INTEGER,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "REMARKS", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_DEF", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_DEF", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE", TS_INVALID_TYPE,
-                                   Nullability::NO_NULL));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE",
+                                   ScalarType::INTEGER, Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATETIME_SUB",
-                                   TS_INVALID_TYPE, Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "CHAR_OCTET_LENGTH",
-                                   TS_INVALID_TYPE, Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "ORDINAL_POSITION",
-                                   TS_INVALID_TYPE, Nullability::NO_NULL));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "IS_NULLABLE", TS_INVALID_TYPE,
+                                   ScalarType::INTEGER, Nullability::NO_NULL));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "IS_NULLABLE", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
+  tableMetadataQuery_ = std::make_shared< TableMetadataQuery >(
+      diag, connection, catalog, schema, table, boost::none);
 }
 
 ColumnMetadataQuery::~ColumnMetadataQuery() {
@@ -173,13 +166,17 @@ ColumnMetadataQuery::~ColumnMetadataQuery() {
 }
 
 SqlResult::Type ColumnMetadataQuery::Execute() {
-  // TODO [AT-1032] remove stub result
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLColumns is not implemented.");
-  return SqlResult::AI_SUCCESS_WITH_INFO;
-
   if (executed)
     Close();
+  
+  // empty schema or table should match nothing
+  if ((schema && schema->empty()) || table.empty()) {
+    std::string warnMsg = "Schema and table name should not be empty.";
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+    LOG_WARNING_MSG(warnMsg);
+
+    return SqlResult::AI_SUCCESS_WITH_INFO;  
+  }
 
   SqlResult::Type result = MakeRequestGetColumnsMeta();
 
@@ -199,11 +196,6 @@ const meta::ColumnMetaVector* ColumnMetadataQuery::GetMeta() {
 
 SqlResult::Type ColumnMetadataQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
-  //TODO [AT-1032] remove default return of SQL_NO_DATA
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLColumns is not implemented.");
-  return SqlResult::AI_NO_DATA;
-
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -382,32 +374,106 @@ SqlResult::Type ColumnMetadataQuery::NextResultSet() {
   return SqlResult::AI_NO_DATA;
 }
 
+
 SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
-  // not implemented
-  /* may be enabled later for reuse
-  for (size_t i = 0; i < meta.size(); ++i) {
-    if (meta[i].GetDataType()) {
-      LOG_MSG("\n[" << i << "] SchemaName:     "
-                    << meta[i].GetSchemaName().get_value_or("") << "\n[" << i
-                    << "] TableName:      "
-                    << meta[i].GetTableName().get_value_or("") << "\n[" << i
-                    << "] ColumnName:     "
-                    << meta[i].GetColumnName().get_value_or("") << "\n[" << i
-                    << "] ColumnType:     "
-                    << static_cast< int32_t >(*meta[i].GetDataType()));
-    } else {
-      LOG_MSG("\n[" << i << "] SchemaName:     "
-                    << meta[i].GetSchemaName().get_value_or("") << "\n[" << i
-                    << "] TableName:      "
-                    << meta[i].GetTableName().get_value_or("") << "\n[" << i
-                    << "] ColumnName:     "
-                    << meta[i].GetColumnName().get_value_or("") << "\n[" << i
-                    << "] ColumnType: not available");
+  // meta should only be cleared here as MakeRequestGetColumnsMetaPerTable() could be called multiple times
+  meta.clear();
+
+  // check if the schema/table has pattern characters in them. If they are
+  // different with their pattern string, that means they could contain "\",
+  // "_" or "%". This logic should be replaced by checking SQL_ATTR_METADATA_ID
+  // value when implement AT-1150.
+  std::string schemaPattern = utility::ConvertPatternToRegex(schema.value());
+  std::string tablePattern = utility::ConvertPatternToRegex(table);  
+  if (schema.value() != schemaPattern || table != tablePattern) {
+    SqlResult::Type result = tableMetadataQuery_->Execute();
+    if (result != SqlResult::AI_SUCCESS) {
+      LOG_WARNING_MSG("Failed to get table metadata for " << (*schema) << "." << table);
+      return SqlResult::AI_NO_DATA;
+    }
+
+    app::ColumnBindingMap columnBindings;
+    SqlLen buflen = STRING_BUFFER_SIZE;
+    // According to Timestream database name could only contain
+    // letters, digits, dashes, periods or underscores. It could 
+    // not be a unicode string.
+    char schemaName[STRING_BUFFER_SIZE]{};
+    ApplicationDataBuffer buf1(
+        ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, schemaName,
+        buflen, nullptr);
+    columnBindings[TableMetadataQuery::ResultColumn::TABLE_SCHEM] = buf1;
+
+    // According to Timestream, table name could only contain
+    // letters, digits, dashes, periods or underscores. It could
+    // not be a unicode string.
+    char tableName[STRING_BUFFER_SIZE]{};
+    ApplicationDataBuffer buf2(
+        ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &tableName,
+        buflen, nullptr);
+    columnBindings[TableMetadataQuery::ResultColumn::TABLE_NAME] = buf2;
+
+    while (tableMetadataQuery_->FetchNextRow(columnBindings)
+           == SqlResult::AI_SUCCESS) {
+      result = MakeRequestGetColumnsMetaPerTable(std::string(schemaName),std::string(tableName));
+      if (result != SqlResult::AI_SUCCESS) {
+        LOG_ERROR_MSG("Failed to get columns for " << schemaName << "." << tableName);
+        break;
+      }
+    }
+    return result;
+  } else {
+    return MakeRequestGetColumnsMetaPerTable(schema.value(), table);
+  }
+}
+
+SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std::string& schemaName, const std::string& tableName) {
+  std::string sql = "describe ";
+  sql += schemaName;
+  sql += ".";
+  sql += tableName;
+
+  app::ParameterSet params;
+  int32_t timeout = 60;
+
+  dataQuery_ =
+      std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
+  SqlResult::Type result = dataQuery_->Execute();
+  if (result != SqlResult::AI_SUCCESS) {
+    LOG_WARNING_MSG("Failed to execute sql:" << sql);
+    return SqlResult::AI_NO_DATA;
+  }
+
+  app::ColumnBindingMap columnBindings;
+  SqlLen buflen = STRING_BUFFER_SIZE;
+  // column name could be a unicode string
+  SQLWCHAR columnName[STRING_BUFFER_SIZE];
+  ApplicationDataBuffer buf1(
+      ignite::odbc::type_traits::OdbcNativeType::Type::AI_WCHAR, columnName, buflen,
+      nullptr);
+  columnBindings[1] = buf1;
+
+  char dataType[64];
+  ApplicationDataBuffer buf2(
+      ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &dataType,
+      buflen, nullptr);
+  columnBindings[2] = buf2;
+
+  char remarks[64];
+  ApplicationDataBuffer buf3(
+      ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &remarks,
+      buflen, nullptr);
+  columnBindings[3] = buf3;
+
+  int32_t prevPosition = 0;
+  while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
+    if (column.empty() || column == "%"
+            || column == utility::SqlWcharToString(columnName,STRING_BUFFER_SIZE)) {
+      meta.emplace_back(ignite::odbc::meta::ColumnMeta(schemaName, tableName));
+      meta.back().Read(columnBindings, ++prevPosition);
     }
   }
-  */
 
-  return SqlResult::AI_ERROR;
+  return result;
 }
 }  // namespace query
 }  // namespace odbc

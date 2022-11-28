@@ -153,13 +153,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   Statement* CreateStatement();
 
   /**
-   * Get name of the assotiated schema.
-   *
-   * @return Schema name.
-   */
-  const std::string& GetSchema() const;
-
-  /**
    * Get configuration.
    *
    * @return Connection configuration.

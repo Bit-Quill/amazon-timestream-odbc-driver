@@ -18,6 +18,8 @@
 #include "ignite/odbc/meta/table_meta.h"
 #include "ignite/odbc/log.h"
 
+#include <regex>
+
 namespace ignite {
 namespace odbc {
 namespace meta {
@@ -46,6 +48,8 @@ void TableMeta::Read(std::string& tbType) {
 void ReadTableMetaVector(const std::string& tableName,
                          const Aws::Vector< Table >& tbVector,
                          TableMetaVector& meta) {
+  std::regex tablePattern(utility::ConvertPatternToRegex(tableName));
+
   // Parse through Table vector
   for (Table tb : tbVector) {
     std::string curTableName = tb.GetTableName();
@@ -53,13 +57,12 @@ void ReadTableMetaVector(const std::string& tableName,
     // TODO [AT-1154] Make server handle search patterns
     // and remove the code for search pattern here
     // https://bitquill.atlassian.net/browse/AT-1154
-
-    if (tableName.empty() || tableName == "%" || tableName == curTableName) {
+    if (tableName.empty() || std::regex_match(curTableName, tablePattern)) {
       meta.emplace_back(TableMeta());
       meta.back().Read(tb);
     } else {
       LOG_DEBUG_MSG("current table name ("
-                    << curTableName << ") does not equal provided table name ("
+                    << curTableName << ") does not match the provided table name ("
                     << tableName
                     << "), so it will not be included in the resultset.");
     }

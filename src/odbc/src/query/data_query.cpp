@@ -144,6 +144,14 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     LOG_INFO_MSG("FetchNextRow exiting with AI_NO_DATA");
     LOG_DEBUG_MSG("reason: cursor does not have data");
 
+    // Currently when cursor reaches the end of a page, we
+    // start to fetch next page data. This is a low efficient way.
+    // It needs to be changed by AT-1145
+    SqlResult::Type res = FetchOnePage(false);
+    if (res != SqlResult::AI_SUCCESS) {
+      return res;
+    }
+
     return SqlResult::AI_NO_DATA;
   }
 
@@ -152,6 +160,14 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     LOG_DEBUG_MSG(
         "reason: cursor cannot be moved to the next row; either data update is "
         "required or there is no more data");
+
+    // Currently when cursor reaches the end of a page, we
+    // start to fetch next page data. This is a low efficient way.
+    // It needs to be changed by AT-1145
+    SqlResult::Type res = FetchOnePage(false);
+    if (res != SqlResult::AI_SUCCESS) {
+      return res;
+    }
 
     return SqlResult::AI_NO_DATA;
   }

@@ -247,6 +247,38 @@ IGNITE_IMPORT_EXPORT std::vector< SQLWCHAR > ToWCHARVector(const char* value);
  * @return standard string containing the formated hex dump
  */
 IGNITE_IMPORT_EXPORT std::string HexDump(const void* data, size_t count);
+
+/**
+ * Trims leading space from a string.
+ * @param s string to be trimmed
+ *
+ * @return the string with leading spaces trimmed.
+ */
+IGNITE_IMPORT_EXPORT std::string Ltrim(const std::string& s);
+
+/**
+ * Trims trailing space from a string.
+ * @param s string to be trimmed
+ * 
+ * @return the string with trailing spaces trimmed.
+ */
+IGNITE_IMPORT_EXPORT std::string Rtrim(const std::string& s);
+
+/**
+ * Trims leading and trailing space from a string.
+ * @param s string to be trimmed
+ *
+ * @return the string with leading and trailing spaces trimmed.
+ */
+IGNITE_IMPORT_EXPORT std::string Trim(const std::string& s);
+
+/**
+ * Converts a string with search patterns to regular expression string.
+ * @param s string to be converted
+ *
+ * @return the converted regular expression string.
+ */
+IGNITE_IMPORT_EXPORT std::string ConvertPatternToRegex(const std::string& pattern);
 }  // namespace utility
 }  // namespace odbc
 }  // namespace ignite

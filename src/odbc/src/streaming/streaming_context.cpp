@@ -93,7 +93,7 @@ SqlResult::Type StreamingContext::Flush(bool last) {
 SqlResult::Type StreamingContext::MakeRequestStreamingBatch(bool last) {
   assert(connection != 0);
 
-  const std::string& schema = connection->GetSchema();
+  const std::string schema("");
 
   StreamingBatchRequest req(schema, currentBatch, last, order);
   StreamingBatchResponse rsp;

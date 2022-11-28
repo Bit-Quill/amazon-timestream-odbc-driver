@@ -33,6 +33,7 @@
 #include "ignite/odbc/protocol_version.h"
 #include "ignite/odbc/utility.h"
 #include "ignite/odbc/ts_error.h"
+#include "ignite/odbc/app/application_data_buffer.h"
 
 #include <aws/core/utils/memory/stl/AWSVector.h>
 #include <aws/timestream-query/model/ColumnInfo.h>
@@ -90,6 +91,27 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
         isAutoIncrement("NO"),
         precision(-1),
         scale(-1),
+        ordinalPosition(-1) {
+    // No-op.
+  }
+
+  /**
+   * Constructor.
+   *
+   * @param schemaName Schema name.
+   * @param tableName Table name.
+   */
+  ColumnMeta(const std::string& schemaName, const std::string& tableName)
+      : schemaName(schemaName),
+        tableName(tableName),
+        columnName(""),
+        dataType(static_cast< int16_t >(
+            ScalarType::NOT_SET)),
+        isAutoIncrement("NO"),
+        precision(-1),
+        decimalDigits(-1),
+        scale(-1),
+        nullability(Nullability::NULLABILITY_UNKNOWN),
         ordinalPosition(-1) {
     // No-op.
   }
@@ -196,19 +218,17 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
 
   /**
    * Read using reader.
-   * @param resultSet SharedPointer< ResultSet >.
-   * @param prevPosition the ordinal position of the previous column.
-   * @paran errInfo TSErrorInfo.
+   * @param columnBindings the map containing the data to be read.
+   * @param position the ordinal position of the column.
    */
-  void Read(SharedPointer< ResultSet >& resultSet, int32_t& prevPosition,
-            TSErrorInfo& errInfo);
+  void Read(ignite::odbc::app::ColumnBindingMap& columnBindings, int32_t position);
+
   /**
    * Read using reader.
    * @param tsVector Vector containing metadata for one row.
    */
   void ReadMetadata(const ColumnInfo& tsVector);
 
-  
   /**
    * Get Aws ColumnInfo.
    * @return Aws ColumnInfo.
@@ -353,6 +373,13 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
   bool GetAttribute(uint16_t fieldId, SqlLen& value) const;
 
  private:
+  /**
+   * Get the scalar type based on string data type.
+   *
+   * @param dataType data type in string.
+   * @return Aws TimestreamQuery ScalarType
+   */
+  ScalarType GetScalarDataType(const std::string& dataType);
 
   /** Aws columnInfo. */
   boost::optional<Aws::TimestreamQuery::Model::ColumnInfo> columnInfo;
@@ -400,15 +427,6 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
 
 /** Column metadata vector alias. */
 typedef std::vector< ColumnMeta > ColumnMetaVector;
-
-/**
- * Read columns metadata collection.
- * @param resultSet SharedPointer< ResultSet >.
- * @param meta Collection.
- */
-void ReadColumnMetaVector(SharedPointer< ResultSet >& resultSet,
-                          ColumnMetaVector& meta);
-
 }  // namespace meta
 }  // namespace odbc
 }  // namespace ignite

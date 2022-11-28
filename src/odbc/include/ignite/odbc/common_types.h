@@ -24,6 +24,9 @@
 
 namespace ignite {
 namespace odbc {
+
+#define STRING_BUFFER_SIZE 2048
+
 typedef SQLLEN SqlLen;
 typedef SQLULEN SqlUlen;
 

@@ -690,11 +690,6 @@ SqlResult::Type Statement::InternalExecuteGetColumnsMetaQuery(
   if (currentQuery.get())
     currentQuery->Close();
 
-  std::string schema0(schema.get_value_or(""));
-
-  if (schema0.empty())
-    schema0 = connection.GetSchema();
-
   currentQuery.reset(new query::ColumnMetadataQuery(*this, connection, catalog,
                                                     schema, table, column));
 
@@ -1228,7 +1223,7 @@ SqlResult::Type Statement::UpdateParamsMeta() {
 
   query::DataQuery* qry = static_cast< query::DataQuery* >(qry0);
 
-  const std::string& schema = connection.GetSchema();
+  const std::string schema("");
   const std::string& sql = qry->GetSql();
 
   QueryGetParamsMetaRequest req(schema, sql);

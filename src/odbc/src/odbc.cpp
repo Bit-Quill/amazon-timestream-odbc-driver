@@ -680,8 +680,6 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
 
 /** If NULL tableName is passed, it will automatically be converted to "%".
  * If NULL columnName is passed, it will automatically be converted to "%". */
-// TODO Adapt SQLColumns
-// https://bitquill.atlassian.net/browse/AT-1032
 SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                      SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                      SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -703,7 +701,7 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
   boost::optional< std::string > catalog =
       SqlWcharToOptString(catalogName, catalogNameLen);
   boost::optional< std::string > schema =
-      SqlWcharToOptString(schemaName, schemaNameLen);
+      SqlWcharToOptString(schemaName, schemaNameLen).get_value_or("%");
   std::string table =
       SqlWcharToOptString(tableName, tableNameLen).get_value_or("%");
   std::string column =

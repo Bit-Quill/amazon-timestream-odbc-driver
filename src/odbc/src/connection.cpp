@@ -278,10 +278,6 @@ SqlResult::Type Connection::InternalCreateStatement(Statement*& statement) {
   return SqlResult::AI_SUCCESS;
 }
 
-const std::string& Connection::GetSchema() const {
-  return "";
-}
-
 const config::Configuration& Connection::GetConfiguration() const {
   return config_;
 }

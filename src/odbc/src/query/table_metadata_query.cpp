@@ -23,7 +23,6 @@
 #include <aws/timestream-write/TimestreamWriteClient.h>
 #include <aws/timestream-query/model/ScalarType.h>
 
-#include <regex>
 #include <vector>
 
 #include "ignite/odbc/common/concurrent.h"
@@ -47,28 +46,6 @@ using Aws::TimestreamWrite::Model::ListDatabasesResult;
 // update the logic to treat the schemaName/tableName as
 // significant/non-significant cases
 // https://bitquill.atlassian.net/browse/AT-1152
-
-namespace {
-struct ResultColumn {
-  enum Type {
-    /** Catalog name. NULL if not applicable to the data source. */
-    TABLE_CAT = 1,
-
-    /** Schema name. NULL if not applicable to the data source. */
-    TABLE_SCHEM,
-
-    /** Table name. */
-    TABLE_NAME,
-
-    /** Table type. */
-    TABLE_TYPE,
-
-    /** A description of the column. */
-    REMARKS
-  };
-};
-}  // namespace
-
 namespace ignite {
 namespace odbc {
 namespace query {
@@ -198,6 +175,10 @@ TableMetadataQuery::TableMetadataQuery(
         sch, tbl, "TABLE_TYPE", ScalarType::VARCHAR, Nullability::NO_NULL));
     columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
+  }
+
+  if (schema && !schema->empty()) {
+    schema_regex = utility::ConvertPatternToRegex(schema.value());
   }
 }
 
@@ -375,7 +356,7 @@ SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
       std::stringstream ss(*tableType);
       std::string singleTableType;
       while (std::getline(ss, singleTableType, ',')) {
-        if (dequote(trim(singleTableType)) == "TABLE") {
+        if (dequote(utility::Trim(singleTableType)) == "TABLE") {
           validTableType = true;
           break;
         }
@@ -392,6 +373,11 @@ SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
+  } else if ((schema && schema->empty()) || table.empty()) {
+    // empty schema or empty table should match nothing
+    std::string warnMsg = "Schema and table name should not be empty";
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+    return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
   // The default case: Get tables and update meta
@@ -465,7 +451,7 @@ SqlResult::Type TableMetadataQuery::getTables() {
 
       // If database name does not equal schema, then do not include the
       // database in the result set
-      if (schema && *schema != SQL_ALL_SCHEMAS && databaseName != *schema) {
+      if (schema && *schema != SQL_ALL_SCHEMAS && !std::regex_match(databaseName, schema_regex)) {
         LOG_DEBUG_MSG(
             "database ("
             << databaseName << ") does not equal schema (" << *schema
@@ -578,18 +564,6 @@ SqlResult::Type TableMetadataQuery::checkMeta() {
   }
 
   return SqlResult::AI_SUCCESS;
-}
-
-std::string TableMetadataQuery::ltrim(const std::string& s) {
-  return std::regex_replace(s, std::regex("^\\s+"), std::string(""));
-}
-
-std::string TableMetadataQuery::rtrim(const std::string& s) {
-  return std::regex_replace(s, std::regex("\\s+$"), std::string(""));
-}
-
-std::string TableMetadataQuery::trim(const std::string& s) {
-  return ltrim(rtrim(s));
 }
 
 std::string TableMetadataQuery::dequote(const std::string& s) {

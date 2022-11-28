@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <codecvt>
+#include <regex>
 
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/log.h"
@@ -106,8 +107,8 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
   // translate characters:
   const char* inBufferEnd = (inBuffer + inBufferLen);
   std::codecvt_base::result result =
-      convFacet.in(convState, inBuffer, inBufferEnd, pInBufferNext,
-                   pOutBuffer, pOutBuffer + outBufferLenChars, pOutBufferNext);
+      convFacet.in(convState, inBuffer, inBufferEnd, pInBufferNext, pOutBuffer,
+                   pOutBuffer + outBufferLenChars, pOutBufferNext);
 
   size_t lenConverted = 0;
   switch (result) {
@@ -266,7 +267,7 @@ void WriteDecimal(BinaryWriterImpl& writer, const Decimal& decimal) {
 }
 
 std::string SqlWcharToString(const SQLWCHAR* sqlStr, int32_t sqlStrLen,
-                              bool isLenInBytes) {
+                             bool isLenInBytes) {
   if (!sqlStr)
     return std::string();
 
@@ -292,8 +293,8 @@ std::string SqlWcharToString(const SQLWCHAR* sqlStr, int32_t sqlStrLen,
 }
 
 boost::optional< std::string > SqlWcharToOptString(const SQLWCHAR* sqlStr,
-                                                    int32_t sqlStrLen,
-                                                    bool isLenInBytes) {
+                                                   int32_t sqlStrLen,
+                                                   bool isLenInBytes) {
   if (!sqlStr)
     return boost::none;
 
@@ -376,6 +377,65 @@ std::string HexDump(const void* data, size_t count) {
   }
   return dump.str();
 }
+
+std::string Ltrim(const std::string& s) {
+  return std::regex_replace(s, std::regex("^\\s+"), std::string(""));
+}
+
+std::string Rtrim(const std::string& s) {
+  return std::regex_replace(s, std::regex("\\s+$"), std::string(""));
+}
+
+std::string Trim(const std::string& s) {
+  return Ltrim(Rtrim(s));
+}
+
+int UpdateRegexExpression(int index, int start, const std::string& pattern,
+                          const std::string& str, std::string& converted) {
+  if (index - start > 0) {
+    converted.append(pattern.substr(start, index - start));
+  }
+  converted.append(str);
+  return index + 1;
+}
+
+std::string ConvertPatternToRegex(const std::string& pattern) {
+  std::string converted("");
+  if (pattern.empty() || Trim(pattern).empty()) {
+    return converted;
+  }
+
+  bool escapeFound = false;
+  int start = 0;
+  for (int index = 0; index < pattern.length(); index++) {
+    char currChar = pattern[index];
+    if (currChar == '\\') {
+      if (escapeFound) {
+        // I.e., \\ - two backslash
+        start =
+            UpdateRegexExpression(index - 1, start, pattern, "[\\]", converted)
+            + 1;
+      }
+      escapeFound = !escapeFound;
+    } else if (escapeFound) {
+      start =
+          UpdateRegexExpression(index - 1, start, pattern,
+                                "[" + std::string(1, currChar) + "]", converted)
+          + 1;
+      escapeFound = false;
+    } else if (currChar == '_') {
+      start = UpdateRegexExpression(index, start, pattern, ".", converted);
+    } else if (currChar == '%') {
+      start = UpdateRegexExpression(index, start, pattern, ".*", converted);
+    }
+  }
+  // Handle the trailing std::string.
+  if (pattern.length() - start > 0) {
+    converted.append(pattern.substr(start));
+  }
+  return converted;
+}
+
 }  // namespace utility
 }  // namespace odbc
 }  // namespace ignite

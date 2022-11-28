@@ -111,26 +111,62 @@ const std::string NULLABLE = "NULLABLE";
 const std::string ORDINAL_POSITION = "ORDINAL_POSITION";
 const std::string IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
 
-void ColumnMeta::Read(SharedPointer< ResultSet >& resultSet,
-                      int32_t& prevPosition, TSErrorInfo& errInfo) {
-  // TODO [AT-1032] remove this function after SQLColumns is adapted
-  // https://bitquill.atlassian.net/browse/AT-1032
-  resultSet.Get()->GetString(TABLE_CAT, catalogName, errInfo);
-  resultSet.Get()->GetString(TABLE_SCHEM, schemaName, errInfo);
-  resultSet.Get()->GetString(TABLE_NAME, tableName, errInfo);
-  resultSet.Get()->GetString(COLUMN_NAME, columnName, errInfo);
-  resultSet.Get()->GetSmallInt(DATA_TYPE, dataType, errInfo);
-  resultSet.Get()->GetInt(DECIMAL_DIGITS, decimalDigits, errInfo);
-  resultSet.Get()->GetString(REMARKS, remarks, errInfo);
-  resultSet.Get()->GetString(COLUMN_DEF, columnDef, errInfo);
-  resultSet.Get()->GetInt(NULLABLE, nullability, errInfo);
-  resultSet.Get()->GetInt(ORDINAL_POSITION, ordinalPosition, errInfo);
-  if (!ordinalPosition) {
-    ordinalPosition = ++prevPosition;
+Aws::TimestreamQuery::Model::ScalarType ColumnMeta::GetScalarDataType(
+    const std::string& dataType) {
+  if (dataType == "varchar") {
+    return Aws::TimestreamQuery::Model::ScalarType::VARCHAR;
+  } else if (dataType == "bigint") {
+    return Aws::TimestreamQuery::Model::ScalarType::BIGINT;
+  } else if (dataType == "double") {
+    return Aws::TimestreamQuery::Model::ScalarType::DOUBLE;
+  } else if (dataType == "boolean") {
+    return Aws::TimestreamQuery::Model::ScalarType::BOOLEAN;
+  } else if (dataType == "timestamp") {
+    return Aws::TimestreamQuery::Model::ScalarType::TIMESTAMP;
+  } else if (dataType == "date") {
+    return Aws::TimestreamQuery::Model::ScalarType::DATE;
+  } else if (dataType == "time") {
+    return Aws::TimestreamQuery::Model::ScalarType::TIME;
+  } else if (dataType == "integer") {
+    return Aws::TimestreamQuery::Model::ScalarType::INTEGER;
+  } else if (dataType == "interval day to second") {
+    return Aws::TimestreamQuery::Model::ScalarType::INTERVAL_DAY_TO_SECOND;
+  } else if (dataType == "interval year to month") {
+    return Aws::TimestreamQuery::Model::ScalarType::INTERVAL_YEAR_TO_MONTH;
   } else {
-    prevPosition = *ordinalPosition;
+    return Aws::TimestreamQuery::Model::ScalarType::UNKNOWN;
   }
-  // resultSet.Get()->GetString(IS_AUTOINCREMENT, isAutoIncrement, errInfo);
+}
+
+void ColumnMeta::Read(app::ColumnBindingMap& columnBindings, int32_t position) {
+  auto itr = columnBindings.find(1);
+  if (itr == columnBindings.end()) {
+    LOG_ERROR_MSG("Could not find the first column");
+    return;
+  }
+  columnName = itr->second.GetString(STRING_BUFFER_SIZE);
+
+  itr = columnBindings.find(2);
+  if (itr == columnBindings.end()) {
+    LOG_ERROR_MSG("Could not find the second column");
+    return;
+  }
+
+  dataType = static_cast<int16_t>(GetScalarDataType(itr->second.GetString(STRING_BUFFER_SIZE)));
+
+  itr = columnBindings.find(3);
+  if (itr == columnBindings.end()) {
+    LOG_ERROR_MSG("Could not find the third column");
+    return;
+  }
+  remarks = itr->second.GetString(STRING_BUFFER_SIZE);
+  if (remarks.value() == "MEASURE_VALUE" || remarks.value() == "MULTI") {
+    // These are measure values which could be nullable.
+    nullability = Nullability::NULLABLE;
+  } else {
+    nullability = Nullability::NO_NULL;
+  }
+  ordinalPosition = position;
 }
 
 void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
@@ -380,30 +416,6 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
 
   return true;
 }
-
-void ReadColumnMetaVector(SharedPointer< ResultSet >& resultSet,
-                          ColumnMetaVector& meta) {
-  meta.clear();
-
-  if (!resultSet.IsValid()) {
-    return;
-  }
-
-  TSErrorInfo errInfo;
-  bool hasNext = false;
-  int32_t prevPosition = 0;
-  TSErrorCode errCode;
-  do {
-    errCode = resultSet.Get()->Next(hasNext, errInfo);
-    if (!hasNext || errCode != TSErrorCode::TS_ERR_SUCCESS) {
-      break;
-    }
-
-    meta.emplace_back(ColumnMeta());
-    meta.back().Read(resultSet, prevPosition, errInfo);
-  } while (hasNext);
-}
-
 }  // namespace meta
 }  // namespace odbc
 }  // namespace ignite
