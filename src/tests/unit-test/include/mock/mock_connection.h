@@ -19,6 +19,7 @@
 #define _IGNITE_ODBC_MOCK_CONNECTION
 
 #include "ignite/odbc/connection.h"
+#include "mock/mock_statement.h"
 
 namespace ignite {
 namespace odbc {
@@ -37,6 +38,8 @@ class MockConnection : public Connection {
    */
   ~MockConnection();
 
+  MockStatement* CreateStatement();
+
  private:
   /**
    * Create statement associated with the connection.
@@ -45,7 +48,7 @@ class MockConnection : public Connection {
    * @param statement Pointer to valid instance on success or NULL on failure.
    * @return Operation result.
    */
-  virtual SqlResult::Type InternalCreateStatement(Statement*& statement);
+  virtual SqlResult::Type InternalCreateStatement(MockStatement*& statement);
 
   /**
    * Create MockTimestreamQueryClient object.

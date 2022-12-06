@@ -19,10 +19,11 @@
 
 namespace ignite {
 namespace odbc {
-TimestreamCursor::TimestreamCursor(const Aws::Vector< Row >& rowVec,
+TimestreamCursor::TimestreamCursor(const Aws::Vector< Row > rowVec,
                                    const meta::ColumnMetaVector& columnMetadataVec)
-    : iterator_(rowVec.begin()),
-      iteratorEnd_(rowVec.end()),
+    : rowVec_(rowVec), 
+      iterator_(rowVec_.begin()),
+      iteratorEnd_(rowVec_.end()),
       columnMetadataVec_(columnMetadataVec) {
   // No-op.
 }

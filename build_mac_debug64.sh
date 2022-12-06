@@ -1,6 +1,6 @@
 #build AWS SDK static library
 cd src
-git clone --recurse-submodules -b "1.9.79" "https://github.com/aws/aws-sdk-cpp.git"
+git clone --recurse-submodules -b "1.9.220" "https://github.com/aws/aws-sdk-cpp.git"
 cd aws-sdk-cpp
 mkdir install
 mkdir build

@@ -88,6 +88,8 @@ const std::string Configuration::DefaultValue::aadTenant = DEFAULT_AAD_TENANT;
 // Logging Configuration Options
 const LogLevel::Type Configuration::DefaultValue::logLevel = DEFAULT_LOG_LEVEL;
 const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
+const int32_t Configuration::DefaultValue::maxRowPerPage =
+    DEFAULT_MAX_ROW_PER_PAGE;
 
 // mirrored from src/odbc/src/log.cpp
 std::shared_ptr< Logger > Logger::logger_;
@@ -101,25 +103,12 @@ const std::string type_traits::SqlTypeName::WVARCHAR("WVARCHAR");
  */
 struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
   ConnectionUnitTestSuiteFixture() : OdbcUnitTestSuite() {
-    dbc = static_cast<MockConnection*>(env->CreateConnection());
-
-    // MockTimestreamService is singleton
-    MockTimestreamService::CreateMockTimestreamService();
-
-    // setup credentials in MockTimestreamService
-    MockTimestreamService::GetInstance()->AddCredential("AwsTSUnitTestKeyId",
-                                                        "AwsTSUnitTestSecretKey");
   }
 
   /**
    * Destructor.
    */
   ~ConnectionUnitTestSuiteFixture() {
-    // clear the credentials for this test
-    MockTimestreamService::GetInstance()->RemoveCredential("AwsTSUnitTestKeyId");
-
-    // destory the singleton to avoid memory leak
-    MockTimestreamService::DestoryMockTimestreamService();
   }
 
   void getLogOptions(Configuration& config) const {

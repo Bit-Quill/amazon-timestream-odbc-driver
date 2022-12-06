@@ -456,6 +456,13 @@ struct OdbcTestSuite {
       const std::string& miscOptions = std::string()) const;
 
   /**
+   * Add maxRowPerPage to the DSN connection string for AWS.
+   * @param connectionString Connection string.
+   * @param value The maxRowPerPage value.
+   */
+  void AddMaxRowPerPage(std::string& connectionString, const std::string& value);
+
+  /**
    * Creates the standard DSN connection string for AWS.
    */
   void CreateDsnConnectionStringForAWS(

@@ -45,7 +45,7 @@ class TimestreamCursor {
    * @param rowVec Aws Row vector.
    * @param columnMetadataVec Column metadata vector.
    */
-  TimestreamCursor(const Aws::Vector< Row >& rowVec,
+  TimestreamCursor(const Aws::Vector< Row > rowVec,
                    const meta::ColumnMetaVector& columnMetadataVec);
 
   /**
@@ -77,6 +77,9 @@ class TimestreamCursor {
 
  private:
   IGNITE_NO_COPY_ASSIGNMENT(TimestreamCursor);
+
+  /** Resultset rows */
+  const Aws::Vector< Row > rowVec_;
 
   /** The iterator to beginning of cursor */
   Aws::Vector< Row >::const_iterator iterator_;

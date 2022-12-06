@@ -78,6 +78,8 @@ const std::string Configuration::DefaultValue::aadTenant = DEFAULT_AAD_TENANT;
 // Logging Configuration Options
 const LogLevel::Type Configuration::DefaultValue::logLevel = DEFAULT_LOG_LEVEL;
 const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
+const int32_t Configuration::DefaultValue::maxRowPerPage =
+    DEFAULT_MAX_ROW_PER_PAGE;
 
 std::string Configuration::ToConnectString() const {
   ArgumentMap arguments;
@@ -459,6 +461,18 @@ bool Configuration::IsSessionTokenSet() const {
   return sessionToken.IsSet();
 }
 
+int32_t Configuration::GetMaxRowPerPage() const {
+  return maxRowPerPage.GetValue();
+}
+
+void Configuration::SetMaxRowPerPage(int32_t value) {
+  this->maxRowPerPage.SetValue(value);
+}
+
+bool Configuration::IsMaxRowPerPageSet() const {
+  return maxRowPerPage.IsSet();
+}
+
 void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::dsn, dsn);
   AddToMap(res, ConnectionStringParser::Key::driver, driver);
@@ -487,6 +501,7 @@ void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::aadTenant, aadTenant);
   AddToMap(res, ConnectionStringParser::Key::logLevel, logLevel);
   AddToMap(res, ConnectionStringParser::Key::logPath, logPath);
+  AddToMap(res, ConnectionStringParser::Key::maxRowPerPage, maxRowPerPage);
 }
 
 void Configuration::Validate() const {

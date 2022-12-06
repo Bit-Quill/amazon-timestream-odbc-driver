@@ -21,10 +21,15 @@
 #include "ignite/odbc/timestream_cursor.h"
 #include "ignite/odbc/app/parameter_set.h"
 #include "ignite/odbc/query/query.h"
+#include "ignite/odbc/connection.h"
 
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
 #include <aws/timestream-query/model/ColumnInfo.h>
+
+#include <queue>
+#include <mutex>
+#include <condition_variable> 
 
 using Aws::TimestreamQuery::Model::ColumnInfo;
 using Aws::TimestreamQuery::Model::QueryRequest;
@@ -36,6 +41,29 @@ namespace odbc {
 class Connection;
 
 namespace query {
+/**
+ * Context for asynchronous fetching data query result.
+ */
+class IGNITE_IMPORT_EXPORT DataQueryContext  {
+ public: 
+  DataQueryContext() : isClosing_(false) {
+  }
+
+  ~DataQueryContext() = default;
+
+  /** mutex */
+  std::mutex mutex_;
+
+  /** condition variable to synchronize threads */
+  std::condition_variable cv_;
+
+  /** queue to save query execution outcome objects. */
+  std::queue< Aws::TimestreamQuery::Model::QueryOutcome > queue_;
+
+  /** Flag to indicate if the main thread is exiting or not. */
+  bool isClosing_;
+};
+
 /**
  * Query.
  */
@@ -200,6 +228,23 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
    */
   SqlResult::Type InternalClose();
 
+  /**
+   * Switch cursor to hold next resultset page data.
+   *
+   * @return Result.
+   */
+  SqlResult::Type SwitchCursor();
+
+  /**
+   * Record the thread so they could be waited before the main thread ends.
+   * @param thread Thread to be saved.
+   *
+   * @return void.
+   */
+  void addThreads(std::thread& thread) {
+    threads_.push_back(std::move(thread));
+  }
+
   /** Connection associated with the statement. */
   Connection& connection_;
 
@@ -226,6 +271,18 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
 
   /** Timeout. */
   int32_t& timeout_;
+
+  /** Timestream query client. */
+  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > queryClient_;
+
+  /** Context for asynchornous result fetching. */
+  DataQueryContext context_;
+
+  /** Vector for threads. */
+  std::vector< std::thread > threads_;
+
+  /** Flag indicating asynchronous fetch is started. */
+  bool hasAsyncFetch;
 };
 }  // namespace query
 }  // namespace odbc

@@ -58,6 +58,7 @@
 #define DEFAULT_ACCESS_CLIENT_SECRET ""
 #define DEFAULT_AAD_TENANT ""
 #define DEFAULT_LOG_LEVEL LogLevel::Type::WARNING_LEVEL
+#define DEFAULT_MAX_ROW_PER_PAGE -1
 
 namespace ignite {
 namespace odbc {
@@ -149,6 +150,9 @@ class IGNITE_IMPORT_EXPORT Configuration {
 
     /** Default value for logPath attribute. */
     static const std::string logPath;
+
+    /** Default value for maxRowPerPage attribute */
+    static const int32_t maxRowPerPage;
   };
 
   /**
@@ -721,6 +725,27 @@ class IGNITE_IMPORT_EXPORT Configuration {
   bool IsLogPathSet() const;
 
   /**
+   * Get maxRowPerPage.
+   *
+   * @return value MaxRowPerPage.
+   */
+  int32_t GetMaxRowPerPage() const;
+
+  /**
+   * Set maxRowPerPage to save.
+   *
+   * @param value MaxRowPerPage.
+   */
+  void SetMaxRowPerPage(int32_t value);
+
+  /**
+   * Check if the value set.
+   *
+   * @return @true if MaxRowPerPage set.
+   */
+  bool IsMaxRowPerPageSet() const;
+
+  /**
    * Get argument map.
    *
    * @param res Resulting argument map.
@@ -833,6 +858,9 @@ class IGNITE_IMPORT_EXPORT Configuration {
 
   /** The logging file path. */
   SettableValue< std::string > logPath = DefaultValue::logPath;
+
+  /** The max row number in one page returned from TS */
+  SettableValue< int32_t > maxRowPerPage = DefaultValue::maxRowPerPage;
 };
 
 template <>

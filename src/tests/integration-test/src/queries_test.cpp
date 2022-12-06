@@ -26,6 +26,7 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "complex_type.h"
 #include "ignite/odbc/binary/binary_object.h"
@@ -988,55 +989,40 @@ BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
   BOOST_CHECK_EQUAL(9, actual_rows);
 }
 
-// This test needs to be refined when Jira
-// https://bitquill.atlassian.net/browse/AT-1145 is done
-// It will be used to test pagination fetching
-/*
-BOOST_AUTO_TEST_CASE(TestSQLFetchPagination, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
+  // This test verifies big table resultset could be paginated
+  // and the returned data is correct
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
   SQLRETURN ret;
+  // data_queries_test_db.TestMultiMeasureBigTable is a big table which has
+  // 20,000 records and the resultset will be paginated by default
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
       "select time, index, cpu_utilization from "
       "data_queries_test_db.TestMultiMeasureBigTable order by time");
-
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-
-  // There is no data for pagination after the sql statement is executed
-  BOOST_CHECK_EQUAL(SQL_SUCCESS_WITH_INFO, ret);
-  BOOST_CHECK_NE(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt)
-                     .find("No data is returned in this execution"),
-                 std::string::npos);
-
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
   SQL_TIMESTAMP_STRUCT timestamp;
   SQLLEN timestamp_len = 0;
   ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
                    &timestamp_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
   SQLBIGINT fieldLong;
   SQLLEN fieldLong_len = 0;
   ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
                    &fieldLong_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
   double fieldDouble = 0;
   SQLLEN fieldDouble_len = 0;
   ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
                    &fieldDouble_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  // Get 1st page
-  ret = SQLMoreResults(stmt);
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
   // Get 1st row of current page
   ret = SQLFetch(stmt);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
   // verify result
   BOOST_CHECK_EQUAL(timestamp.year, 2022);
   BOOST_CHECK_EQUAL(timestamp.month, 11);
@@ -1046,13 +1032,84 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPagination, *disabled()) {
   BOOST_CHECK_EQUAL(timestamp.second, 56);
   BOOST_CHECK_EQUAL(60.502944999999997, fieldDouble);
   BOOST_CHECK_EQUAL(1, fieldLong);
+}
 
-  // Get 2nd page
-  ret = SQLMoreResults(stmt);
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
+  // No result is fetched afer query execution. This test verifies
+  // the internal asynchronous thread could be terminated when testcase 
+  // ends.
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select time, index, cpu_utilization from "
+      "data_queries_test_db.TestMultiMeasureBigTable order by time");
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+}
 
-  // Get 1st row of current page
+BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination1000Rows) {
+  // Fetch 1000 rows and verify the resultset is correct for 1001st record.
+  // Each page contains only one row. There will be 1000 internal asynchronous
+  // threads created to fetch 1000 pages.
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select time, index, cpu_utilization from "
+      "data_queries_test_db.TestMultiMeasureBigTable order by time");
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  int count = 0;
+
+  // These time_points could be reopened in case there is
+  // a performance check need.
+  //std::chrono::steady_clock::time_point time_exec_start =
+  //    std::chrono::steady_clock::now();
+
+  // fetch 1000 rows
+  do {
+    ret = SQLFetch(stmt);
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+    count++;
+  } while (count < 1000);
+
+  /*
+  std::chrono::steady_clock::time_point time_exec_end =
+      std::chrono::steady_clock::now();
+
+  std::chrono::steady_clock::duration time_span =
+      time_exec_end - time_exec_start;
+
+  double nseconds = double(time_span.count())
+                    * std::chrono::steady_clock::period::num
+                    / std::chrono::steady_clock::period::den;
+  std::cout << "Fetching 1000 rows took " << nseconds << " seconds"
+            << std::endl;
+  */
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  SQLBIGINT fieldLong;
+  SQLLEN fieldLong_len = 0;
+  ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
+                   &fieldLong_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  double fieldDouble = 0;
+  SQLLEN fieldDouble_len = 0;
+  ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
+                   &fieldDouble_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // Get 1001st row
   ret = SQLFetch(stmt);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -1060,19 +1117,234 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPagination, *disabled()) {
   // verify result
   BOOST_CHECK_EQUAL(timestamp.year, 2022);
   BOOST_CHECK_EQUAL(timestamp.month, 11);
-  BOOST_CHECK_EQUAL(timestamp.day, 10);
-  BOOST_CHECK_EQUAL(timestamp.hour, 0);
-  BOOST_CHECK_EQUAL(timestamp.minute, 0);
-  BOOST_CHECK_EQUAL(timestamp.second, 9);
-  BOOST_CHECK_EQUAL(26.380199999999999, fieldDouble);
-  BOOST_CHECK_EQUAL(9591, fieldLong);
-
-  ret = SQLFreeStmt(stmt, SQL_CLOSE);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_CHECK_EQUAL(timestamp.day, 9);
+  BOOST_CHECK_EQUAL(timestamp.hour, 23);
+  BOOST_CHECK_EQUAL(timestamp.minute, 52);
+  BOOST_CHECK_EQUAL(timestamp.second, 51);
+  BOOST_CHECK_EQUAL(71.239357, fieldDouble);
+  BOOST_CHECK_EQUAL(1001, fieldLong);
 }
-*/
+
+BOOST_AUTO_TEST_CASE(TestSmallResultPagination) {
+  // This test runs a query which returns 3 rows. It sets each page
+  // contains 1 row. It verifies the results are correct.
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, time from data_queries_test_db.TestScalarTypes order "
+      "by device_id limit 3");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  // Fetch 1st row
+  // These time_points could be reopened in case there is
+  // a performance check need.
+  //std::chrono::steady_clock::time_point time_exec_start =
+  //    std::chrono::steady_clock::now();
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  /*
+  std::chrono::steady_clock::time_point time_exec_end =
+      std::chrono::steady_clock::now();
+
+  std::chrono::steady_clock::duration time_span =
+      time_exec_end - time_exec_start;
+
+  double nseconds = double(time_span.count())
+                    * std::chrono::steady_clock::period::num
+                    / std::chrono::steady_clock::period::den;
+  std::cout << "Fetching 1st row took " << nseconds << " seconds" << std::endl;
+  */
+
+  const int32_t buf_size = 1024;
+  SQLWCHAR id[buf_size]{};
+  SQLLEN id_len = 0;
+
+  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000001", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 20);
+
+  // Fetch 2nd row
+  //time_exec_start = std::chrono::steady_clock::now();
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  /*
+  time_exec_end = std::chrono::steady_clock::now();
+
+  time_span = time_exec_end - time_exec_start;
+
+  nseconds = double(time_span.count()) * std::chrono::steady_clock::period::num
+             / std::chrono::steady_clock::period::den;
+  std::cout << "Fetching 2nd row took " << nseconds << " seconds" << std::endl;
+  */
+
+  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000002", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 21);
+
+  // Fetch 3rd row
+  //time_exec_start = std::chrono::steady_clock::now();
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  /*
+  time_exec_end = std::chrono::steady_clock::now();
+
+  time_span = time_exec_end - time_exec_start;
+
+  nseconds = double(time_span.count()) * std::chrono::steady_clock::period::num
+             / std::chrono::steady_clock::period::den;
+  std::cout << "Fetching 3rd row took " << nseconds << " seconds" << std::endl;
+  */
+
+  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000003", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 22);
+
+  // Fetch 4th row - not exist
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+}
+
+BOOST_AUTO_TEST_CASE(TestSmallResultPaginationTermination) {
+  // This test runs a query which returns 3 rows. It sets each page
+  // contains 1 row. It only fetches the first two rows. It could verify
+  // the 3rd row asynchronous thread be terminated without a problem.
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, time from data_queries_test_db.TestScalarTypes order "
+      "by device_id limit 3");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  // Fetch 1st row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  const int32_t buf_size = 1024;
+  SQLWCHAR id[buf_size]{};
+  SQLLEN id_len = 0;
+
+  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQL_TIMESTAMP_STRUCT timestamp;
+  SQLLEN timestamp_len = 0;
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000001", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 20);
+
+  // Fetch 2nd row
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLGetData(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  ret = SQLGetData(stmt, 2, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
+                   &timestamp_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL("00000002", utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL(timestamp.year, 2022);
+  BOOST_CHECK_EQUAL(timestamp.month, 10);
+  BOOST_CHECK_EQUAL(timestamp.day, 21);
+}
+
+BOOST_AUTO_TEST_CASE(TestSmallResultPaginationNoFetch) {
+  // This test runs a query which returns 3 rows. It sets each page
+  // to contain 1 row. It does not fetch any data. It verifies that
+  // the asynchronous thread could be terminated without a problem.
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, time from data_queries_test_db.TestScalarTypes order "
+      "by device_id limit 3");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLFetchPaginationEmptyTable) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select measure_name, time from data_queries_test_db.EmptyTable");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+
+  ret = SQLFetch(stmt);
+#ifdef _WIN32
+  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+#else
+  // unixODBC DM/iODBC DM returns an error 
+  BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+  std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
+#ifdef __APPLE__
+  std::string pattern = "Function sequence error";
+#else
+  std::string pattern = "Invalid cursor state";
+#endif //__APPLE__
+  if (error.find(pattern) == std::string::npos)
+    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
+#endif //_WIN32
+}
+
 
 BOOST_AUTO_TEST_CASE(TestTwoRowsInt8, *disabled()) {
   CheckTwoRowsInt< signed char >(SQL_C_STINYINT);

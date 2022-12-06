@@ -944,6 +944,7 @@ void OdbcTestSuite::CreateGenericDsnConnectionString(
   std::string sessionToken = GetEnv("AWS_SESSION_TOKEN", "");
   std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
   std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
+  std::string region = GetEnv("AWS_REGION", "us-west-2");
 
   connectionString =
             "driver={Amazon Timestream ODBC Driver};"
@@ -951,6 +952,7 @@ void OdbcTestSuite::CreateGenericDsnConnectionString(
             "auth=" + AuthType::ToString(testAuthType) + ";"
             "uid=" + uid + ";"
             "pwd=" + pwd + ";"
+            "region=" + region + ";"
             "logOutput=" + logPath + ";"
             "logLevel=" + logLevel + ";";
 
@@ -1018,6 +1020,10 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
+}
+
+void OdbcTestSuite::AddMaxRowPerPage(std::string& connectionString, const std::string& value) {
+  connectionString.append("maxRowPerPage=" + value + ";");
 }
 
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(

@@ -27,7 +27,7 @@
 
 namespace ignite {
 namespace odbc {
-namespace query {
+namespace query {    
 DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
                      Connection& connection, const std::string& sql,
                      const app::ParameterSet& params, int32_t& timeout)
@@ -40,14 +40,20 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
       request_(),
       result_(nullptr),
       cursor_(nullptr),
-      timeout_(timeout) {
+      timeout_(timeout),
+      queryClient_(connection.GetQueryClient()),
+      hasAsyncFetch(false) {
   // No-op.
-
   LOG_DEBUG_MSG("DataQuery constructor is called, and exiting");
 }
 
 DataQuery::~DataQuery() {
-  LOG_DEBUG_MSG("~DataQuery is called, and exiting");
+  LOG_DEBUG_MSG("~DataQuery is called");
+
+  if (result_.get())
+    InternalClose();
+
+  LOG_DEBUG_MSG("~DataQuery exiting");
 }
 
 SqlResult::Type DataQuery::Execute() {
@@ -80,106 +86,99 @@ const meta::ColumnMetaVector* DataQuery::GetMeta() {
   return &resultMeta_;
 }
 
-SqlResult::Type DataQuery::FetchOnePage(bool isFirst) {
-  if (isFirst) {
-    LOG_INFO_MSG("sql query: " << sql_);
-    request_.SetQueryString(sql_);
-  } else {
-    if (!result_.get()) {
-      LOG_ERROR_MSG("result_ object is empty");
-      return SqlResult::AI_ERROR;
-    }
+/**
+ * Fetch one page asynchronously. It will be 
+ * executed in an asynchronous thread.
+ *
+ * @return void.
+ */
+void AsyncFetchOnePage(
+    const std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > client,
+    const QueryRequest& request,
+    DataQueryContext& context_) 
+{
+  Aws::TimestreamQuery::Model::QueryOutcome result;
+  result = client->Query(request);
 
-    std::string nextToken = result_->GetNextToken();
-    if (nextToken.empty()) {
-      return SqlResult::AI_NO_DATA;
-    }
+  std::unique_lock< std::mutex > locker(context_.mutex_);
+  context_.cv_.wait(locker, [&]() {
+    // This thread could only continue when context_.queue_ is empty
+    // or the main thread is exiting.
+    return context_.queue_.empty() || context_.isClosing_;
+  });
 
-    request_.SetNextToken(nextToken);
+  if (context_.queue_.empty()) {
+    // context_.queue_ hold one element at most
+    context_.queue_.push(result);
+    context_.cv_.notify_one();
   }
+}
 
-  Aws::TimestreamQuery::Model::QueryOutcome outcome =
-      connection_.GetQueryClient()->Query(request_);
+SqlResult::Type DataQuery::SwitchCursor() {
+  std::unique_lock< std::mutex > locker(context_.mutex_);
+  context_.cv_.wait(locker, [&]() { return !context_.queue_.empty(); });
+  Aws::TimestreamQuery::Model::QueryOutcome outcome = context_.queue_.front();
+  context_.queue_.pop();
+  locker.unlock();
 
   if (!outcome.IsSuccess()) {
-    auto error = outcome.GetError();
-    LOG_DEBUG_MSG("ERROR: " << error.GetExceptionName() << ": "
+    auto& error = outcome.GetError();
+    LOG_ERROR_MSG("ERROR: " << error.GetExceptionName() << ": "
                             << error.GetMessage());
-
-    diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
-                         "AWS API ERROR: " + error.GetExceptionName() + ": "
-                             + error.GetMessage());
-
-    InternalClose();
-    return SqlResult::AI_ERROR;
+    cursor_.reset();
+    return SqlResult::Type::AI_ERROR;
   }
 
-  SqlResult::Type retval = SqlResult::AI_SUCCESS;
-
-  // outcome is successful, update result_
-  result_ = std::make_shared< QueryResult >(outcome.GetResult());
-
-  if (result_->GetRows().empty()) {
-    retval = SqlResult::AI_NO_DATA;
-  } else {
-    cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
+  const Aws::Vector< Row >& rows = outcome.GetResult().GetRows();
+  const Aws::String& token = outcome.GetResult().GetNextToken();
+  if (rows.empty() || token.empty()) {
+    LOG_INFO_MSG("Data fetching is finished");
+    return SqlResult::AI_NO_DATA;
   }
-  return retval;
+
+  request_.SetNextToken(token);
+  std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_), std::ref(context_));
+  addThreads(next);
+
+  // switch to rows in next page
+  cursor_.reset(new TimestreamCursor(rows, resultMeta_));
+  cursor_->Increment();  // The cursor_ needs to be incremented before using it for the first time
+  return SqlResult::AI_SUCCESS;
 }
 
 SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   LOG_DEBUG_MSG("FetchNextRow is called");
 
   if (!cursor_.get()) {
-    diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
-                         "Query was not executed.");
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Cursor does not point to any data.");
 
-    LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR");
-    LOG_DEBUG_MSG("reason: query was not executed");
-
-    return SqlResult::AI_ERROR;
-  }
-
-  if (!cursor_->HasData()) {
-    LOG_INFO_MSG("FetchNextRow exiting with AI_NO_DATA");
-    LOG_DEBUG_MSG("reason: cursor does not have data");
-
-    // Currently when cursor reaches the end of a page, we
-    // start to fetch next page data. This is a low efficient way.
-    // It needs to be changed by AT-1145
-    SqlResult::Type res = FetchOnePage(false);
-    if (res != SqlResult::AI_SUCCESS) {
-      return res;
-    }
+    LOG_ERROR_MSG("FetchNextRow exiting due to cursor does not point to any data");
 
     return SqlResult::AI_NO_DATA;
   }
 
   if (!cursor_->Increment()) {
-    LOG_INFO_MSG("FetchNextRow exiting with AI_NO_DATA");
-    LOG_DEBUG_MSG(
-        "reason: cursor cannot be moved to the next row; either data update is "
-        "required or there is no more data");
+    if (hasAsyncFetch) {
+      SqlResult::Type result = SwitchCursor();
+      if (result != SqlResult::AI_SUCCESS) {
+        diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
+                             "Invalid cursor state.");
 
-    // Currently when cursor reaches the end of a page, we
-    // start to fetch next page data. This is a low efficient way.
-    // It needs to be changed by AT-1145
-    SqlResult::Type res = FetchOnePage(false);
-    if (res != SqlResult::AI_SUCCESS) {
-      return res;
+        LOG_DEBUG_MSG("SwitchCursor does not return SUCCESS");
+        return result;
+      }
+    } else {
+      LOG_INFO_MSG("FetchNextRow exiting with AI_NO_DATA due to cursor has reached the end.");
+      return SqlResult::AI_NO_DATA;
     }
-
-    return SqlResult::AI_NO_DATA;
   }
 
   TimestreamRow* row = cursor_->GetRow();
-
   if (!row) {
-    diag.AddStatusRecord("Unknown error.");
+    diag.AddStatusRecord("Cursor has a null row.");
 
-    LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR");
-    LOG_DEBUG_MSG("Error unknown. Getting row from cursor failed.");
-
+    LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR due to cursor has a null row");
     return SqlResult::AI_ERROR;
   }
 
@@ -195,11 +194,7 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     SqlResult::Type result = ProcessConversionResult(convRes, 0, i);
 
     if (result == SqlResult::AI_ERROR) {
-      LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR");
-      LOG_DEBUG_MSG(
-          "error occured during column conversion operation, inside the for "
-          "loop");
-
+      LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR due to data reading error");
       return SqlResult::AI_ERROR;
     }
   }
@@ -214,12 +209,12 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
   LOG_DEBUG_MSG("GetColumn is called");
 
   if (!cursor_.get()) {
-    diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
-                         "Query was not executed.");
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Cursor does not point to any data.");
 
-    LOG_ERROR_MSG("GetColumn exiting with error: Query was not executed");
+    LOG_INFO_MSG("GetColumn exiting due to cursor does not point to any data");
 
-    return SqlResult::AI_ERROR;
+    return SqlResult::AI_NO_DATA;
   }
 
   TimestreamRow* row = cursor_->GetRow();
@@ -253,6 +248,14 @@ SqlResult::Type DataQuery::Close() {
 SqlResult::Type DataQuery::InternalClose() {
   LOG_DEBUG_MSG("InternalClose is called");
 
+  // stop all asynchronous threads
+  context_.isClosing_ = true;
+  for (auto& itr : threads_) {
+    if (itr.joinable()) {
+      itr.join();
+    }
+  }
+
   result_.reset();
   cursor_.reset();
 
@@ -276,20 +279,57 @@ int64_t DataQuery::AffectedRows() const {
 }
 
 SqlResult::Type DataQuery::NextResultSet() {
-  LOG_DEBUG_MSG("NextResultSet is called");
-
-  SqlResult::Type retval = FetchOnePage(false);
-
-  LOG_DEBUG_MSG("NextResultSet exiting");
-
-  return retval;
+  return SqlResult::AI_NO_DATA;
 }
 
 SqlResult::Type DataQuery::MakeRequestExecute() {
   // This function is called by Execute() and does the actual querying
   LOG_DEBUG_MSG("MakeRequestExecute is called");
 
-  FetchOnePage(true);
+  LOG_INFO_MSG("sql query: " << sql_);
+  request_.SetQueryString(sql_);
+  if (connection_.GetConfiguration().IsMaxRowPerPageSet()) {
+    request_.SetMaxRows(connection_.GetConfiguration().GetMaxRowPerPage());
+  }
+
+  do {
+    Aws::TimestreamQuery::Model::QueryOutcome outcome =
+        connection_.GetQueryClient()->Query(request_);
+
+    if (!outcome.IsSuccess()) {
+      auto error = outcome.GetError();
+      LOG_ERROR_MSG("ERROR: " << error.GetExceptionName() << ": "
+                              << error.GetMessage());
+
+      diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+                           "AWS API ERROR: " + error.GetExceptionName() + ": "
+                               + error.GetMessage());
+      InternalClose();
+      return SqlResult::AI_ERROR;
+    }
+
+    // outcome is successful, update result_
+    result_ = std::make_shared< QueryResult >(outcome.GetResult());
+    if (result_->GetRows().empty()) {
+      if (result_->GetNextToken().empty()) {
+        // table is empty
+        return SqlResult::AI_NO_DATA;
+      }
+      request_.SetNextToken(result_->GetNextToken());
+      continue;
+    } else {
+      break;
+    }
+  } while (true);
+  
+  cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
+
+  if (!result_->GetNextToken().empty()) {
+    request_.SetNextToken(result_->GetNextToken());
+    std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_), std::ref(context_));
+    addThreads(next);
+    hasAsyncFetch = true;
+  }
 
   LOG_DEBUG_MSG("MakeRequestExecute exiting");
 

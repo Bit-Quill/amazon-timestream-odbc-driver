@@ -83,7 +83,7 @@ class MockTimestreamService {
    * @param request Query request
    */
   Aws::TimestreamQuery::Model::QueryOutcome HandleQueryReq(
-      const Aws::TimestreamQuery::Model::QueryRequest &request) const;
+      const Aws::TimestreamQuery::Model::QueryRequest &request);
 
   /**
    * Handle list databases request from write client
@@ -100,9 +100,13 @@ class MockTimestreamService {
   MockTimestreamService() {
   }
 
+  void SetupResultForMockTable(Aws::TimestreamQuery::Model::QueryResult& result);
+
   static std::mutex mutex_;
   static MockTimestreamService* instance_;
   std::map< Aws::String, Aws::String > credMap_;  // credentials configured by user
+  static int token;
+  static int errorToken;
 };
 }  // namespace odbc
 }  // namespace ignite

@@ -110,6 +110,9 @@ class IGNITE_IMPORT_EXPORT ConnectionStringParser {
 
     /** Connection attribute keyword for log path. */
     static const std::string logPath;
+
+    /** Max number of rows in one page returned from TS. */
+    static const std::string maxRowPerPage;
   };
 
   /**

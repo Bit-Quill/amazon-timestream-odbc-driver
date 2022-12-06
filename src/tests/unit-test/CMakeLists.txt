@@ -47,6 +47,7 @@ set(SOURCES
          src/log_test.cpp
          src/unit_connection_string_parser_test.cpp
          src/unit_connection_test.cpp
+         src/unit_data_query_test.cpp
          src/utility_test.cpp
          src/odbc_unit_test_suite.cpp
          src/mock/mock_environment.cpp

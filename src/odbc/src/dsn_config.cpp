@@ -272,6 +272,12 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
 
   if (logPath.IsSet() && !config.IsLogPathSet())
     config.SetLogPath(logPath.GetValue());
+
+  SettableValue< int32_t > maxRowPerPage =
+      ReadDsnInt(dsn, ConnectionStringParser::Key::maxRowPerPage);
+
+  if (maxRowPerPage.IsSet() && !config.IsMaxRowPerPageSet())
+    config.SetMaxRowPerPage(maxRowPerPage.GetValue());
 }
 
 bool WriteDsnConfiguration(const config::Configuration& config,

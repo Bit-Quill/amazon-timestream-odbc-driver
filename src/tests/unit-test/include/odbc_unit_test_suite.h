@@ -23,6 +23,7 @@
 #include <mock/mock_environment.h>
 #include <mock/mock_connection.h>
 #include <mock/mock_statement.h>
+#include "mock/mock_timestream_service.h"
 
 #ifndef BOOST_TEST_CONTEXT
 #define BOOST_TEST_CONTEXT(...)

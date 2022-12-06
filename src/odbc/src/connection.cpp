@@ -67,7 +67,8 @@ std::mutex Connection::mutex_;
 bool Connection::awsSDKReady_ = false;
 std::atomic< int > Connection::refCount_(0);
 
-Connection::Connection(Environment* env) : env_(env), info_(config_) {
+Connection::Connection(Environment* env)
+    : env_(env), info_(config_) {
   // The AWS SDK for C++ must be initialized by calling Aws::InitAPI.
   // It should only be initialized only once during the application running
   // All Connections in different thread must wait before the InitAPI is

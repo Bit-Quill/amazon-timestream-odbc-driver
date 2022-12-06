@@ -31,7 +31,7 @@ MockConnection::~MockConnection() {
   // No-op
 }
 
-SqlResult::Type MockConnection::InternalCreateStatement(Statement*& statement) {
+SqlResult::Type MockConnection::InternalCreateStatement(MockStatement*& statement) {
   statement = new MockStatement(*this);
 
   if (!statement) {
@@ -60,6 +60,14 @@ MockConnection::CreateTSWriteClient(
       Aws::TimestreamWrite::TimestreamWriteClient >(
       std::make_shared< ignite::odbc::MockTimestreamWriteClient >(credentials,
                                                                   clientCfg));
+}
+
+MockStatement* MockConnection::CreateStatement() {
+  MockStatement* statement;
+
+  InternalCreateStatement(statement);
+
+  return statement;
 }
 }  // namespace odbc
 }  // namespace ignite
