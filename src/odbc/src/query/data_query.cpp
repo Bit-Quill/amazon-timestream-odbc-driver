@@ -27,7 +27,7 @@
 
 namespace ignite {
 namespace odbc {
-namespace query {    
+namespace query {
 DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
                      Connection& connection, const std::string& sql,
                      const app::ParameterSet& params, int32_t& timeout)
@@ -42,7 +42,8 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
       cursor_(nullptr),
       timeout_(timeout),
       queryClient_(connection.GetQueryClient()),
-      hasAsyncFetch(false) {
+      hasAsyncFetch(false),
+      rowCounter(0) {
   // No-op.
   LOG_DEBUG_MSG("DataQuery constructor is called, and exiting");
 }
@@ -87,16 +88,14 @@ const meta::ColumnMetaVector* DataQuery::GetMeta() {
 }
 
 /**
- * Fetch one page asynchronously. It will be 
+ * Fetch one page asynchronously. It will be
  * executed in an asynchronous thread.
  *
  * @return void.
  */
 void AsyncFetchOnePage(
     const std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > client,
-    const QueryRequest& request,
-    DataQueryContext& context_) 
-{
+    const QueryRequest& request, DataQueryContext& context_) {
   Aws::TimestreamQuery::Model::QueryOutcome result;
   result = client->Query(request);
 
@@ -124,25 +123,34 @@ SqlResult::Type DataQuery::SwitchCursor() {
   if (!outcome.IsSuccess()) {
     auto& error = outcome.GetError();
     LOG_ERROR_MSG("ERROR: " << error.GetExceptionName() << ": "
-                            << error.GetMessage());
+                            << error.GetMessage() << ", for query " << sql_
+                            << ", number of rows fetched: " << rowCounter);
     cursor_.reset();
     return SqlResult::Type::AI_ERROR;
   }
 
   const Aws::Vector< Row >& rows = outcome.GetResult().GetRows();
   const Aws::String& token = outcome.GetResult().GetNextToken();
-  if (rows.empty() || token.empty()) {
-    LOG_INFO_MSG("Data fetching is finished");
+  if (rows.empty()) {
+    LOG_INFO_MSG("Data fetching is finished, number of rows fetched: " << rowCounter);
     return SqlResult::AI_NO_DATA;
   }
 
-  request_.SetNextToken(token);
-  std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_), std::ref(context_));
-  addThreads(next);
-
   // switch to rows in next page
   cursor_.reset(new TimestreamCursor(rows, resultMeta_));
-  cursor_->Increment();  // The cursor_ needs to be incremented before using it for the first time
+  cursor_->Increment();  // The cursor_ needs to be incremented before using it
+                         // for the first time
+
+  if (token.empty()) {
+    hasAsyncFetch = false;  // no async fetch any more
+    LOG_INFO_MSG("Data fetching is finished, number of rows fetched: " << rowCounter);
+  } else {
+    request_.SetNextToken(token);
+    std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
+                     std::ref(context_));
+    addThreads(next);
+  }
+
   return SqlResult::AI_SUCCESS;
 }
 
@@ -153,7 +161,8 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.");
 
-    LOG_ERROR_MSG("FetchNextRow exiting due to cursor does not point to any data");
+    LOG_ERROR_MSG(
+        "FetchNextRow exiting due to cursor does not point to any data");
 
     return SqlResult::AI_NO_DATA;
   }
@@ -169,7 +178,9 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
         return result;
       }
     } else {
-      LOG_INFO_MSG("FetchNextRow exiting with AI_NO_DATA due to cursor has reached the end.");
+      LOG_INFO_MSG(
+          "FetchNextRow exiting with AI_NO_DATA due to cursor has reached the "
+          "end.");
       return SqlResult::AI_NO_DATA;
     }
   }
@@ -178,7 +189,8 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   if (!row) {
     diag.AddStatusRecord("Cursor has a null row.");
 
-    LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR due to cursor has a null row");
+    LOG_ERROR_MSG(
+        "FetchNextRow exiting with AI_ERROR due to cursor has a null row");
     return SqlResult::AI_ERROR;
   }
 
@@ -194,13 +206,15 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     SqlResult::Type result = ProcessConversionResult(convRes, 0, i);
 
     if (result == SqlResult::AI_ERROR) {
-      LOG_ERROR_MSG("FetchNextRow exiting with AI_ERROR due to data reading error");
+      LOG_ERROR_MSG(
+          "FetchNextRow exiting with AI_ERROR due to data reading error");
       return SqlResult::AI_ERROR;
     }
   }
 
   LOG_DEBUG_MSG("FetchNextRow exiting");
 
+  rowCounter++;
   return SqlResult::AI_SUCCESS;
 }
 
@@ -299,11 +313,11 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
     if (!outcome.IsSuccess()) {
       auto error = outcome.GetError();
       LOG_ERROR_MSG("ERROR: " << error.GetExceptionName() << ": "
-                              << error.GetMessage());
+                              << error.GetMessage() << " for query " << sql_);
 
       diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
                            "AWS API ERROR: " + error.GetExceptionName() + ": "
-                               + error.GetMessage());
+                               + error.GetMessage() + " for query " + sql_);
       InternalClose();
       return SqlResult::AI_ERROR;
     }
@@ -321,12 +335,13 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
       break;
     }
   } while (true);
-  
+
   cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
 
   if (!result_->GetNextToken().empty()) {
     request_.SetNextToken(result_->GetNextToken());
-    std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_), std::ref(context_));
+    std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
+                     std::ref(context_));
     addThreads(next);
     hasAsyncFetch = true;
   }
@@ -379,7 +394,7 @@ SqlResult::Type DataQuery::MakeRequestResultsetMeta() {
 
     diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
                          "AWS API ERROR: " + error.GetExceptionName() + ": "
-                             + error.GetMessage());
+                             + error.GetMessage() + " for query " + sql_);
 
     InternalClose();
 

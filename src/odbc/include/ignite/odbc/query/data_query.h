@@ -283,6 +283,9 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
 
   /** Flag indicating asynchronous fetch is started. */
   bool hasAsyncFetch;
+
+  /** Row counter for how many rows has been fetched */
+  int rowCounter;
 };
 }  // namespace query
 }  // namespace odbc

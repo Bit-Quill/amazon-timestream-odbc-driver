@@ -1035,9 +1035,9 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
-  // No result is fetched afer query execution. This test verifies
-  // the internal asynchronous thread could be terminated when testcase 
-  // ends.
+  // This test verifies the internal asynchronous thread could be
+  // terminated when testcase ends. It also verifies all rows could 
+  // be fetched including the last page.
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -1047,6 +1047,19 @@ BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
       "data_queries_test_db.TestMultiMeasureBigTable order by time");
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  int count = 0;
+  do {
+    ret = SQLFetch(stmt);
+    if (ret == SQL_NO_DATA) {
+      break;
+    } else if (!SQL_SUCCEEDED(ret)) {
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+    }
+    count++;
+  } while (true);
+
+   BOOST_CHECK_EQUAL(20000, count);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination1000Rows) {
