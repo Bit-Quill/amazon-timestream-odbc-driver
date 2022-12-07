@@ -115,7 +115,7 @@ const std::string SqlTypeName::BIT("BIT");
 
 const std::string SqlTypeName::BIGINT("BIGINT");
 
-const std::string SqlTypeName::WVARCHAR("WVARCHAR");
+const std::string SqlTypeName::VARCHAR("VARCHAR");
 
 const std::string SqlTypeName::DATE("DATE");
 

@@ -487,6 +487,34 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
                                        SQL_NO_TOTAL, -1, SQL_NULLABLE);
   }
 
+  // check SQLGetTypeInfo result 1st and 2nd column
+  void CheckSQLGetTypeInfoResult(const std::string& exptectedTypeName, int expectedDataType) {
+    SQLRETURN ret = SQLFetch(stmt);
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    SQLWCHAR buf[1024];
+    SQLLEN bufLen = sizeof(buf);
+
+    ret = SQLGetData(stmt, 1, SQL_C_WCHAR, buf, sizeof(buf), &bufLen);
+
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    std::string actualValueStr = utility::SqlWcharToString(buf, bufLen);
+    BOOST_CHECK_EQUAL(exptectedTypeName, actualValueStr);
+
+    SQLSMALLINT dataType;
+    SQLLEN dataTypeLen;
+    ret = SQLGetData(stmt, 2, SQL_SMALLINT, &dataType, sizeof(dataType),
+                     &dataTypeLen);
+
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    BOOST_CHECK_EQUAL(expectedDataType, dataType);
+  }
+
   /**
    * Destructor.
    */
@@ -497,13 +525,28 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(MetaQueriesTestSuite, MetaQueriesTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestGetTypeInfoAllTypes, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTypeInfoAllTypes) {
   ConnectToTS();
 
   SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_ALL_TYPES);
 
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  CheckSQLGetTypeInfoResult("VARCHAR", SQL_VARCHAR);
+  CheckSQLGetTypeInfoResult("BIT", SQL_BIT);
+  CheckSQLGetTypeInfoResult("BIGINT", SQL_BIGINT);
+  CheckSQLGetTypeInfoResult("DOUBLE", SQL_DOUBLE);
+  CheckSQLGetTypeInfoResult("TIMESTAMP", SQL_TYPE_TIMESTAMP);
+  CheckSQLGetTypeInfoResult("DATE", SQL_TYPE_DATE);
+  CheckSQLGetTypeInfoResult("TIME", SQL_TYPE_TIME);
+  CheckSQLGetTypeInfoResult("INTERVAL_DAY_TO_SECOND",
+                            SQL_INTERVAL_DAY_TO_SECOND);
+  CheckSQLGetTypeInfoResult("INTERVAL_YEAR_TO_MONTH",
+                            SQL_INTERVAL_YEAR_TO_MONTH);
+  CheckSQLGetTypeInfoResult("INTEGER", SQL_INTEGER); 
+  CheckSQLGetTypeInfoResult("NOT_SET", SQL_VARCHAR);
+  CheckSQLGetTypeInfoResult("UNKNOWN", SQL_VARCHAR);
 }
 
 BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeLiteral, *disabled()) {
@@ -618,17 +661,17 @@ BOOST_AUTO_TEST_CASE(TestColAttributeWithOneTable) {
   ConnectToTS();
 
   std::pair< int16_t, std::string > tests[] = {
-      std::make_pair(SQL_WVARCHAR, std::string("fleet")),
-      std::make_pair(SQL_WVARCHAR, std::string("truck_id")),
-      std::make_pair(SQL_WVARCHAR, std::string("fuel_capacity")),
-      std::make_pair(SQL_WVARCHAR, std::string("model")),
-      std::make_pair(SQL_WVARCHAR, std::string("load_capacity")),
-      std::make_pair(SQL_WVARCHAR, std::string("make")),
-      std::make_pair(SQL_WVARCHAR, std::string("measure_name")),
+      std::make_pair(SQL_VARCHAR, std::string("fleet")),
+      std::make_pair(SQL_VARCHAR, std::string("truck_id")),
+      std::make_pair(SQL_VARCHAR, std::string("fuel_capacity")),
+      std::make_pair(SQL_VARCHAR, std::string("model")),
+      std::make_pair(SQL_VARCHAR, std::string("load_capacity")),
+      std::make_pair(SQL_VARCHAR, std::string("make")),
+      std::make_pair(SQL_VARCHAR, std::string("measure_name")),
       std::make_pair(SQL_TYPE_TIMESTAMP, std::string("time")),
       std::make_pair(SQL_DOUBLE, std::string("load")),
       std::make_pair(SQL_DOUBLE, std::string("fuel-reading")),
-      std::make_pair(SQL_WVARCHAR, std::string("location")),
+      std::make_pair(SQL_VARCHAR, std::string("location")),
       std::make_pair(SQL_DOUBLE, std::string("speed"))};
 
   int numTests = sizeof(tests) / sizeof(std::pair< int16_t, std::string >);
@@ -778,7 +821,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescConciseType) {
 
   const SQLCHAR req1[] = "select hostname from meta_queries_test_db.DevOpsMulti";
 
-  callSQLColAttribute(stmt, req1, SQL_DESC_CONCISE_TYPE, SQL_WVARCHAR);
+  callSQLColAttribute(stmt, req1, SQL_DESC_CONCISE_TYPE, SQL_VARCHAR);
 
   const SQLCHAR req2[] = "select time from meta_queries_test_db.DevOpsMulti";
 
@@ -917,15 +960,15 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLocalTypeName, *disabled()) {
 
   const SQLCHAR req2[] = "select fieldString from meta_queries_test_002";
 
-  // SQL_WVARCHAR should have type name SqlTypeName::WVARCHAR
+  // SQL_WVARCHAR should have type name SqlTypeName::VARCHAR
   callSQLColAttribute(stmt, req2, SQL_DESC_LOCAL_TYPE_NAME,
-                      SqlTypeName::WVARCHAR);
+                      SqlTypeName::VARCHAR);
 
   const SQLCHAR req3[] = "select fieldBinary from meta_queries_test_002";
 
-  // SQL_BINARY should have type name SqlTypeName::WVARCHAR
+  // SQL_BINARY should have type name SqlTypeName::VARCHAR
   callSQLColAttribute(stmt, req3, SQL_DESC_LOCAL_TYPE_NAME,
-                      SqlTypeName::WVARCHAR);
+                      SqlTypeName::VARCHAR);
 
   const SQLCHAR req4[] = "select fieldDate from meta_queries_test_002";
 
@@ -1243,15 +1286,15 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnScalePrepare, *disabled()) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithGetTypeInfo, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithGetTypeInfo) {
   ConnectToTS();
 
-  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_WVARCHAR);
+  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_VARCHAR);
 
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  CheckSingleRowResultSetWithGetData(stmt);
+  CheckSQLGetTypeInfoResult("VARCHAR", SQL_VARCHAR);
 }
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsOne) {
@@ -1348,8 +1391,8 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   BOOST_CHECK_EQUAL("device_id", column_name);  // COLUMN_NAME
-  BOOST_CHECK_EQUAL(SQL_WVARCHAR, data_type);                   // DATA_TYPE
-  BOOST_CHECK_EQUAL(SqlTypeName::WVARCHAR, type_name);           // TYPE_NAME
+  BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);                   // DATA_TYPE
+  BOOST_CHECK_EQUAL(SqlTypeName::VARCHAR, type_name);           // TYPE_NAME
   BOOST_CHECK_EQUAL(SQL_NO_NULLS, nullable);          // TYPE_NAME
 
   ret = SQLFetch(stmt);
@@ -1369,8 +1412,8 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   BOOST_CHECK_EQUAL("measure_name", column_name);   // COLUMN_NAME
-  BOOST_CHECK_EQUAL(SQL_WVARCHAR, data_type);           // DATA_TYPE
-  BOOST_CHECK_EQUAL(SqlTypeName::WVARCHAR, type_name);  // TYPE_NAME
+  BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);           // DATA_TYPE
+  BOOST_CHECK_EQUAL(SqlTypeName::VARCHAR, type_name);  // TYPE_NAME
   BOOST_CHECK_EQUAL(SQL_NO_NULLS, nullable);            // TYPE_NAME
 
   ret = SQLFetch(stmt);
@@ -1542,7 +1585,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsUnicode) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   BOOST_CHECK_EQUAL("地区", utility::SqlWcharToString(column_name, column_name_len));          // COLUMN_NAME
-  BOOST_CHECK_EQUAL(SQL_WVARCHAR, data_type);           // DATA_TYPE
+  BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);           // DATA_TYPE
 }
 
 BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsSearchPattern) {
@@ -2173,7 +2216,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer3) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_CAT");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 2, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2181,7 +2224,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer3) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_SCHEM");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 3, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2189,7 +2232,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer3) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_NAME");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 4, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2197,7 +2240,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer3) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_TYPE");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 5, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2205,7 +2248,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer3) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "REMARKS");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer2) {
@@ -2243,7 +2286,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer2) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_QUALIFIER");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 2, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2251,7 +2294,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer2) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_OWNER");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 3, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2259,7 +2302,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer2) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_NAME");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 4, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2267,7 +2310,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer2) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "TABLE_TYPE");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 
   ret = SQLDescribeCol(stmt, 5, columnName, ODBC_BUFFER_SIZE, &columnNameLen,
                        &dataType, &columnSize, &decimalDigits, &nullable);
@@ -2275,7 +2318,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer2) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columnName, columnNameLen),
                     "REMARKS");
-  BOOST_CHECK_EQUAL(dataType, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(dataType, SQL_VARCHAR);
 }
 
 /**

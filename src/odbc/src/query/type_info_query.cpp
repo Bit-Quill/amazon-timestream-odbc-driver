@@ -132,55 +132,74 @@ TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
   const std::string tbl;
 
   // replace TS_INVALID_TYPE with correct type when implement
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "TYPE_NAME", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "TYPE_NAME", ScalarType::VARCHAR,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "DATA_TYPE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "DATA_TYPE", ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_SIZE", ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_PREFIX", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_PREFIX",
+                                   ScalarType::VARCHAR,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_SUFFIX", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "LITERAL_SUFFIX",
+                                   ScalarType::VARCHAR,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "CREATE_PARAMS", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "CREATE_PARAMS",
+                                   ScalarType::VARCHAR,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "CASE_SENSITIVE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "CASE_SENSITIVE",
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "SEARCHABLE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "SEARCHABLE", ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "UNSIGNED_ATTRIBUTE",
-                                   TS_INVALID_TYPE,
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "FIXED_PREC_SCALE",
-                                   TS_INVALID_TYPE,
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "AUTO_UNIQUE_VALUE",
-                                   TS_INVALID_TYPE,
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "LOCAL_TYPE_NAME", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "LOCAL_TYPE_NAME",
+                                   ScalarType::VARCHAR,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "MINIMUM_SCALE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "MINIMUM_SCALE",
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "MAXIMUM_SCALE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "MAXIMUM_SCALE",
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE",
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATETIME_SUB",
-                                   TS_INVALID_TYPE,
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX", TS_INVALID_TYPE,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX",
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "INTERVAL_PRECISION",
-                                   TS_INVALID_TYPE,
+                                   ScalarType::INTEGER,
                                    Nullability::NULLABILITY_UNKNOWN));
 
   assert(IsSqlTypeSupported(sqlType) || sqlType == SQL_ALL_TYPES);
 
   if (sqlType == SQL_ALL_TYPES) {
-    // replace TS_INVALID_TYPE with correct type when implement
-    types.push_back(TS_INVALID_TYPE);
+    types.push_back(static_cast< int8_t >(ScalarType::VARCHAR));
+    types.push_back(static_cast< int8_t >(ScalarType::BOOLEAN));
+    types.push_back(static_cast< int8_t >(ScalarType::BIGINT));
+    types.push_back(static_cast< int8_t >(ScalarType::DOUBLE));
+    types.push_back(static_cast< int8_t >(ScalarType::TIMESTAMP));
+    types.push_back(static_cast< int8_t >(ScalarType::DATE));
+    types.push_back(static_cast< int8_t >(ScalarType::TIME));
+    types.push_back(static_cast< int8_t >(ScalarType::INTERVAL_DAY_TO_SECOND));
+    types.push_back(static_cast< int8_t >(ScalarType::INTERVAL_YEAR_TO_MONTH));
+    types.push_back(static_cast< int8_t >(ScalarType::INTEGER));
+    types.push_back(static_cast< int8_t >(ScalarType::NOT_SET));
+    types.push_back(static_cast< int8_t >(ScalarType::UNKNOWN));
   } else {
     types.push_back(static_cast< int8_t >(SqlTypeToBinary(sqlType)));
   }
@@ -268,26 +287,18 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
     }
 
     case ResultColumn::LITERAL_PREFIX: {
-      // not implemented
-      /* enable this block with change if needed
-      if (currentType == JDBC_TYPE_VARCHAR)
+      if (currentType == static_cast< int8_t > (ScalarType::VARCHAR))
         buffer.PutString("'");
-      else if (currentType == IGNITE_TYPE_BINARY)
-        buffer.PutString("0x");
       else
         buffer.PutNull();
-      */
       break;
     }
 
     case ResultColumn::LITERAL_SUFFIX: {
-      // not implemented
-      /* enable this block with change if needed
-      if (currentType == JDBC_TYPE_VARCHAR)
+      if (currentType == static_cast< int8_t >(ScalarType::VARCHAR))
         buffer.PutString("'");
       else
         buffer.PutNull();
-      */
       break;
     }
 
@@ -304,13 +315,10 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
     }
 
     case ResultColumn::CASE_SENSITIVE: {
-      // not implemented
-      /* enable this block with change if needed
-      if (currentType == JDBC_TYPE_VARCHAR)
+      if (currentType == static_cast< int8_t >(ScalarType::VARCHAR))
         buffer.PutInt16(SQL_TRUE);
       else
         buffer.PutInt16(SQL_FALSE);
-      */
       break;
     }
 

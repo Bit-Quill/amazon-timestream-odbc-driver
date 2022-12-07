@@ -102,12 +102,12 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // test SQL_DESC_TYPE_NAME
   found = columnMeta.GetAttribute(SQL_DESC_TYPE_NAME, resVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(resVal, SqlTypeName::WVARCHAR);
+  BOOST_CHECK_EQUAL(resVal, SqlTypeName::VARCHAR);
 
   // test SQL_DESC_LOCAL_TYPE_NAME
   found = columnMeta.GetAttribute(SQL_DESC_LOCAL_TYPE_NAME, resVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(resVal, SqlTypeName::WVARCHAR);
+  BOOST_CHECK_EQUAL(resVal, SqlTypeName::VARCHAR);
 
   // fields SQL_COLUMN_PRECISION and SQL_DESC_SCALE are not tested
   // for retrieving string values
@@ -132,12 +132,12 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // test SQL_DESC_CONCISE_TYPE
   found = columnMeta.GetAttribute(SQL_DESC_CONCISE_TYPE, intVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(intVal, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(intVal, SQL_VARCHAR);
 
   // test SQL_DESC_TYPE
   found = columnMeta.GetAttribute(SQL_DESC_TYPE, intVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(intVal, SQL_WVARCHAR);
+  BOOST_CHECK_EQUAL(intVal, SQL_VARCHAR);
 
   // test SQL_DESC_DISPLAY_SIZE
   found = columnMeta.GetAttribute(SQL_DESC_DISPLAY_SIZE, intVal);

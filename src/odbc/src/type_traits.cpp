@@ -34,7 +34,7 @@ const std::string SqlTypeName::BIT("BIT");
 
 const std::string SqlTypeName::BIGINT("BIGINT");
 
-const std::string SqlTypeName::WVARCHAR("WVARCHAR");
+const std::string SqlTypeName::VARCHAR("VARCHAR");
 
 const std::string SqlTypeName::DATE("DATE");
 
@@ -46,6 +46,10 @@ const std::string SqlTypeName::INTERVAL_DAY_TO_SECOND("INTERVAL_DAY_TO_SECOND");
 
 const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH(
     "INTERVAL_YEAR_TO_MONTH");
+
+const std::string SqlTypeName::NOT_SET("NOT_SET");
+
+const std::string SqlTypeName::UNKNOWN("UNKNOWN");
 
 #ifdef _DEBUG
 
@@ -133,10 +137,16 @@ const boost::optional< std::string > BinaryTypeToSqlTypeName(
       return SqlTypeName::INTERVAL_YEAR_TO_MONTH;
 
     case ScalarType::VARCHAR:
+      return SqlTypeName::VARCHAR;
+
     case ScalarType::NOT_SET:
+      return SqlTypeName::NOT_SET;
+
     case ScalarType::UNKNOWN:
+      return SqlTypeName::UNKNOWN;
+
     default:
-      return SqlTypeName::WVARCHAR;
+      return SqlTypeName::VARCHAR;
   }
 }
 
@@ -227,7 +237,7 @@ ScalarType SqlTypeToBinary(boost::optional< int16_t > sqlType) {
     case SQL_INTERVAL_YEAR_TO_MONTH:
       return ScalarType::INTERVAL_YEAR_TO_MONTH;
 
-    case SQL_WVARCHAR:
+    case SQL_VARCHAR:
       return ScalarType::VARCHAR;
 
     default:
@@ -353,13 +363,11 @@ boost::optional< int16_t > BinaryToSqlType(
     case ScalarType::NOT_SET:
     case ScalarType::UNKNOWN:
     default:
-      return SQL_WVARCHAR;
+      return SQL_VARCHAR;
   }
 }
 
 int16_t BinaryTypeNullability(int16_t) {
-  // TODO [AT-1032] set nullability (can reference from TS JDBC)
-  // https://bitquill.atlassian.net/browse/AT-1032
   return SQL_NULLABLE_UNKNOWN;
 }
 

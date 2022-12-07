@@ -136,8 +136,8 @@ class IGNITE_IMPORT_EXPORT SqlTypeName {
   /** BIGINT SQL type name constant. */
   static const std::string BIGINT;
 
-  /** WVARCHAR SQL type name constant. */
-  static const std::string WVARCHAR;
+  /** VARCHAR SQL type name constant. */
+  static const std::string VARCHAR;
 
   /** DATE SQL type name constant. */
   static const std::string DATE;
@@ -153,6 +153,12 @@ class IGNITE_IMPORT_EXPORT SqlTypeName {
 
   /** INTERVAL_YEAR_TO_MONTH SQL type name constant. */
   static const std::string INTERVAL_YEAR_TO_MONTH;
+
+  /** INTERVAL_YEAR_TO_MONTH SQL type name constant. */
+  static const std::string NOT_SET;
+
+  /** INTERVAL_YEAR_TO_MONTH SQL type name constant. */
+  static const std::string UNKNOWN;
 };
 
 /**
