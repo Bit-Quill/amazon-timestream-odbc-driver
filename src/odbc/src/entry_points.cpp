@@ -385,16 +385,6 @@ SQLRETURN SQL_API SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
   return SQL_SUCCESS;
 }
 
-SQLRETURN SQL_API SQLGetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
-                                      SQLPOINTER value) {
-  IGNITE_UNUSED(conn);
-  IGNITE_UNUSED(option);
-  IGNITE_UNUSED(value);
-
-  LOG_MSG("SQLGetConnectOption called");
-  return SQL_SUCCESS;
-}
-
 SQLRETURN SQL_API SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
                                    SQLPOINTER value) {
   IGNITE_UNUSED(stmt);
@@ -402,16 +392,6 @@ SQLRETURN SQL_API SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
   IGNITE_UNUSED(value);
 
   LOG_MSG("SQLGetStmtOption called");
-  return SQL_SUCCESS;
-}
-
-SQLRETURN SQL_API SQLSetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
-                                      SQLULEN value) {
-  IGNITE_UNUSED(conn);
-  IGNITE_UNUSED(option);
-  IGNITE_UNUSED(value);
-
-  LOG_MSG("SQLSetConnectOption called");
   return SQL_SUCCESS;
 }
 

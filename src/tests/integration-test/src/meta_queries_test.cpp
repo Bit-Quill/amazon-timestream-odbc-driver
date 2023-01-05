@@ -1630,6 +1630,34 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsSearchPattern) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsIdentifier) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_METADATA_ID,
+                          reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+
+  std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("%");
+
+  ret = SQLColumns(stmt, nullptr, 0, schemaName.data(), SQL_NTS,
+                             table.data(), SQL_NTS, column.data(), SQL_NTS);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+
+#ifndef __linux__
+  // Linux unixODBC DM could clear the diagnostic error message when 
+  // function return value is not SQL_ERROR
+  std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
+  std::string pattern = "Failed to execute query \"describe %.%\"";
+
+  if (error.find(pattern) == std::string::npos)
+    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
+#endif
+}
+
 BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNonExist) {
   ConnectToTS();
 
@@ -1866,6 +1894,26 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsMany) {
   } while (SQL_SUCCEEDED(ret));
   BOOST_CHECK(count > 1);
 
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+}
+
+BOOST_AUTO_TEST_CASE(TestGetDataWithTablesIdentifier) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLSetConnectAttr(
+      dbc, SQL_ATTR_METADATA_ID, reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
+
+  std::vector< SQLWCHAR > empty = {0};
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("%");
+
+  // test with table passed as "%"
+  ret = SQLTables(stmt, empty.data(), SQL_NTS, nullptr, 0,
+                            table.data(), SQL_NTS, empty.data(), SQL_NTS);
+
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  ret = SQLFetch(stmt);
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 

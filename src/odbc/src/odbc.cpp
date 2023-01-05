@@ -1635,6 +1635,7 @@ SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
+
   if (!connection) {
     LOG_ERROR_MSG(
         "SQLSetConnectAttr exiting with SQL_INVALID_HANDLE because connection "

@@ -1818,85 +1818,8 @@ BOOST_AUTO_TEST_CASE(TestErrorMessage, *disabled()) {
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
   std::string pattern = "Object \"B\" not found";
 
-  if (error.find(pattern) != std::string::npos)
-    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
-}
-
-BOOST_AUTO_TEST_CASE(TestLoginTimeout, *disabled()) {
-  Prepare();
-
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-
-  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT,
-                                    reinterpret_cast< SQLPOINTER >(1), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  std::vector< SQLWCHAR > connectStr(dsnConnectionString.begin(),
-                                     dsnConnectionString.end());
-
-  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
-  SQLSMALLINT outstrlen;
-
-  // Connecting to ODBC server.
-  ret = SQLDriverConnect(dbc, NULL, &connectStr[0],
-                         static_cast< SQLSMALLINT >(connectStr.size()), outstr,
-                         ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
-}
-
-// Enable this test after https://bitquill.atlassian.net/browse/AD-599 is
-// finished
-BOOST_AUTO_TEST_CASE(TestConnectionTimeoutFail, *disabled()) {
-  Prepare();
-
-  std::string dsnConnectionString;
-  // pass a wrong port number to make the connect action timeout
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-  // The connection timeout value is set but not applied when driver connects
-  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
-                                    reinterpret_cast< SQLPOINTER >(5), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  std::vector< SQLWCHAR > connectStr(dsnConnectionString.begin(),
-                                     dsnConnectionString.end());
-
-  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
-  SQLSMALLINT outstrlen;
-
-  // Connecting to ODBC server.
-  ret = SQLDriverConnect(dbc, NULL, &connectStr[0],
-                         static_cast< SQLSMALLINT >(connectStr.size()), outstr,
-                         ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-
-  std::string error = GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc);
-  std::string pattern = "Timed out after 5000 ms while waiting to connect";
-
   if (error.find(pattern) == std::string::npos)
     BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
-}
-
-BOOST_AUTO_TEST_CASE(TestConnectionTimeoutQuery, *disabled()) {
-  connectToLocalServer("odbc-test");
-
-  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
-                                    reinterpret_cast< SQLPOINTER >(5), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  std::vector< SQLWCHAR > selectReq =
-      MakeSqlBuffer("SELECT * FROM queries_test_005");
-
-  ret = SQLExecDirect(stmt, selectReq.data(), selectReq.size());
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
 BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery, *disabled()) {
@@ -1906,28 +1829,6 @@ BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery, *disabled()) {
                                  reinterpret_cast< SQLPOINTER >(5), 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  std::vector< SQLWCHAR > selectReq =
-      MakeSqlBuffer("SELECT * FROM queries_test_005");
-
-  ret = SQLExecDirect(stmt, selectReq.data(), selectReq.size());
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-}
-
-BOOST_AUTO_TEST_CASE(TestQueryAndConnectionTimeoutQuery, *disabled()) {
-  connectToLocalServer("odbc-test");
-
-  SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
-                                 reinterpret_cast< SQLPOINTER >(5), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
-                          reinterpret_cast< SQLPOINTER >(3), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
   std::vector< SQLWCHAR > selectReq =
       MakeSqlBuffer("SELECT * FROM queries_test_005");

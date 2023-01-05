@@ -255,6 +255,15 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   int32_t GetEnvODBCVer();
 
+  /**
+   * Get metadataID_.
+   *
+   * @return metadataID_ value.
+   */
+  bool GetMetadataID() {
+    return metadataID_;
+  }
+
  protected:
   /**
    * Constructor.
@@ -504,25 +513,17 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   bool TryRestoreConnection(const config::Configuration& cfg, IgniteError& err);
 
-  /**
-   * Retrieve timeout from parameter.
-   *
-   * @param value Parameter.
-   * @return Timeout.
-   */
-  int32_t RetrieveTimeout(void* value);
-
   /** Parent. */
   Environment* env_;
 
   /** Connection timeout in seconds. */
   int32_t timeout_ = 0;
 
-  /** Login timeout in seconds. */
-  int32_t loginTimeout_ = DEFAULT_CONNECT_TIMEOUT;
-
   /** Autocommit flag. */
   bool autoCommit_ = true;
+
+  /** Metadata ID flag, indicate if the string arguments of catalog functions are treated as identifiers. */
+  bool metadataID_;
 
   /** Configuration. */
   config::Configuration config_;

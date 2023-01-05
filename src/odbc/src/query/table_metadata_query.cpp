@@ -78,16 +78,17 @@ TableMetadataQuery::TableMetadataQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  all_catalogs = catalog && *catalog == SQL_ALL_CATALOGS && schema
-                 && schema->empty() && table.empty();
+  if (!connection.GetMetadataID()) {
+    all_catalogs = catalog && *catalog == SQL_ALL_CATALOGS && schema
+                   && schema->empty() && table.empty();
 
-  all_schemas = schema && *schema == SQL_ALL_SCHEMAS && catalog
-                && catalog->empty() && table.empty();
+    all_schemas = schema && *schema == SQL_ALL_SCHEMAS && catalog
+                  && catalog->empty() && table.empty();
 
-  all_table_types = tableType && *tableType == SQL_ALL_TABLE_TYPES && catalog
-                    && catalog->empty() && schema && schema->empty()
-                    && table.empty();
-  
+    all_table_types = tableType && *tableType == SQL_ALL_TABLE_TYPES && catalog
+                      && catalog->empty() && schema && schema->empty()
+                      && table.empty();
+  }
   int32_t odbcVer = connection.GetEnvODBCVer();
 
 // driver needs to have have 2.0 column names for applications (e.g., Excel on macOS) 
@@ -177,7 +178,7 @@ TableMetadataQuery::TableMetadataQuery(
                                      Nullability::NULLABLE));
   }
 
-  if (schema && !schema->empty()) {
+  if (!connection.GetMetadataID() && schema && !schema->empty()) {
     schema_regex = utility::ConvertPatternToRegex(schema.value());
   }
 }
@@ -451,12 +452,23 @@ SqlResult::Type TableMetadataQuery::getTables() {
 
       // If database name does not equal schema, then do not include the
       // database in the result set
-      if (schema && *schema != SQL_ALL_SCHEMAS && !std::regex_match(databaseName, schema_regex)) {
-        LOG_DEBUG_MSG(
-            "database ("
-            << databaseName << ") does not equal schema (" << *schema
-            << "), so the database will not be included in the result set.")
-        continue;
+      if (schema && *schema != SQL_ALL_SCHEMAS) {
+        bool match;
+        if (connection.GetMetadataID()) {
+          Aws::String schemaUpper = Aws::Utils::StringUtils::ToUpper(schema.value().data());
+          Aws::String dbNameUpper = Aws::Utils::StringUtils::ToUpper(databaseName.data());
+          match = (schemaUpper == dbNameUpper);
+        } else {
+          match = std::regex_match(databaseName, schema_regex);
+        }
+        
+        if (!match) {
+          LOG_DEBUG_MSG(
+              "database ("
+              << databaseName << ") does not equal schema (" << *schema
+              << "), so the database will not be included in the result set.")
+          continue;
+        }
       }
 
       // retrieve tables using database name
@@ -500,7 +512,7 @@ SqlResult::Type TableMetadataQuery::getTablesWithDBName(std::string& databaseNam
     ListTablesResult tbResult = tbOutcome.GetResult();
     Aws::Vector< Table > tbVector = tbResult.GetTables();
 
-    meta::ReadTableMetaVector(table, tbVector, meta);
+    meta::ReadTableMetaVector(table, connection.GetMetadataID(), tbVector, meta);
 
     nextTableToken = tbResult.GetNextToken();
 

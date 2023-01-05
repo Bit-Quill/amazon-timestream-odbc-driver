@@ -31,6 +31,9 @@
 
 #define ODBCVER 0x0351
 
+// Internal SQL connection attribute to set log level
+#define SQL_ATTR_TSLOG_DEBUG 65536
+
 #include <odbcinst.h>
 #include <sqlext.h>
 

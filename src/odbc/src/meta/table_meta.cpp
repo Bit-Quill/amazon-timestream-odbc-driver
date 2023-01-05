@@ -45,7 +45,7 @@ void TableMeta::Read(std::string& tbType) {
   tableType = tbType;
 }
 
-void ReadTableMetaVector(const std::string& tableName,
+void ReadTableMetaVector(const std::string& tableName,  bool isIdentifier,
                          const Aws::Vector< Table >& tbVector,
                          TableMetaVector& meta) {
   std::regex tablePattern(utility::ConvertPatternToRegex(tableName));
@@ -57,7 +57,8 @@ void ReadTableMetaVector(const std::string& tableName,
     // TODO [AT-1154] Make server handle search patterns
     // and remove the code for search pattern here
     // https://bitquill.atlassian.net/browse/AT-1154
-    if (tableName.empty() || std::regex_match(curTableName, tablePattern)) {
+    if (tableName.empty() || (isIdentifier && curTableName == tableName) 
+        || (!isIdentifier && std::regex_match(curTableName, tablePattern))) {
       meta.emplace_back(TableMeta());
       meta.back().Read(tb);
     } else {

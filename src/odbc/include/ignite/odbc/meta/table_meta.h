@@ -184,10 +184,12 @@ typedef std::vector< TableMeta > TableMetaVector;
 /**
  * Read tables metadata collection.
  * @param tableName table name for result set
+ * @param isIdentifier flag to indicate if the tableName is treated as identifier or not
  * @param tbVector Aws::Vector< Table >.
  * @param meta Collection.
  */
 void ReadTableMetaVector(const std::string& tableName,
+                         bool isIdentifier,
                          const Aws::Vector< Table >& tbVector,
                          TableMetaVector& meta);
 

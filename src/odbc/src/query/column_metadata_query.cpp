@@ -379,13 +379,8 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
   // meta should only be cleared here as MakeRequestGetColumnsMetaPerTable() could be called multiple times
   meta.clear();
 
-  // check if the schema/table has pattern characters in them. If they are
-  // different with their pattern string, that means they could contain "\",
-  // "_" or "%". This logic should be replaced by checking SQL_ATTR_METADATA_ID
-  // value when implement AT-1150.
-  std::string schemaPattern = utility::ConvertPatternToRegex(schema.value());
-  std::string tablePattern = utility::ConvertPatternToRegex(table);  
-  if (schema.value() != schemaPattern || table != tablePattern) {
+  if (!connection.GetMetadataID()) {
+    // schema name and table name are treated as search patterns
     SqlResult::Type result = tableMetadataQuery_->Execute();
     if (result != SqlResult::AI_SUCCESS) {
       LOG_WARNING_MSG("Failed to get table metadata for " << (*schema) << "." << table);
@@ -422,6 +417,7 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
     }
     return result;
   } else {
+    // schema name and table name are treated as case insensitive identifiers
     return MakeRequestGetColumnsMetaPerTable(schema.value(), table);
   }
 }

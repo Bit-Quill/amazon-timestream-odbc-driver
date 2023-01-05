@@ -63,12 +63,11 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadGet) {
   SQLUINTEGER dead;
   SQLRETURN ret;
 
-  //TODO: Should return SQL_SUCCESS needs to be fixed by https://bitquill.atlassian.net/browse/AT-1150
   ret = SQLGetConnectAttr(dbc, SQL_ATTR_CONNECTION_DEAD, &dead, 0, 0);
 
-  //ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
-  //BOOST_REQUIRE_EQUAL(dead, SQL_CD_FALSE);
+  BOOST_REQUIRE_EQUAL(dead, SQL_CD_FALSE);
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadSet) {
@@ -85,74 +84,6 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionDeadSet) {
   // https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/sqlsetconnectattr-function#diagnostics
   CheckSQLConnectionDiagnosticError("HY092");
 }
-
-BOOST_AUTO_TEST_CASE(ConnectionAttributeDefaultLoginTimeout) {
-  Prepare();
-
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-
-  std::vector< SQLWCHAR > connectStr(dsnConnectionString.begin(),
-                                     dsnConnectionString.end());
-
-  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
-  SQLSMALLINT outstrlen;
-
-  // Connecting to Timestream database.
-  SQLRETURN ret = SQLDriverConnect(
-      dbc, NULL, &connectStr[0],
-      static_cast< SQLSMALLINT >(connectStr.size()), outstr,
-      sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  SQLUINTEGER timeout = -1;
-  ret =
-      SQLGetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, &timeout, 0, 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-  //Needs to check default value
-  //https://bitquill.atlassian.net/browse/AT-1150
-  //BOOST_REQUIRE_EQUAL(
-  //    timeout, (SQLUINTEGER)Configuration::DefaultValue::loginTimeoutSec);
-}
-
-// iODBC not working as expected 
-// TODO investigate why the setConnectAttr are not being called before
-// establishing connection
-// enable test after fix
-// https://bitquill.atlassian.net/browse/AT-1150
-#ifndef __APPLE__
-BOOST_AUTO_TEST_CASE(ConnectionAttributeLoginTimeout) {
-  Prepare();
-
-  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT,
-                          reinterpret_cast< SQLPOINTER >(42), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-
-  std::vector< SQLWCHAR > connectStr(dsnConnectionString.begin(),
-                                     dsnConnectionString.end());
-
-  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
-  SQLSMALLINT outstrlen;
-
-  // Connecting to ODBC server.
-  ret = SQLDriverConnect(dbc, NULL, &connectStr[0],
-                         static_cast< SQLSMALLINT >(connectStr.size()), outstr,
-                         sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
-
-  SQLUINTEGER timeout = -1;
-
-  ret = SQLGetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, &timeout, 0, 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-  BOOST_REQUIRE_EQUAL(timeout, 42);
-}
-#endif
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutGet) {
   ConnectToTS();
@@ -175,18 +106,14 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutSet) {
   ret = SQLSetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT,
                           reinterpret_cast< SQLPOINTER >(10), 0);
 
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  SQLUINTEGER timeout;
-
-  ret = SQLGetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT, &timeout, 0, 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  BOOST_REQUIRE_EQUAL(timeout, 10);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  std::string error = GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc);
+  std::string pattern = "Specified attribute is not supported.";
+  if (error.find(pattern) == std::string::npos)
+      BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
 }
 
-BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitGet) {
+BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommit) {
   ConnectToTS();
 
   SQLUINTEGER autoCommit;
@@ -195,46 +122,101 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitGet) {
   ret = SQLGetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT, &autoCommit, 0, 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
   BOOST_REQUIRE_EQUAL(autoCommit, SQL_AUTOCOMMIT_ON);
-}
-
-BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommitSet) {
-  ConnectToTS();
-
-  SQLRETURN ret;
 
   ret = SQLSetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT,
                           reinterpret_cast< SQLPOINTER >(SQL_AUTOCOMMIT_OFF), 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
-  SQLUINTEGER autoCommit;
-
-  ret = SQLGetConnectAttr(dbc, SQL_ATTR_CONNECTION_TIMEOUT, &autoCommit, 0, 0);
+  ret = SQLGetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT, &autoCommit, 0, 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
   BOOST_REQUIRE_EQUAL(autoCommit, SQL_AUTOCOMMIT_OFF);
 }
 
-//TODO: enable this test for https://bitquill.atlassian.net/browse/AT-1150
-BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionOption, *disabled()) {
+BOOST_AUTO_TEST_CASE(ConnectionAttributeMetadataId) {
   ConnectToTS();
 
-  SQLRETURN ret;
+  SQLUINTEGER id = -1;
+  SQLRETURN ret = SQLGetConnectAttr(dbc, SQL_ATTR_METADATA_ID, &id, 0, 0);
 
-  ret = SQLSetConnectOption(dbc, SQL_ATTR_CONNECTION_TIMEOUT, 10);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, SQL_FALSE);
+
+  ret = SQLSetConnectAttr(dbc, SQL_ATTR_METADATA_ID,
+                       reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
-  SQLUINTEGER timeout;
+  id = -1;
 
-  ret = SQLGetConnectOption(dbc, SQL_ATTR_CONNECTION_TIMEOUT, &timeout);
+  ret = SQLGetConnectAttr(dbc, SQL_ATTR_METADATA_ID, &id, 0, 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, SQL_TRUE);
+}
 
-  BOOST_REQUIRE_EQUAL(timeout, 10);
+BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoIPD) {
+  ConnectToTS();
+
+  SQLUINTEGER id = -1;
+  SQLRETURN ret = SQLGetConnectAttr(dbc, SQL_ATTR_AUTO_IPD, &id, 0, 0);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, SQL_FALSE);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionAttributeAsyncEnable) {
+  ConnectToTS();
+
+  SQLUINTEGER id = -1;
+  SQLRETURN ret = SQLGetConnectAttr(dbc, SQL_ATTR_ASYNC_ENABLE, &id, 0, 0);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, SQL_ASYNC_ENABLE_OFF);
+
+  ret =
+      SQLSetConnectAttr(dbc, SQL_ATTR_ASYNC_ENABLE,
+                          reinterpret_cast< SQLPOINTER >(SQL_ASYNC_ENABLE_ON),
+                          0);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  std::string error = GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc);
+  std::string pattern = "Specified attribute is not supported.";
+  if (error.find(pattern) == std::string::npos)
+    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionAttributeTSLogDebug) {
+  ConnectToTS();
+
+  SQLUINTEGER id = -1;
+  SQLRETURN ret =
+      SQLSetConnectAttr(dbc, SQL_ATTR_TSLOG_DEBUG,
+      reinterpret_cast< SQLPOINTER >(LogLevel::Type::DEBUG_LEVEL), 0);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  ret = SQLGetConnectAttr(dbc, SQL_ATTR_TSLOG_DEBUG, &id, 0, 0);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, static_cast<SQLUINTEGER>(LogLevel::Type::DEBUG_LEVEL));
+}
+
+
+// Test SQLGetConnectOption/SQLSetConnectOption
+BOOST_AUTO_TEST_CASE(ConnectionSetAndGetConnectOption) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLSetConnectOption(dbc, SQL_ATTR_METADATA_ID, SQL_TRUE);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  SQLUINTEGER id = 0;
+  ret = SQLGetConnectOption(dbc, SQL_ATTR_METADATA_ID, &id);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, SQL_TRUE);
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout, *disabled()) {

@@ -68,7 +68,7 @@ bool Connection::awsSDKReady_ = false;
 std::atomic< int > Connection::refCount_(0);
 
 Connection::Connection(Environment* env)
-    : env_(env), info_(config_) {
+    : env_(env), info_(config_), metadataID_(false) {
   // The AWS SDK for C++ must be initialized by calling Aws::InitAPI.
   // It should only be initialized only once during the application running
   // All Connections in different thread must wait before the InitAPI is
@@ -390,24 +390,19 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
 
   switch (attr) {
     case SQL_ATTR_CONNECTION_DEAD: {
-      return SqlResult::AI_ERROR;
+      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
+
+      *val = queryClient_ ? SQL_CD_FALSE : SQL_CD_TRUE;
+
+      if (valueLen)
+        *valueLen = SQL_IS_INTEGER;
     }
 
     case SQL_ATTR_CONNECTION_TIMEOUT: {
       SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
 
-      *val = static_cast< SQLUINTEGER >(timeout_);
-
-      if (valueLen)
-        *valueLen = SQL_IS_INTEGER;
-
-      break;
-    }
-
-    case SQL_ATTR_LOGIN_TIMEOUT: {
-      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
-
-      *val = static_cast< SQLUINTEGER >(loginTimeout_);
+      // connection timeout is disabled. Same behavior as version 1.0
+      *val = 0;
 
       if (valueLen)
         *valueLen = SQL_IS_INTEGER;
@@ -419,6 +414,53 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
       SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
 
       *val = autoCommit_ ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF;
+
+      if (valueLen)
+        *valueLen = SQL_IS_INTEGER;
+
+      break;
+    }
+
+    case SQL_ATTR_METADATA_ID: {
+      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
+
+      *val = metadataID_;
+
+      if (valueLen)
+        *valueLen = SQL_IS_INTEGER;
+
+      break;
+    }
+
+    case SQL_ATTR_AUTO_IPD: {
+      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
+
+      // could only be false as we do not support SQLPrepare.
+      *val = false;
+
+      if (valueLen)
+        *valueLen = SQL_IS_INTEGER;
+
+      break;    
+    }
+
+    case SQL_ATTR_ASYNC_ENABLE: {
+      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
+
+      // Asynchronous execution is not supported
+      *val = SQL_ASYNC_ENABLE_OFF;
+
+      if (valueLen)
+        *valueLen = SQL_IS_INTEGER;    
+        
+      break;
+    }
+
+    case SQL_ATTR_TSLOG_DEBUG: {
+      SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
+
+      std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();
+      *val = static_cast< SQLUINTEGER >(logger->GetLogLevel());
 
       if (valueLen)
         *valueLen = SQL_IS_INTEGER;
@@ -451,27 +493,10 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
       return SqlResult::AI_ERROR;
     }
 
-    case SQL_ATTR_CONNECTION_TIMEOUT: {
-      timeout_ = RetrieveTimeout(value);
-
-      if (GetDiagnosticRecords().GetStatusRecordsNumber() != 0)
-        return SqlResult::AI_SUCCESS_WITH_INFO;
-
-      break;
-    }
-
-    case SQL_ATTR_LOGIN_TIMEOUT: {
-      loginTimeout_ = RetrieveTimeout(value);
-
-      if (GetDiagnosticRecords().GetStatusRecordsNumber() != 0)
-        return SqlResult::AI_SUCCESS_WITH_INFO;
-
-      break;
-    }
-
     case SQL_ATTR_AUTOCOMMIT: {
       SQLUINTEGER mode =
           static_cast< SQLUINTEGER >(reinterpret_cast< ptrdiff_t >(value));
+
 
       if (mode != SQL_AUTOCOMMIT_ON && mode != SQL_AUTOCOMMIT_OFF) {
         AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
@@ -485,6 +510,40 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
       break;
     }
 
+    case SQL_ATTR_METADATA_ID: {
+      SQLUINTEGER id =
+          static_cast< SQLUINTEGER >(reinterpret_cast< ptrdiff_t >(value));
+
+      if (id != SQL_TRUE && id != SQL_FALSE) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Specified attribute is not supported.");
+
+        return SqlResult::AI_ERROR;
+      }
+
+      metadataID_ = id;
+
+      break;    
+    }
+
+    case SQL_ATTR_ANSI_APP: {
+      // According to Microsoft, if a driver exhibits the same behavior for both ANSI and Unicode applications, 
+      // it should return SQL_ERROR for this attribute. Our driver has same behavior for ANSI and Unicode applications.
+      AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+                        "Same behavior for ANSI and Unicode applications.");
+
+      return SqlResult::AI_ERROR;
+    }
+
+    case SQL_ATTR_TSLOG_DEBUG: {
+      LogLevel::Type type =
+          static_cast< LogLevel::Type >(reinterpret_cast< ptrdiff_t >(value));
+
+
+      std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();
+      logger->SetLogLevel(type);
+      break;
+    }
     default: {
       AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
                       "Specified attribute is not supported.");
@@ -566,6 +625,8 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   Aws::Client::ClientConfiguration clientCfg;
   clientCfg.region = cfg.GetRegion();
   clientCfg.enableEndpointDiscovery = true;
+  clientCfg.connectTimeoutMs = cfg.GetConnectionTimeout();
+  clientCfg.requestTimeoutMs = cfg.GetReqTimeout();
 
   queryClient_ = CreateTSQueryClient(credentials, clientCfg);
   writeClient_ = CreateTSWriteClient(credentials, clientCfg);
@@ -614,24 +675,6 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   UpdateConnectionRuntimeInfo(config_, info_);
 
   return true;
-}
-
-int32_t Connection::RetrieveTimeout(void* value) {
-  SQLUINTEGER uTimeout =
-      static_cast< SQLUINTEGER >(reinterpret_cast< ptrdiff_t >(value));
-
-  if (uTimeout > INT32_MAX) {
-    std::stringstream ss;
-
-    ss << "Value is too big: " << uTimeout << ", changing to " << timeout_
-       << ".";
-
-    AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, ss.str());
-
-    return INT32_MAX;
-  }
-
-  return static_cast< int32_t >(uTimeout);
 }
 
 std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >

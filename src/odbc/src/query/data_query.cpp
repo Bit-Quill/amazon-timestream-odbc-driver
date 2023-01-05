@@ -132,7 +132,8 @@ SqlResult::Type DataQuery::SwitchCursor() {
   const Aws::Vector< Row >& rows = outcome.GetResult().GetRows();
   const Aws::String& token = outcome.GetResult().GetNextToken();
   if (rows.empty()) {
-    LOG_INFO_MSG("Data fetching is finished, number of rows fetched: " << rowCounter);
+    LOG_INFO_MSG(
+        "Data fetching is finished, number of rows fetched: " << rowCounter);
     return SqlResult::AI_NO_DATA;
   }
 
@@ -143,7 +144,8 @@ SqlResult::Type DataQuery::SwitchCursor() {
 
   if (token.empty()) {
     hasAsyncFetch = false;  // no async fetch any more
-    LOG_INFO_MSG("Data fetching is finished, number of rows fetched: " << rowCounter);
+    LOG_INFO_MSG(
+        "Data fetching is finished, number of rows fetched: " << rowCounter);
   } else {
     request_.SetNextToken(token);
     std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
@@ -315,9 +317,9 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
       LOG_ERROR_MSG("ERROR: " << error.GetExceptionName() << ": "
                               << error.GetMessage() << " for query " << sql_);
 
-      diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
-                           "AWS API ERROR: " + error.GetExceptionName() + ": "
-                               + error.GetMessage() + " for query " + sql_);
+      diag.AddStatusRecord(
+          SqlState::SHY000_GENERAL_ERROR,
+          "AWS API Failure: Failed to execute query \"" + sql_ + "\"");
       InternalClose();
       return SqlResult::AI_ERROR;
     }
