@@ -269,8 +269,16 @@ Note that the following table describes the planned functionality for the GA rel
 ## Supported Connection Attributes
 | Connection Information Types | Default | Support Value Change|
 |--------|------|-------|
-| SQL_ATTR_LOGIN_TIMEOUT | 30 | yes |
-| SQL_ATTR_CONNECTION_DEAD | N/A | no |
+| SQL_ATTR_ANSI_APP | SQL_ERROR | no |
+| SQL_ATTR_ASYNC_ENABLE | SQL_ASYNC_ENABLE_OFF | no |
+| SQL_ATTR_AUTO_IPD | false | no |
+| SQL_ATTR_AUTOCOMMIT | true | yes |
+| SQL_ATTR_CONNECTION_DEAD | - | no |
+| SQL_ATTR_CONNECTION_TIMEOUT | 0 | no |
+| SQL_ATTR_TSLOG_DEBUG | - | yes |
+| SQL_ATTR_METADATA_ID | false | yes |
+
+Note: SQL_ATTR_TSLOG_DEBUG is an internal connection attribute. It can be used to change logging level after a connection is established.
 
 ## Supported Statements Attributes
 Table of statement attributes supported by the Amazon Timestream ODBC driver.\
