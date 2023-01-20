@@ -23,7 +23,7 @@
 #include <ignite/odbc/config/config_tools.h>
 #include <ignite/odbc/config/configuration.h>
 #include <ignite/odbc/config/connection_string_parser.h>
-#include <ignite/odbc/auth_type.h>
+#include <ignite/odbc/authentication/auth_type.h>
 #include <ignite/odbc/log.h>
 #include <ignite/odbc/log_level.h>
 #include <ignite/odbc/odbc_error.h>
@@ -64,8 +64,6 @@ const std::string testRoleArn = "testRoleArn";
 const std::string testAadAppId = "testAadAppId";
 const std::string testAadClientSecret = "testAadClientSecret";
 const std::string testAadTenant = "testAadTenant";
-const std::string testLogPath = Logger::GetLoggerInstance()->GetLogPath();
-const LogLevel::Type testLogLevel = Logger::GetLoggerInstance()->GetLogLevel();
 }  // namespace
 
 const char* BoolToStr(bool val, bool lowerCase = true) {
@@ -191,8 +189,8 @@ void CheckConnectionConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetAadAppId(), testAadAppId);
   BOOST_CHECK_EQUAL(cfg.GetAadClientSecret(), testAadClientSecret);
   BOOST_CHECK_EQUAL(cfg.GetAadTenant(), testAadTenant);
-  BOOST_CHECK(cfg.GetLogLevel() == testLogLevel);
-  BOOST_CHECK(cfg.GetLogPath() == testLogPath);
+  BOOST_CHECK(cfg.GetLogLevel() == Logger::GetLoggerInstance()->GetLogLevel());
+  BOOST_CHECK(cfg.GetLogPath() == Logger::GetLoggerInstance()->GetLogPath());
   BOOST_CHECK(!cfg.IsDsnSet());
 
   // the expected string is in alphabetical order
@@ -208,8 +206,9 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << "idparn=" << testIdPArn << ';' << "idphost=" << testIdPHost
               << ';' << "idppassword=" << testIdPPassword << ';'
               << "idpusername=" << testIdPUserName << ';'
-              << "loglevel=" << LogLevel::ToString(testLogLevel) << ';'
-              << "logoutput=" << testLogPath << ';'
+              << "loglevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
+              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath()
+              << ';'
               << "maxconnections=" << testMaxConnections << ';'
               << "maxretrycountclient=" << testMaxRetryCountClient << ';'
               << "oktaapplicationid=" << testOktaAppId << ';'
@@ -309,8 +308,8 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
               << "ACCESSKEYID=" << testAccessKeyId << ';'
               << "SECRETKEY=" << testSecretKey << ';'
               << "SESSIONTOKEN=" << testSessionToken << ';'
-              << "LOGLEVEL=" << LogLevel::ToString(testLogLevel) << ';'
-              << "LOGOUTPUT=" << testLogPath << ';'
+              << "LOGLEVEL=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
+              << "LOGOUTPUT=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
               << "AUTH=" << AuthType::ToString(testAuthType) << ';'
               << "PROFILENAME=" << testProfileName << ';'
               << "REQUESTTIMEOUT=" << testReqTimeoutMS << ';'
@@ -345,8 +344,8 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
               << "accesskeyid=" << testAccessKeyId << ';'
               << "secretkey=" << testSecretKey << ';'
               << "sessiontoken=" << testSessionToken << ';'
-              << "loglevel=" << LogLevel::ToString(testLogLevel) << ';'
-              << "logoutput=" << testLogPath << ';'
+              << "loglevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
+              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "profilename=" << testProfileName << ';'
               << "requesttimeout=" << testReqTimeoutMS << ';'
@@ -381,8 +380,8 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
               << "accesskeyid=" << testAccessKeyId << ';'
               << "secretkey=" << testSecretKey << ';'
               << "sessiontoken=" << testSessionToken << ';'
-              << "loglevel=" << LogLevel::ToString(testLogLevel) << ';'
-              << "logoutput=" << testLogPath << ';'
+              << "loglevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
+              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "profilename=" << testProfileName << ';'
               << "requesttimeout=" << testReqTimeoutMS << ';'
@@ -419,8 +418,8 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
               << "AccessKeyId=" << testAccessKeyId << ';'
               << "SecretKey=" << testSecretKey << ';'
               << "SessionToken=" << testSessionToken << ';'
-              << "LogLevel=" << LogLevel::ToString(testLogLevel) << ';'
-              << "LogOutput=" << testLogPath << ';'
+              << "LogLevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
+              << "LogOutput=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
               << "Auth=" << AuthType::ToString(testAuthType) << ';'
               << "ProfileName=" << testProfileName << ';'
               << "RequestTimeout=" << testReqTimeoutMS << ';'
@@ -456,8 +455,8 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
               << "ACCESSKEYID =" << testAccessKeyId << ';'
               << "SECRETKEY=" << testSecretKey << ';'
               << "SESSIONTOKEN=" << testSessionToken << ';'
-              << "  LOGLEVEL =" << LogLevel::ToString(testLogLevel) << "  ; "
-              << "LOGOUTPUT=  " << testLogPath << " ;"
+              << "  LOGLEVEL =" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << "  ; "
+              << "LOGOUTPUT=  " << Logger::GetLoggerInstance()->GetLogPath() << " ;"
               << " AUTH=" << AuthType::ToString(testAuthType) << ';'
               << "     PROFILENAME  = " << testProfileName << "    ; "
               << "  REQUESTTIMEOUT=" << testReqTimeoutMS << "  ;  "

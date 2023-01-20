@@ -209,10 +209,14 @@ std::string OdbcTestSuite::ExpectConnectionReject(
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   OdbcClientError error = GetOdbcError(SQL_HANDLE_DBC, dbc);
   BOOST_CHECK_EQUAL(error.sqlstate, expectedState);
-  size_t prefixLen = std::string("[unixODBC]").size();
-  BOOST_REQUIRE(error.message.substr(0, expectedError.size()) == expectedError
-                || error.message.substr(prefixLen, expectedError.size())
-                       == expectedError);
+  size_t start = 0;
+  if (error.message.substr(0, 10) == "[unixODBC]") {
+    start += 10;
+  }
+
+  BOOST_REQUIRE_MESSAGE(
+      error.message.substr(start, expectedError.size()) == expectedError,
+      error.message.substr(start, expectedError.size()) + "!=" + expectedError);
 
   return GetOdbcErrorState(SQL_HANDLE_DBC, dbc);
 }
@@ -971,7 +975,6 @@ void OdbcTestSuite::CreateGenericDsnConnectionString(
             "secretKey=" + TSPassword + ";";
         break;
       case AuthType::Type::AAD:
-      case AuthType::Type::OKTA:
         tsAuthentication = 
             "idPUsername=" + TSUsername + ";"
             "idPPassword=" + TSPassword + ";";
@@ -985,6 +988,33 @@ void OdbcTestSuite::CreateGenericDsnConnectionString(
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
+}
+
+void OdbcTestSuite::CreateOktaDsnConnectionString(
+    std::string& connectionString, const char* host, const char* uid,
+    const char* pwd, const char* appId, const char* roleArn,
+    const char* idpArn) const {
+  std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
+  std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
+  std::string region = GetEnv("AWS_REGION", "us-west-2");
+
+  connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "dsn={" + Configuration::DefaultValue::dsn + "};"
+      "auth=" + AuthType::ToString(AuthType::Type::OKTA) + ";"
+      "region=" + region + ";"
+      "logOutput=" + logPath + ";"
+      "logLevel=" + logLevel + ";";
+
+  std::string tsAuthentication = 
+      "idPHost=" + (!host ? GetEnv("OKTA_HOST") : std::string(host)) + ";" +
+      "idPUsername=" + (!uid ? GetEnv("OKTA_USER") : std::string(uid)) + ";"
+      "idPPassword=" + (!pwd ? GetEnv("OKTA_USER_PWD") : std::string(pwd)) + ";"
+      "OktaApplicationID=" + (!appId ? GetEnv("OKTA_APP_ID") : std::string(appId)) + ";"
+      "roleARN=" + (!roleArn ? GetEnv("OKTA_ROLE_ARN") : std::string(roleArn)) + ";"
+      "idPARN=" + (!idpArn ? GetEnv("OKTA_IDP_ARN") : std::string(idpArn)) + ";";
+
+  connectionString.append(tsAuthentication);
 }
 
 void OdbcTestSuite::CreateDsnConnectionStringForAWS(

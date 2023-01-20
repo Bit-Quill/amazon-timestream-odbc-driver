@@ -21,7 +21,7 @@
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/log_level.h"
 #include <ignite/odbc/common/platform_utils.h>
-#include <ignite/odbc/auth_type.h>
+#include <ignite/odbc/authentication/auth_type.h>
 #include "ignite/odbc/statement.h"
 #include "ignite/odbc/utility.h"
 

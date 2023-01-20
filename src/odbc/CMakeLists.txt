@@ -44,7 +44,9 @@ include_directories(include)
 set(SOURCES src/app/application_data_buffer.cpp
         src/app/parameter.cpp
         src/app/parameter_set.cpp
-        src/auth_type.cpp
+        src/authentication/auth_type.cpp
+	src/authentication/okta.cpp
+        src/authentication/saml.cpp
 	src/binary/binary_containers.cpp
 	src/binary/binary_raw_writer.cpp
 	src/binary/binary_writer.cpp
@@ -151,6 +153,10 @@ include_directories(${OS_INCLUDE})
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(${TARGET} SHARED ${SOURCES} version.rc)
+if (WIN32)
+    # static library created for Windows only for tests linking
+    add_library(${TARGET}-static STATIC ${SOURCES} version.rc)
+endif ()
 
 set_target_properties(${TARGET} PROPERTIES VERSION ${CMAKE_PROJECT_VERSION})
 

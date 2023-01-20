@@ -277,3 +277,19 @@ OpenCppCoverage is used to generate code coverage for windows, for more informat
 
 ## Data Population for Testing
 [Data Population Guide](data-population-guide.md)
+
+## Integration Tests
+
+### Okta Authentication Tests
+1. The Okta authentication tests are disabled by default due to no valid Okta test account. They could be enabled by exporting environment variable `ENABLE_OKTA_TEST` to `true`.
+
+2. To run Okta authentication test, the environment variables in the following table need to be configured with correct value.  Refer to [Okta Authentication Setup Guide](Okta-setup.md) for setting up an Okta authentication.
+
+   | Variable Name |  Corresponding Connection String Option   |
+   |---------------|-------------------------------------------|
+   |`OKTA_HOST`    |   IdPHost                                 |
+   |`OKTA_USER`    |   UID or IdPUserName                      |
+   |`OKTA_USER_PWD`|   PWD or IdPPassword                      |
+   |`OKTA_APP_ID`  |   OktaApplicationID                       |
+   |`OKTA_ROLE_ARN`|   RoleARN                                 |
+   |`OKTA_IDP_ARN` |   IdPARN                                  |

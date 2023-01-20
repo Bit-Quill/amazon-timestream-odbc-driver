@@ -48,6 +48,12 @@ using namespace boost::unit_test;
 struct ConnectionTestSuiteFixture : OdbcTestSuite {
   using OdbcTestSuite::OdbcTestSuite;
 
+  ConnectionTestSuiteFixture() {
+    OktaTestIsEnabled = GetEnv("ENABLE_OKTA_TEST");
+    std::transform(OktaTestIsEnabled.begin(), OktaTestIsEnabled.end(),
+                   OktaTestIsEnabled.begin(), ::toupper);
+  }
+
   /**
    * Destructor.
    */
@@ -59,6 +65,8 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
     Connect(connectionString);
     Disconnect();
   }
+
+  std::string OktaTestIsEnabled;
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
@@ -142,8 +150,7 @@ BOOST_AUTO_TEST_CASE(
   GetIAMCredentials(uid, pwd);
 
   CreateGenericDsnConnectionString(connectionString, AuthType::Type::IAM, uid,
-                                   pwd, true, accessKeyId,
-                                   secretKey);
+                                   pwd, true, accessKeyId, secretKey);
 
   Connect(connectionString);
 
@@ -164,8 +171,7 @@ BOOST_AUTO_TEST_CASE(TestDriverConnectionUsingDupCredStringWithEmptyUidPwd) {
   GetIAMCredentials(accessKeyId, secretKey);
 
   CreateGenericDsnConnectionString(connectionString, AuthType::Type::IAM, uid,
-                                   pwd, true, accessKeyId,
-                                   secretKey);
+                                   pwd, true, accessKeyId, secretKey);
 
   Connect(connectionString);
 
@@ -241,6 +247,288 @@ BOOST_AUTO_TEST_CASE(TestDriverConnectionUsingDupCredStringWithWrongPwd) {
       "Failed to discover endpoint");
 
   Disconnect();
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOkta) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication given all correct configuration parameters
+    // which are from environment variables by default.
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString);
+
+    Connect(connectionString);
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaUidPwd) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication given all correct configuration parameters
+    // which are from environment variables by default. 
+    // Using Uid/Pwd instead of idPUsername/idPPassword
+    std::string  connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "dsn={" + Configuration::DefaultValue::dsn + "};"
+      "auth=" + AuthType::ToString(AuthType::Type::OKTA) + ";"
+      "region=" + GetEnv("AWS_REGION", "us-west-2") + ";"
+      "logOutput=" + GetEnv("TIMESTREAM_LOG_PATH", "") + ";"
+      "logLevel=" + GetEnv("TIMESTREAM_LOG_LEVEL", "2") + ";";
+
+    std::string tsAuthentication = 
+      "idPHost=" + GetEnv("OKTA_HOST") + ";" +
+      "Uid=" + GetEnv("OKTA_USER") + ";"
+      "Pwd=" + GetEnv("OKTA_USER_PWD") + ";"
+      "OktaApplicationID=" +  GetEnv("OKTA_APP_ID") + ";"
+      "roleARN=" +  GetEnv("OKTA_ROLE_ARN") + ";"
+      "idPARN=" + GetEnv("OKTA_IDP_ARN") + ";";
+
+    connectionString.append(tsAuthentication);
+    Connect(connectionString);
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidHost) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with invalid host
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, "invalid_host");
+
+#ifdef __linux__
+    ExpectConnectionReject(connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Failed to get Okta session token. Error info: 'curlCode: 6, Couldn't resolve host name'");
+#else
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Failed to get Okta session token. Error info: 'Encountered network "
+        "error when sending http request'");
+#endif
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyHost) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with empty host
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, "");
+
+    ExpectConnectionReject(connectionString, "01S00",
+                           "The following is required to connect:\n"
+                           "AUTH is \"OKTA\" and "
+                           "IdpHost, UID or IdpUserName, PWD or IdpPassword, "
+                           "OktaAppId, RoleArn and IdpArn");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidUser) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with invalid user
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, "invalid_user");
+
+    ExpectConnectionReject(connectionString, "08001",
+                           "Failed to establish connection to Timestream.\n"
+                           "Failed to get Okta session token.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyUser) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with empty user
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, "");
+
+    ExpectConnectionReject(connectionString, "01S00",
+                           "The following is required to connect:\n"
+                           "AUTH is \"OKTA\" and "
+                           "IdpHost, UID or IdpUserName, PWD or IdpPassword, "
+                           "OktaAppId, RoleArn and IdpArn");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidPasswd) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with invalid password
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr,
+                                  "invalid_password");
+
+    ExpectConnectionReject(connectionString, "08001",
+                           "Failed to establish connection to Timestream.\n"
+                           "Failed to get Okta session token.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyPassword) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with empty password
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, "");
+
+    ExpectConnectionReject(connectionString, "01S00",
+                           "The following is required to connect:\n"
+                           "AUTH is \"OKTA\" and "
+                           "IdpHost, UID or IdpUserName, PWD or IdpPassword, "
+                           "OktaAppId, RoleArn and IdpArn");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidAPPId) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with invalid application id
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                  "invalid_app_id");
+
+    ExpectConnectionReject(connectionString, "08001",
+                           "Failed to establish connection to Timestream.\n"
+                           "Failed to get SAML asseration.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyAppId) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with empty application id
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                  "");
+
+    ExpectConnectionReject(connectionString, "01S00",
+                           "The following is required to connect:\n"
+                           "AUTH is \"OKTA\" and "
+                           "IdpHost, UID or IdpUserName, PWD or IdpPassword, "
+                           "OktaAppId, RoleArn and IdpArn");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidRoleArn) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with invalid role arn
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                  nullptr, "invalid_role_arn");
+
+    ExpectConnectionReject(connectionString, "08001",
+                           "Failed to establish connection to Timestream.\n"
+        "Failed to fetch credentials, ERROR: ValidationError: 1 validation error detected"
+        ": Value 'invalid_role_arn' at 'roleArn' failed to satisfy constraint"
+        ": Member must have length greater than or equal to 20");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyRoleArn) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with empty role arn
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                  nullptr, "");
+
+    ExpectConnectionReject(connectionString, "01S00",
+                           "The following is required to connect:\n"
+                           "AUTH is \"OKTA\" and "
+                           "IdpHost, UID or IdpUserName, PWD or IdpPassword, "
+                           "OktaAppId, RoleArn and IdpArn");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidIdpArn) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with invalid IDP arn
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                  nullptr, nullptr, "invalid_idp_arn");
+
+    ExpectConnectionReject(connectionString, "08001",
+        "Failed to establish connection to Timestream.\nFailed to fetch credentials, "
+        "ERROR: ValidationError: 1 validation error detected"
+        ": Value 'invalid_idp_arn' at 'principalArn' failed to satisfy constraint"
+        ": Member must have length greater than or equal to 20");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyIdpArn) {
+  if (OktaTestIsEnabled == "TRUE") {
+    // Test Okta authentication with empty IDP arn
+    std::string connectionString;
+    CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                  nullptr, nullptr, "");
+
+    ExpectConnectionReject(connectionString, "01S00",
+                           "The following is required to connect:\n"
+                           "AUTH is \"OKTA\" and "
+                           "IdpHost, UID or IdpUserName, PWD or IdpPassword, "
+                           "OktaAppId, RoleArn and IdpArn");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid Okta account" << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingGenericIAMString) {
@@ -344,10 +632,9 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
   CreateDsnConnectionStringForAWS(connectionString, AuthType::Type::AWS_PROFILE,
                                   profile);
 
-  ExpectConnectionReject(
-      connectionString, "08001",
-      "Failed to establish connection to Timestream.\nNo credentials in "
-      "profile nonexist-profile or they are expired");
+  ExpectConnectionReject(connectionString, "08001",
+                         "Failed to establish connection to Timestream.\n"
+                         "Empty or expired credentials");
 
   Disconnect();
 }
@@ -488,7 +775,8 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionInvalidUserUsingGenericIAMString) {
   std::string connectionString;
   std::string uid = GetEnv("AWS_ACCESS_KEY_ID");
 
-  CreateGenericDsnConnectionString(connectionString, AuthType::Type::IAM, uid, "invaliduser");
+  CreateGenericDsnConnectionString(connectionString, AuthType::Type::IAM, uid,
+                                   "invaliduser");
 
   std::string username;
   std::string password;

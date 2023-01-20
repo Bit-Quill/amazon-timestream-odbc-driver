@@ -22,81 +22,17 @@
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/log_level.h"
 #include <ignite/odbc/common/platform_utils.h>
-#include <ignite/odbc/auth_type.h>
+#include <ignite/odbc/authentication/auth_type.h>
 #include "mock/mock_timestream_service.h"
 #include "ignite/odbc/log.h"
+#include <regex>
 
 using ignite::odbc::AuthType;
-using ignite::odbc::OdbcUnitTestSuite;
 using ignite::odbc::MockConnection;
 using ignite::odbc::MockTimestreamService;
+using ignite::odbc::OdbcUnitTestSuite;
 using ignite::odbc::config::Configuration;
 using namespace boost::unit_test;
-
-#ifdef _WIN32
-// For Windows only, add static variables definition here in case of 
-// "unresolved symbol" error when linking.
-using namespace ignite::odbc::config;
-using namespace ignite::odbc;
-
-// mirrored from src/odbc/src/config/configuration.cpp
-// Connection (Basic Authentication) Settings
-const std::string Configuration::DefaultValue::dsn = DEFAULT_DSN;
-const std::string Configuration::DefaultValue::driver = DEFAULT_DRIVER;
-const std::string Configuration::DefaultValue::uid =
-    DEFAULT_UID; 
-    const std::string Configuration::DefaultValue::pwd =
-    DEFAULT_PWD;
-const std::string Configuration::DefaultValue::accessKeyId =
-    DEFAULT_ACCESS_KEY_ID;
-const std::string Configuration::DefaultValue::secretKey = DEFAULT_SECRET_KEY;
-const std::string Configuration::DefaultValue::sessionToken =
-    DEFAULT_SESSION_TOKEN;
-
-// Credential Providers Options
-const std::string Configuration::DefaultValue::profileName =
-    DEFAULT_PROFILE_NAME;
-
-// Connection Options
-const int32_t Configuration::DefaultValue::reqTimeout = DEFAULT_REQ_TIMEOUT;
-const int32_t Configuration::DefaultValue::connectionTimeout =
-    DEFAULT_CONNECTION_TIMEOUT;
-const int32_t Configuration::DefaultValue::maxRetryCountClient =
-    DEFAULT_MAX_RETRY_COUNT_CLIENT;
-const int32_t Configuration::DefaultValue::maxConnections =
-    DEFAULT_MAX_CONNECTIONS;
-
-// Endpoint Options
-const std::string Configuration::DefaultValue::endpoint = DEFAULT_ENDPOINT;
-const std::string Configuration::DefaultValue::region = DEFAULT_REGION;
-
-// Advance Authentication Settings
-const AuthType::Type Configuration::DefaultValue::authType = DEFAULT_AUTH_TYPE;
-const std::string Configuration::DefaultValue::idPHost = DEFAULT_IDP_HOST;
-const std::string Configuration::DefaultValue::idPUserName =
-    DEFAULT_IDP_USER_NAME;
-const std::string Configuration::DefaultValue::idPPassword =
-    DEFAULT_IDP_PASSWORD;
-const std::string Configuration::DefaultValue::idPArn = DEFAULT_IDP_ARN;
-const std::string Configuration::DefaultValue::oktaAppId = DEFAULT_OKTA_APP_ID;
-const std::string Configuration::DefaultValue::roleArn = DEFAULT_ROLE_ARN;
-const std::string Configuration::DefaultValue::aadAppId = DEFAULT_AAD_APP_ID;
-const std::string Configuration::DefaultValue::aadClientSecret =
-    DEFAULT_ACCESS_CLIENT_SECRET;
-const std::string Configuration::DefaultValue::aadTenant = DEFAULT_AAD_TENANT;
-
-// Logging Configuration Options
-const LogLevel::Type Configuration::DefaultValue::logLevel = DEFAULT_LOG_LEVEL;
-const std::string Configuration::DefaultValue::logPath = DEFAULT_LOG_PATH;
-const int32_t Configuration::DefaultValue::maxRowPerPage =
-    DEFAULT_MAX_ROW_PER_PAGE;
-
-// mirrored from src/odbc/src/log.cpp
-std::shared_ptr< Logger > Logger::logger_;
-
-// mirrored from src/odbc/src/type_traits.cpp
-const std::string type_traits::SqlTypeName::VARCHAR("VARCHAR");
-#endif
 
 /**
  * Test setup fixture.
@@ -112,13 +48,14 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
   }
 
   void getLogOptions(Configuration& config) const {
-    using ignite::odbc::common::GetEnv;
     using ignite::odbc::LogLevel;
+    using ignite::odbc::common::GetEnv;
 
     std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
     std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
 
-    LogLevel::Type logLevel = LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
+    LogLevel::Type logLevel =
+        LogLevel::FromString(logLevelStr, LogLevel::Type::UNKNOWN);
     config.SetLogLevel(logLevel);
     config.SetLogPath(logPath);
   }
@@ -145,9 +82,26 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
         .GetStatusRecord(dbc->GetDiagnosticRecords().GetLastNonRetrieved())
         .GetSqlState();
   }
+
+  void CheckConnectError(Configuration& cfg, const std::string& expectedMsg) {
+    std::ostringstream ss;
+    std::ostream* original =
+        ignite::odbc::Logger::GetLoggerInstance()->GetLogStream();
+    ignite::odbc::Logger::GetLoggerInstance()->SetLogStream(
+        static_cast< std::ostream* >(&ss));
+
+    dbc->Establish(cfg);
+
+    ignite::odbc::Logger::GetLoggerInstance()->SetLogStream(original);
+    std::string logMsg = ss.str();
+    std::smatch matches;
+    BOOST_REQUIRE_EQUAL(
+        std::regex_search(logMsg, matches, std::regex(expectedMsg)), true);
+  }
 };
 
-BOOST_FIXTURE_TEST_SUITE(ConnectionUnitTestSuite, ConnectionUnitTestSuiteFixture)
+BOOST_FIXTURE_TEST_SUITE(ConnectionUnitTestSuite,
+                         ConnectionUnitTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestEstablishUsingKey) {
   Configuration cfg;
@@ -193,7 +147,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingKeyInvalidLogin) {
 
   dbc->Establish(cfg);
 
-  BOOST_CHECK_EQUAL(GetReturnCode(),SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
   BOOST_CHECK_EQUAL(GetSqlState(), "08001");
 }
 
@@ -246,10 +200,156 @@ BOOST_AUTO_TEST_CASE(TestRelease) {
 }
 
 BOOST_AUTO_TEST_CASE(TestDeregister) {
-  // This will remove dbc from env, any test that 
+  // This will remove dbc from env, any test that
   // needs env should be put ahead of this testcase
   dbc->Deregister();
   BOOST_CHECK_EQUAL(env->ConnectionsNum(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(TestEstablishUsingOkta) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_valid_user");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_valid_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  getLogOptions(cfg);
+
+  dbc->Establish(cfg);
+
+  // verify SAMLResponse number character references are decoded correctly
+  std::string errInfo;
+  BOOST_CHECK_EQUAL(dbc->GetSAMLCredentialsProvider()->GetSAMLAssertion(errInfo),
+                    "TUw6Mi4wOmF0dHJuYW1lLWZvcm1hdDpiYXNpYyI+"
+                    "aGVtYS1pbnN0YW5jZSIgeHNpOnR5cGU9InhzOnN0cmluZyI+");
+
+  // verify SQL_USER_NAME is set correctly after connect
+  SQLWCHAR userName[16];
+  short buflen = 16 * sizeof(SQLWCHAR);
+  short reslen;
+  dbc->GetInfo().GetInfo(SQL_USER_NAME, userName, buflen, &reslen);
+  
+  BOOST_CHECK(ignite::odbc::utility::SqlWcharToString(userName) == "okta_valid_user");
+  BOOST_CHECK(IsSuccessful());
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaFailToGetSessionToken) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_fail_session_token");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(
+      cfg, "Failed to get Okta session token. Error info: 'Invalid access key id'");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaSessionTokenInvalidRspBody) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_invalid_rsp_body");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(cfg, "Error parsing response body. Failed to parse JSON.");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaNoSessionToken) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_no_session_token");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(cfg, "No session token in the Okta response body");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaEmptySessionToken) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_empty_session_token");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(cfg, "Could not get one time session token for Okta");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaErrorAssertion) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_valid_user");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_error_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(cfg,
+                    "Failed to get SAML asseration. Client error: 'Invalid "
+                    "query parameter'.");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaAssertionNoSAMLRsp) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_valid_user");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_no_saml_response_app_id");
+  cfg.SetRoleArn("arn:role");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(
+      cfg, "Could not extract SAMLResponse from the Okta response body");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
+}
+
+BOOST_AUTO_TEST_CASE(TestOktaSAMLAssertionNoCredentials) {
+  Configuration cfg;
+  cfg.SetAuthType(AuthType::Type::OKTA);
+  cfg.SetIdPHost("okta-host");
+  cfg.SetIdPUserName("okta_valid_user");
+  cfg.SetIdPPassword("okta_password");
+  cfg.SetOktaAppId("okta_valid_app_id");
+  cfg.SetRoleArn("arn:role:nocredentials");
+  cfg.SetIdPArn("arn:idp");
+
+  CheckConnectError(cfg, "Failed to fetch credentials.");
+
+  BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
+  BOOST_CHECK_EQUAL(GetSqlState(), "08001");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

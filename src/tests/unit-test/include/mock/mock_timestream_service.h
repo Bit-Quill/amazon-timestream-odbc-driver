@@ -70,6 +70,15 @@ class MockTimestreamService {
   void RemoveCredential(const Aws::String& keyId);
 
   /**
+   * Get credential map
+   *
+   * @return The credential map
+   */
+  std::map< Aws::String, Aws::String > GetCredentialMap() {
+    return credMap_;
+  }
+
+  /**
    * Verify credentials provided by user
    *
    * @param keyId Access key Id

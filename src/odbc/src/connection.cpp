@@ -37,6 +37,8 @@
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
 
+#include "ignite/odbc/authentication/okta.h"
+
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
 #include <aws/timestream-write/model/ListDatabasesRequest.h>
@@ -182,13 +184,15 @@ SqlResult::Type Connection::InternalEstablish(
     return SqlResult::AI_ERROR;
   } else if (queryClient_ || writeClient_) {
     // only one of the clients is valid
-    LOG_ERROR_MSG("Only one of queryClient_ and writeClient_ has been set." 
-    "Both clients need to be valid to be properly connected.");
-    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT, "Driver is not able to fully connect.");
+    LOG_ERROR_MSG(
+        "Only one of queryClient_ and writeClient_ has been set."
+        "Both clients need to be valid to be properly connected.");
+    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT,
+                    "Driver is not able to fully connect.");
 
     Close();
 
-    return SqlResult::AI_ERROR;    
+    return SqlResult::AI_ERROR;
   }
 
   try {
@@ -256,6 +260,10 @@ void Connection::Close() {
 
   if (writeClient_) {
     writeClient_.reset();
+  }
+
+  if (samlCredProvider_) {
+    samlCredProvider_.reset();
   }
 }
 
@@ -366,8 +374,8 @@ int32_t Connection::GetEnvODBCVer() {
   SQLINTEGER version;
   SqlLen outResLen;
 
-  app::ApplicationDataBuffer outBuffer(type_traits::OdbcNativeType::AI_SIGNED_LONG, &version,
-                                  0, &outResLen);
+  app::ApplicationDataBuffer outBuffer(
+      type_traits::OdbcNativeType::AI_SIGNED_LONG, &version, 0, &outResLen);
   env_->GetAttribute(SQL_ATTR_ODBC_VERSION, outBuffer);
 
   return outBuffer.GetInt32();
@@ -441,7 +449,7 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
       if (valueLen)
         *valueLen = SQL_IS_INTEGER;
 
-      break;    
+      break;
     }
 
     case SQL_ATTR_ASYNC_ENABLE: {
@@ -451,8 +459,8 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
       *val = SQL_ASYNC_ENABLE_OFF;
 
       if (valueLen)
-        *valueLen = SQL_IS_INTEGER;    
-        
+        *valueLen = SQL_IS_INTEGER;
+
       break;
     }
 
@@ -497,7 +505,6 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
       SQLUINTEGER mode =
           static_cast< SQLUINTEGER >(reinterpret_cast< ptrdiff_t >(value));
 
-
       if (mode != SQL_AUTOCOMMIT_ON && mode != SQL_AUTOCOMMIT_OFF) {
         AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
                         "Specified attribute is not supported.");
@@ -523,14 +530,16 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
 
       metadataID_ = id;
 
-      break;    
+      break;
     }
 
     case SQL_ATTR_ANSI_APP: {
-      // According to Microsoft, if a driver exhibits the same behavior for both ANSI and Unicode applications, 
-      // it should return SQL_ERROR for this attribute. Our driver has same behavior for ANSI and Unicode applications.
+      // According to Microsoft, if a driver exhibits the same behavior for both
+      // ANSI and Unicode applications, it should return SQL_ERROR for this
+      // attribute. Our driver has same behavior for ANSI and Unicode
+      // applications.
       AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
-                        "Same behavior for ANSI and Unicode applications.");
+                      "Same behavior for ANSI and Unicode applications.");
 
       return SqlResult::AI_ERROR;
     }
@@ -538,7 +547,6 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
     case SQL_ATTR_TSLOG_DEBUG: {
       LogLevel::Type type =
           static_cast< LogLevel::Type >(reinterpret_cast< ptrdiff_t >(value));
-
 
       std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();
       logger->SetLogLevel(type);
@@ -564,50 +572,45 @@ void Connection::EnsureConnected() {
  */
 void UpdateConnectionRuntimeInfo(const config::Configuration& config,
                                  config::ConnectionInfo& info) {
-  // TODO retrieve Okta IdP username based on Auth value
-  // https://bitquill.atlassian.net/browse/AT-1055
-
   // TODO retrieve AAD IdP username based on Auth value
   // https://bitquill.atlassian.net/browse/AT-1056
 #ifdef SQL_USER_NAME
-  if (config.IsUidSet())
-    info.SetInfo(SQL_USER_NAME, config.GetUid());
-  else
-    info.SetInfo(SQL_USER_NAME, config.GetAccessKeyId());
+  info.SetInfo(SQL_USER_NAME, config.GetDSNUserName());
 #endif
 #ifdef SQL_DATA_SOURCE_NAME
   info.SetInfo(SQL_DATA_SOURCE_NAME, config.GetDsn());
 #endif
 }
 
+std::shared_ptr< Aws::Http::HttpClient > Connection::GetHttpClient() {
+  return Aws::Http::CreateHttpClient(Aws::Client::ClientConfiguration());
+}
+
+std::shared_ptr< Aws::STS::STSClient > Connection::GetStsClient() {
+  return std::make_shared< Aws::STS::STSClient >();
+}
+
 bool Connection::TryRestoreConnection(const config::Configuration& cfg,
                                       IgniteError& err) {
   Aws::Auth::AWSCredentials credentials;
+  std::string errInfo("");
 
-  if (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE) {
+  if (cfg.GetAuthType() == AuthType::Type::OKTA) {
+    std::shared_ptr< Aws::Http::HttpClient > httpClient = GetHttpClient();
+    std::shared_ptr< Aws::STS::STSClient > stsClient = GetStsClient();
+    samlCredProvider_ =
+        std::make_shared< ignite::odbc::TimestreamOktaCredentialsProvider >(
+            cfg, httpClient, stsClient);
+    samlCredProvider_->GetAWSCredentials(credentials, errInfo);
+  } else if (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE) {
     Aws::Auth::ProfileConfigFileAWSCredentialsProvider credProvider(
         cfg.GetProfileName().data());
     credentials = credProvider.GetAWSCredentials();
-
-    if (credentials.IsExpiredOrEmpty()) {
-      std::stringstream ss;
-      ss << "No credentials in profile " << cfg.GetProfileName()
-         << " or they are expired";
-
-      LOG_ERROR_MSG(ss.str());
-      err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT, ss.str().data());
-
-      Close();
-      return false;
-    }
   } else if (cfg.GetAuthType() == AuthType::Type::IAM) {
     credentials.SetAWSAccessKeyId(cfg.GetDSNUserName());
     credentials.SetAWSSecretKey(cfg.GetDSNPassword());
     credentials.SetSessionToken(cfg.GetSessionToken());
   } else {
-    // TODO support Okta authentication
-    // https://bitquill.atlassian.net/browse/AT-1055
-
     // TODO support AAD authentication
     // https://bitquill.atlassian.net/browse/AT-1056
 
@@ -617,6 +620,17 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
     err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
                       "AuthType is not AWS_PROFILE or IAM, but "
                       "TryRestoreConnection is called.");
+
+    Close();
+    return false;
+  }
+
+  if (credentials.IsExpiredOrEmpty()) {
+    if (errInfo.empty())
+      errInfo += "Empty or expired credentials";
+
+    LOG_ERROR_MSG(errInfo);
+    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT, errInfo.data());
 
     Close();
     return false;
@@ -660,7 +674,7 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   if (!dbOutcome.IsSuccess()) {
     auto error = dbOutcome.GetError();
     LOG_DEBUG_MSG("ListDatabases ERROR: " << error.GetExceptionName() << ": "
-                            << error.GetMessage());
+                                          << error.GetMessage());
 
     err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
                       std::string(error.GetExceptionName())

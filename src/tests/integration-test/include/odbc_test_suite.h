@@ -30,7 +30,7 @@
 #include <ignite/odbc/common/platform_utils.h>
 #include <ignite/odbc/config/configuration.h>
 #include <ignite/odbc/config/connection_string_parser.h>
-#include <ignite/odbc/auth_type.h>
+#include <ignite/odbc/authentication/auth_type.h>
 
 #ifndef BOOST_TEST_CONTEXT
 #define BOOST_TEST_CONTEXT(...)
@@ -52,7 +52,7 @@ namespace odbc {
 struct OdbcTestSuite {
   /**
    * Prepare environment.
-   * 
+   *
    * @param odbcVer ODBC Version to test, default is ODBC3
    */
   void Prepare(int32_t odbcVer = SQL_OV_ODBC3);
@@ -435,6 +435,14 @@ struct OdbcTestSuite {
   void GetIAMCredentials(std::string& accessKeyId,
                          std::string& secretKey) const;
 
+  void CreateOktaDsnConnectionString(std::string& connectionString,
+                                     const char* host = nullptr,
+                                     const char* uid = nullptr,
+                                     const char* pwd = nullptr,
+                                     const char* appId = nullptr,
+                                     const char* roleArn = nullptr,
+                                     const char* idpArn = nullptr) const;
+
   /**
    * Creates the generic DSN connection string with uid/pwd and one of
    * { accessKeyId/secretKey, idPUsername, idPPassword } if @param includeTSCred
@@ -442,8 +450,8 @@ struct OdbcTestSuite {
    */
   void CreateGenericDsnConnectionString(
       std::string& connectionString, AuthType::Type testAuthType,
-      const std::string& uid, const std::string& pwd, bool includeTSCred = false,
-      const std::string& TSUsername = std::string(),
+      const std::string& uid, const std::string& pwd,
+      bool includeTSCred = false, const std::string& TSUsername = std::string(),
       const std::string& TSPassword = std::string(),
       const std::string& miscOptions = std::string()) const;
 
@@ -460,7 +468,8 @@ struct OdbcTestSuite {
    * @param connectionString Connection string.
    * @param value The maxRowPerPage value.
    */
-  void AddMaxRowPerPage(std::string& connectionString, const std::string& value);
+  void AddMaxRowPerPage(std::string& connectionString,
+                        const std::string& value);
 
   /**
    * Creates the standard DSN connection string for AWS.

@@ -16,7 +16,9 @@
  */
 
 #include <mock/mock_connection.h>
+#include <mock/mock_httpclient.h>
 #include <mock/mock_statement.h>
+#include <mock/mock_stsclient.h>
 #include <mock/mock_timestream_query_client.h>
 #include <mock/mock_timestream_write_client.h>
 
@@ -60,6 +62,17 @@ MockConnection::CreateTSWriteClient(
       Aws::TimestreamWrite::TimestreamWriteClient >(
       std::make_shared< ignite::odbc::MockTimestreamWriteClient >(credentials,
                                                                   clientCfg));
+}
+
+std::shared_ptr< Aws::Http::HttpClient > MockConnection::GetHttpClient()
+{
+  return std::static_pointer_cast< Aws::Http::HttpClient >(
+      std::make_shared< ignite::odbc::MockHttpClient >());
+}
+
+std::shared_ptr< Aws::STS::STSClient > MockConnection::GetStsClient() {
+  return std::static_pointer_cast< Aws::STS::STSClient >(
+      std::make_shared< MockSTSClient >());
 }
 
 MockStatement* MockConnection::CreateStatement() {

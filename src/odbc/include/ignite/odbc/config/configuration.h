@@ -25,7 +25,7 @@
 
 #include "ignite/odbc/config/settable_value.h"
 #include "ignite/odbc/diagnostic/diagnosable.h"
-#include "ignite/odbc/auth_type.h"
+#include "ignite/odbc/authentication/auth_type.h"
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/log_level.h"
 

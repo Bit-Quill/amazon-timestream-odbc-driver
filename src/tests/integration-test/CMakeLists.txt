@@ -43,14 +43,14 @@ else ()
 endif()
 
 set(SOURCES 
-         src/api_robustness_test.cpp
-         src/application_data_buffer_test.cpp
-         src/attributes_test.cpp
+	 src/api_robustness_test.cpp
+	 src/application_data_buffer_test.cpp
+	 src/attributes_test.cpp
          src/connection_test.cpp
-         src/meta_queries_test.cpp
-         src/odbc_test_suite.cpp
-         src/queries_test.cpp
-         src/sql_get_info_test.cpp
+	 src/meta_queries_test.cpp
+	 src/odbc_test_suite.cpp
+	 src/queries_test.cpp
+	 src/sql_get_info_test.cpp
          src/test_utils.cpp
         )
 
@@ -81,7 +81,7 @@ target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_LIB
 
 if (WIN32)
     target_link_libraries(${TARGET} ${AWSSDK_LINK_LIBRARIES})
-    target_link_libraries(${TARGET} ${CMAKE_BINARY_DIR}/odbc/${CMAKE_BUILD_TYPE}/timestream.odbc.lib)
+    target_link_libraries(${TARGET} ${CMAKE_BINARY_DIR}/odbc/${CMAKE_BUILD_TYPE}/timestream-odbc-static.lib)
 elseif(APPLE)
     target_link_libraries(${TARGET} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libtimestream-odbc.dylib)
 else()

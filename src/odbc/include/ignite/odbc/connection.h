@@ -31,11 +31,14 @@
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/parser.h"
 #include "ignite/odbc/streaming/streaming_context.h"
+#include "ignite/odbc/authentication/saml.h"
 
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
 #include <aws/timestream-query/TimestreamQueryClient.h>
 #include <aws/timestream-write/TimestreamWriteClient.h>
+#include "aws/sts/STSClient.h"
+
 
 using ignite::odbc::common::concurrent::SharedPointer;
 
@@ -135,7 +138,8 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    *
    * @return Shared Pointer to Timestream query client.
    */
-  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > GetQueryClient() const;
+  std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
+  GetQueryClient() const;
 
   /**
    * Get the Timestream write client.
@@ -264,6 +268,16 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
     return metadataID_;
   }
 
+  /**
+   * Get TimestreamSAMLCredentialsProvider.
+   *
+   * @return samlCredProvider_ value.
+   */
+  std::shared_ptr< TimestreamSAMLCredentialsProvider >
+  GetSAMLCredentialsProvider() {
+    return samlCredProvider_;
+  }
+
  protected:
   /**
    * Constructor.
@@ -277,9 +291,9 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    * @param clientCfg AWS client configuration.
    * @return a shared_ptr to created TimestreamQueryClient object.
    */
-  virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > 
-      CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
-          const Aws::Client::ClientConfiguration& clientCfg); 
+  virtual std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient >
+  CreateTSQueryClient(const Aws::Auth::AWSCredentials& credentials,
+                      const Aws::Client::ClientConfiguration& clientCfg);
 
   /**
    * Create TimestreamWriteClient object.
@@ -289,9 +303,22 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    * @return a shared_ptr to created TimestreamWriteClient object.
    */
   virtual std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
-  CreateTSWriteClient(
-      const Aws::Auth::AWSCredentials& credentials,
-      const Aws::Client::ClientConfiguration& clientCfg);
+  CreateTSWriteClient(const Aws::Auth::AWSCredentials& credentials,
+                      const Aws::Client::ClientConfiguration& clientCfg);
+
+  /**
+   * Create Aws HttpClient object.
+   *
+   * @return a shared_ptr to created HttpClient object.
+   */
+  virtual std::shared_ptr< Aws::Http::HttpClient > GetHttpClient();
+
+  /**
+   * Create Aws STSClient object.
+   *
+   * @return a shared_ptr to created STSClient object.
+   */
+  virtual std::shared_ptr< Aws::STS::STSClient > GetStsClient();
 
   /**
    * Create statement associated with the connection.
@@ -522,7 +549,8 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   /** Autocommit flag. */
   bool autoCommit_ = true;
 
-  /** Metadata ID flag, indicate if the string arguments of catalog functions are treated as identifiers. */
+  /** Metadata ID flag, indicate if the string arguments of catalog functions
+   * are treated as identifiers. */
   bool metadataID_;
 
   /** Configuration. */
@@ -540,6 +568,9 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    * ListTables. Although it is a write client, the current code only uses it
    * for query purposes in this read-only driver. */
   std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient > writeClient_;
+
+  /** SAML credentials provider */
+  std::shared_ptr< TimestreamSAMLCredentialsProvider > samlCredProvider_;
 
   /** Aws SDK options. */
   Aws::SDKOptions options_;

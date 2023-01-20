@@ -158,7 +158,7 @@ class IGNITE_IMPORT_EXPORT LogStream : public std::basic_ostream< char > {
 /**
  * Logging facility.
  */
-class IGNITE_IMPORT_EXPORT Logger {
+class Logger {
  public:
   /**
    * Destructor.
@@ -282,6 +282,7 @@ class IGNITE_IMPORT_EXPORT Logger {
   /** Log file path */
   std::string logFilePath;
 };
+
 }  // namespace odbc
 }  // namespace ignite
 

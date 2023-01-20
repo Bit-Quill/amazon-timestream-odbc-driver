@@ -18,7 +18,7 @@
 #include <string>
 
 #include <odbc_unit_test_suite.h>
-#include <ignite/odbc/auth_type.h>
+#include <ignite/odbc/authentication/auth_type.h>
 #include <ignite/odbc/config/connection_string_parser.h>
 
 using namespace ignite::odbc;

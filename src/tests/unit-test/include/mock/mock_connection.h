@@ -73,6 +73,20 @@ class MockConnection : public Connection {
   virtual std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
   CreateTSWriteClient(const Aws::Auth::AWSCredentials& credentials,
                       const Aws::Client::ClientConfiguration& clientCfg);
+
+  /**
+   * Create MockHttpClient object.
+   *
+   * @return a shared_ptr to created MockHttpClient object.
+   */
+  virtual std::shared_ptr< Aws::Http::HttpClient > GetHttpClient();
+
+  /**
+   * Create MockSTSClient object.
+   *
+   * @return a shared_ptr to created MockSTSClient object.
+   */
+  virtual std::shared_ptr< Aws::STS::STSClient > GetStsClient();
 };
 }  // namespace odbc
 }  // namespace ignite

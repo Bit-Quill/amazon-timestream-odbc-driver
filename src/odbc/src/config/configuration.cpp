@@ -23,7 +23,7 @@
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/config/connection_string_parser.h"
-#include "ignite/odbc/auth_type.h"
+#include "ignite/odbc/authentication/auth_type.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/utility.h"
 
@@ -485,7 +485,8 @@ void Configuration::ToMap(ArgumentMap& res) const {
   AddToMap(res, ConnectionStringParser::Key::reqTimeout, reqTimeout);
   AddToMap(res, ConnectionStringParser::Key::connectionTimeout,
            connectionTimeout);
-  AddToMap(res, ConnectionStringParser::Key::maxRetryCountClient, maxRetryCountClient);
+  AddToMap(res, ConnectionStringParser::Key::maxRetryCountClient,
+           maxRetryCountClient);
   AddToMap(res, ConnectionStringParser::Key::maxConnections, maxConnections);
   AddToMap(res, ConnectionStringParser::Key::endpoint, endpoint);
   AddToMap(res, ConnectionStringParser::Key::region, region);
@@ -507,24 +508,30 @@ void Configuration::ToMap(ArgumentMap& res) const {
 void Configuration::Validate() const {
   // Validate minimum required properties.
 
-  // TODO support Okta authentication and remove this check
-  // https://bitquill.atlassian.net/browse/AT-1055
+  if ((GetAuthType() == ignite::odbc::AuthType::Type::OKTA)
+      && (GetIdPHost().empty() || GetDSNUserName().empty()
+          || GetDSNPassword().empty() || GetIdPArn().empty()
+          || GetRoleArn().empty() || GetOktaAppId().empty())) {
+    throw OdbcError(
+        SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
+        "The following is required to connect:\n"
+        "AUTH is \"OKTA\" and "
+        "IdpHost, UID or IdpUserName, PWD or IdpPassword, OktaAppId, RoleArn and IdpArn");
+  }
 
   // TODO support AAD authentication and remove this check
   // https://bitquill.atlassian.net/browse/AT-1056
-  if ((GetAuthType() == ignite::odbc::AuthType::Type::OKTA)
-      || (GetAuthType() == ignite::odbc::AuthType::Type::AAD))
+  if (GetAuthType() == ignite::odbc::AuthType::Type::AAD)
     throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
                     "Unsupported AUTH value");
 
   if ((GetAuthType() == ignite::odbc::AuthType::Type::IAM)
       && (GetDSNUserName().empty() || GetDSNPassword().empty())) {
-    throw OdbcError(
-        SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-        "The following is required to connect:\n"
-        "AUTH is \"IAM\" and "
-        "UID and PWD or "
-        "AccessKeyId and Secretkey");
+    throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
+                    "The following is required to connect:\n"
+                    "AUTH is \"IAM\" and "
+                    "UID and PWD or "
+                    "AccessKeyId and Secretkey");
   }
 }
 

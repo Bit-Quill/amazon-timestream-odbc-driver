@@ -14,7 +14,7 @@
  *
  */
 
-#include "ignite/odbc/auth_type.h"
+#include "ignite/odbc/authentication/auth_type.h"
 
 #include <ignite/odbc/common/utils.h>
 
