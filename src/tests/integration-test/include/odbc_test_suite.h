@@ -435,6 +435,9 @@ struct OdbcTestSuite {
   void GetIAMCredentials(std::string& accessKeyId,
                          std::string& secretKey) const;
 
+  /**
+   * Creates the Okta DSN connection string
+   */
   void CreateOktaDsnConnectionString(std::string& connectionString,
                                      const char* host = nullptr,
                                      const char* uid = nullptr,
@@ -442,6 +445,15 @@ struct OdbcTestSuite {
                                      const char* appId = nullptr,
                                      const char* roleArn = nullptr,
                                      const char* idpArn = nullptr) const;
+
+  /**
+   * Creates the AAD DSN connection string
+   */
+  void CreateAADDsnConnectionString(
+      std::string& connectionString, const char* uid = nullptr,
+      const char* pwd = nullptr, const char* appId = nullptr,
+      const char* tenantId = nullptr, const char* clientSecret = nullptr,
+      const char* roleArn = nullptr, const char* idpArn = nullptr) const;
 
   /**
    * Creates the generic DSN connection string with uid/pwd and one of

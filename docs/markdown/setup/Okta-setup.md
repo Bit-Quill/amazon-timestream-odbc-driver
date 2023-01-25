@@ -10,7 +10,6 @@
 1. Sign in to the Okta Admin dashboard: `https://<company domain name>-admin.okta.com/admin/apps/active`
 
 2. Select **`Browse App Catalog`** and search for **`AWS Account Federation`**.
-
 ![Okta screenshot 1](../images/Okta1.png)
 
 3. Open AWS Account Federation and click **`Add Integration`**.
@@ -28,14 +27,14 @@
 ## TroubleShooting
 1. Fail to login to AWS by clicking **`AWS Account Federation`**.
 
-One possible reason is user is not assigned SAML roles. Go to **`Assignments`** tab in application **`AWS Account Federation`**. Click the pencil icon to edit user assignment. Ensure correct role is selected for **`SAML User Roles`**. If no **`Role`** or **`SAML User Roles`** is seen, check **`Provisioning`** tab to ensure **`Create Users`** and **`Update User Attributes`** are enabled.
+    One possible reason is user is not assigned SAML roles. Go to **`Assignments`** tab in application **`AWS Account Federation`**. Click the pencil icon to edit user assignment. Ensure correct role is selected for **`SAML User Roles`**. If no **`Role`** or **`SAML User Roles`** is seen, check **`Provisioning`** tab to ensure **`Create Users`** and **`Update User Attributes`** are enabled.
 
-![Okta screenshot 5](../images/Okta5.png)
+    ![Okta screenshot 5](../images/Okta5.png)
 
-![Okta screenshot 6](../images/Okta6.png)
+    ![Okta screenshot 6](../images/Okta6.png)
 
 2. No **`SAMLResponse`** field in the SAML Assertion response returned from Okta when using Timestream ODBC driver.
 
-Go to **`Sign On`** tab in application **`AWS Account Federation`**. Scroll down to the bottom. Check **`Authentication policy`** under  section **`User authentication`**. Make sure it is **`Password only`**.
+    Go to **`Sign On`** tab in application **`AWS Account Federation`**. Scroll down to the bottom. Check **`Authentication policy`** under  section **`User authentication`**. Make sure it is **`Password only`**.
 
-![Okta screenshot 7](../images/Okta7.png)
+    ![Okta screenshot 7](../images/Okta7.png)

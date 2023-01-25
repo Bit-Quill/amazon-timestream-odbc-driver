@@ -39,7 +39,6 @@
 #include <aws/timestream-write/TimestreamWriteClient.h>
 #include "aws/sts/STSClient.h"
 
-
 using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {

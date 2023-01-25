@@ -406,17 +406,17 @@ void ConnectionStringParser::HandleAttributePair(
   } else if (lKey == Key::roleArn) {
     cfg.SetRoleArn(value);
   } else if (lKey == Key::aadAppId) {
-    cfg.SetAadAppId(value);
+    cfg.SetAADAppId(value);
   } else if (lKey == Key::aadClientSecret) {
-    if (!cfg.GetAadClientSecret().empty() && diag) {
+    if (!cfg.GetAADClientSecret().empty() && diag) {
       diag->AddStatusRecord(
           SqlState::S01S02_OPTION_VALUE_CHANGED,
           "Re-writing AADClientSecret (have you specified it several times?");
     }
 
-    cfg.SetAadClientSecret(value);
+    cfg.SetAADClientSecret(value);
   } else if (lKey == Key::aadTenant) {
-    cfg.SetAadTenant(value);
+    cfg.SetAADTenant(value);
   } else if (lKey == Key::logLevel) {
     LogLevel::Type level = LogLevel::FromString(value);
 

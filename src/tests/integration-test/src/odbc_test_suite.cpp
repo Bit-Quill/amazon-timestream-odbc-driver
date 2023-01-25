@@ -115,6 +115,7 @@ void OdbcTestSuite::Connect(const std::string& connectStr, int32_t odbcVer) {
       SQLDriverConnect(dbc, NULL, &connectStr0[0],
                        static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
                        ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
+                       
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
 
@@ -973,11 +974,6 @@ void OdbcTestSuite::CreateGenericDsnConnectionString(
         tsAuthentication = 
             "accessKeyId=" + TSUsername + ";"
             "secretKey=" + TSPassword + ";";
-        break;
-      case AuthType::Type::AAD:
-        tsAuthentication = 
-            "idPUsername=" + TSUsername + ";"
-            "idPPassword=" + TSPassword + ";";
       default:
         break;
     }
@@ -988,6 +984,34 @@ void OdbcTestSuite::CreateGenericDsnConnectionString(
 
   if (!miscOptions.empty())
     connectionString.append(miscOptions);
+}
+
+void OdbcTestSuite::CreateAADDsnConnectionString(
+    std::string& connectionString, const char* uid, const char* pwd,
+    const char* appId, const char* tenantId, const char* clientSecret,
+    const char* roleArn, const char* idpArn) const {
+  std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
+  std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
+  std::string region = GetEnv("AWS_REGION", "us-west-2");
+
+  connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "dsn={" + Configuration::DefaultValue::dsn + "};"
+      "auth=" + AuthType::ToString(AuthType::Type::AAD) + ";"
+      "region=" + region + ";"
+      "logOutput=" + logPath + ";"
+      "logLevel=" + logLevel + ";";
+
+  std::string tsAuthentication = 
+      "idPUsername=" + (!uid ? GetEnv("AAD_USER") : std::string(uid))  + ";"
+      "idPPassword=" + (!pwd ? GetEnv("AAD_USER_PWD") : std::string(pwd)) + ";"
+      "aadApplicationID=" + (!appId ? GetEnv("AAD_APP_ID") : std::string(appId)) + ";"
+      "aadClientSecret=" + (!clientSecret ? GetEnv("AAD_CLIENT_SECRET") : std::string(clientSecret)) + ";"
+      "aadTenant=" + (!tenantId ? GetEnv("AAD_TENANT") : std::string(tenantId)) + ";"
+      "roleARN=" + (!roleArn ? GetEnv("AAD_ROLE_ARN") : std::string(roleArn)) + ";"
+      "idPARN=" + (!idpArn ? GetEnv("AAD_IDP_ARN") : std::string(idpArn))  + ";";
+
+  connectionString.append(tsAuthentication);
 }
 
 void OdbcTestSuite::CreateOktaDsnConnectionString(

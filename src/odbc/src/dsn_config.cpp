@@ -243,20 +243,20 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
   SettableValue< std::string > aadAppId =
       ReadDsnString(dsn, ConnectionStringParser::Key::aadAppId);
 
-  if (aadAppId.IsSet() && !config.IsAadAppIdSet())
-    config.SetAadAppId(aadAppId.GetValue());
+  if (aadAppId.IsSet() && !config.IsAADAppIdSet())
+    config.SetAADAppId(aadAppId.GetValue());
 
   SettableValue< std::string > aadClientSecret =
       ReadDsnString(dsn, ConnectionStringParser::Key::aadClientSecret);
 
-  if (aadClientSecret.IsSet() && !config.IsAadClientSecretSet())
-    config.SetAadClientSecret(aadClientSecret.GetValue());
+  if (aadClientSecret.IsSet() && !config.IsAADClientSecretSet())
+    config.SetAADClientSecret(aadClientSecret.GetValue());
 
   SettableValue< std::string > aadTenant =
       ReadDsnString(dsn, ConnectionStringParser::Key::aadTenant);
 
-  if (aadTenant.IsSet() && !config.IsAadTenantSet())
-    config.SetAadTenant(aadTenant.GetValue());
+  if (aadTenant.IsSet() && !config.IsAADTenantSet())
+    config.SetAADTenant(aadTenant.GetValue());
 
   SettableValue< std::string > logLevel =
       ReadDsnString(dsn, ConnectionStringParser::Key::logLevel);

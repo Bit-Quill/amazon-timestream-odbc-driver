@@ -347,7 +347,6 @@ SQLRETURN SQLDriverConnect(SQLHDBC conn, SQLHWND windowHandle,
         "object is null");
     return SQL_INVALID_HANDLE;
   }
-
   std::string connectStr =
       SqlWcharToString(inConnectionString, inConnectionStringLen);
   connection->Establish(connectStr, windowHandle);

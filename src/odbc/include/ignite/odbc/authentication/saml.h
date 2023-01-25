@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef _IGNITE_ODBC_SAML
-#define _IGNITE_ODBC_SAML
+#ifndef _IGNITE_ODBC_AUTHENTICATION_SAML
+#define _IGNITE_ODBC_AUTHENTICATION_SAML
 
 #include "ignite/odbc/config/configuration.h"
 
@@ -34,11 +34,14 @@ class IGNITE_IMPORT_EXPORT TimestreamSAMLCredentialsProvider {
    * Constructor.
    *
    * @param config Configuration object reference
+   * @param httpClient Shared pointer to httpClient
    * @param stsClient Shared pointer to STSClient
    */
-  TimestreamSAMLCredentialsProvider(const config::Configuration& config,
-                                    std::shared_ptr< Aws::STS::STSClient > stsClient)
-      : config_(config), stsClient_(stsClient) {
+  TimestreamSAMLCredentialsProvider(
+      const config::Configuration& config,
+      std::shared_ptr< Aws::Http::HttpClient > httpClient,
+      std::shared_ptr< Aws::STS::STSClient > stsClient)
+      : config_(config), httpClient_(httpClient), stsClient_(stsClient) {
     // No-op.
   }
 
@@ -49,11 +52,13 @@ class IGNITE_IMPORT_EXPORT TimestreamSAMLCredentialsProvider {
    * @param errInfo Error message when there is a failure
    * @return @c true on success and @c false otherwise.
    */
-  bool GetAWSCredentials(Aws::Auth::AWSCredentials& credentials, std::string& errInfo);
+  bool GetAWSCredentials(Aws::Auth::AWSCredentials& credentials,
+                         std::string& errInfo);
 
   /**
-   * Get SAML asseration which is a base64 encoded SAML authentication response provided by the IdP
-   * 
+   * Get SAML asseration which is a base64 encoded SAML authentication response
+   * provided by the IdP
+   *
    * @param errInfo Error message when there is a failure
    * @return SAML assertion value.
    */
@@ -70,17 +75,19 @@ class IGNITE_IMPORT_EXPORT TimestreamSAMLCredentialsProvider {
    */
   bool FetchCredentialsWithSAMLAssertion(
       Aws::STS::Model::AssumeRoleWithSAMLRequest& samlRequest,
-      Aws::Auth::AWSCredentials& credentials,
-      std::string& errInfo);
+      Aws::Auth::AWSCredentials& credentials, std::string& errInfo);
 
   /** Configuration object */
   config::Configuration config_;
 
   /** STSClient pointer */
   std::shared_ptr< Aws::STS::STSClient > stsClient_;
+
+  /** HttpClient pointer */
+  std::shared_ptr< Aws::Http::HttpClient > httpClient_;
 };
 
 }  // namespace odbc
 }  // namespace ignite
 
-#endif //_IGNITE_ODBC_SAML
+#endif  //_IGNITE_ODBC_AUTHENTICATION_SAML

@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef _IGNITE_ODBC_AUTH_TYPE
-#define _IGNITE_ODBC_AUTH_TYPE
+#ifndef _IGNITE_ODBC_AUTHENTICATION_AUTH_TYPE
+#define _IGNITE_ODBC_AUTHENTICATION_AUTH_TYPE
 
 #include <string>
 #include <ignite/odbc/common/common.h>
@@ -53,4 +53,4 @@ struct IGNITE_IMPORT_EXPORT AuthType {
 };
 }  // namespace odbc
 }  // namespace ignite
-#endif  //_IGNITE_ODBC_AUTH_TYPE
+#endif  //_IGNITE_ODBC_AUTHENTICATION_AUTH_TYPE

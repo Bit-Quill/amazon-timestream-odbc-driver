@@ -179,6 +179,5 @@ LogLevel::Type Logger::GetLogLevel() const {
 std::string& Logger::GetLogPath() {
   return logPath;
 }
-
 }  // namespace odbc
 }  // namespace ignite

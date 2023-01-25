@@ -37,6 +37,7 @@
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
 
+#include "ignite/odbc/authentication/aad.h"
 #include "ignite/odbc/authentication/okta.h"
 
 #include <aws/timestream-query/model/QueryRequest.h>
@@ -572,8 +573,6 @@ void Connection::EnsureConnected() {
  */
 void UpdateConnectionRuntimeInfo(const config::Configuration& config,
                                  config::ConnectionInfo& info) {
-  // TODO retrieve AAD IdP username based on Auth value
-  // https://bitquill.atlassian.net/browse/AT-1056
 #ifdef SQL_USER_NAME
   info.SetInfo(SQL_USER_NAME, config.GetDSNUserName());
 #endif
@@ -602,6 +601,13 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
         std::make_shared< ignite::odbc::TimestreamOktaCredentialsProvider >(
             cfg, httpClient, stsClient);
     samlCredProvider_->GetAWSCredentials(credentials, errInfo);
+  } else if (cfg.GetAuthType() == AuthType::Type::AAD) {
+    std::shared_ptr< Aws::Http::HttpClient > httpClient = GetHttpClient();
+    std::shared_ptr< Aws::STS::STSClient > stsClient = GetStsClient();
+    samlCredProvider_ =
+        std::make_shared< ignite::odbc::TimestreamAADCredentialsProvider >(
+            cfg, httpClient, stsClient);
+    samlCredProvider_->GetAWSCredentials(credentials, errInfo);
   } else if (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE) {
     Aws::Auth::ProfileConfigFileAWSCredentialsProvider credProvider(
         cfg.GetProfileName().data());
@@ -611,15 +617,11 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
     credentials.SetAWSSecretKey(cfg.GetDSNPassword());
     credentials.SetSessionToken(cfg.GetSessionToken());
   } else {
-    // TODO support AAD authentication
-    // https://bitquill.atlassian.net/browse/AT-1056
-
-    LOG_ERROR_MSG(
-        "AuthType is not AWS_PROFILE or IAM, but TryRestoreConnection is "
-        "called.");
-    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
-                      "AuthType is not AWS_PROFILE or IAM, but "
-                      "TryRestoreConnection is called.");
+    std::string errMsg =
+        "AuthType is not AWS_PROFILE, AAD, IAM or OKTA, but TryRestoreConnection is "
+        "called.";
+    LOG_ERROR_MSG(errMsg);
+    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT, errMsg.data());
 
     Close();
     return false;

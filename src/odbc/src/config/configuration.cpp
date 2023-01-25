@@ -360,39 +360,39 @@ bool Configuration::IsRoleArnSet() const {
   return roleArn.IsSet();
 }
 
-const std::string& Configuration::GetAadAppId() const {
+const std::string& Configuration::GetAADAppId() const {
   return aadAppId.GetValue();
 }
 
-void Configuration::SetAadAppId(const std::string& value) {
+void Configuration::SetAADAppId(const std::string& value) {
   this->aadAppId.SetValue(value);
 }
 
-bool Configuration::IsAadAppIdSet() const {
+bool Configuration::IsAADAppIdSet() const {
   return aadAppId.IsSet();
 }
 
-const std::string& Configuration::GetAadClientSecret() const {
+const std::string& Configuration::GetAADClientSecret() const {
   return aadClientSecret.GetValue();
 }
 
-void Configuration::SetAadClientSecret(const std::string& value) {
+void Configuration::SetAADClientSecret(const std::string& value) {
   this->aadClientSecret.SetValue(value);
 }
 
-bool Configuration::IsAadClientSecretSet() const {
+bool Configuration::IsAADClientSecretSet() const {
   return aadClientSecret.IsSet();
 }
 
-const std::string& Configuration::GetAadTenant() const {
+const std::string& Configuration::GetAADTenant() const {
   return aadTenant.GetValue();
 }
 
-void Configuration::SetAadTenant(const std::string& value) {
+void Configuration::SetAADTenant(const std::string& value) {
   this->aadTenant.SetValue(value);
 }
 
-bool Configuration::IsAadTenantSet() const {
+bool Configuration::IsAADTenantSet() const {
   return aadTenant.IsSet();
 }
 
@@ -519,11 +519,17 @@ void Configuration::Validate() const {
         "IdpHost, UID or IdpUserName, PWD or IdpPassword, OktaAppId, RoleArn and IdpArn");
   }
 
-  // TODO support AAD authentication and remove this check
-  // https://bitquill.atlassian.net/browse/AT-1056
-  if (GetAuthType() == ignite::odbc::AuthType::Type::AAD)
+  if ((GetAuthType() == ignite::odbc::AuthType::Type::AAD)
+      && (GetDSNUserName().empty() || GetDSNPassword().empty()
+          || GetIdPArn().empty() || GetRoleArn().empty()
+          || GetAADAppId().empty() || GetAADTenant().empty()
+          || GetAADClientSecret().empty())) {
     throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-                    "Unsupported AUTH value");
+                    "The following is required to connect:\n"
+                    "AUTH is \"AAD\" and "
+                    "UID or IdpUserName, PWD or IdpPassword, and "
+                    "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+  }
 
   if ((GetAuthType() == ignite::odbc::AuthType::Type::IAM)
       && (GetDSNUserName().empty() || GetDSNPassword().empty())) {

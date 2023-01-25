@@ -61,9 +61,9 @@ const std::string testIdPPassword = "testIdPPassword";
 const std::string testIdPArn = "testIdPArn";
 const std::string testOktaAppId = "testOktaAppId";
 const std::string testRoleArn = "testRoleArn";
-const std::string testAadAppId = "testAadAppId";
-const std::string testAadClientSecret = "testAadClientSecret";
-const std::string testAadTenant = "testAadTenant";
+const std::string testAADAppId = "testAADAppId";
+const std::string testAADClientSecret = "testAADClientSecret";
+const std::string testAADTenant = "testAADTenant";
 }  // namespace
 
 const char* BoolToStr(bool val, bool lowerCase = true) {
@@ -186,18 +186,18 @@ void CheckConnectionConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetIdPArn(), testIdPArn);
   BOOST_CHECK_EQUAL(cfg.GetOktaAppId(), testOktaAppId);
   BOOST_CHECK_EQUAL(cfg.GetRoleArn(), testRoleArn);
-  BOOST_CHECK_EQUAL(cfg.GetAadAppId(), testAadAppId);
-  BOOST_CHECK_EQUAL(cfg.GetAadClientSecret(), testAadClientSecret);
-  BOOST_CHECK_EQUAL(cfg.GetAadTenant(), testAadTenant);
+  BOOST_CHECK_EQUAL(cfg.GetAADAppId(), testAADAppId);
+  BOOST_CHECK_EQUAL(cfg.GetAADClientSecret(), testAADClientSecret);
+  BOOST_CHECK_EQUAL(cfg.GetAADTenant(), testAADTenant);
   BOOST_CHECK(cfg.GetLogLevel() == Logger::GetLoggerInstance()->GetLogLevel());
   BOOST_CHECK(cfg.GetLogPath() == Logger::GetLoggerInstance()->GetLogPath());
   BOOST_CHECK(!cfg.IsDsnSet());
 
   // the expected string is in alphabetical order
   std::stringstream constructor;
-  constructor << "aadapplicationid=" << testAadAppId << ';'
-              << "aadclientsecret=" << testAadClientSecret << ';'
-              << "aadtenant=" << testAadTenant << ';'
+  constructor << "aadapplicationid=" << testAADAppId << ';'
+              << "aadclientsecret=" << testAADClientSecret << ';'
+              << "aadtenant=" << testAADTenant << ';'
               << "accesskeyid=" << testAccessKeyId << ';'
               << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "connectiontimeout=" << testConnectionTimeoutMS << ';'
@@ -261,10 +261,10 @@ void CheckDsnConfig(const Configuration& cfg) {
   BOOST_CHECK_EQUAL(cfg.GetIdPArn(), Configuration::DefaultValue::idPArn);
   BOOST_CHECK_EQUAL(cfg.GetOktaAppId(), Configuration::DefaultValue::oktaAppId);
   BOOST_CHECK_EQUAL(cfg.GetRoleArn(), Configuration::DefaultValue::roleArn);
-  BOOST_CHECK_EQUAL(cfg.GetAadAppId(), Configuration::DefaultValue::aadAppId);
-  BOOST_CHECK_EQUAL(cfg.GetAadClientSecret(),
+  BOOST_CHECK_EQUAL(cfg.GetAADAppId(), Configuration::DefaultValue::aadAppId);
+  BOOST_CHECK_EQUAL(cfg.GetAADClientSecret(),
                     Configuration::DefaultValue::aadClientSecret);
-  BOOST_CHECK_EQUAL(cfg.GetAadTenant(), Configuration::DefaultValue::aadTenant);
+  BOOST_CHECK_EQUAL(cfg.GetAADTenant(), Configuration::DefaultValue::aadTenant);
 }
 
 BOOST_AUTO_TEST_SUITE(ConfigurationTestSuite)
@@ -293,10 +293,10 @@ BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
   BOOST_CHECK_NE(testIdPArn, Configuration::DefaultValue::idPArn);
   BOOST_CHECK_NE(testOktaAppId, Configuration::DefaultValue::oktaAppId);
   BOOST_CHECK_NE(testRoleArn, Configuration::DefaultValue::roleArn);
-  BOOST_CHECK_NE(testAadAppId, Configuration::DefaultValue::aadAppId);
-  BOOST_CHECK_NE(testAadClientSecret,
+  BOOST_CHECK_NE(testAADAppId, Configuration::DefaultValue::aadAppId);
+  BOOST_CHECK_NE(testAADClientSecret,
                  Configuration::DefaultValue::aadClientSecret);
-  BOOST_CHECK_NE(testAadTenant, Configuration::DefaultValue::aadTenant);
+  BOOST_CHECK_NE(testAADTenant, Configuration::DefaultValue::aadTenant);
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
@@ -323,9 +323,9 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
               << "IDPARN=" << testIdPArn << ';'
               << "OKTAAPPLICATIONID=" << testOktaAppId << ';'
               << "ROLEARN=" << testRoleArn << ';'
-              << "AADAPPLICATIONID=" << testAadAppId << ';'
-              << "AADCLIENTSECRET=" << testAadClientSecret << ';'
-              << "AADTENANT=" << testAadTenant << ';' << "DRIVER={"
+              << "AADAPPLICATIONID=" << testAADAppId << ';'
+              << "AADCLIENTSECRET=" << testAADClientSecret << ';'
+              << "AADTENANT=" << testAADTenant << ';' << "DRIVER={"
               << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -359,9 +359,9 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
               << "idparn=" << testIdPArn << ';'
               << "oktaapplicationid=" << testOktaAppId << ';'
               << "rolearn=" << testRoleArn << ';'
-              << "aadapplicationid=" << testAadAppId << ';'
-              << "aadclientsecret=" << testAadClientSecret << ';'
-              << "aadtenant=" << testAadTenant << ';' << "driver={"
+              << "aadapplicationid=" << testAADAppId << ';'
+              << "aadclientsecret=" << testAADClientSecret << ';'
+              << "aadtenant=" << testAADTenant << ';' << "driver={"
               << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -395,9 +395,9 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
               << "idparn=" << testIdPArn << ';'
               << "oktaapplicationid=" << testOktaAppId << ';'
               << "rolearn=" << testRoleArn << ';'
-              << "aadapplicationid=" << testAadAppId << ';'
-              << "aadclientsecret=" << testAadClientSecret << ';'
-              << "aadtenant=" << testAadTenant << ';' << "driver={"
+              << "aadapplicationid=" << testAADAppId << ';'
+              << "aadclientsecret=" << testAADClientSecret << ';'
+              << "aadtenant=" << testAADTenant << ';' << "driver={"
               << testDriverName << "};";
 
   std::string connectStr = constructor.str();
@@ -433,9 +433,9 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
               << "IdPArn=" << testIdPArn << ';'
               << "OktaApplicationID=" << testOktaAppId << ';'
               << "RoleArn=" << testRoleArn << ';'
-              << "AadApplicationID=" << testAadAppId << ';'
-              << "AadClientSecret=" << testAadClientSecret << ';'
-              << "AadTenant=" << testAadTenant << ';' << "Driver={"
+              << "AADApplicationID=" << testAADAppId << ';'
+              << "AADClientSecret=" << testAADClientSecret << ';'
+              << "AADTenant=" << testAADTenant << ';' << "Driver={"
               << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();
@@ -471,9 +471,9 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
               << "IDPARN=" << testIdPArn << " ;   "
               << "OKTAAPPLICATIONID=" << testOktaAppId << "  ;  "
               << "ROLEARN=" << testRoleArn << ";  "
-              << "AADAPPLICATIONID=" << testAadAppId << ";  "
-              << "AADCLIENTSECRET=" << testAadClientSecret << "  ; "
-              << "AADTENANT=" << testAadTenant << "    ;"
+              << "AADAPPLICATIONID=" << testAADAppId << ";  "
+              << "AADCLIENTSECRET=" << testAADClientSecret << "  ; "
+              << "AADTENANT=" << testAADTenant << "    ;"
               << "DRIVER = {" << testDriverName << "};";
 
   const std::string& connectStr = constructor.str();

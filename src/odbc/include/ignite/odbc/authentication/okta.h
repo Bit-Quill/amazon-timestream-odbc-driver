@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef _IGNITE_ODBC_OKTA
-#define _IGNITE_ODBC_OKTA
+#ifndef _IGNITE_ODBC_AUTHENTICATION_OKTA
+#define _IGNITE_ODBC_AUTHENTICATION_OKTA
 
 #include <aws/core/client/ClientConfiguration.h>
 
@@ -39,8 +39,7 @@ class IGNITE_IMPORT_EXPORT TimestreamOktaCredentialsProvider
       const config::Configuration& config,
       std::shared_ptr< Aws::Http::HttpClient > httpClient,
       std::shared_ptr< Aws::STS::STSClient > stsClient)
-      : TimestreamSAMLCredentialsProvider(config, stsClient),
-        httpClient_(httpClient) {
+      : TimestreamSAMLCredentialsProvider(config, httpClient, stsClient) {
     // No-op.
   }
 
@@ -82,12 +81,9 @@ class IGNITE_IMPORT_EXPORT TimestreamOktaCredentialsProvider
 
   /** SAML response pattern, used for regular expression search in SAML assertion */
   static const std::string SAML_RESPONSE_PATTERN;
-
-  /** HttpClient pointer */
-  std::shared_ptr< Aws::Http::HttpClient > httpClient_;
 };
 
 }  // namespace odbc
 }  // namespace ignite
 
-#endif //_IGNITE_ODBC_OKTA
+#endif //_IGNITE_ODBC_AUTHENTICATION_OKTA

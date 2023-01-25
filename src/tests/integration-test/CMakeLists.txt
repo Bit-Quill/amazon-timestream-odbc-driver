@@ -43,15 +43,15 @@ else ()
 endif()
 
 set(SOURCES 
-	 src/api_robustness_test.cpp
-	 src/application_data_buffer_test.cpp
-	 src/attributes_test.cpp
-         src/connection_test.cpp
-	 src/meta_queries_test.cpp
-	 src/odbc_test_suite.cpp
-	 src/queries_test.cpp
-	 src/sql_get_info_test.cpp
-         src/test_utils.cpp
+        src/api_robustness_test.cpp
+        src/application_data_buffer_test.cpp
+        src/attributes_test.cpp
+        src/connection_test.cpp
+        src/meta_queries_test.cpp
+        src/odbc_test_suite.cpp
+        src/queries_test.cpp
+        src/sql_get_info_test.cpp
+        src/test_utils.cpp
         )
 
 if (WIN32)

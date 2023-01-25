@@ -49,6 +49,10 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
   using OdbcTestSuite::OdbcTestSuite;
 
   ConnectionTestSuiteFixture() {
+    AADTestIsEnabled = GetEnv("ENABLE_AAD_TEST");
+    std::transform(AADTestIsEnabled.begin(), AADTestIsEnabled.end(),
+                   AADTestIsEnabled.begin(), ::toupper);
+
     OktaTestIsEnabled = GetEnv("ENABLE_OKTA_TEST");
     std::transform(OktaTestIsEnabled.begin(), OktaTestIsEnabled.end(),
                    OktaTestIsEnabled.begin(), ::toupper);
@@ -66,6 +70,7 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
     Disconnect();
   }
 
+  std::string AADTestIsEnabled;
   std::string OktaTestIsEnabled;
 };
 
@@ -247,6 +252,382 @@ BOOST_AUTO_TEST_CASE(TestDriverConnectionUsingDupCredStringWithWrongPwd) {
       "Failed to discover endpoint");
 
   Disconnect();
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAAD) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given all correct configuration parameters
+    // which are from environment variables by default.
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString);
+
+    Connect(connectionString);
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionGenericConnectionStringUsingAAD) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given all correct configuration parameters
+    // which are from environment variables by default. uid/pwd are used in the
+    // connection string
+    std::string dsn = "TestConnectionDSNAAD";
+    std::string connectionString;
+
+    std::string appId = GetEnv("AAD_APP_ID");
+    std::string roleArn = GetEnv("AAD_ROLE_ARN");
+    std::string idpArn = GetEnv("AAD_IDP_ARN");
+    std::string tenantId = GetEnv("AAD_TENANT");
+    std::string uid = GetEnv("AAD_USER");
+    std::string pwd = GetEnv("AAD_USER_PWD");
+    std::string clientSecret = GetEnv("AAD_CLIENT_SECRET");
+
+    std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
+    std::string logLevel = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
+    std::string region = GetEnv("AWS_REGION", "us-west-2");
+
+    connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "dsn={" + dsn + "};"
+      "auth=" + AuthType::ToString(AuthType::Type::AAD) + ";"
+      "region=" + region + ";"
+      "logOutput=" + logPath + ";"
+      "logLevel=" + logLevel + ";";
+
+    std::string tsAuthentication = 
+      "uid=" + uid + ";"
+      "pwd=" + pwd + ";"
+      "aadApplicationID=" + appId + ";"
+      "aadClientSecret=" + clientSecret + ";"
+      "aadTenant=" + tenantId + ";"
+      "roleARN=" + roleArn + ";"
+      "idPARN=" + idpArn + ";";
+
+    connectionString.append(tsAuthentication);
+
+    Connect(connectionString);
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidUser) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid username (uid)
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, "invalid-user");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Request to Azure Active Directory for access token failed.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyUser) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty username (uid)
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidPassword) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid password (pwd)
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, "invalid-password");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Request to Azure Active Directory for access token failed.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyPassword) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty password (pwd)
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidAPPId) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid application id
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr,
+                                 "invalid-application-id");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Request to Azure Active Directory for access token failed.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyAppId) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty application id
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidTenant) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid tenant id
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 "invalid_tenant_id");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Request to Azure Active Directory for access token failed.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyTenant) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty tenant id
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidClientSecret) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid client secret
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 nullptr, "invalid-client-secret");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Request to Azure Active Directory for access token failed.");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyClientSecret) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty client secret
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 nullptr, "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidRoleArn) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid role arn
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr, "invalid-role-arn");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Failed to fetch credentials, ERROR: ValidationError: 1 validation "
+        "error detected: Value 'invalid-role-arn' at 'roleArn' failed to "
+        "satisfy constraint: Member must have length greater than or equal to "
+        "20");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyRoleArn) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty role arn
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr, "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidIdpArn) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given invalid idp arn
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr, nullptr, "invalid-idp-arn");
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Failed to fetch credentials, ERROR: ValidationError: 1 validation "
+        "error detected: Value 'invalid-idp-arn' at 'principalArn' failed to "
+        "satisfy constraint: Member must have length greater than or equal to "
+        "20");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyIdpArn) {
+  if (AADTestIsEnabled == "TRUE") {
+    // Test AAD authentication given empty idp arn
+    std::string connectionString;
+
+    CreateAADDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr, nullptr, "");
+
+    ExpectConnectionReject(
+        connectionString, "01S00",
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped due to no valid Azure AD account"
+              << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOkta) {
@@ -685,7 +1066,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionConcurrency, *disabled()) {
 }
 
 // TO-DO enable for misc options in future
-// https://bitquill.atlassian.net/browse/AT-1056
+// https://bitquill.atlassian.net/browse/AT-1148
 BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
   // TODO add misc options
   const std::string miscOptions = "APP_NAME=TestAppName;";

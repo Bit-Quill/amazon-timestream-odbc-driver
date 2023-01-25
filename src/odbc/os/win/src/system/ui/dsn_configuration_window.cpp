@@ -667,7 +667,7 @@ int DsnConfigurationWindow::CreateAuthenticationSettingsGroup(int posX,
   rowPos = arnRowPos;
 
   // AAD specific fields
-  wVal = utility::FromUtf8(config.GetAadAppId());
+  wVal = utility::FromUtf8(config.GetAADAppId());
   aadAppIdLabel =
       CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
                   L"AAD Application ID:", ChildId::AAD_APP_ID_LABEL);
@@ -676,7 +676,7 @@ int DsnConfigurationWindow::CreateAuthenticationSettingsGroup(int posX,
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetAadClientSecret());
+  wVal = utility::FromUtf8(config.GetAADClientSecret());
   aadClientSecretLabel =
       CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
                   L"AAD Client Secret:", ChildId::AAD_CLIENT_SECRET_LABEL);
@@ -686,7 +686,7 @@ int DsnConfigurationWindow::CreateAuthenticationSettingsGroup(int posX,
 
   rowPos += INTERVAL + ROW_HEIGHT;
 
-  wVal = utility::FromUtf8(config.GetAadTenant());
+  wVal = utility::FromUtf8(config.GetAADTenant());
   aadTenantLabel = CreateLabel(labelPosX, rowPos, LABEL_WIDTH, ROW_HEIGHT,
                                L"AAD Tenant:", ChildId::AAD_TENANT_LABEL);
   aadTenantEdit = CreateEdit(editPosX, rowPos, editSizeX, ROW_HEIGHT, wVal,
@@ -1061,9 +1061,9 @@ void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
   cfg.SetIdPArn(idPArnStr);
   cfg.SetIdPHost(idPHostStr);
   cfg.SetOktaAppId(oktaAppIdStr);
-  cfg.SetAadAppId(aadAppIdStr);
-  cfg.SetAadClientSecret(aadClientSecretStr);
-  cfg.SetAadTenant(aadTenantStr);
+  cfg.SetAADAppId(aadAppIdStr);
+  cfg.SetAADClientSecret(aadClientSecretStr);
+  cfg.SetAADTenant(aadTenantStr);
 
   LOG_INFO_MSG("Auth Type:    " << AuthType::ToString(authType));
   LOG_DEBUG_MSG("Auth Type string from combobox"

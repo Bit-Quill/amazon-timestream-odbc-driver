@@ -66,6 +66,16 @@ class MockHttpClient : public HttpClient {
       std::shared_ptr< HttpResponse >& response) const;
 
   /**
+   * Handle Azure AD access token request
+   *
+   * @param request The http request.
+   * @param response The generated HttpResponse with access token
+   */
+  void HandleAADAccessTokenRequest(
+      const std::shared_ptr< HttpRequest >& request,
+      std::shared_ptr< HttpResponse >& response) const;
+
+  /**
    * Handle SAML Get request to get SAMLResponse
    *
    * @param path The http request uri path.

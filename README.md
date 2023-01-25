@@ -27,6 +27,8 @@ See the [product documentation](docs/markdown/index.md) for more detailed inform
 
 To setup and use the Timestream ODBC driver, follow [these directions](docs/markdown/setup/setup.md).
 
+See [Azure Active Directory set-up guide](/docs/markdown/setup/aad-saml-setup.md) for setting up Azure AD account and connecting to Timestream. See [Okta set-up guide](/docs/markdown/setup/Okta-setup.md) for setting up Okta account and connecting to Timestream.
+
 ## Connection String Syntax
 
 ```

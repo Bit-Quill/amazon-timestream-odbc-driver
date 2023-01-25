@@ -622,65 +622,65 @@ class IGNITE_IMPORT_EXPORT Configuration {
   /**
    * Get aadAppId.
    *
-   * @return value AadAppId.
+   * @return value AADAppId.
    */
-  const std::string& GetAadAppId() const;
+  const std::string& GetAADAppId() const;
 
   /**
    * Set aadAppId.
    *
-   * @param value AadAppId.
+   * @param value AADAppId.
    */
-  void SetAadAppId(const std::string& value);
+  void SetAADAppId(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsAadAppIdSet() const;
+  bool IsAADAppIdSet() const;
 
   /**
    * Get aadClientSecret.
    *
-   * @return value AadClientSecret.
+   * @return value AADClientSecret.
    */
-  const std::string& GetAadClientSecret() const;
+  const std::string& GetAADClientSecret() const;
 
   /**
    * Set aadClientSecret.
    *
-   * @param value AadClientSecret.
+   * @param value AADClientSecret.
    */
-  void SetAadClientSecret(const std::string& value);
+  void SetAADClientSecret(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsAadClientSecretSet() const;
+  bool IsAADClientSecretSet() const;
 
   /**
    * Get aadTenant.
    *
-   * @return value AadTenant.
+   * @return value AADTenant.
    */
-  const std::string& GetAadTenant() const;
+  const std::string& GetAADTenant() const;
 
   /**
    * Set aadTenant.
    *
-   * @param value AadTenant.
+   * @param value AADTenant.
    */
-  void SetAadTenant(const std::string& value);
+  void SetAADTenant(const std::string& value);
 
   /**
    * Check if the value set.
    *
    * @return @true if the value set.
    */
-  bool IsAadTenantSet() const;
+  bool IsAADTenantSet() const;
 
   /**
    * Get log level.

@@ -69,12 +69,14 @@
 
 ### SAML-Based Authentication Options for Azure Active Directory
 
+For how to find the connection values, go to the [SAML 2.0 Azure AD set up guide](/docs/markdown/setup/aad-saml-setup.md#timestream-odbc-dsn-configuration).
+
 | Option | Description | Default |
 |--------|-------------|---------------|
 | `UID` or `IdPUserName` | The user name for the specified IdP account. | `NONE`
 | `PWD` or `IdPPassword` | The password for the specified IdP account. | `NONE`
 | `AADApplicationID` | The unique id of the registered application on Azure AD. | `NONE`
-| `ADDClientSecret` | The client secret associated with the registered application on Azure AD used to authorize fetching tokens. | `NONE`
+| `AADClientSecret` | The client secret associated with the registered application on Azure AD used to authorize fetching tokens. | `NONE`
 | `AADTenant` | The Azure AD Tenant ID. | `NONE`
 | `RoleARN` | The Amazon Resource Name (ARN) of the role that the caller is assuming. | `NONE`
 | `IdPARN` | The Amazon Resource Name (ARN) of the SAML provider in IAM that describes the IdP. | `NONE`

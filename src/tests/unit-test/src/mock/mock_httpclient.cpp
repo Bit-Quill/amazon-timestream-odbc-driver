@@ -41,7 +41,10 @@ std::shared_ptr< HttpResponse > MockHttpClient::MakeRequest(
     HandleSessionTokenRequest(request, response);
   } else if (std::regex_search(path, matches, std::regex("/sso/saml"))) {
     HandleSAMLAssertion(path, request, response);
-  } else {
+  } else if (path == "/aad_valid_tenant/oauth2/token") {
+    HandleAADAccessTokenRequest(request, response);
+  } else if (path == "/aad_invalid_tenant/oauth2/token") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::UNAUTHORIZED);
   }
 
   return response;
@@ -93,6 +96,54 @@ void MockHttpClient::HandleSessionTokenRequest(
   } else {
     // unhandled case
     response->SetResponseCode(Aws::Http::HttpResponseCode::REQUEST_NOT_MADE);
+  }
+}
+
+void MockHttpClient::HandleAADAccessTokenRequest(
+    const std::shared_ptr< HttpRequest >& request,
+    std::shared_ptr< HttpResponse >& response) const {
+  std::string body(
+      std::istreambuf_iterator< char >(*(request->GetContentBody())), {});
+
+  std::smatch matches;
+  std::string user("");
+  if (std::regex_search(
+          body, matches,
+          std::regex(std::string("username=\\s*(\\w*)")))) {
+    user = matches.str(1);
+  }
+
+  // The response is determined by username
+  if (user == "aad_valid_user") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
+
+    response->GetResponseBody() << "{\"access_token\" : \"correctAccessToken\"}";
+  } else if (user == "aad_wrong_access_token") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
+
+    response->GetResponseBody()
+        << "{\"access_token\" : "
+           "\"abcdefghijklmn123456890\"}";
+  } else if (user == "aad_fail_access_token") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::BAD_REQUEST);
+  } else if (user == "aad_client_error") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::UNAUTHORIZED);
+
+    response->SetClientErrorType(Aws::Client::CoreErrors::NETWORK_CONNECTION);
+    response->SetClientErrorMessage("Network connection error");
+  } else if (user == "aad_invalid_rsp_body") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
+
+    response->GetResponseBody() << "{ \"access_token\"";
+  } else if (user == "aad_no_access_token") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
+
+    response->GetResponseBody()
+        << "{\"no_access_token\" : \"1234567890abcdefg\"}";
+  } else if (user == "aad_empty_access_token") {
+    response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
+
+    response->GetResponseBody() << "{\"access_token\" : \"\"}";
   }
 }
 

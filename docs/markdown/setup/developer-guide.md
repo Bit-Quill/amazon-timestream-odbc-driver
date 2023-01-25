@@ -10,11 +10,12 @@ C/C++ usage and formatting.
 
 ### Environment Variables for Testing Accounts/Secrets 
 - To use IAM accessKeyId and secretKey to access AWS Timestream, you need to specify the following environment variables.
-   - `AWS_ACCESS_KEY_ID` = `<AWS Access Key ID>`
 
-   - `AWS_SECRET_ACCESS_KEY` = `<AWS Secret Access Key>`
-
-   - `AWS_SESSION_TOKEN` = `<Session Token>`, if your account is enabled with MFA
+   | Enviornment Variable | Description |
+   |----------------------|-------------|
+   | AWS_ACCESS_KEY_ID | `<AWS Access Key ID>` |
+   | AWS_SECRET_ACCESS_KEY | `<AWS Secret Access Key>` |
+   | AWS_SESSION_TOKEN | `<Session Token>`, if your account is enabled with MFA
 
 - [ Optional ] Log configurations
 
@@ -41,7 +42,7 @@ C/C++ usage and formatting.
    2. Visual Studio core editor
    3. C++ ATL for latest v142 build tools (x86 & x64)
    4. C++ MFC for latest v142 build tools (x86 & x64)
-   5. [WiX Toolset v3 Schemas for Visual Studio](https://wixtoolset.org/releases/)
+   5. [WiX Toolset v3 Schemas for Visual Studio](https://wixtoolset.org/docs/wix3/)
       If encountering "wix toolset requires .net 3.5.1 to be enabled", follow the steps below.
       1. Open Settings -> Apps -> Optional Features -> Under "Related Settings", click on "More Windows features", and select ".Net Framework 3.5".
       ![Alt text](../images/dotNet_screenshot.PNG "Example")
@@ -280,6 +281,22 @@ OpenCppCoverage is used to generate code coverage for windows, for more informat
 
 ## Integration Tests
 
+### Azure AD Authentication Tests
+
+1. The Azure AD authentication tests are disabled by default due to no valid Azure AD test account. They could be enabled by exporting environment variable `ENABLE_AAD_TEST` to `true`.
+
+2. For AAD integration tests to be run successfully, you need to specify the following environment variables. For how to set-up and find the AAD connection property values, go to the [SAML 2.0 Azure AD set up guide](/docs/markdown/setup/aad-saml-setup.md#timestream-odbc-dsn-configuration).
+
+   |     Variable Name    | Corresponding Connection String Option |
+   |----------------------|----------------------------------------|
+   | `AAD_APP_ID`         | AADApplicationID                       |
+   | `AAD_ROLE_ARN`       | RoleARN                                |
+   | `AAD_IDP_ARN`        | IdPARN                                 |
+   | `AAD_TENANT`         | AADTenant                              |
+   | `AAD_USER`           | UID or IdPUserName                     |
+   | `AAD_USER_PWD`       | PWD or IdPPassword                     |
+   | `AAD_CLIENT_SECRET`  | AADClientSecret                        |
+   
 ### Okta Authentication Tests
 1. The Okta authentication tests are disabled by default due to no valid Okta test account. They could be enabled by exporting environment variable `ENABLE_OKTA_TEST` to `true`.
 

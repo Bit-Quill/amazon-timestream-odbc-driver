@@ -89,11 +89,11 @@ struct SqlGetInfoTestSuiteFixture : odbc::OdbcTestSuite {
   }
 
   /**
-   * Connect to the local server with the database name
+   * Connect to the Timestream server with the database name
    *
    * @param databaseName Database Name
    */
-  void connectToLocalServer() {
+  void connectToTSServer() {
     std::string dsnConnectionString;
     CreateDsnConnectionStringForAWS(dsnConnectionString);
 
@@ -104,7 +104,7 @@ struct SqlGetInfoTestSuiteFixture : odbc::OdbcTestSuite {
 BOOST_FIXTURE_TEST_SUITE(SqlGetInfoTestSuite, SqlGetInfoTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestValues) {
-  connectToLocalServer();
+  connectToTSServer();
 
   CheckStrInfo(SQL_DRIVER_NAME, "Amazon Timestream ODBC Driver");
   CheckStrInfo(SQL_DBMS_NAME, "Amazon Timestream");
