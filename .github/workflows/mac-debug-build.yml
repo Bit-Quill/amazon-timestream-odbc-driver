@@ -1,14 +1,18 @@
 name: ODBC Driver for Mac (Debug)
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
+  schedule:
+    - cron: '0 8 * * 1,2,3,4,5'
+
+  # Do Not run for each push or pull_request temporarily
+  #push:
+  #  branches:
+  #    - main
+  #    - develop
+  #pull_request:
+  #  branches:
+  #    - main
+  #    - develop
 
 env:
   CI_OUTPUT_PATH: "ci-output"
