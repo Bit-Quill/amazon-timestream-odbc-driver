@@ -310,3 +310,6 @@ OpenCppCoverage is used to generate code coverage for windows, for more informat
    |`OKTA_APP_ID`  |   OktaApplicationID                       |
    |`OKTA_ROLE_ARN`|   RoleARN                                 |
    |`OKTA_IDP_ARN` |   IdPARN                                  |
+
+### Big Table Pagination Tests
+Big table pagination tests are time-consuming. To save time for integration test， they are disabled by default. They could be enabled by export environment variable `BIG_TABLE_PAGINATION_TEST_ENABLE` to `true`.

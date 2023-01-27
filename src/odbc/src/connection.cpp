@@ -44,8 +44,10 @@
 #include <aws/timestream-query/model/QueryResult.h>
 #include <aws/timestream-write/model/ListDatabasesRequest.h>
 #include <aws/timestream-write/model/ListDatabasesResult.h>
+#include <aws/timestream-query/model/DescribeEndpointsRequest.h>
 #include <aws/core/utils/logging/LogLevel.h>
 #include <aws/core/auth/AWSCredentialsProvider.h>
+#include<aws/core/client/DefaultRetryStrategy.h>
 
 using namespace ignite::odbc;
 using namespace ignite::odbc::common;
@@ -643,10 +645,24 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   clientCfg.enableEndpointDiscovery = true;
   clientCfg.connectTimeoutMs = cfg.GetConnectionTimeout();
   clientCfg.requestTimeoutMs = cfg.GetReqTimeout();
+  clientCfg.maxConnections = cfg.GetMaxConnections();
+
+  // When cfg.GetMaxRetryCountClient() is 0, it could lead to error
+  // "AWS API ERROR: ThrottlingException: Request rate limit exceeded"
+  // Maybe a bug of aws-sdk-cpp 1.9.x. Verify this using AT-1244
+  // https://bitquill.atlassian.net/browse/AT-1244
+  if (cfg.GetMaxRetryCountClient() > 0) {
+    clientCfg.retryStrategy =
+        std::make_shared< Aws::Client::DefaultRetryStrategy >(
+            cfg.GetMaxRetryCountClient());
+  }
 
   queryClient_ = CreateTSQueryClient(credentials, clientCfg);
   writeClient_ = CreateTSWriteClient(credentials, clientCfg);
 
+  if (cfg.IsEndpointSet()) {
+    queryClient_->OverrideEndpoint(cfg.GetEndpoint());
+  }
   // try a simple query with query client
   Aws::TimestreamQuery::Model::QueryRequest queryRequest;
   queryRequest.SetQueryString("SELECT 1");

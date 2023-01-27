@@ -13,6 +13,7 @@ env:
   TIMESTREAM_LOG_LEVEL: "4"
   ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
+  BIG_TABLE_PAGINATION_TEST_ENABLE: "TRUE"
 
   # # AAD Test environment variables. Uncomment out to use GitHub secrets to enable AAD integration tests
   # ENABLE_AAD_TEST: "TRUE"

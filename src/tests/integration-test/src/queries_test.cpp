@@ -56,7 +56,11 @@ struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
    * Constructor.
    */
   QueriesTestSuiteFixture() {
-    // No-op
+    BigTablePaginationTestIsEnabled =
+        GetEnv("BIG_TABLE_PAGINATION_TEST_ENABLE");
+    std::transform(BigTablePaginationTestIsEnabled.begin(),
+                   BigTablePaginationTestIsEnabled.end(),
+                   BigTablePaginationTestIsEnabled.begin(), ::toupper);
   }
 
   /**
@@ -188,6 +192,8 @@ struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
 
     return res;
   }
+
+  std::string BigTablePaginationTestIsEnabled;
 };
 
 BOOST_FIXTURE_TEST_SUITE(QueriesTestSuite, QueriesTestSuiteFixture)
@@ -199,8 +205,11 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
   SQLRETURN ret;
 
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "select device_id, time, flag, rebuffering_ratio, video_startup_time, date(TIMESTAMP '2022-07-07 17:44:43.771000000'), current_time, interval '4' year + interval '2' month,"
-      "interval '6' day + interval '4' hour, current_timestamp from data_queries_test_db.TestScalarTypes order by device_id limit 1");
+      "select device_id, time, flag, rebuffering_ratio, video_startup_time, "
+      "date(TIMESTAMP '2022-07-07 17:44:43.771000000'), current_time, interval "
+      "'4' year + interval '2' month,"
+      "interval '6' day + interval '4' hour, current_timestamp from "
+      "data_queries_test_db.TestScalarTypes order by device_id limit 1");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -272,8 +281,7 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  BOOST_CHECK_EQUAL("00000001",
-                    utility::SqlWcharToString(id, id_len, true));
+  BOOST_CHECK_EQUAL("00000001", utility::SqlWcharToString(id, id_len, true));
   BOOST_CHECK_EQUAL(timestamp.year, 2022);
   BOOST_CHECK_EQUAL(timestamp.month, 10);
   BOOST_CHECK_EQUAL(timestamp.day, 20);
@@ -415,7 +423,8 @@ BOOST_AUTO_TEST_CASE(TestMultiLineResultUsingGetData) {
   Connect(dsnConnectionString);
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "select device_id, time from data_queries_test_db.TestScalarTypes order by device_id limit 3");
+      "select device_id, time from data_queries_test_db.TestScalarTypes order "
+      "by device_id limit 3");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -488,7 +497,8 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchTimeStampAsOtherTypes) {
   SQLRETURN ret;
 
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "select time as firstTime, time, time, time from data_queries_test_db.TestScalarTypes order by firstTime");
+      "select time as firstTime, time, time, time from "
+      "data_queries_test_db.TestScalarTypes order by firstTime");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -527,7 +537,8 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchTimeStampAsOtherTypes) {
 
   BOOST_CHECK_EQUAL("2022-10-20 19:01:02.000000000",
                     utility::SqlCharToString(timestampChar, timestampChar_len));
-  BOOST_CHECK_EQUAL("2022-10-20 19:01:02.000000000",
+  BOOST_CHECK_EQUAL(
+      "2022-10-20 19:01:02.000000000",
       utility::SqlWcharToString(timestampWchar, timestampWchar_len));
 
   BOOST_CHECK_EQUAL(fieldDate.year, 2022);
@@ -634,8 +645,8 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchDateAsOtherTypes) {
 
   BOOST_CHECK_EQUAL("2022-07-07",
                     utility::SqlCharToString(timestampChar, timestampChar_len));
-  BOOST_CHECK_EQUAL("2022-07-07",
-      utility::SqlWcharToString(timestampWchar, timestampWchar_len));
+  BOOST_CHECK_EQUAL("2022-07-07", utility::SqlWcharToString(
+                                      timestampWchar, timestampWchar_len));
 
   BOOST_CHECK_EQUAL(2022, timestamp.year);
   BOOST_CHECK_EQUAL(7, timestamp.month);
@@ -652,8 +663,9 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalYearMonthAsOtherTypes) {
   Connect(dsnConnectionString);
   SQLRETURN ret;
 
-  std::vector< SQLWCHAR > request =
-      MakeSqlBuffer("SELECT interval '3' year + interval '11' month, interval '3' year + interval '11' month");
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "SELECT interval '3' year + interval '11' month, interval '3' year + "
+      "interval '11' month");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -667,7 +679,7 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalYearMonthAsOtherTypes) {
   ret = SQLBindCol(stmt, 1, SQL_C_CHAR, &yearMonthChar, sizeof(yearMonthChar),
                    &yearMonthChar_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  
+
   SQLWCHAR yearMonthWchar[buf_size]{};
   SQLLEN yearMonthWchar_len = 0;
   ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, &yearMonthWchar,
@@ -681,7 +693,8 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalYearMonthAsOtherTypes) {
   BOOST_CHECK_EQUAL("3-11",
                     utility::SqlCharToString(yearMonthChar, yearMonthChar_len));
 
-  BOOST_CHECK_EQUAL("3-11", utility::SqlWcharToString(yearMonthWchar, yearMonthWchar_len));
+  BOOST_CHECK_EQUAL(
+      "3-11", utility::SqlWcharToString(yearMonthWchar, yearMonthWchar_len));
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalDayMonthAsOtherTypes) {
@@ -691,7 +704,8 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalDayMonthAsOtherTypes) {
   SQLRETURN ret;
 
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "SELECT interval '6' day + interval '0' hour, interval '0' day + interval '4' hour");
+      "SELECT interval '6' day + interval '0' hour, interval '0' day + "
+      "interval '4' hour");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -719,7 +733,9 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchIntervalDayMonthAsOtherTypes) {
   BOOST_CHECK_EQUAL("6 00:00:00.000000000",
                     utility::SqlCharToString(daySecondChar, daySecondChar_len));
 
-  BOOST_CHECK_EQUAL("0 04:00:00.000000000", utility::SqlWcharToString(daySecondWchar, daySecondWchar_len));
+  BOOST_CHECK_EQUAL(
+      "0 04:00:00.000000000",
+      utility::SqlWcharToString(daySecondWchar, daySecondWchar_len));
 }
 
 BOOST_AUTO_TEST_CASE(TestTimeSeriesSingleResultUsingBindCol) {
@@ -797,7 +813,7 @@ BOOST_AUTO_TEST_CASE(TestArraySingleResultUsingBindCol) {
 
   SQLWCHAR arrayWchar1[buf_size]{};
   SQLLEN arrayWchar1_len = 0;
-  
+
   // fetch result as a unicode string
   ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, arrayWchar1, sizeof(arrayWchar1),
                    &arrayWchar1_len);
@@ -990,152 +1006,167 @@ BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
-  // This test verifies big table resultset could be paginated
-  // and the returned data is correct
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-  Connect(dsnConnectionString);
-  SQLRETURN ret;
-  // data_queries_test_db.TestMultiMeasureBigTable is a big table which has
-  // 20,000 records and the resultset will be paginated by default
-  std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "select time, index, cpu_utilization from "
-      "data_queries_test_db.TestMultiMeasureBigTable order by time");
-  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  SQL_TIMESTAMP_STRUCT timestamp;
-  SQLLEN timestamp_len = 0;
-  ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
-                   &timestamp_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  SQLBIGINT fieldLong;
-  SQLLEN fieldLong_len = 0;
-  ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
-                   &fieldLong_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  double fieldDouble = 0;
-  SQLLEN fieldDouble_len = 0;
-  ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
-                   &fieldDouble_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  if (BigTablePaginationTestIsEnabled == "TRUE") {
+    // This test verifies big table resultset could be paginated
+    // and the returned data is correct
+    std::string dsnConnectionString;
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
+    Connect(dsnConnectionString);
+    SQLRETURN ret;
+    // data_queries_test_db.TestMultiMeasureBigTable is a big table which has
+    // 20,000 records and the resultset will be paginated by default
+    std::vector< SQLWCHAR > request = MakeSqlBuffer(
+        "select time, index, cpu_utilization from "
+        "data_queries_test_db.TestMultiMeasureBigTable order by time");
+    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+    SQL_TIMESTAMP_STRUCT timestamp;
+    SQLLEN timestamp_len = 0;
+    ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp,
+                     sizeof(timestamp), &timestamp_len);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+    SQLBIGINT fieldLong;
+    SQLLEN fieldLong_len = 0;
+    ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
+                     &fieldLong_len);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+    double fieldDouble = 0;
+    SQLLEN fieldDouble_len = 0;
+    ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
+                     &fieldDouble_len);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  // Get 1st row of current page
-  ret = SQLFetch(stmt);
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  // verify result
-  BOOST_CHECK_EQUAL(timestamp.year, 2022);
-  BOOST_CHECK_EQUAL(timestamp.month, 11);
-  BOOST_CHECK_EQUAL(timestamp.day, 9);
-  BOOST_CHECK_EQUAL(timestamp.hour, 23);
-  BOOST_CHECK_EQUAL(timestamp.minute, 51);
-  BOOST_CHECK_EQUAL(timestamp.second, 56);
-  BOOST_CHECK_EQUAL(60.502944999999997, fieldDouble);
-  BOOST_CHECK_EQUAL(1, fieldLong);
-}
-
-BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
-  // This test verifies the internal asynchronous thread could be
-  // terminated when testcase ends. It also verifies all rows could 
-  // be fetched including the last page.
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-  Connect(dsnConnectionString);
-  SQLRETURN ret;
-  std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "select time, index, cpu_utilization from "
-      "data_queries_test_db.TestMultiMeasureBigTable order by time");
-  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  int count = 0;
-  do {
-    ret = SQLFetch(stmt);
-    if (ret == SQL_NO_DATA) {
-      break;
-    } else if (!SQL_SUCCEEDED(ret)) {
-      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-    }
-    count++;
-  } while (true);
-
-   BOOST_CHECK_EQUAL(20000, count);
-}
-
-BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination1000Rows) {
-  // Fetch 1000 rows and verify the resultset is correct for 1001st record.
-  // Each page contains only one row. There will be 1000 internal asynchronous
-  // threads created to fetch 1000 pages.
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-  AddMaxRowPerPage(dsnConnectionString, "1");
-  Connect(dsnConnectionString);
-  SQLRETURN ret;
-  std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "select time, index, cpu_utilization from "
-      "data_queries_test_db.TestMultiMeasureBigTable order by time");
-  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  int count = 0;
-
-  // These time_points could be reopened in case there is
-  // a performance check need.
-  //std::chrono::steady_clock::time_point time_exec_start =
-  //    std::chrono::steady_clock::now();
-
-  // fetch 1000 rows
-  do {
+    // Get 1st row of current page
     ret = SQLFetch(stmt);
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-    count++;
-  } while (count < 1000);
+    // verify result
+    BOOST_CHECK_EQUAL(timestamp.year, 2022);
+    BOOST_CHECK_EQUAL(timestamp.month, 11);
+    BOOST_CHECK_EQUAL(timestamp.day, 9);
+    BOOST_CHECK_EQUAL(timestamp.hour, 23);
+    BOOST_CHECK_EQUAL(timestamp.minute, 51);
+    BOOST_CHECK_EQUAL(timestamp.second, 56);
+    BOOST_CHECK_EQUAL(60.502944999999997, fieldDouble);
+    BOOST_CHECK_EQUAL(1, fieldLong);
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped" << std::endl;
+  }
+}
 
-  /*
-  std::chrono::steady_clock::time_point time_exec_end =
-      std::chrono::steady_clock::now();
+BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
+  if (BigTablePaginationTestIsEnabled == "TRUE") {
+    // This test verifies the internal asynchronous thread could be
+    // terminated when testcase ends. It also verifies all rows could
+    // be fetched including the last page.
+    std::string dsnConnectionString;
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
+    Connect(dsnConnectionString);
+    SQLRETURN ret;
+    std::vector< SQLWCHAR > request = MakeSqlBuffer(
+        "select time, index, cpu_utilization from "
+        "data_queries_test_db.TestMultiMeasureBigTable order by time");
+    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  std::chrono::steady_clock::duration time_span =
-      time_exec_end - time_exec_start;
+    int count = 0;
+    do {
+      ret = SQLFetch(stmt);
+      if (ret == SQL_NO_DATA) {
+        break;
+      } else if (!SQL_SUCCEEDED(ret)) {
+        BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+      }
+      count++;
+    } while (true);
 
-  double nseconds = double(time_span.count())
-                    * std::chrono::steady_clock::period::num
-                    / std::chrono::steady_clock::period::den;
-  std::cout << "Fetching 1000 rows took " << nseconds << " seconds"
-            << std::endl;
-  */
+    BOOST_CHECK_EQUAL(20000, count);
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped" << std::endl;
+  }
+}
 
-  SQL_TIMESTAMP_STRUCT timestamp;
-  SQLLEN timestamp_len = 0;
-  ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp, sizeof(timestamp),
-                   &timestamp_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  SQLBIGINT fieldLong;
-  SQLLEN fieldLong_len = 0;
-  ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
-                   &fieldLong_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-  double fieldDouble = 0;
-  SQLLEN fieldDouble_len = 0;
-  ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
-                   &fieldDouble_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination1000Rows) {
+  if (BigTablePaginationTestIsEnabled == "TRUE") {
+    // Fetch 1000 rows and verify the resultset is correct for 1001st record.
+    // Each page contains only one row. There will be 1000 internal asynchronous
+    // threads created to fetch 1000 pages.
+    std::string dsnConnectionString;
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
+    AddMaxRowPerPage(dsnConnectionString, "1");
+    Connect(dsnConnectionString);
+    SQLRETURN ret;
+    std::vector< SQLWCHAR > request = MakeSqlBuffer(
+        "select time, index, cpu_utilization from "
+        "data_queries_test_db.TestMultiMeasureBigTable order by time");
+    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  // Get 1001st row
-  ret = SQLFetch(stmt);
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+    int count = 0;
 
-  // verify result
-  BOOST_CHECK_EQUAL(timestamp.year, 2022);
-  BOOST_CHECK_EQUAL(timestamp.month, 11);
-  BOOST_CHECK_EQUAL(timestamp.day, 9);
-  BOOST_CHECK_EQUAL(timestamp.hour, 23);
-  BOOST_CHECK_EQUAL(timestamp.minute, 52);
-  BOOST_CHECK_EQUAL(timestamp.second, 51);
-  BOOST_CHECK_EQUAL(71.239357, fieldDouble);
-  BOOST_CHECK_EQUAL(1001, fieldLong);
+    // These time_points could be reopened in case there is
+    // a performance check need.
+    // std::chrono::steady_clock::time_point time_exec_start =
+    //    std::chrono::steady_clock::now();
+
+    // fetch 1000 rows
+    do {
+      ret = SQLFetch(stmt);
+      if (!SQL_SUCCEEDED(ret))
+        BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+      count++;
+    } while (count < 1000);
+
+    /*
+    std::chrono::steady_clock::time_point time_exec_end =
+        std::chrono::steady_clock::now();
+
+    std::chrono::steady_clock::duration time_span =
+        time_exec_end - time_exec_start;
+
+    double nseconds = double(time_span.count())
+                      * std::chrono::steady_clock::period::num
+                      / std::chrono::steady_clock::period::den;
+    std::cout << "Fetching 1000 rows took " << nseconds << " seconds"
+              << std::endl;
+    */
+
+    SQL_TIMESTAMP_STRUCT timestamp;
+    SQLLEN timestamp_len = 0;
+    ret = SQLBindCol(stmt, 1, SQL_C_TYPE_TIMESTAMP, &timestamp,
+                     sizeof(timestamp), &timestamp_len);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+    SQLBIGINT fieldLong;
+    SQLLEN fieldLong_len = 0;
+    ret = SQLBindCol(stmt, 2, SQL_C_SBIGINT, &fieldLong, sizeof(fieldLong),
+                     &fieldLong_len);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+    double fieldDouble = 0;
+    SQLLEN fieldDouble_len = 0;
+    ret = SQLBindCol(stmt, 3, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble),
+                     &fieldDouble_len);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+    // Get 1001st row
+    ret = SQLFetch(stmt);
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // verify result
+    BOOST_CHECK_EQUAL(timestamp.year, 2022);
+    BOOST_CHECK_EQUAL(timestamp.month, 11);
+    BOOST_CHECK_EQUAL(timestamp.day, 9);
+    BOOST_CHECK_EQUAL(timestamp.hour, 23);
+    BOOST_CHECK_EQUAL(timestamp.minute, 52);
+    BOOST_CHECK_EQUAL(timestamp.second, 51);
+    BOOST_CHECK_EQUAL(71.239357, fieldDouble);
+    BOOST_CHECK_EQUAL(1001, fieldLong);
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << " is skipped" << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_CASE(TestSmallResultPagination) {
@@ -1158,7 +1189,7 @@ BOOST_AUTO_TEST_CASE(TestSmallResultPagination) {
   // Fetch 1st row
   // These time_points could be reopened in case there is
   // a performance check need.
-  //std::chrono::steady_clock::time_point time_exec_start =
+  // std::chrono::steady_clock::time_point time_exec_start =
   //    std::chrono::steady_clock::now();
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
@@ -1195,7 +1226,7 @@ BOOST_AUTO_TEST_CASE(TestSmallResultPagination) {
   BOOST_CHECK_EQUAL(timestamp.day, 20);
 
   // Fetch 2nd row
-  //time_exec_start = std::chrono::steady_clock::now();
+  // time_exec_start = std::chrono::steady_clock::now();
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
@@ -1222,7 +1253,7 @@ BOOST_AUTO_TEST_CASE(TestSmallResultPagination) {
   BOOST_CHECK_EQUAL(timestamp.day, 21);
 
   // Fetch 3rd row
-  //time_exec_start = std::chrono::steady_clock::now();
+  // time_exec_start = std::chrono::steady_clock::now();
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
@@ -1345,19 +1376,18 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPaginationEmptyTable) {
 #ifdef _WIN32
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 #else
-  // unixODBC DM/iODBC DM returns an error 
+  // unixODBC DM/iODBC DM returns an error
   BOOST_CHECK_EQUAL(SQL_ERROR, ret);
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
 #ifdef __APPLE__
   std::string pattern = "Function sequence error";
 #else
   std::string pattern = "Invalid cursor state";
-#endif //__APPLE__
+#endif  //__APPLE__
   if (error.find(pattern) == std::string::npos)
     BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
-#endif //_WIN32
+#endif  //_WIN32
 }
-
 
 BOOST_AUTO_TEST_CASE(TestTwoRowsInt8, *disabled()) {
   CheckTwoRowsInt< signed char >(SQL_C_STINYINT);
@@ -1431,7 +1461,7 @@ BOOST_AUTO_TEST_CASE(TestTwoRowsString, *disabled()) {
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[3], SQL_NTS, true), "4");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[4], SQL_NTS, true), "5");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[5], SQL_NTS, true), "1");
-  
+
   SQLLEN columnLens[columnsCnt];
 
   // Binding columns.
@@ -1982,7 +2012,8 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar, *disabled()) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar,
+                     *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);
@@ -2017,7 +2048,8 @@ BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar, *disabl
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataNarrowChar, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataNarrowChar,
+                     *disabled()) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   Connect(dsnConnectionString);

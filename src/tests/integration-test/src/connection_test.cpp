@@ -100,6 +100,19 @@ BOOST_AUTO_TEST_CASE(TestDriverConnection) {
   Disconnect();
 }
 
+// Enable this test after vcpkg upgrades aws-sdk-cpp to 1.10.55, see AT-1244
+// https://bitquill.atlassian.net/browse/AT-1244
+BOOST_AUTO_TEST_CASE(TestDriverConnectionWithEndpoint, *disabled()) {
+  std::string connectionString;
+  std::string misc("EndpointOverride=query.timestream.us-west-2.amazonaws.com;");
+
+  CreateDsnConnectionStringForAWS(connectionString, "", "", misc);
+
+  Connect(connectionString);
+
+  Disconnect();
+}
+
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingDupCredString) {
   // Test passing both uid/pwd and accessKeyId/secretKey in the connection
   // string
@@ -1065,18 +1078,6 @@ BOOST_AUTO_TEST_CASE(TestConnectionConcurrency, *disabled()) {
   threads.join_all();
 }
 
-// TO-DO enable for misc options in future
-// https://bitquill.atlassian.net/browse/AT-1148
-BOOST_AUTO_TEST_CASE(TestConnectionRestoreMiscOptionsSet, *disabled()) {
-  // TODO add misc options
-  const std::string miscOptions = "APP_NAME=TestAppName;";
-  std::string connectionString;
-  CreateDsnConnectionStringForAWS(connectionString, "", "", miscOptions);
-
-  Connect(connectionString);
-  Disconnect();
-}
-
 BOOST_AUTO_TEST_CASE(TestConnectionOnlyConnect) {
   std::string connectionString;
   CreateDsnConnectionStringForAWS(connectionString);
@@ -1182,6 +1183,16 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnectionInvalidUserUsingGenericIAMString) {
   ExpectConnectionReject(connectionString, "08001",
                          "Failed to establish connection to "
                          "Timestream.\nINVALID_ENDPOINT: Failed to discover");
+
+  Disconnect();
+}
+
+BOOST_AUTO_TEST_CASE(TestDriverConnectionMiscAttributes) {
+  std::string connectionString;
+  std::string misc("RequestTimeout=10000;ConnectionTimeout=10000;MaxRetryCountClient=5;MaxConnections=25");
+  CreateDsnConnectionStringForAWS(connectionString, "", "", misc);
+
+  Connect(connectionString);
 
   Disconnect();
 }

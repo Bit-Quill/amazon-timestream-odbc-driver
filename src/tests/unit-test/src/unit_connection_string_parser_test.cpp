@@ -122,4 +122,117 @@ BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
 }
 
+BOOST_AUTO_TEST_CASE(TestParsingRequestTimeout) {
+  ignite::odbc::config::Configuration cfg;
+
+  ConnectionStringParser parser(cfg);
+
+  diagnostic::DiagnosticRecordStorage diag;
+
+  std::string connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "RequestTimeout=0;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 1);
+  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
+                    "Request Timeout attribute value is out of range. Using "
+                    "default value. [key='RequestTimeout', value='0']");
+
+  connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "RequestTimeout=-1000;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 2);
+  BOOST_CHECK_EQUAL(
+      diag.GetStatusRecord(2).GetMessageText(),
+      "Request Timeout attribute value contains unexpected characters. Using "
+      "default value. [key='RequestTimeout', value='-1000']");
+}
+
+BOOST_AUTO_TEST_CASE(TestParsingConnectionTimeout) {
+  ignite::odbc::config::Configuration cfg;
+
+  ConnectionStringParser parser(cfg);
+
+  diagnostic::DiagnosticRecordStorage diag;
+
+  std::string connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "ConnectionTimeout=0;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 1);
+  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
+                    "Connection Timeout attribute value is out of range. Using "
+                    "default value. [key='ConnectionTimeout', value='0']");
+
+  connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "ConnectionTimeout=-1000;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 2);
+  BOOST_CHECK_EQUAL(
+      diag.GetStatusRecord(2).GetMessageText(),
+      "Connection Timeout attribute value contains unexpected characters. "
+      "Using default value. [key='ConnectionTimeout', value='-1000']");
+}
+
+BOOST_AUTO_TEST_CASE(TestParsingMaxRetryCountClient) {
+  ignite::odbc::config::Configuration cfg;
+
+  ConnectionStringParser parser(cfg);
+
+  diagnostic::DiagnosticRecordStorage diag;
+
+  std::string connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "MaxRetryCountClient=-1000;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 1);
+  BOOST_CHECK_EQUAL(
+      diag.GetStatusRecord(1).GetMessageText(),
+      "Max Retry Count Client attribute value contains unexpected characters. "
+      "Using default value. [key='MaxRetryCountClient', value='-1000']");
+}
+
+BOOST_AUTO_TEST_CASE(TestParsingMaxConnections) {
+  ignite::odbc::config::Configuration cfg;
+
+  ConnectionStringParser parser(cfg);
+
+  diagnostic::DiagnosticRecordStorage diag;
+
+  std::string connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "MaxConnections=0;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 1);
+  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
+                    "Max Connections attribute value is out of range. Using "
+                    "default value. [key='MaxConnections', value='0']");
+
+  connectionString =
+      "driver={Amazon Timestream ODBC Driver};"
+      "MaxConnections=-1000;";
+
+  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
+
+  BOOST_CHECK(diag.GetStatusRecordsNumber() == 2);
+  BOOST_CHECK_EQUAL(
+      diag.GetStatusRecord(2).GetMessageText(),
+      "Max Connections attribute value contains unexpected characters. Using "
+      "default value. [key='MaxConnections', value='-1000']");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
