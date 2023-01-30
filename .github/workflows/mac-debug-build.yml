@@ -2,7 +2,7 @@ name: ODBC Driver for Mac (Debug)
 
 on:
   schedule:
-    - cron: '0 8 * * 1,2,3,4,5'
+    - cron: '0 8 * * *'
 
   # Do Not run for each push or pull_request temporarily
   #push:
@@ -48,8 +48,22 @@ env:
   # OKTA_IDP_ARN: ${{secrets.OKTA_IDP_ARN}}  
 
 jobs:
+  # check if there is a change within one day
+  check:
+    runs-on: macos-11
+    outputs:
+      status: ${{ steps.early.conclusion }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: early
+        name: Early exit
+        run: |
+          ${{github.workspace}}/scripts/unix_check_changes.sh
+
   build-mac-debug:
     runs-on: macos-11
+    needs: check
+    if: needs.check.outputs.status == 'success'
     steps:
     - uses: actions/checkout@v2
     - name: run-cppcheck
@@ -68,6 +82,7 @@ jobs:
         brew tap homebrew/services
         brew unlink unixodbc
         brew install libiodbc
+        brew link --overwrite --force libiodbc
         brew install cmake
         brew install openssl
         brew install boost

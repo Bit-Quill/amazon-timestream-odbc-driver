@@ -49,6 +49,7 @@ jobs:
       run: |
         brew tap homebrew/services
         brew install libiodbc
+        brew link --overwrite --force libiodbc
         brew install cmake
         brew install openssl
         brew install boost
@@ -187,6 +188,7 @@ jobs:
       run: |
         brew tap homebrew/services
         brew install libiodbc
+        brew link --overwrite --force libiodbc
         brew install cmake
         brew install openssl
         brew install boost

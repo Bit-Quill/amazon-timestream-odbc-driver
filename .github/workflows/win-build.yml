@@ -1,14 +1,18 @@
 name: ODBC Driver for Windows
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
+  schedule:
+    - cron: '0 8 * * *'
+
+  # Do Not run for each push or pull_request temporarily
+  #push:
+  #  branches:
+  #    - main
+  #    - develop
+  #pull_request:
+  #  branches:
+  #    - main
+  #    - develop
 
 env:
   CI_OUTPUT_PATH: "ci-output"
@@ -44,8 +48,23 @@ env:
   # OKTA_IDP_ARN: ${{secrets.OKTA_IDP_ARN}}  
 
 jobs:
+  # check if there is a change within one day
+  check:
+    runs-on: windows-2022
+    outputs:
+      status: ${{ steps.early.conclusion }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: early
+        name: Early exit
+        run: |
+          ${{github.workspace}}\scripts\win_check_changes.ps1
+
   build-windows32:
     runs-on: windows-2022
+
+    needs: check
+    if: needs.check.outputs.status == 'success'
     steps:
     - uses: actions/checkout@v2
     # TODO Reactivate cppcheck
@@ -180,6 +199,9 @@ jobs:
     #     path: $CI_OUTPUT_PATH/test
   build-windows64:
     runs-on: windows-2022
+
+    needs: check
+    if: needs.check.outputs.status == 'success'
     steps:
     - uses: actions/checkout@v2
     # TODO Reactivate cppcheck
@@ -322,6 +344,9 @@ jobs:
   #       path: ci-output/installer
   build-windows64_coverage:
     runs-on: windows-2022
+
+    needs: check
+    if: needs.check.outputs.status == 'success'
     steps:
     - uses: actions/checkout@v2
 
