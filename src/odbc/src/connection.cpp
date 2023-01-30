@@ -660,8 +660,10 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   queryClient_ = CreateTSQueryClient(credentials, clientCfg);
   writeClient_ = CreateTSWriteClient(credentials, clientCfg);
 
-  if (cfg.IsEndpointSet()) {
-    queryClient_->OverrideEndpoint(cfg.GetEndpoint());
+  const std::string& endpoint = cfg.GetEndpoint();
+  // endpoint could not be set to empty string
+  if (!endpoint.empty()) {
+    queryClient_->OverrideEndpoint(endpoint);
   }
   // try a simple query with query client
   Aws::TimestreamQuery::Model::QueryRequest queryRequest;

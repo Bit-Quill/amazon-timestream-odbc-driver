@@ -113,6 +113,17 @@ BOOST_AUTO_TEST_CASE(TestDriverConnectionWithEndpoint, *disabled()) {
   Disconnect();
 }
 
+BOOST_AUTO_TEST_CASE(TestDriverConnectionWithSpacesEndpoint) {
+  std::string connectionString;
+  std::string misc("EndpointOverride= \t;");
+
+  CreateDsnConnectionStringForAWS(connectionString, "", "", misc);
+
+  Connect(connectionString);
+
+  Disconnect();
+}
+
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingDupCredString) {
   // Test passing both uid/pwd and accessKeyId/secretKey in the connection
   // string
