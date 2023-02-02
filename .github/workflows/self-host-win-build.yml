@@ -296,8 +296,10 @@ jobs:
 
     - name: run-tests
       run: |
-        opencppcoverage --sources src --export_type binary:unit.test.cov --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-unit-tests.exe
-        opencppcoverage --sources src --input_coverage unit.test.cov --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-integration-tests.exe
+        # run code coverage against unit test first
+        opencppcoverage --sources src\odbc\src --sources src\odbc\include --export_type binary:unit.test.cov --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost --excluded_sources src\odbc\src\binary --excluded_sources src\odbc\src\common --excluded_sources src\odbc\src\impl --excluded_sources src\odbc\src\sql --excluded_sources src\odbc\src\streaming --excluded_sources src\odbc\include\ignite\odbc\binary --excluded_sources src\odbc\include\ignite\odbc\common --excluded_sources src\odbc\include\ignite\odbc\impl --excluded_sources src\odbc\include\ignite\odbc\sql --excluded_sources src\odbc\include\ignite\odbc\streaming -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-unit-tests.exe
+        # run code coverage against integration test and merge the result with the unit test one
+        opencppcoverage --sources src\odbc\src --sources src\odbc\include --input_coverage unit.test.cov --export_type cobertura:coverage.cobertura.xml --excluded_modules boost_unit_test_framework --excluded_modules timestream-odbc-integration-tests --excluded_modules zlib --excluded_modules aws --excluded_modules boost --excluded_sources src\odbc\src\binary --excluded_sources src\odbc\src\common --excluded_sources src\odbc\src\impl --excluded_sources src\odbc\src\sql --excluded_sources src\odbc\src\streaming --excluded_sources src\odbc\include\ignite\odbc\binary --excluded_sources src\odbc\include\ignite\odbc\common --excluded_sources src\odbc\include\ignite\odbc\impl --excluded_sources src\odbc\include\ignite\odbc\sql --excluded_sources src\odbc\include\ignite\odbc\streaming -- ${{env.ODBC_DEBUG_PATH}}/timestream-odbc-integration-tests.exe
 
     - name: upload-coverage
       if: always()
