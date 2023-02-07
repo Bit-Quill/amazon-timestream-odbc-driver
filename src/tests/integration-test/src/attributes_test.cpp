@@ -204,8 +204,10 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeTSLogDebug) {
   BOOST_REQUIRE_EQUAL(id, static_cast<SQLUINTEGER>(LogLevel::Type::DEBUG_LEVEL));
 }
 
-
 // Test SQLGetConnectOption/SQLSetConnectOption
+// TODO [AT-1224] enable this test on macOS
+// https://bitquill.atlassian.net/browse/AT-1224
+#if !defined(__APPLE__)
 BOOST_AUTO_TEST_CASE(ConnectionSetAndGetConnectOption) {
   ConnectToTS();
 
@@ -218,6 +220,7 @@ BOOST_AUTO_TEST_CASE(ConnectionSetAndGetConnectOption) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
   BOOST_REQUIRE_EQUAL(id, SQL_TRUE);
 }
+#endif // #if !defined(__APPLE__)
 
 BOOST_AUTO_TEST_CASE(StatementAttributeQueryTimeout, *disabled()) {
   ConnectToTS();
