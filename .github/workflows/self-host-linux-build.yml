@@ -71,8 +71,10 @@ jobs:
     - name: get-vcpkg-dependencies
       run: |
         git clone https://github.com/microsoft/vcpkg
-        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-        ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
+        cd vcpkg
+        git checkout 2022.09.27
+        ./bootstrap-vcpkg.sh -disableMetrics
+        ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
 
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726
@@ -201,8 +203,10 @@ jobs:
     - name: get-vcpkg-dependencies
       run: |
         git clone https://github.com/microsoft/vcpkg
-        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-        ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
+        cd vcpkg
+        git checkout 2022.09.27
+        ./bootstrap-vcpkg.sh -disableMetrics
+        ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
 
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726

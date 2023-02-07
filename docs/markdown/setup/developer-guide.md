@@ -54,7 +54,15 @@ C/C++ usage and formatting.
 3. [WiX Installer (3.11)](https://wixtoolset.org/releases/)
    1. Ensure to add path to WiX executables (e.g. `C:\Program Files (x86)\WiX Toolset v3.11\bin`)
 4. Boost Test Framework
-   1. Install via [VCPKG](https://vcpkg.io/en/getting-started.html) using `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
+   1. Install [VCPKG](https://vcpkg.io/en/getting-started.html)
+   2. `cd vcpkg`
+   3. Checkout 2022.09.27 to ensure AWS SDK 1.9.220 is used. 
+
+      `git checkout 2022.09.27`
+
+   4. Install Boost and AWS SDK
+
+      `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
 5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
 6. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
@@ -78,9 +86,7 @@ C/C++ usage and formatting.
    3. `brew install libiodbc`  
       - You may need to unlink `unixodbc` if you already have this installed. Use `brew unlink unixodbc`.
    4. `brew install boost`
-   5. `brew install aws-sdk-cpp`
-      - This can be done through Homebrew using `brew install --cask temurin<version>`. 
-   6. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
+   5. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
       - If you only have XCode Command Line Tools, use the LLVM included with XCode by modifying the PATH with `export PATH=/Library/Developer/CommandLineTools/usr/bin/:$PATH`. Ensure this XCode path comes first in $PATH. If error occurs, check that clang and llvm are under folder Library/Developer/CommandLineTools/usr/bin.
       - If you have XCode application, to ensure LLVM and CMake are compatible, use the LLVM included with XCode by modifying the PATH with `export PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH`.
 2. Run one of the build scripts to create an initial compilation.
@@ -148,10 +154,12 @@ set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_
    1. Set environment variables for testing and double-check if all dev environmnet variables are set by running `scripts/env_variables_check.sh`. More info [Environment Variables for Testing Accounts/Secrets ](#environment-variables-for-testing-accounts/secrets)
       Note. Since the environment variables `ODBC_LIB_PATH`, `REPOSITORY_ROOT`, and `VCPKG_ROOT` are already set in the container, it is not recommended to change those.
    2. Git clone `vcpkg` and install the dependencies by running the following command
-   ```
-   git clone https://github.com/Microsoft/vcpkg.git \
-    && ./vcpkg/bootstrap-vcpkg.sh \
-    && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
+    ```
+    git clone https://github.com/Microsoft/vcpkg.git \
+    && cd vcpkg \
+    && git checkout 2022.09.27 \
+    && ./bootstrap-vcpkg.sh \
+    && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
     ```
    3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
    4. Run the following command to register the ODBC driver. 
@@ -208,8 +216,10 @@ There are two ways to fix the issue.
 ```
            cd <odbc-repo> \
            git clone https://github.com/Microsoft/vcpkg.git \
-           && ./vcpkg/bootstrap-vcpkg.sh \
-           && ./vcpkg/vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse \
+           && cd vcpkg \
+           && git checkout 2022.09.27 \
+           && ./bootstrap-vcpkg.sh \
+           && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse \
            export VCPKG_ROOT=<odbc-repo>/vcpkg
 ```
    3. Set all necessary environment variables and run the following command to register the ODBC driver. 
