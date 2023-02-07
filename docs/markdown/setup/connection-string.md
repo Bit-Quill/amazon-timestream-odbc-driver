@@ -54,7 +54,7 @@
 |--------|-------------|---------------|
 | `UID` or `AccessKeyId` | The AWS user access key id. If both `UID` and `AccessKeyId` are provided in the connection string, the non-empty value with `UID` will be used. | `NONE` 
 | `PWD` or `SecretKey` | The AWS user secret access key. If both `PWD` and `SecretKey` are provided in the connection string, the non-empty value with `PWD` will be used. | `NONE` 
-| `SessionToken` | The temporary session token required to access a database with multi-factor authentication (MFA) enabled. | `NONE` 
+| `SessionToken` | The temporary session token required to access a database with multi-factor authentication (MFA) enabled. Do not include trailing "=" in the input. | `NONE` 
 
 ### SAML-Based Authentication Options for Okta
 

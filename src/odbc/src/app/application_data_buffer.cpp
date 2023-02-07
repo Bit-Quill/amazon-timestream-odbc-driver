@@ -87,7 +87,7 @@ template < typename T >
 ConversionResult::Type ApplicationDataBuffer::PutNum(T value) {
   using namespace type_traits;
 
-  LOG_MSG("value: " << value);
+  LOG_DEBUG_MSG("value: " << value);
 
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
@@ -395,7 +395,7 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
     const std::string& value, int32_t& written) {
   using namespace type_traits;
 
-  LOG_MSG("value: " << value);
+  LOG_DEBUG_MSG("value: " << value);
 
   switch (type) {
     case OdbcNativeType::AI_SIGNED_TINYINT:
@@ -456,7 +456,7 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
 ConversionResult::Type ApplicationDataBuffer::PutGuid(const Guid& value) {
   using namespace type_traits;
 
-  LOG_MSG("value: " << value);
+  LOG_DEBUG_MSG("value: " << value);
 
   SqlLen* resLenPtr = GetResLen();
 
@@ -542,6 +542,8 @@ ConversionResult::Type ApplicationDataBuffer::PutBinaryData(const void* data,
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutNull() {
+  LOG_DEBUG_MSG("PutNull is called. No data put into buffer");
+
   SqlLen* resLenPtr = GetResLen();
 
   if (!resLenPtr)

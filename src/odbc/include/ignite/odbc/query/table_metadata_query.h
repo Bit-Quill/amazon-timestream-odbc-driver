@@ -143,18 +143,25 @@ class TableMetadataQuery : public Query {
   IGNITE_NO_COPY_ASSIGNMENT(TableMetadataQuery);
 
   /**
-   * Make get columns metadata requets and use response to set internal state.
+   * Make get tables metadata requets and use response to set internal state.
    *
-   * @return True on success.
+   * @return Operation result.
    */
   SqlResult::Type MakeRequestGetTablesMeta();
 
   /**
-   * Get the list of all schemas (databases).
+   * Checks for special cases for table metadata retrieval
+   * 
+   * @return Optional operation result.
+   */
+  boost::optional< SqlResult::Type > getTablesMetaCornerCase();
+
+  /**
+   * Get the list of all databases.
    * 
    * @return Operation result
    */
-  SqlResult::Type getSchemas();
+  SqlResult::Type getDatabases();
 
   /**
    * Get the list of all tables.
@@ -176,6 +183,7 @@ class TableMetadataQuery : public Query {
    * Only run this function if dbOutcome has error
    * 
    * @param dbOutcome ListDatabasesOutcome
+   * @return Operation result
    */
   SqlResult::Type checkOutcomeError(ListDatabasesOutcome const& dbOutcome);
 
@@ -185,13 +193,30 @@ class TableMetadataQuery : public Query {
    * Only run this function if tbOutcome has error
    *
    * @param dbOutcome ListTablesOutcome
+   * @return Operation result
    */
   SqlResult::Type checkOutcomeError(ListTablesOutcome const& tbOutcome);
 
   /**
    * Check if meta object is empty and print logs of it.
+   * @return Operation result
    */
   SqlResult::Type checkMeta();
+
+  /**
+   * Check if database name matches database search pattern
+   *
+   * @param databaseName Database name to check
+   * @param databasePattern Database pattern
+   * @param allDatabasePattern Database pattern that indicates all databases are selected
+   * @param db_pattern_regex Database pattern regex
+   * @return true if match, false otherwise
+   */
+  bool checkIfDatabaseMatch(
+      const std::string& databaseName,
+      const boost::optional< std::string >& databasePattern,
+      const std::string& allDatabasePattern,
+      const std::regex db_pattern_regex);
 
   /**
    * Remove outer matching quotes from a string. They can be either single (')
@@ -241,6 +266,10 @@ class TableMetadataQuery : public Query {
   /** Columns metadata. */
   meta::ColumnMetaVector columnsMeta;
 
+  /** Catalog regex. */
+  std::regex catalog_regex;
+
+  /** Schema regex. */
   std::regex schema_regex;
 };
 }  // namespace query

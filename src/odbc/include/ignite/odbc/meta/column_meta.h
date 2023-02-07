@@ -98,12 +98,11 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
   /**
    * Constructor.
    *
-   * @param schemaName Schema name.
+   * @param databaseName Database name.
    * @param tableName Table name.
    */
-  ColumnMeta(const std::string& schemaName, const std::string& tableName)
-      : schemaName(schemaName),
-        tableName(tableName),
+  ColumnMeta(const std::string& databaseName, const std::string& tableName)
+      : tableName(tableName),
         columnName(""),
         dataType(static_cast< int16_t >(
             ScalarType::NOT_SET)),
@@ -113,23 +112,25 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
         scale(-1),
         nullability(Nullability::NULLABILITY_UNKNOWN),
         ordinalPosition(-1) {
-    // No-op.
+    if (DATABASE_AS_SCHEMA)
+      schemaName = databaseName;
+    else
+      catalogName = databaseName;
   }
 
   /**
    * Constructor.
    *
-   * @param schemaName Schema name.
+   * @param databaseName Database name.
    * @param tableName Table name.
    * @param columnName Column name.
-   * @param typeName Type name.
    * @param scalarType Data type.
+   * @param nullability Nullability
    */
-  ColumnMeta(const std::string& schemaName, const std::string& tableName,
+  ColumnMeta(const std::string& databaseName, const std::string& tableName,
              const std::string& columnName, ScalarType scalarType,
              Nullability::Type nullability)
-      : schemaName(schemaName),
-        tableName(tableName),
+      : tableName(tableName),
         columnName(columnName),
         dataType(static_cast<int16_t>(scalarType)),
         isAutoIncrement("NO"),
@@ -138,23 +139,25 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
         scale(-1),
         nullability(nullability),
         ordinalPosition(-1) {
-    // No-op.
+    if (DATABASE_AS_SCHEMA)
+      schemaName = databaseName;
+    else
+      catalogName = databaseName;
   }
 
   /**
    * Constructor.
    *
-   * @param schemaName Schema name.
+   * @param databaseName Database name.
    * @param tableName Table name.
    * @param columnName Column name.
-   * @param typeName Type name.
    * @param dataType Data type.
+   * @param nullability Nullability
    */
-  ColumnMeta(const std::string& schemaName, const std::string& tableName,
+  ColumnMeta(const std::string& databaseName, const std::string& tableName,
              const std::string& columnName, int16_t dataType,
              Nullability::Type nullability)
-      : schemaName(schemaName),
-        tableName(tableName),
+      : tableName(tableName),
         columnName(columnName),
         dataType(dataType),
         isAutoIncrement("NO"),
@@ -163,7 +166,10 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
         scale(-1),
         nullability(nullability),
         ordinalPosition(-1) {
-    // No-op.
+    if (DATABASE_AS_SCHEMA)
+      schemaName = databaseName;
+    else
+      catalogName = databaseName;
   }
 
   /**

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/meta/table_meta.h"
 #include "ignite/odbc/log.h"
 
@@ -31,14 +32,20 @@ const std::string REMARKS = "REMARKS";
 
 void TableMeta::Read(Table& tb) {
   tableName = tb.GetTableName();
-  schemaName = tb.GetDatabaseName();
+  if (DATABASE_AS_SCHEMA) 
+    schemaName = tb.GetDatabaseName();
+  else
+    catalogName = tb.GetDatabaseName();
   // Timestream only has table type "TABLE"
   tableType = "TABLE";
   // Timestream does not have catalog or table remarks, so those
   // values are kept as boost::none to indicate that they are empty
 }
 void TableMeta::Read(Database& db) {
-  schemaName = db.GetDatabaseName();
+  if (DATABASE_AS_SCHEMA)
+    schemaName = db.GetDatabaseName();
+  else
+    catalogName = db.GetDatabaseName();
 }
 
 void TableMeta::Read(std::string& tbType) {

@@ -21,6 +21,7 @@
 #include <cstring>
 
 #include "ignite/odbc/system/odbc_constants.h"
+#include "ignite/odbc/log.h"
 #include "ignite/odbc/utility.h"
 
 // Temporary workaround.
@@ -583,6 +584,9 @@ const char* ConnectionInfo::InfoTypeToString(InfoType type) {
 
 #undef DBG_STR_CASE
 
+// TODO [AT-1251] SQLGetInfo return Timestream specific results
+// https://bitquill.atlassian.net/browse/AT-1251
+
 ConnectionInfo::ConnectionInfo(const Configuration& config)
     : strParams(), intParams(), shortParams(), config(config) {
   //
@@ -648,12 +652,11 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // example, "database" or "directory". This string can be in upper, lower, or
   // mixed case. This InfoType has been renamed for ODBC 3.0 from the ODBC 2.0
   // InfoType SQL_QUALIFIER_TERM.
-  strParams[SQL_CATALOG_TERM] = "";
+  if (DATABASE_AS_SCHEMA) 
+    strParams[SQL_CATALOG_TERM] = "";
+  else
+    strParams[SQL_CATALOG_TERM] = "database";
 #endif  // SQL_CATALOG_TERM
-
-#ifdef SQL_QUALIFIER_TERM
-  strParams[SQL_QUALIFIER_TERM] = "";
-#endif  // SQL_QUALIFIER_TERM
 
 #ifdef SQL_TABLE_TERM
   // A character string with the data source vendor's name for a table; for
@@ -663,7 +666,8 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 
 #ifdef SQL_SCHEMA_TERM
   // A character string with the data source vendor's name for a schema; for
-  // example, "owner", "Authorization ID", or "Schema".
+  // example, "owner", "Authorization ID", or "Schema". This InfoType has been
+  // renamed for ODBC 3.0 from the ODBC 2.0 InfoType SQL_OWNER_TERM.
   strParams[SQL_SCHEMA_TERM] = "schema";
 #endif  // SQL_SCHEMA_TERM
 
@@ -691,7 +695,10 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CATALOG_NAME
   // A character string: "Y" if the server supports catalog names, or "N" if it
   // does not. An SQL - 92 Full level-conformant driver will always return "Y".
-  strParams[SQL_CATALOG_NAME] = "N";
+  if (DATABASE_AS_SCHEMA) 
+    strParams[SQL_CATALOG_NAME] = "N";
+  else
+    strParams[SQL_CATALOG_NAME] = "Y";
 #endif  // SQL_CATALOG_NAME
 
 #ifdef SQL_COLLATION_SEQ
@@ -985,12 +992,11 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // value of 0 is returned if catalogs are not supported by the data source.
   // This InfoType has been renamed for ODBC 3.0 from the ODBC 2.0 InfoType
   // SQL_QUALIFIER_LOCATION.
-  intParams[SQL_CATALOG_LOCATION] = 0;  // I.e., not supported
+  if (DATABASE_AS_SCHEMA)
+    intParams[SQL_CATALOG_LOCATION] = 0;  // I.e., not supported
+  else
+    intParams[SQL_CATALOG_LOCATION] = SQL_CL_START;
 #endif  // SQL_CATALOG_LOCATION
-
-#ifdef SQL_QUALIFIER_LOCATION
-  intParams[SQL_QUALIFIER_LOCATION] = 0;  // I.e., not supported
-#endif  // SQL_QUALIFIER_LOCATION
 
 #ifdef SQL_GETDATA_EXTENSIONS
   // Bitmask enumerating extensions to SQLGetData.
@@ -1051,18 +1057,22 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // level-conformant driver will always return a bitmask with all of these bits
   // set. This InfoType has been renamed for ODBC 3.0 from the ODBC 2.0 InfoType
   // SQL_QUALIFIER_USAGE.
-  intParams[SQL_CATALOG_USAGE] = 0;  // I.e., not supported
+  if (DATABASE_AS_SCHEMA) 
+    intParams[SQL_CATALOG_USAGE] = 0; // I.e., not supported
+  else 
+    intParams[SQL_CATALOG_USAGE] = SQL_CU_DML_STATEMENTS;
 #endif  // SQL_CATALOG_USAGE
-
-#ifdef SQL_QUALIFIER_USAGE
-  intParams[SQL_QUALIFIER_USAGE] = 0;  // I.e., not supported
-#endif  // SQL_QUALIFIER_USAGE
 
 #ifdef SQL_SCHEMA_USAGE
   // Bitmask enumerating the statements in which schemas can be used.
-  intParams[SQL_SCHEMA_USAGE] = SQL_SU_DML_STATEMENTS | SQL_SU_TABLE_DEFINITION
-                                | SQL_SU_PRIVILEGE_DEFINITION
-                                | SQL_SU_INDEX_DEFINITION;
+  // This InfoType has been renamed for ODBC 3.0 from the ODBC 2.0 InfoType
+  // SQL_OWNER_USAGE.
+  if (DATABASE_AS_SCHEMA) {
+    intParams[SQL_SCHEMA_USAGE] = SQL_SU_DML_STATEMENTS | SQL_SU_TABLE_DEFINITION |
+                                  SQL_SU_PRIVILEGE_DEFINITION | SQL_SU_INDEX_DEFINITION;
+  }
+  else 
+    intParams[SQL_SCHEMA_USAGE] = 0; // I.e., not supported
 #endif  // SQL_SCHEMA_USAGE
 
 #ifdef SQL_AGGREGATE_FUNCTIONS
@@ -1141,7 +1151,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_FUNCTIONS
   // Bitmask enumerating the scalar conversion functions supported by the driver
   // and associated data source.
-  intParams[SQL_CONVERT_FUNCTIONS] = SQL_FN_CVT_CONVERT | SQL_FN_CVT_CAST;
+  intParams[SQL_CONVERT_FUNCTIONS] = 0; // I.e., not supported
 #endif  // SQL_CONVERT_FUNCTIONS
 
 #ifdef SQL_OJ_CAPABILITIES
@@ -2920,6 +2930,9 @@ SqlResult::Type ConnectionInfo::GetInfo(InfoType type, void* buf, short buflen,
         itStr->second, reinterpret_cast< SQLWCHAR* >(buf), buflen, isTruncated,
         true));
 
+    LOG_INFO_MSG(type << " (" << ConnectionInfo::InfoTypeToString(type)
+                      << ") string result: \"" << itStr->second << "\"");
+
     if (reslen)
       *reslen = strlen;
 
@@ -2937,6 +2950,9 @@ SqlResult::Type ConnectionInfo::GetInfo(InfoType type, void* buf, short buflen,
 
     *res = itInt->second;
 
+    LOG_INFO_MSG(type << " (" << ConnectionInfo::InfoTypeToString(type)
+                      << ") int result: " << itInt->second);
+
     return SqlResult::AI_SUCCESS;
   }
 
@@ -2946,6 +2962,9 @@ SqlResult::Type ConnectionInfo::GetInfo(InfoType type, void* buf, short buflen,
     unsigned short* res = reinterpret_cast< unsigned short* >(buf);
 
     *res = itShort->second;
+
+    LOG_INFO_MSG(type << " (" << ConnectionInfo::InfoTypeToString(type)
+                      << ") short result: " << itShort->second);
 
     return SqlResult::AI_SUCCESS;
   }

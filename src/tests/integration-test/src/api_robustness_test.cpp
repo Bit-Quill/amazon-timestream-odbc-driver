@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_CASE(TestSQLTables) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLColumns) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -461,14 +461,17 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns, *disabled()) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Sizes are nulls.
-  SQLColumns(stmt, catalogName.data(), 0, schemaName.data(), 0,
+  ret = SQLColumns(stmt, catalogName.data(), 0, schemaName.data(), 0,
              tableName.data(), 0, columnName.data(), 0);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Values are nulls.
-  SQLColumns(stmt, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS);
+  ret = SQLColumns(stmt, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // All nulls.
-  SQLColumns(stmt, 0, 0, 0, 0, 0, 0, 0, 0);
+  ret = SQLColumns(stmt, 0, 0, 0, 0, 0, 0, 0, 0);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys, *disabled()) {

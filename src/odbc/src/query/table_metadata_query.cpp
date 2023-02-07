@@ -41,11 +41,6 @@ using Aws::TimestreamWrite::Model::Database;
 using Aws::TimestreamWrite::Model::ListDatabasesRequest;
 using Aws::TimestreamWrite::Model::ListDatabasesResult;
 
-// TODO [AT-1152] Currently by default, all cases are treated significantly
-// After SQL_ATTR_METADATA_ID is implemented for SQLGetConnectAttr,
-// update the logic to treat the schemaName/tableName as
-// significant/non-significant cases
-// https://bitquill.atlassian.net/browse/AT-1152
 namespace ignite {
 namespace odbc {
 namespace query {
@@ -106,15 +101,17 @@ TableMetadataQuery::TableMetadataQuery(
      * If CatalogName equals SQL_ALL_CATALOGS, and SchemaName and TableName are
      * empty strings, the result set should contain a list of valid catalogs for
      * the data source. (All columns except the TABLE_CAT column contain NULLs.)
-     * In this case, an empty result set is returned since Timestream does not
-     * have catalog.
+     * If DATABASE_AS_SCHEMA is set to TRUE, an empty result set is returned 
+     * since driver does not support catalogs, otherwise, a list of databases is 
+     * returned.
      */
     LOG_INFO_MSG(
         "CatalogName equals SQL_ALL_CATALOGS, and SchemaName and TableName are "
         "empty strings."
         "All columns except the TABLE_CAT column contain NULLs.");
-    columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
-                                     Nullability::NULLABLE));
+    columnsMeta.push_back(ColumnMeta(
+        sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
+        DATABASE_AS_SCHEMA ? Nullability::NULLABLE : Nullability::NO_NULL));
     columnsMeta.push_back(ColumnMeta(
         sch, tbl, schema_meta_name, ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
@@ -129,6 +126,9 @@ TableMetadataQuery::TableMetadataQuery(
      * empty strings, the result set should contain a list of valid schemas for
      * the data source. (All columns except the TABLE_SCHEM column contain
      * NULLs.)
+     * If DATABASE_AS_SCHEMA is set to TRUE, a list of databases is returned, 
+     * otherwise, an empty result set is returned since driver does not
+     * support schemas.
      */
     LOG_INFO_MSG(
         "SchemaName equals SQL_ALL_SCHEMAS, and CatalogName and TableName are "
@@ -137,7 +137,8 @@ TableMetadataQuery::TableMetadataQuery(
     columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
-        sch, tbl, schema_meta_name, ScalarType::VARCHAR, Nullability::NO_NULL));
+        sch, tbl, schema_meta_name, ScalarType::VARCHAR,
+        DATABASE_AS_SCHEMA ? Nullability::NO_NULL : Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
         sch, tbl, "TABLE_NAME", ScalarType::VARCHAR, Nullability::NULLABLE));
     columnsMeta.push_back(ColumnMeta(
@@ -153,7 +154,7 @@ TableMetadataQuery::TableMetadataQuery(
      */
     LOG_INFO_MSG(
         "TableType equals SQL_ALL_TABLE_TYPES and CatalogName, SchemaName, and "
-        "TableName are empty strings."
+        "TableName are empty strings. "
         "All columns except the TABLE_TYPE column contain NULLs.");
     columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name, ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
@@ -178,8 +179,14 @@ TableMetadataQuery::TableMetadataQuery(
                                      Nullability::NULLABLE));
   }
 
-  if (!connection.GetMetadataID() && schema && !schema->empty()) {
-    schema_regex = utility::ConvertPatternToRegex(schema.value());
+  if (DATABASE_AS_SCHEMA) {
+    if (!connection.GetMetadataID() && schema && !schema->empty()) {
+      schema_regex = utility::ConvertPatternToRegex(schema.value());
+    }
+  } else {
+    if (!connection.GetMetadataID() && catalog && !catalog->empty()) {
+      catalog_regex = utility::ConvertPatternToRegex(catalog.value());
+    }
   }
 }
 
@@ -314,40 +321,29 @@ SqlResult::Type TableMetadataQuery::NextResultSet() {
   return SqlResult::AI_NO_DATA;
 }
 
-// TODO [AT-1154] Handle search patterns
+// TODO [AT-1154] Send Query to server from driver internally to filter tables
 // https://bitquill.atlassian.net/browse/AT-1154
-
 SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
   // clear meta object at beginning of function
   meta.clear();
 
-  if (catalog && !catalog->empty()) {
-    std::string warnMsg;
-    if (all_catalogs) {
-      warnMsg =
-          "Empty result set is returned as catalog is set to SQL_ALL_CATALOGS "
-          "and Timestream does not have catalogs";
-    } else {
-      // catalog has been provided with a non-empty value that isn't SQL_ALL_CATALOGS.
-      // Return empty result set by default since Timestream does not have
-      // catalogs.
-      warnMsg = "Empty result set is returned as catalog is set to \""
-                + *catalog + "\" and Timestream does not have catalogs";
-    }
-    LOG_WARNING_MSG(warnMsg);
-    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-
-    return SqlResult::AI_SUCCESS_WITH_INFO;
-  } else if (all_schemas) {
-    return getSchemas();
-  } else if (all_table_types) {
+  if (all_table_types) {
+    // case for SQL_ALL_TABLE_TYPES is THE same whether databases are reported as schemas or catalogs
     using meta::TableMeta;
     std::string tableType = "TABLE";
     meta.emplace_back(TableMeta());
     meta.back().Read(tableType);
 
     return SqlResult::AI_SUCCESS;
-  } else if (tableType) {
+  }
+
+  // Check for corner cases in tables meta retrieval 
+  const boost::optional< SqlResult::Type > sqlResult =
+      getTablesMetaCornerCase();
+  if (sqlResult)
+    return *sqlResult;
+
+  if (tableType) {
     // Parse provided table types
     bool validTableType = false;
     if (tableType->empty() || *tableType == SQL_ALL_TABLE_TYPES) {
@@ -374,18 +370,79 @@ SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
-  } else if ((schema && schema->empty()) || table.empty()) {
-    // empty schema or empty table should match nothing
-    std::string warnMsg = "Schema and table name should not be empty";
-    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-    return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
-  // The default case: Get tables and update meta
+  // The default case: Get tables and update meta object
   return getTables();
 }
 
-SqlResult::Type TableMetadataQuery::getSchemas() {
+ boost::optional< SqlResult::Type > TableMetadataQuery::getTablesMetaCornerCase() {
+  if (DATABASE_AS_SCHEMA) {
+     // Databases are reported as schemas
+     if (catalog && !catalog->empty() && *catalog != SQL_ALL_CATALOGS) {
+       // check if catalog is set and does not equal to SQL_ALL_CATALOGS
+       std::string warnMsg;
+       if (all_catalogs) {
+         warnMsg =
+             "Empty result set is returned as catalog is set to "
+             "SQL_ALL_CATALOGS "
+             "and Timestream does not have catalogs";
+       } else {
+         // catalog has been provided with a non-empty value that isn't
+         // SQL_ALL_CATALOGS. Return empty result set by default since
+         // Timestream does not have catalogs.
+         warnMsg = "Empty result set is returned as catalog is set to \""
+                   + *catalog + "\" and Timestream does not have catalogs";
+       }
+       LOG_WARNING_MSG(warnMsg);
+       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+
+       return SqlResult::AI_SUCCESS_WITH_INFO;
+     } else if (all_schemas) {
+       LOG_DEBUG_MSG("Attempting to retrieve list of all schemas (databases)");
+       return getDatabases();
+     } else if ((schema && schema->empty()) || table.empty()) {
+       // empty schema or empty table should match nothing
+       std::string warnMsg = "Schema and table name should not be empty";
+       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+       return SqlResult::AI_SUCCESS_WITH_INFO;
+     }
+   } else {
+     // Databases are reported as catalogs
+     if (schema && !schema->empty() && *schema != SQL_ALL_SCHEMAS) {
+       // check if schema is set and does not equal to SQL_ALL_SCHEMAS
+       std::string warnMsg;
+       if (all_schemas) {
+         warnMsg =
+             "Empty result set is returned as schemas is set to "
+             "SQL_ALL_SCHEMAS "
+             "and Timestream does not have schemas";
+       } else {
+         // catalog has been provided with a non-empty value that isn't
+         // SQL_ALL_SCHEMAS. Return empty result set by default since Timestream
+         // does not have schemas.
+         warnMsg = "Empty result set is returned as schema is set to \""
+                   + *schema + "\" and Timestream does not have schemas";
+       }
+       LOG_WARNING_MSG(warnMsg);
+       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+
+       return SqlResult::AI_SUCCESS_WITH_INFO;
+     } else if (all_catalogs) {
+       LOG_DEBUG_MSG("Attempting to retrieve list of all catalogs (databases)");
+       return getDatabases();
+     } else if ((catalog && catalog->empty()) || table.empty()) {
+       // empty catalog or empty table should match nothing
+       std::string warnMsg = "Catalog and table name should not be empty";
+       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+       return SqlResult::AI_SUCCESS_WITH_INFO;
+     }
+   }
+
+  return boost::none;
+ }
+
+SqlResult::Type TableMetadataQuery::getDatabases() {
   // Use TimestreamWriteClient API to retrieve databases and tables. 
   ListDatabasesRequest dbRequest;
 
@@ -415,7 +472,7 @@ SqlResult::Type TableMetadataQuery::getSchemas() {
 
   if (meta.empty()) {
     std::string warnMsg =
-        "Empty result set is returned as no schemas (databases) could be "
+        "Empty result set is returned as no databases could be "
         "found.";
     LOG_WARNING_MSG(warnMsg);
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
@@ -423,11 +480,41 @@ SqlResult::Type TableMetadataQuery::getSchemas() {
   }
 
   // Log the results
-  for (size_t i = 0; i < meta.size(); ++i) {
-    LOG_INFO_MSG("\n[" << i << "] SchemaName:  " << meta[i].GetSchemaName());
+  if (DATABASE_AS_SCHEMA) {
+    for (size_t i = 0; i < meta.size(); ++i) {
+      LOG_INFO_MSG("\n[" << i << "] SchemaName:  " << meta[i].GetSchemaName());
+    }
+  } else {
+    for (size_t i = 0; i < meta.size(); ++i) {
+      LOG_INFO_MSG("\n[" << i
+                         << "] CatalogName:  " << meta[i].GetCatalogName());
+    }    
   }
 
   return SqlResult::AI_SUCCESS;
+}
+
+bool TableMetadataQuery::checkIfDatabaseMatch(
+    const std::string& databaseName,
+    const boost::optional< std::string >& databasePattern,
+    const std::string& allDatabasePattern,
+    const std::regex db_pattern_regex) {
+  if (!databasePattern || *databasePattern == allDatabasePattern) {
+    return true;
+  }
+
+  bool match;
+  if (connection.GetMetadataID()) {
+    Aws::String schemaUpper =
+        Aws::Utils::StringUtils::ToUpper(databasePattern.value().data());
+    Aws::String dbNameUpper =
+        Aws::Utils::StringUtils::ToUpper(databaseName.data());
+    match = (schemaUpper == dbNameUpper);
+  } else {
+    match = std::regex_match(databaseName, db_pattern_regex);
+  }
+
+  return match;
 }
 
 SqlResult::Type TableMetadataQuery::getTables() {
@@ -450,25 +537,20 @@ SqlResult::Type TableMetadataQuery::getTables() {
     for (Database db : dbVector) {
       std::string databaseName = db.GetDatabaseName();
 
-      // If database name does not equal schema, then do not include the
-      // database in the result set
-      if (schema && *schema != SQL_ALL_SCHEMAS) {
-        bool match;
-        if (connection.GetMetadataID()) {
-          Aws::String schemaUpper = Aws::Utils::StringUtils::ToUpper(schema.value().data());
-          Aws::String dbNameUpper = Aws::Utils::StringUtils::ToUpper(databaseName.data());
-          match = (schemaUpper == dbNameUpper);
-        } else {
-          match = std::regex_match(databaseName, schema_regex);
-        }
-        
-        if (!match) {
-          LOG_DEBUG_MSG(
-              "database ("
-              << databaseName << ") does not equal schema (" << *schema
-              << "), so the database will not be included in the result set.")
-          continue;
-        }
+      bool match = true;
+
+      if (DATABASE_AS_SCHEMA) {
+        match = checkIfDatabaseMatch(databaseName, schema, SQL_ALL_SCHEMAS,
+                                     schema_regex);
+      } else {
+        match = checkIfDatabaseMatch(databaseName, catalog, SQL_ALL_CATALOGS,
+                                     catalog_regex);
+      }
+
+      if (!match) {
+        // If database name does not equal database search pattern, then do not include the
+        // database in the result set
+        continue;
       }
 
       // retrieve tables using database name
@@ -559,9 +641,17 @@ SqlResult::Type TableMetadataQuery::checkMeta() {
         "Empty result set is returned as we could not find tables with the "
         "table search pattern \""
         + table + "\"";
-    if (schema)
-      warnMsg =
-          warnMsg + " and from schema with search pattern \"" + *schema + "\"";
+    if (DATABASE_AS_SCHEMA) {
+      if (schema) {
+        warnMsg = warnMsg + " and from schema with search pattern \"" + *schema
+                  + "\"";
+      }
+    } else {
+      if (catalog) {
+        warnMsg = warnMsg + " and from catalog with search pattern \""
+                  + *catalog + "\"";
+      }
+    }
     LOG_WARNING_MSG(warnMsg);
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
     return SqlResult::AI_SUCCESS_WITH_INFO;

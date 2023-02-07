@@ -55,7 +55,11 @@ struct SqlGetInfoTestSuiteFixture : odbc::OdbcTestSuite {
     ret = SQLGetInfo(dbc, type, val.data(), val.size() * sizeof(SQLWCHAR), &valLen);
 
     ODBC_FAIL_ON_ERROR1(ret, SQL_HANDLE_DBC, dbc, typeStr);
-    BOOST_CHECK_EQUAL(utility::SqlWcharToString(val.data()), expectedValue);
+
+    std::string actualValue = utility::SqlWcharToString(val.data());
+    BOOST_REQUIRE_MESSAGE(actualValue == expectedValue,
+                          "\"" + actualValue + "\" != \"" + expectedValue
+                              + "\". SQLGetInfo Type: " + typeStr);
   }
 
   void CheckIntInfo(SQLSMALLINT type, SQLUINTEGER expectedValue) {
@@ -64,7 +68,10 @@ struct SqlGetInfoTestSuiteFixture : odbc::OdbcTestSuite {
 
     std::string typeStr = odbc::config::ConnectionInfo::InfoTypeToString(type);
     ODBC_FAIL_ON_ERROR1(ret, SQL_HANDLE_DBC, dbc, typeStr);
-    BOOST_CHECK_EQUAL(val, expectedValue);
+    BOOST_REQUIRE_MESSAGE(val == expectedValue,
+                          std::to_string(val)
+                              + " != " + std::to_string(expectedValue)
+                              + ". SQLGetInfo Type: " + typeStr);
   }
 
   void CheckShortInfo(SQLSMALLINT type, SQLUSMALLINT expectedValue) {
@@ -73,7 +80,10 @@ struct SqlGetInfoTestSuiteFixture : odbc::OdbcTestSuite {
 
     std::string typeStr = odbc::config::ConnectionInfo::InfoTypeToString(type);
     ODBC_FAIL_ON_ERROR1(ret, SQL_HANDLE_DBC, dbc, typeStr);
-    BOOST_CHECK_EQUAL(val, expectedValue);
+    BOOST_REQUIRE_MESSAGE(val == expectedValue,
+                          std::to_string(val)
+                              + " != " + std::to_string(expectedValue)
+                              + ". SQLGetInfo Type: " + typeStr);
   }
 
   /**
@@ -115,14 +125,18 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckStrInfo(SQL_IDENTIFIER_QUOTE_CHAR, "\"");
   CheckStrInfo(SQL_CATALOG_NAME_SEPARATOR, ".");
   CheckStrInfo(SQL_SPECIAL_CHARACTERS, "");
-  CheckStrInfo(SQL_CATALOG_TERM, "");
-  CheckStrInfo(SQL_QUALIFIER_TERM, "");
+  if (DATABASE_AS_SCHEMA) {
+    CheckStrInfo(SQL_CATALOG_TERM, "");
+    CheckStrInfo(SQL_CATALOG_NAME, "N");
+  } else {
+    CheckStrInfo(SQL_CATALOG_TERM, "database");
+    CheckStrInfo(SQL_CATALOG_NAME, "Y");
+  }
   CheckStrInfo(SQL_TABLE_TERM, "table");
   CheckStrInfo(SQL_SCHEMA_TERM, "schema");
   CheckStrInfo(SQL_NEED_LONG_DATA_LEN, "Y");
   CheckStrInfo(SQL_ACCESSIBLE_PROCEDURES, "Y");
   CheckStrInfo(SQL_ACCESSIBLE_TABLES, "Y");
-  CheckStrInfo(SQL_CATALOG_NAME, "N");
   CheckStrInfo(SQL_COLLATION_SEQ, "UTF-8");
 #if defined(__linux) || defined(__linux__) || defined(linux)
   // As we are connecting using SQLDriverConnect, it seems the driver is
@@ -181,14 +195,17 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckIntInfo(SQL_BATCH_ROW_COUNT, SQL_BRC_ROLLED_UP | SQL_BRC_EXPLICIT);
   CheckIntInfo(SQL_BATCH_SUPPORT, 0);
   CheckIntInfo(SQL_BOOKMARK_PERSISTENCE, 0);
-  CheckIntInfo(SQL_CATALOG_LOCATION, 0);
-  CheckIntInfo(SQL_QUALIFIER_LOCATION, 0);
+  if (DATABASE_AS_SCHEMA) {
+    CheckIntInfo(SQL_CATALOG_LOCATION, 0);
+    CheckIntInfo(SQL_CATALOG_USAGE, 0);
+  } else {
+    CheckIntInfo(SQL_CATALOG_LOCATION, SQL_CL_START);
+    CheckIntInfo(SQL_CATALOG_USAGE, SQL_CU_DML_STATEMENTS);
+  }
   CheckIntInfo(SQL_GETDATA_EXTENSIONS,
                SQL_GD_ANY_COLUMN | SQL_GD_ANY_ORDER | SQL_GD_BOUND);
   CheckIntInfo(SQL_ODBC_INTERFACE_CONFORMANCE, SQL_OIC_CORE);
   CheckIntInfo(SQL_SQL_CONFORMANCE, SQL_SC_SQL92_ENTRY);
-  CheckIntInfo(SQL_CATALOG_USAGE, 0);
-  CheckIntInfo(SQL_QUALIFIER_USAGE, 0);
   CheckIntInfo(SQL_TIMEDATE_ADD_INTERVALS,
                SQL_FN_TSI_FRAC_SECOND | SQL_FN_TSI_SECOND | SQL_FN_TSI_MINUTE
                    | SQL_FN_TSI_HOUR | SQL_FN_TSI_DAY | SQL_FN_TSI_WEEK
@@ -201,7 +218,7 @@ BOOST_AUTO_TEST_CASE(TestValues) {
                SQL_DL_SQL92_DATE | SQL_DL_SQL92_TIME | SQL_DL_SQL92_TIMESTAMP);
   CheckIntInfo(SQL_SYSTEM_FUNCTIONS,
                SQL_FN_SYS_USERNAME | SQL_FN_SYS_DBNAME | SQL_FN_SYS_IFNULL);
-  CheckIntInfo(SQL_CONVERT_FUNCTIONS, SQL_FN_CVT_CONVERT | SQL_FN_CVT_CAST);
+  CheckIntInfo(SQL_CONVERT_FUNCTIONS, 0);
   CheckIntInfo(SQL_OJ_CAPABILITIES,
                SQL_OJ_LEFT | SQL_OJ_NOT_ORDERED | SQL_OJ_ALL_COMPARISON_OPS);
   CheckIntInfo(SQL_POS_OPERATIONS, 0);
@@ -265,9 +282,13 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckIntInfo(SQL_TXN_ISOLATION_OPTION, SQL_TXN_REPEATABLE_READ);
   CheckIntInfo(SQL_UNION, 0);
 
-  CheckIntInfo(SQL_SCHEMA_USAGE, SQL_SU_DML_STATEMENTS | SQL_SU_TABLE_DEFINITION
-                                     | SQL_SU_PRIVILEGE_DEFINITION
-                                     | SQL_SU_INDEX_DEFINITION);
+  if (DATABASE_AS_SCHEMA) {
+    CheckIntInfo(SQL_SCHEMA_USAGE, SQL_SU_DML_STATEMENTS | SQL_SU_TABLE_DEFINITION
+                                       | SQL_SU_PRIVILEGE_DEFINITION
+                                       | SQL_SU_INDEX_DEFINITION);
+  } else {
+    CheckIntInfo(SQL_SCHEMA_USAGE, 0);
+  }
 
   CheckIntInfo(SQL_AGGREGATE_FUNCTIONS, SQL_AF_AVG | SQL_AF_COUNT | SQL_AF_MAX
                                             | SQL_AF_MIN | SQL_AF_SUM

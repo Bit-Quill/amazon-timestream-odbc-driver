@@ -99,14 +99,13 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_IDENTIFIER_QUOTE_CHAR | '\"' | no |
 | SQL_CATALOG_NAME_SEPARATOR | '.' | no |
 | SQL_SPECIAL_CHARACTERS | '' | no |
-| SQL_CATALOG_TERM | '' | no |
-| SQL_QUALIFIER_TERM | '' | no |
+| SQL_CATALOG_TERM | 'database' (default case). If [`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`, it's '' | no |
 | SQL_TABLE_TERM | 'table' | no |
 | SQL_SCHEMA_TERM | 'schema' | no |
 | SQL_NEED_LONG_DATA_LEN | 'Y' | no |
 | SQL_ACCESSIBLE_PROCEDURES | 'Y' | no |
 | SQL_ACCESSIBLE_TABLES | 'Y' | no |
-| SQL_CATALOG_NAME | 'N' | no |
+| SQL_CATALOG_NAME | 'Y' (default case). If [`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`, it's 'N' | no |
 | SQL_COLLATION_SEQ | 'UTF-8' | no |
 | SQL_DATA_SOURCE_NAME | '\<dsn\>" (if available) | no |
 | SQL_DATA_SOURCE_READ_ONLY | 'Y' | no |
@@ -132,14 +131,13 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_BATCH_ROW_COUNT | SQL_BRC_ROLLED_UP, SQL_BRC_EXPLICIT | no |
 | SQL_BATCH_SUPPORT | 0 (not supported) | no |
 | SQL_BOOKMARK_PERSISTENCE | 0 (not supported) | no |
-| SQL_CATALOG_LOCATION | 0 (not supported) | no |
+| SQL_CATALOG_LOCATION | SQL_CL_START (default case). If [`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`, it's 0 (not supported) | no |
 | SQL_QUALIFIER_LOCATION | 0 (not supported) | no |
 | SQL_GETDATA_EXTENSIONS|SQL_GD_ANY_COLUMN, SQL_GD_ANY_ORDER, SQL_GD_BOUND | no |
 | SQL_ODBC_INTERFACE_CONFORMANCE | SQL_OIC_CORE | no |
 | SQL_SQL_CONFORMANCE | SQL_SC_SQL92_ENTRY | no |
-| SQL_CATALOG_USAGE | 0 (not supported) | no |
-| SQL_QUALIFIER_USAGE | 0 (not supported) | no |
-| SQL_SCHEMA_USAGE | SQL_SU_DML_STATEMENTS, SQL_SU_TABLE_DEFINITION, SQL_SU_PRIVILEGE_DEFINITION, SQL_SU_INDEX_DEFINITION | no |
+| SQL_CATALOG_USAGE | SQL_CU_DML_STATEMENTS (default case). If [`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`, it's 0 (not supported) | no |
+| SQL_SCHEMA_USAGE | 0 (not supported) (default case). If [`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`, it's SQL_SU_DML_STATEMENTS, SQL_SU_TABLE_DEFINITION, SQL_SU_PRIVILEGE_DEFINITION, SQL_SU_INDEX_DEFINITION | no |
 | SQL_AGGREGATE_FUNCTIONS | SQL_AF_AVG, SQL_AF_COUNT, SQL_AF_MAX, SQL_AF_MIN, SQL_AF_SUM, SQL_AF_DISTINCT, SQL_AF_ALL | no |
 | SQL_NUMERIC_FUNCTIONS | SQL_FN_NUM_MOD | no |
 | SQL_STRING_FUNCTIONS|SQL_FN_STR_CHAR_LENGTH, SQL_FN_STR_CONCAT, SQL_FN_STR_LEFT, SQL_FN_STR_LOCATE, SQL_FN_STR_CHARACTER_LENGTH, SQL_FN_STR_POSITION, SQL_FN_STR_RIGHT, SQL_FN_STR_SUBSTRING, SQL_FN_STR_LCASE, SQL_FN_STR_UCASE | no |
@@ -148,7 +146,7 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_TIMEDATE_DIFF_INTERVALS|SQL_FN_TSI_FRAC_SECOND, SQL_FN_TSI_SECOND, SQL_FN_TSI_MINUTE, SQL_FN_TSI_HOUR, SQL_FN_TSI_DAY, SQL_FN_TSI_WEEK, SQL_FN_TSI_MONTH, SQL_FN_TSI_QUARTER, SQL_FN_TSI_YEAR | no |
 | SQL_DATETIME_LITERALS|SQL_DL_SQL92_DATE, SQL_DL_SQL92_TIME, SQL_DL_SQL92_TIMESTAMP | no |
 | SQL_SYSTEM_FUNCTIONS|SQL_FN_SYS_USERNAME, SQL_FN_SYS_DBNAME, SQL_FN_SYS_IFNULL | no |
-| SQL_CONVERT_FUNCTIONS | SQL_FN_CVT_CONVERT, SQL_FN_CVT_CAST | no |
+| SQL_CONVERT_FUNCTIONS | 0 (not supported) | no |
 | SQL_OJ_CAPABILITIES|SQL_OJ_LEFT, SQL_OJ_NOT_ORDERED, SQL_OJ_ALL_COMPARISON_OPS | no |
 | SQL_POS_OPERATIONS | 0 (not supported) | no |
 | SQL_SQL92_NUMERIC_VALUE_FUNCTIONS|SQL_SNVF_CHARACTER_LENGTH, SQL_SNVF_EXTRACT, SQL_SNVF_POSITION | no |

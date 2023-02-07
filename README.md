@@ -44,3 +44,6 @@ the [connection string documentation](docs/markdown/setup/connection-string.md) 
 | Windows | timestream.odbc.dll
 | MacOS | libtimestream-odbc.dylib
 | Linux | libtimestream-odbc.so
+
+## Known Issues
+1. Timestream does not support fully qualified table names. Timestream ODBC driver reports databases as catalogs instead of schemas by default, as a result, tools like Tableau may not work as expected. For example, Tableau does not include database name in the auto-generated queries to fetch data if databases are reported as catalogs. Users are recommended to use [Timestream JDBC driver](https://github.com/awslabs/amazon-timestream-driver-jdbc) with Tableau. To make the Timestream ODBC driver work with Tableau, the user can set environment `DATABASE_AS_SCHEMA` variable to `TRUE` to make the driver report databases as schemas instead. For details, see [developer-guide](docs/markdown/setup/developer-guide.md/#database-reporting).

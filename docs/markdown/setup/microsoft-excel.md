@@ -35,6 +35,25 @@ Before you get started, [configure the Amazon Timestream ODBC driver DSN](window
 
 6. You're now successfully connected on Excel
 
+## Trouble-shooting Guide
+I am experiencing data-loading issues with Excel after version update or updating environment variable `DATABASE_AS_SCHEMA`. For example, Excel is not prefixing the database name to the table name in the from clause on the query.
+
+We suggest to remove saved cache and try loading data again.
+
+1. Remove saved DSN. Go to "Get Data" -> Click "Data Source Settings".
+
+    ![](../images/excel_odbc_dsn_settings.png)
+
+2. Click on "Clear Permissions" for DSN that you want to connect.
+
+    ![](../images/excel_odbc_clear_permission.png)
+
+3. Remove cached files. Go to "File" -> "Options" -> "Save" -> Click "Delete cached files"
+
+    ![](../images/excel_odbc_remove_cache.png)
+
+4. Load data from Excel.
+
 # MacOS
 
 ## Prerequisites

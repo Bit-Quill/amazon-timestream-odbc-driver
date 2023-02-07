@@ -116,6 +116,18 @@ class ColumnMetadataQuery : public Query {
   IGNITE_NO_COPY_ASSIGNMENT(ColumnMetadataQuery);
 
   /**
+   * Get columns metadata with database search pattern
+   *
+   * @param databasePattern Database pattern
+   * @param databaseType ResultColumn Type.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type GetColumnsWithDatabaseSearchPattern(
+      const boost::optional< std::string >& databasePattern,
+      TableMetadataQuery::ResultColumn::Type databaseType);
+
+  /**
    * Make get columns metadata requets and use response to set internal state.
    *
    * @return Operation result.
@@ -125,13 +137,13 @@ class ColumnMetadataQuery : public Query {
   /**
    * Make get columns metadata requets and use response to set internal state for a table.
    *
-   * @param schemaName Schema name
+   * @param databaseName Database name
    * @param tableName Table name
    * 
    * @return Operation result.
    */
   SqlResult::Type MakeRequestGetColumnsMetaPerTable(
-      const std::string& schemaName, const std::string& tableName);
+      const std::string& databaseName, const std::string& tableName);
 
   /** Connection associated with the statement. */
   Connection& connection;

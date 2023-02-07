@@ -286,6 +286,15 @@ OpenCppCoverage is used to generate code coverage for windows, for more informat
 ## Versioning
 1. To set the version of the ODBC driver, update the `src/ODBC_DRIVER_VERSION.txt` file with the appropriate version.
 
+## Database Reporting
+By default, the Timestream ODBC driver reports databases as catalogs. This behavior is matching with Timestream ODBC Driver version 1.0.0, and it is due to Excel on macOS not showing tables with duplicate names when databases are reported as schemas.
+Driver will report databases as schemas when the user exports environment variable `DATABASE_AS_SCHEMA` to `TRUE`.
+|   Value of `DATABASE_AS_SCHEMA`  | Behavior of driver                                                           |
+|----------------------------------|------------------------------------------------------------------------------|
+| `TRUE`                           | Databases are reported as schemas. Catalogs will not be supported by driver. |
+| any other value/unset            | Databases are reported as catalogs. Schemas will not be supported by driver. |
+
+
 ## Data Population for Testing
 [Data Population Guide](data-population-guide.md)
 

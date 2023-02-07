@@ -217,7 +217,8 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
     }
 
     case SQL_DESC_CATALOG_NAME: {
-      value.clear();
+      if (catalogName)
+        value = *catalogName;
 
       return true;
     }

@@ -40,11 +40,11 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // SQLColAttribute function.
   using namespace ignite::odbc::type_traits;
 
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
-  ColumnMeta columnMeta(schema, table, column,
+  ColumnMeta columnMeta(database, table, column,
                         static_cast< int16_t >(ScalarType::VARCHAR),
                         Nullability::NULLABLE);
 
@@ -82,12 +82,18 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // test SQL_DESC_SCHEMA_NAME
   found = columnMeta.GetAttribute(SQL_DESC_SCHEMA_NAME, resVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(resVal, schema);
+  if (DATABASE_AS_SCHEMA)
+    BOOST_CHECK_EQUAL(resVal, database);
+  else
+    BOOST_CHECK_EQUAL(resVal, "");
 
   // test SQL_DESC_CATALOG_NAME
   found = columnMeta.GetAttribute(SQL_DESC_CATALOG_NAME, resVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(resVal, "");
+  if (DATABASE_AS_SCHEMA)
+    BOOST_CHECK_EQUAL(resVal, "");
+  else
+    BOOST_CHECK_EQUAL(resVal, database);
 
   // test SQL_DESC_LITERAL_PREFIX
   found = columnMeta.GetAttribute(SQL_DESC_LITERAL_PREFIX, resVal);
@@ -196,7 +202,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -207,7 +213,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix, *disabled()) {
   std::vector< std::pair< int16_t, std::string > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving std::string value
 
@@ -219,7 +225,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -230,7 +236,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix, *disabled()) {
   std::vector<std::pair< int16_t, std::string >> tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving std::string value
 
@@ -244,7 +250,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix, *disabled()) {
 BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName, *disabled()) {
   using namespace ignite::odbc::type_traits;
 
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -255,7 +261,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName, *disabled()) {
   std::vector< std::pair< int16_t, std::string > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving std::string value
 
@@ -267,7 +273,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -278,7 +284,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive, *disabled()) {
   std::vector<std::pair< int16_t, SQLLEN >> tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -290,7 +296,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeCaseSensitive, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -301,7 +307,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -318,7 +324,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -329,7 +335,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -341,7 +347,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeLength, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -352,7 +358,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLength, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -364,7 +370,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLength, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -376,7 +382,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -388,14 +394,14 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeOctetLength, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaNullable(schema, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaNullable(database, table, column, TS_INVALID_TYPE,
                                 Nullability::NULLABLE);
 
   // test SQL_DESC_NULLABLE
@@ -403,7 +409,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_NULLABLE);
 
-  ColumnMeta columnMetaNoNulls(schema, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaNoNulls(database, table, column, TS_INVALID_TYPE,
                                Nullability::NO_NULL);
 
   // test SQL_DESC_NULLABLE
@@ -411,7 +417,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_NO_NULLS);
 
-  ColumnMeta columnMetaUnknown(schema, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaUnknown(database, table, column, TS_INVALID_TYPE,
                                Nullability::NULLABILITY_UNKNOWN);
 
   // test SQL_DESC_NULLABLE
@@ -421,7 +427,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -432,7 +438,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -444,7 +450,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributePrecision, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -455,7 +461,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributePrecision, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -467,7 +473,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributePrecision, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeScale, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -478,7 +484,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeScale, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 
@@ -490,14 +496,14 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeScale, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaUnnamed(schema, table, std::string(""), TS_INVALID_TYPE,
+  ColumnMeta columnMetaUnnamed(database, table, std::string(""), TS_INVALID_TYPE,
                                Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED
@@ -505,7 +511,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed, *disabled()) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_UNNAMED);
 
-  ColumnMeta columnMetaNamed(schema, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaNamed(database, table, column, TS_INVALID_TYPE,
                              Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED
@@ -515,7 +521,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeUnsigned, *disabled()) {
-  std::string schema("database");
+  std::string database("database");
   std::string table("table");
   std::string column("column");
 
@@ -526,7 +532,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnsigned, *disabled()) {
   std::vector< std::pair< int16_t, SQLLEN > > tests;
 
   for (int i = 0; i < tests.size(); i++) {
-    ColumnMeta columnMeta(schema, table, column, tests[i].first,
+    ColumnMeta columnMeta(database, table, column, tests[i].first,
                           Nullability::NULLABLE);
     // test retrieving SQLLEN value
 

@@ -436,6 +436,14 @@ std::string ConvertPatternToRegex(const std::string& pattern) {
   return converted;
 }
 
+bool CheckEnvVarSetToTrue(const std::string& envVar) {
+  std::string envVarStr = common::GetEnv(envVar);
+  std::transform(envVarStr.begin(), envVarStr.end(), envVarStr.begin(),
+                 ::toupper);
+
+  return envVarStr == "TRUE";
+}
+
 }  // namespace utility
 }  // namespace odbc
 }  // namespace ignite

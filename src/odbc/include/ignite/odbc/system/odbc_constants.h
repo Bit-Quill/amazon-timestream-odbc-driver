@@ -34,6 +34,12 @@
 // Internal SQL connection attribute to set log level
 #define SQL_ATTR_TSLOG_DEBUG 65536
 
+// Internal flag to use database as catalog or schema
+// true if databases are reported as catalog, false if databases are reported as
+// schema
+#define DATABASE_AS_SCHEMA \
+  ignite::odbc::utility::CheckEnvVarSetToTrue("DATABASE_AS_SCHEMA")
+
 #include <odbcinst.h>
 #include <sqlext.h>
 

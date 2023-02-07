@@ -274,11 +274,19 @@ IGNITE_IMPORT_EXPORT std::string Trim(const std::string& s);
 
 /**
  * Converts a string with search patterns to regular expression string.
- * @param s string to be converted
+ * @param pattern Pattern to be converted
  *
  * @return the converted regular expression string.
  */
 IGNITE_IMPORT_EXPORT std::string ConvertPatternToRegex(const std::string& pattern);
+
+/**
+ * Checks if an environment variable is set to true. Case insensitive.
+ * @param envVar Environment variable name
+ *
+ * @return true if environment variable is set to "TRUE", false otherwise
+ */
+IGNITE_IMPORT_EXPORT bool CheckEnvVarSetToTrue(const std::string& envVar);
 }  // namespace utility
 }  // namespace odbc
 }  // namespace ignite

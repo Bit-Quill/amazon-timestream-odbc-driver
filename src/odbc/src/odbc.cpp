@@ -69,12 +69,6 @@ SQLRETURN SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType, SQLPOINTER infoValue,
                 << infoValueMax << ", " << std::hex
                 << reinterpret_cast< size_t >(length));
 
-  // TODO Establish successful connection on iODBC
-  // https://bitquill.atlassian.net/browse/AT-1096
-  // Uncomment this line to connect on iODBC Driver Manager, but note that this
-  // line causes many test failures
-  // return SQL_SUCCESS;
-
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection)

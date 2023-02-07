@@ -23,6 +23,7 @@
 #include "ignite/odbc/connection.h"
 #include "ignite/odbc/ignite_error.h"
 #include "ignite/odbc/impl/binary/binary_common.h"
+#include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
 #include "ignite/odbc/odbc_error.h"
@@ -168,14 +169,23 @@ ColumnMetadataQuery::~ColumnMetadataQuery() {
 SqlResult::Type ColumnMetadataQuery::Execute() {
   if (executed)
     Close();
-  
-  // empty schema or table should match nothing
-  if ((schema && schema->empty()) || table.empty()) {
-    std::string warnMsg = "Schema and table name should not be empty.";
-    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-    LOG_WARNING_MSG(warnMsg);
 
-    return SqlResult::AI_SUCCESS_WITH_INFO;  
+  if (DATABASE_AS_SCHEMA) {
+    if ((schema && schema->empty()) || table.empty()) {
+      std::string warnMsg = "Schema and table name should not be empty.";
+      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+      LOG_WARNING_MSG(warnMsg);
+
+      return SqlResult::AI_SUCCESS_WITH_INFO;
+    }
+  } else {
+    if ((catalog && catalog->empty()) || table.empty()) {
+      std::string warnMsg = "Catalog and table name should not be empty.";
+      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+      LOG_WARNING_MSG(warnMsg);
+
+      return SqlResult::AI_SUCCESS_WITH_INFO;
+    }    
   }
 
   SqlResult::Type result = MakeRequestGetColumnsMeta();
@@ -374,29 +384,28 @@ SqlResult::Type ColumnMetadataQuery::NextResultSet() {
   return SqlResult::AI_NO_DATA;
 }
 
-
-SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
-  // meta should only be cleared here as MakeRequestGetColumnsMetaPerTable() could be called multiple times
-  meta.clear();
-
+SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
+    const boost::optional< std::string >& databasePattern,
+    TableMetadataQuery::ResultColumn::Type databaseType) {
   if (!connection.GetMetadataID()) {
-    // schema name and table name are treated as search patterns
+    // database name and table name are treated as search patterns
     SqlResult::Type result = tableMetadataQuery_->Execute();
     if (result != SqlResult::AI_SUCCESS) {
-      LOG_WARNING_MSG("Failed to get table metadata for " << (*schema) << "." << table);
+      LOG_WARNING_MSG("Failed to get table metadata for "
+                      << databasePattern.get_value_or("") << "." << table);
       return SqlResult::AI_NO_DATA;
     }
 
     app::ColumnBindingMap columnBindings;
     SqlLen buflen = STRING_BUFFER_SIZE;
-    // According to Timestream database name could only contain
-    // letters, digits, dashes, periods or underscores. It could 
+    // According to Timestream, database name could only contain
+    // letters, digits, dashes, periods or underscores. It could
     // not be a unicode string.
-    char schemaName[STRING_BUFFER_SIZE]{};
+    char databaseName[STRING_BUFFER_SIZE]{};
     ApplicationDataBuffer buf1(
-        ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, schemaName,
+        ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, databaseName,
         buflen, nullptr);
-    columnBindings[TableMetadataQuery::ResultColumn::TABLE_SCHEM] = buf1;
+    columnBindings[databaseType] = buf1;
 
     // According to Timestream, table name could only contain
     // letters, digits, dashes, periods or underscores. It could
@@ -409,22 +418,41 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
 
     while (tableMetadataQuery_->FetchNextRow(columnBindings)
            == SqlResult::AI_SUCCESS) {
-      result = MakeRequestGetColumnsMetaPerTable(std::string(schemaName),std::string(tableName));
+      result = MakeRequestGetColumnsMetaPerTable(std::string(databaseName),
+                                                 std::string(tableName));
       if (result != SqlResult::AI_SUCCESS) {
-        LOG_ERROR_MSG("Failed to get columns for " << schemaName << "." << tableName);
+        LOG_ERROR_MSG("Failed to get columns for " << databaseName << "."
+                                                   << tableName);
         break;
       }
     }
     return result;
   } else {
-    // schema name and table name are treated as case insensitive identifiers
-    return MakeRequestGetColumnsMetaPerTable(schema.value(), table);
+    // database name and table name are treated as case insensitive identifiers
+    return MakeRequestGetColumnsMetaPerTable(databasePattern.get_value_or("%"),
+                                             table);
   }
 }
 
-SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std::string& schemaName, const std::string& tableName) {
+SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
+  // meta should only be cleared here as MakeRequestGetColumnsMetaPerTable()
+  // could be called multiple times
+  meta.clear();
+
+  if (DATABASE_AS_SCHEMA) {
+    // databases are reported as schemas
+    return GetColumnsWithDatabaseSearchPattern(
+        schema, TableMetadataQuery::ResultColumn::TABLE_SCHEM);
+  } else {
+    // databases are reported as catalogs
+    return GetColumnsWithDatabaseSearchPattern(
+        catalog, TableMetadataQuery::ResultColumn::TABLE_CAT);
+  }
+}
+
+SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std::string& databaseName, const std::string& tableName) {
   std::string sql = "describe ";
-  sql += schemaName;
+  sql += databaseName;
   sql += ".";
   sql += tableName;
 
@@ -464,7 +492,7 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
   while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
     if (column.empty() || column == "%"
             || column == utility::SqlWcharToString(columnName,STRING_BUFFER_SIZE)) {
-      meta.emplace_back(ignite::odbc::meta::ColumnMeta(schemaName, tableName));
+      meta.emplace_back(meta::ColumnMeta(databaseName, tableName));
       meta.back().Read(columnBindings, ++prevPosition);
     }
   }
