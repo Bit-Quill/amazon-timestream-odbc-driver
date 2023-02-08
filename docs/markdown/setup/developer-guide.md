@@ -3,7 +3,7 @@
 
 ### C/C++ Formatting
 
-- This project uses [Google's C++ Style Guide](https://google.github.io/styleguide/cppguide.htm) as a basis for 
+- This project uses [Google's C++ Style Guide](https://google.github.io/styleguide/cppguide.html) as a basis for 
 C/C++ usage and formatting.
 - Some formatting is set using the .clang-format file at the base of repository. Other options for Visual Studio can be imported from the 
 `VS-C++-Settings-Export.vssettings` file also found at root of repository.
@@ -22,12 +22,16 @@ C/C++ usage and formatting.
   Set these 2 variables only if you would like to set a custom log path or log level for connection tests; it is completely optional.
     1. `TIMESTREAM_LOG_PATH`=`<path_to_log_file>`(e.g.:`"C:\\Users\\BitQuillUser\\Desktop\\Timestream ODBC Driver"`)
 
-    The user needs to ensure that the directory mentioned in the log file path does exist, or driver will ignore user's passed value and create the log file in the default log path. Do **not** include a slash at the end of the log path.
+    The user needs to ensure that the directory mentioned in the log file path exists or the driver will ignore the user's passed-in value and create the log file in the default log path. Do **not** include a slash at the end of the log path.
 
-    The log path indicates the path to store the log file. The log file name has `timestream_odbc_YYYYMMDD.log` format, 
-    where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
+    The log path indicates the path to store the log file. The log file name is formatted as `timestream_odbc_YYYYMMDD.log`, where `YYYYMMDD` (e.g., 20220225 <= Feb 25th, 2022) is the date at the first log message.
 
-    2. `TIMESTREAM_LOG_LEVEL`=`<log_level>`. The default is `2` (means WARNING Level). Possible values: {0, 1, 2, 3, 4}, meaning {OFF, ERROR, WARNING, INFO, DEBUG}
+    2. `TIMESTREAM_LOG_LEVEL`=`<log_level>`. The default is `2` (means WARNING Level). Possible values:
+         - 0: OFF
+         - 1: ERROR
+         - 2: WARNING
+         - 3: INFO
+         - 4: DEBUG
 
     More details about logging in [`support\troubleshooting-guide.md`](../support/troubleshooting-guide.md).
 
@@ -76,7 +80,10 @@ C/C++ usage and formatting.
 8. Set environment variable REPOSITORY_ROOT to your repository root.
 9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
 10. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
-11. Now you're ready to run tests (e.g., `.\build\odbc\bin\timestream-odbc-integration-tests.exe` and `.\build\odbc\bin\timestream-odbc-unit-tests.exe`).
+11. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+12. Once configured, run the tests:
+    - Run integration tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-integration-tests.exe`.
+    - Run unit tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-unit-tests.exe`.
 
 ## MacOS
 
@@ -96,14 +103,17 @@ C/C++ usage and formatting.
 4. Set the environment variable `DYLD_LIBRARY_PATH`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib:$DYLD_LIBRARY_PATH`.
 5. Run the following command to register the ODBC driver. 
    `./scripts/register_driver_unix.sh`.
-5. Set environment variable REPOSITORY_ROOT to your repository root
+6. Set environment variable REPOSITORY_ROOT to your repository root
 
     `export REPOSITORY_ROOT=<your repository root>`
-6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-7. Set environment variable AWS_SHARED_CREDENTIALS_FILE
+7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+8. Set environment variable AWS_SHARED_CREDENTIALS_FILE
 
     `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-8. Now you're ready to run the tests (e.g., `./build/odbc/bin/timestream-odbc-integration-tests  --catch_system_errors=false` and `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`).
+9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+10. Once configured, run the tests: 
+      - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
+      - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`.
 
 ### Known issues
 
@@ -233,9 +243,10 @@ There are two ways to fix the issue.
    8. Set environment variable AWS_SHARED_CREDENTIALS_FILE
 
        `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   9. You are ready to run the tests.
-      E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
-      E.g. `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
+   9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   10. Once configured, run the tests: 
+         - Run integration tests: `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
+         - Run unit tests: `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
 ### Build Linux 32-bit Deb/Rpm package on Ubuntu 64bit
 1. Run the following commands to install needed packages 
@@ -273,6 +284,14 @@ There are two ways to fix the issue.
       
    `sudo apt install rpm`
 7. Run one of the build scripts to build the DEB or RPM package. E.g. `./build_linux_release32_deb.sh`
+
+### Known issues
+
+When running integration tests you may encounter the error
+```
+message: 01000: [unixODBC][Driver Manager]Can't open lib 'Amazon Timestream ODBC Driver' : file not found
+```
+Running `./scripts/register_driver_unix.sh` and copying `/etc/odbcinst.ini` to `$HOME/.odbcinist.ini` and `/etc/odbc.ini` to `$HOME/.odbc.ini` may help the Driver and DNS be discovered.
 
 ## Code Coverage
 
@@ -329,6 +348,7 @@ Driver will report databases as schemas when the user exports environment variab
    |`OKTA_APP_ID`  |   OktaApplicationID                       |
    |`OKTA_ROLE_ARN`|   RoleARN                                 |
    |`OKTA_IDP_ARN` |   IdPARN                                  |
+Ensure `OKTA_HOST` does not include `https://` or `http://`.
 
 ### Big Table Pagination Tests
 Big table pagination tests are time-consuming. To save time for integration test， they are disabled by default. They could be enabled by export environment variable `BIG_TABLE_PAGINATION_TEST_ENABLE` to `true`.
@@ -343,3 +363,6 @@ Big table pagination tests are time-consuming. To save time for integration test
    `node proxy.js`
 4. Set environment variable TS_PROXY_HOST, TS_PROXY_PORT and TS_PROXY_SCHEME.
 5. Start DSN window and create a connection to Timestream. Click 'Test' button to verify.
+
+## Test Results
+Unit test results can be viewed in `odbc_unit_test_result.xml` and integration test results can be viewed in `odbc_test_result.xml`.
