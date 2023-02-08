@@ -436,6 +436,35 @@ std::string ConvertPatternToRegex(const std::string& pattern) {
   return converted;
 }
 
+int StringToInt(const std::string& s, size_t* idx, int base) {
+  if (s.empty())
+    return 0;
+
+  int retval = 0;
+
+  try {
+    retval = std::stoi(s, idx, base);
+  } catch (std::exception& e) {
+    LOG_ERROR_MSG("Failed to convert "<< s <<" to int, Exception caught: '" << e.what() << "'");
+  }
+  return retval;
+}
+
+long StringToLong(const std::string& s, size_t* idx, int base) {
+  if (s.empty())
+    return 0;
+
+  long retval = 0;
+
+  try {
+    retval = std::stol(s, idx, base);
+  } catch (std::exception& e) {
+    LOG_ERROR_MSG("Failed to convert " << s << " to long, Exception caught: '"
+                                       << e.what() << "'");
+  }
+  return retval;
+}
+
 bool CheckEnvVarSetToTrue(const std::string& envVar) {
   std::string envVarStr = common::GetEnv(envVar);
   std::transform(envVarStr.begin(), envVarStr.end(), envVarStr.begin(),

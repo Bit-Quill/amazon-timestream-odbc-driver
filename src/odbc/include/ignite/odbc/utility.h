@@ -281,6 +281,22 @@ IGNITE_IMPORT_EXPORT std::string Trim(const std::string& s);
 IGNITE_IMPORT_EXPORT std::string ConvertPatternToRegex(const std::string& pattern);
 
 /**
+ * Converts a numeric string to int.
+ * @param s numeric string to be converted
+ *
+ * @return the converted int value
+ */
+IGNITE_IMPORT_EXPORT int StringToInt(const std::string& s, size_t* idx = 0, int base = 10);
+
+/**
+ * Converts a numeric string to long
+ * @param s numeric string to be converted
+ *
+ * @return the converted long value
+ */
+IGNITE_IMPORT_EXPORT long StringToLong(const std::string& s, size_t* idx = 0, int base = 10);
+
+/**
  * Checks if an environment variable is set to true. Case insensitive.
  * @param envVar Environment variable name
  *

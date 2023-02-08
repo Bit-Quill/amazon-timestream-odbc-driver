@@ -539,6 +539,13 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   bool TryRestoreConnection(const config::Configuration& cfg, IgniteError& err);
 
+  /**
+   * Set client proxy properties based on related environment variables
+   *
+   * @param clientCfg Client configuration.
+   */
+  void SetClientProxy(Aws::Client::ClientConfiguration& clientCfg);
+
   /** Parent. */
   Environment* env_;
 

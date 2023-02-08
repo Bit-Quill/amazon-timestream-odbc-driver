@@ -18,6 +18,7 @@
 
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/authentication/okta.h"
+#include "ignite/odbc/utility.h"
 
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
@@ -131,7 +132,7 @@ std::string TimestreamOktaCredentialsProvider::DecodeNumericCharacters(
     if (htmlString.substr(i, 3) == "&#x" && htmlString[i + 5] == ';') {
       // Extract the 2-digit hex code. e.g. "&#x2d;" -> "2d"
       std::string hexCode = htmlString.substr(i + 3, 2);
-      int x = std::stoi(hexCode, nullptr, 16);
+      int x = utility::StringToInt(hexCode, nullptr, 16);
       c = (char)x;
 
       i += 5;

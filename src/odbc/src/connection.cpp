@@ -587,6 +587,93 @@ std::shared_ptr< Aws::Http::HttpClient > Connection::GetHttpClient() {
   return Aws::Http::CreateHttpClient(Aws::Client::ClientConfiguration());
 }
 
+// TODO: [AT-1256] replace these environment variables with data from config::Configuration
+// https://bitquill.atlassian.net/browse/AT-1256
+void Connection::SetClientProxy(Aws::Client::ClientConfiguration& clientCfg) {
+  // proxy host
+  std::string proxyHost = utility::Trim(GetEnv("TS_PROXY_HOST"));
+  if (!proxyHost.empty()) {
+    LOG_DEBUG_MSG("proxy host is " << proxyHost);
+    clientCfg.proxyHost = proxyHost;
+  }
+
+  // proxy port
+  int proxyPort = 0;
+  std::string portStr = utility::Trim(GetEnv("TS_PROXY_PORT"));
+  if (!portStr.empty()) {
+    LOG_DEBUG_MSG("proxy port is " << portStr);
+    proxyPort = utility::StringToInt(portStr);
+  }
+  if (proxyPort > 0) {
+    clientCfg.proxyPort = proxyPort;
+  }
+
+  // proxy scheme
+  std::string proxyScheme = utility::Trim(GetEnv("TS_PROXY_SCHEME"));
+  if (!proxyScheme.empty()) {
+    LOG_DEBUG_MSG("proxy scheme is " << proxyScheme);
+    std::transform(proxyScheme.begin(), proxyScheme.end(),
+                   proxyScheme.begin(), ::toupper);
+    if (proxyScheme == "HTTPS") {
+      clientCfg.proxyScheme = Aws::Http::Scheme::HTTPS;
+    } else {
+      clientCfg.proxyScheme = Aws::Http::Scheme::HTTP;
+    }
+  }
+
+  // proxy user name
+  std::string proxyUser = utility::Trim(GetEnv("TS_PROXY_USER"));
+  if (!proxyUser.empty()) {
+    LOG_DEBUG_MSG("proxy username is set");
+    clientCfg.proxyUserName = proxyUser;
+  }
+
+  // proxy user password
+  std::string proxyPassword = utility::Trim(GetEnv("TS_PROXY_PASSWORD"));
+  if (!proxyPassword.empty()) {
+    LOG_DEBUG_MSG("proxy user password is set");
+    clientCfg.proxyPassword = proxyPassword;
+  }
+
+  // proxy SSL certificate path
+  std::string proxySSLCertPath = utility::Trim(GetEnv("TS_PROXY_SSL_CERT_PATH"));
+  if (!proxySSLCertPath.empty()) {
+    LOG_DEBUG_MSG("proxy SSL certificate path is " << proxySSLCertPath);
+    clientCfg.proxySSLCertPath = proxySSLCertPath;
+  }
+
+  // proxy SSL certificate type
+  std::string proxySSLCertType =
+      utility::Trim(GetEnv("TS_PROXY_SSL_CERT_TYPE"));
+  if (!proxySSLCertType.empty()) {
+    LOG_DEBUG_MSG("proxy SSL certificate type is " << proxySSLCertType);
+    clientCfg.proxySSLCertType = proxySSLCertType;
+  }
+
+  // proxy SSL key path
+  std::string proxySSLKeyPath =
+      utility::Trim(GetEnv("TS_PROXY_SSL_KEY_PATH"));
+  if (!proxySSLKeyPath.empty()) {
+    LOG_DEBUG_MSG("proxy SSL key path is " << proxySSLKeyPath);
+    clientCfg.proxySSLKeyPath = proxySSLKeyPath;
+  }
+
+  // proxy SSL key type
+  std::string proxySSLKeyType =
+      utility::Trim(GetEnv("TS_PROXY_SSL_KEY_TYPE"));
+  if (!proxySSLKeyType.empty()) {
+    LOG_DEBUG_MSG("proxy SSL key type is " << proxySSLKeyType);
+    clientCfg.proxySSLCertType = proxySSLKeyType;
+  }
+
+  // proxy SSL key password
+  std::string proxySSLKeyPassword = utility::Trim(GetEnv("TS_PROXY_SSL_KEY_PASSWORD"));
+  if (!proxySSLKeyPassword.empty()) {
+    LOG_DEBUG_MSG("proxy SSL key password is set");
+    clientCfg.proxySSLKeyPassword = proxySSLKeyPassword;
+  }
+}
+
 std::shared_ptr< Aws::STS::STSClient > Connection::GetStsClient() {
   return std::make_shared< Aws::STS::STSClient >();
 }
@@ -646,6 +733,8 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   clientCfg.connectTimeoutMs = cfg.GetConnectionTimeout();
   clientCfg.requestTimeoutMs = cfg.GetReqTimeout();
   clientCfg.maxConnections = cfg.GetMaxConnections();
+
+  SetClientProxy(clientCfg);
 
   // When cfg.GetMaxRetryCountClient() is 0, it could lead to error
   // "AWS API ERROR: ThrottlingException: Request rate limit exceeded"

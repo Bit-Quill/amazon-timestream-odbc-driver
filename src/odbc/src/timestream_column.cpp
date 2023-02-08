@@ -105,10 +105,10 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
       convRes = dataBuf.PutInt8(value == "true" ? 1 : 0);
       break;
     case ScalarType::INTEGER:
-      convRes = dataBuf.PutInt32(std::stoi(value));
+      convRes = dataBuf.PutInt32(utility::StringToInt(value));
       break;
     case ScalarType::BIGINT:
-      convRes = dataBuf.PutInt64(std::stol(value));
+      convRes = dataBuf.PutInt64(utility::StringToLong(value));
       break;
     case ScalarType::NOT_SET:
     case ScalarType::UNKNOWN:

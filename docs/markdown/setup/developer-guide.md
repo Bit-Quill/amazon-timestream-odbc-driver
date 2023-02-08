@@ -332,3 +332,14 @@ Driver will report databases as schemas when the user exports environment variab
 
 ### Big Table Pagination Tests
 Big table pagination tests are time-consuming. To save time for integration test， they are disabled by default. They could be enabled by export environment variable `BIG_TABLE_PAGINATION_TEST_ENABLE` to `true`.
+
+### Proxy Manual Test on Windows
+1. Download proxy-test-server from https://github.com/andris9/proxy-test-server
+   `git clone git@github.com:andris9/proxy-test-server.git`
+2. Install proxy-test-server
+   `npm install proxy-test-server`
+3. Run proxy server at port 9999
+   `cd proxy-test-server/examples`
+   `node proxy.js`
+4. Set environment variable TS_PROXY_HOST, TS_PROXY_PORT and TS_PROXY_SCHEME.
+5. Start DSN window and create a connection to Timestream. Click 'Test' button to verify.
