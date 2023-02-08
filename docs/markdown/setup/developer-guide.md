@@ -3,12 +3,12 @@
 
 ### C/C++ Formatting
 
-- This project uses [Google's C++ Style Guide](https://google.github.io/styleguide/cppguide.html) as a basis for 
+- This project uses [Google's C++ Style Guide](https://google.github.io/styleguide/cppguide.html) as a basis for
 C/C++ usage and formatting.
-- Some formatting is set using the .clang-format file at the base of repository. Other options for Visual Studio can be imported from the 
+- Some formatting is set using the .clang-format file at the base of repository. Other options for Visual Studio can be imported from the
 `VS-C++-Settings-Export.vssettings` file also found at root of repository.
 
-### Environment Variables for Testing Accounts/Secrets 
+### Environment Variables for Testing Accounts/Secrets
 - To use IAM accessKeyId and secretKey to access AWS Timestream, you need to specify the following environment variables.
 
    | Enviornment Variable | Description |
@@ -37,7 +37,7 @@ C/C++ usage and formatting.
 
 - AWS Logs
 
-  This ODBC driver uses AWS logs beside its own logging. Please see how AWS Logs work in their [official document](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/logging.html). The logs will be stored inthe executable directory following the default naming pattern of `aws_sdk_<date>.log`. 
+  This ODBC driver uses AWS logs beside its own logging. Please see how AWS Logs work in their [official document](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/logging.html). The logs will be stored inthe executable directory following the default naming pattern of `aws_sdk_<date>.log`.
 
 ## Windows
 
@@ -53,14 +53,14 @@ C/C++ usage and formatting.
    6. [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset)
 2. OpenSSL (full)
    1. Installed via [VCPKG](https://vcpkg.io/en/getting-started.html) (`.\vcpkg install openssl`).
-   2. Or installed via [Chocolatey](https://community.chocolatey.org/packages/openssl). 
+   2. Or installed via [Chocolatey](https://community.chocolatey.org/packages/openssl).
    3. Ensure to set the OPENSSL_ROOT_DIR.
 3. [WiX Installer (3.11)](https://wixtoolset.org/releases/)
    1. Ensure to add path to WiX executables (e.g. `C:\Program Files (x86)\WiX Toolset v3.11\bin`)
 4. Boost Test Framework
    1. Install [VCPKG](https://vcpkg.io/en/getting-started.html)
    2. `cd vcpkg`
-   3. Checkout 2022.09.27 to ensure AWS SDK 1.9.220 is used. 
+   3. Checkout 2022.09.27 to ensure AWS SDK 1.9.220 is used.
 
       `git checkout 2022.09.27`
 
@@ -75,7 +75,7 @@ C/C++ usage and formatting.
 7. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
    ```
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
-   ``` 
+   ```
    Ensure that backslashes are used in your command.
 8. Set environment variable REPOSITORY_ROOT to your repository root.
 9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
@@ -92,28 +92,38 @@ C/C++ usage and formatting.
    2. `brew install openssl`
    3. `brew install libiodbc`  
       - You may need to unlink `unixodbc` if you already have this installed. Use `brew unlink unixodbc`.
+      - You may need to run `brew link --overwrite --force libiodbc`.
    4. `brew install boost`
    5. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
       - If you only have XCode Command Line Tools, use the LLVM included with XCode by modifying the PATH with `export PATH=/Library/Developer/CommandLineTools/usr/bin/:$PATH`. Ensure this XCode path comes first in $PATH. If error occurs, check that clang and llvm are under folder Library/Developer/CommandLineTools/usr/bin.
       - If you have XCode application, to ensure LLVM and CMake are compatible, use the LLVM included with XCode by modifying the PATH with `export PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH`.
 2. Run one of the build scripts to create an initial compilation.
-   1. E.g.: `./build_mac_release64.sh`
-   2. Navigate to the `build/odbc/lib` folder to use the generated files.
+   1. E.g.: from the root of the Timestream ODBC repository, run `./build_mac_release64.sh`
+   2. The generated driver files will be placed in the `build/odbc/lib` folder.
 3. Set the environment variable `ODBCINSTINI`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib/timestream-odbc-install.ini`.
 4. Set the environment variable `DYLD_LIBRARY_PATH`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib:$DYLD_LIBRARY_PATH`.
-5. Run the following command to register the ODBC driver. 
+5. Run the following command to register the ODBC driver.
    `./scripts/register_driver_unix.sh`.
 6. Set environment variable REPOSITORY_ROOT to your repository root
 
     `export REPOSITORY_ROOT=<your repository root>`
-7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+7. Run `./src/tests/input/create_credentials_file.sh` from the respository root to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
 8. Set environment variable AWS_SHARED_CREDENTIALS_FILE
 
     `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
 9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-10. Once configured, run the tests: 
+10. Once configured, run the tests:
       - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
       - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`.
+
+You should have all the following environment variables set. If you encounter any issues, check that these variables
+have all been set correctly:
+- `AWS_ACCESS_KEY_ID` (from prerequisites)
+- `AWS_SECRET_ACCESS_KEY` (from prerequisites)
+- `ODBCINSTINI`
+- `DYLD_LIBRARY`
+- `REPOSITORY_ROOT`
+- `AWS_SHARED_CREDENTIALS_FILE`
 
 ### Known issues
 
@@ -125,11 +135,11 @@ sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Fram
 ```
 
 ### Cannot build with macOS SDK 13
-Currently, AWS SDK CPP is incompatible with SDK 13. The workaround is to set the SDK folder to a compatible SDK (e.g., SDK 12.3) that is before SDK 13, and upgrade the sdk version. 
+Currently, the AWS SDK CPP is incompatible with SDK 13. The workaround is to set the SDK folder to a compatible SDK (e.g., SDK 12.3) that is before SDK 13, and upgrade the sdk version.
 
 1. Set environment MACOSX_DEPLOYMENT_TARGET to a compatible SDK version. (e.g., `export MACOSX_DEPLOYMENT_TARGET=12.3`)
 
-2. Set the SDK folder location and minimum SDK version by appending `-DCMAKE_OSX_SYSROOT=<Path/to/SDK> -DCMAKE_OSX_DEPLOYMENT_TARGET=<SDK_Version>` to `cmake ...` command in `build_mac_*64.sh`. The change needs to be applied to both aws-sdk-cpp build and ODBC driver build. 
+2. Set the SDK folder location and minimum SDK version by appending `-DCMAKE_OSX_SYSROOT=<Path/to/SDK> -DCMAKE_OSX_DEPLOYMENT_TARGET=<SDK_Version>` to `cmake ...` command in `build_mac_*64.sh`. The change needs to be applied to both aws-sdk-cpp build and ODBC driver build.
 ```
 # example command for machines with macOS SDK 12.3. Replace aws-sdk-cpp cmake command in build_mac_debug64.sh with the following:
 cmake ../ -DCMAKE_INSTALL_PREFIX="../install" -DTARGET_ARCH="APPLE" -DCMAKE_BUILD_TYPE="Debug" -DBUILD_ONLY="core;sts;timestream-query;timestream-write" -DCUSTOM_MEMORY_MANAGEMENT="OFF" -DENABLE_TESTING="OFF" -DBUILD_SHARED_LIBS="OFF" -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=12.3
@@ -150,12 +160,12 @@ set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_
 
 ### Using docker
 
-#### Pre-requisites 
+#### Pre-requisites
 
 1. Build docker image
    1. Navigate Dockerfile folder `cd docker/linux-environment`
    2. Build the docker image E.g.: `docker build -t timestream-dev-linux .`
-2. Ensure DockerHub application is opened. 
+2. Ensure DockerHub application is opened.
 
 #### Using the dev image
 
@@ -172,7 +182,7 @@ set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_
     && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
     ```
    3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
-   4. Run the following command to register the ODBC driver. 
+   4. Run the following command to register the ODBC driver.
       `./scripts/register_driver_unix.sh`
    5. Set environment variable REPOSITORY_ROOT to your repository root
 
@@ -184,20 +194,20 @@ set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_
    8. You are ready to run the tests.
    E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
    E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
-   
+
 #### Known issues
 
-If a windows host machine is used, it is possible to have an issue with end of line character in the *.sh files. 
+If a windows host machine is used, it is possible to have an issue with end of line character in the *.sh files.
 There are two ways to fix the issue.
-   1. Ensure that your github is checking out the files as Unix-style https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
+   1. Ensure that your GitHub is checking out the files as Unix-style https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
    2. Alternatively you can convert the end-of-line using the following command `tr -d '\015' < build_linux_debug64_deb.sh > build_linux_debug64_deb_lf.sh` and run `./build_linux_debug64_deb_lf.sh` to build.
       1. Note that the command will need to be executed for all scripts that you will run in the container (register_driver_unix.sh,env_variables_check.sh and any other that you might need).
 ### Using Ubuntu 64bit
 
 1. Install all dependencies
    1. Ubuntu dev dependencies
-      E.g. 
-``` 
+      E.g.
+```
            apt-get -y update \
            && apt-get -y install wget \
                                  curl \
@@ -232,7 +242,7 @@ There are two ways to fix the issue.
            && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse \
            export VCPKG_ROOT=<odbc-repo>/vcpkg
 ```
-   3. Set all necessary environment variables and run the following command to register the ODBC driver. 
+   3. Set all necessary environment variables and run the following command to register the ODBC driver.
       `./scripts/register_driver_unix.sh`
    4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
    5. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
@@ -244,15 +254,15 @@ There are two ways to fix the issue.
 
        `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
    9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-   10. Once configured, run the tests: 
+   10. Once configured, run the tests:
          - Run integration tests: `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
          - Run unit tests: `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
 ### Build Linux 32-bit Deb/Rpm package on Ubuntu 64bit
-1. Run the following commands to install needed packages 
+1. Run the following commands to install needed packages
 ```
    sudo dpkg --add-architecture i386
-   sudo apt update 
+   sudo apt update
    sudo apt install unixodbc-dev:i386 odbcinst1debian2:i386 libodbc1:i386 libcurl4-openssl-dev:i386 libssl-dev:i386 uuid-dev:i386 cpp:i386 cpp-9:i386 gcc:i386 g++:i386 zlib1g-dev:i386 linux-headers-$(uname -r) gcc-multilib:i386 g++-multilib:i386 cmake g++-9:i386 gcc-9:i386 gcc-9-multilib:i386 g++-9-multilib:i386 binutils:i386 make:i386
 ```
 2. Install git
@@ -269,7 +279,7 @@ There are two ways to fix the issue.
    cd lcov
    sudo make install
 ```
-5. Build and install Boost. It needs to build from source 
+5. Build and install Boost. It needs to build from source
 ```
    wget https://boostorg.jfrog.io/artifactory/main/release/1.75.0/source/boost_1_75_0.tar.gz
    tar xf boost_1_75_0.tar.gz
@@ -281,7 +291,7 @@ There are two ways to fix the issue.
    sudo ./b2 install
 ```
 6. [Optional] Install rpm if you want to build RPM package from Ubuntu.
-      
+
    `sudo apt install rpm`
 7. Run one of the build scripts to build the DEB or RPM package. E.g. `./build_linux_release32_deb.sh`
 
@@ -321,9 +331,9 @@ Driver will report databases as schemas when the user exports environment variab
 
 ### Azure AD Authentication Tests
 
-1. The Azure AD authentication tests are disabled by default due to no valid Azure AD test account. They could be enabled by exporting environment variable `ENABLE_AAD_TEST` to `true`.
+1. The Azure AD authentication tests are disabled by default because they require valid Azure AD test account. They can be enabled by exporting environment variable `ENABLE_AAD_TEST` to `true`.
 
-2. For AAD integration tests to be run successfully, you need to specify the following environment variables. For how to set-up and find the AAD connection property values, go to the [SAML 2.0 Azure AD set up guide](/docs/markdown/setup/aad-saml-setup.md#timestream-odbc-dsn-configuration).
+2. For AAD integration tests to be run successfully, you need to specify the following environment variables. For instructions on how to set-up and find the AAD connection property values, go to the [SAML 2.0 Azure AD set up guide](/docs/markdown/setup/aad-saml-setup.md#timestream-odbc-dsn-configuration).
 
    |     Variable Name    | Corresponding Connection String Option |
    |----------------------|----------------------------------------|
@@ -334,11 +344,11 @@ Driver will report databases as schemas when the user exports environment variab
    | `AAD_USER`           | UID or IdPUserName                     |
    | `AAD_USER_PWD`       | PWD or IdPPassword                     |
    | `AAD_CLIENT_SECRET`  | AADClientSecret                        |
-   
-### Okta Authentication Tests
-1. The Okta authentication tests are disabled by default due to no valid Okta test account. They could be enabled by exporting environment variable `ENABLE_OKTA_TEST` to `true`.
 
-2. To run Okta authentication test, the environment variables in the following table need to be configured with correct value.  Refer to [Okta Authentication Setup Guide](Okta-setup.md) for setting up an Okta authentication.
+### Okta Authentication Tests
+1. The Okta authentication tests are disabled by default because they require a valid Okta test account. They can be enabled by exporting environment variable `ENABLE_OKTA_TEST` to `true`.
+
+2. To run Okta authentication test, the environment variables in the following table need to be configured with correct values.  Refer to [Okta Authentication Setup Guide](Okta-setup.md) for instructions on setting up an Okta authentication.
 
    | Variable Name |  Corresponding Connection String Option   |
    |---------------|-------------------------------------------|
