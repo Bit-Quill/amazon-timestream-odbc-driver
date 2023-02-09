@@ -4,6 +4,7 @@
 - [Logs](#logs)
 - [PowerBI Desktop cannot load the Timestream ODBC driver library](#powerbi-desktop-cannot-load-the-timestream-odbc-driver-library)
 - [Cannot connect on Linux using user DSN](#cannot-connect-on-linux-using-user-dsn)
+- [Root cause of "INVALID_ENDPOINT: Failed to discover endpoint"](#root-cause-of-invalid_endpoint-failed-to-discover-endpoint)
 
 ## Logs
 
@@ -58,3 +59,29 @@ If you downloaded Power BI Desktop from the Microsoft Store, you may be unable t
 ## Cannot connect on Linux using user DSN
 
 If you have set the user DSN on Linux in `~/.odbc.ini`, but cannot connect via `isql`, try creating a system DSN in `/etc/odbc.ini` instead. Different flavors of Linux recognize different DSN files, and user DSNs might not be supported on some flavors.
+
+## Root cause of "INVALID_ENDPOINT: Failed to discover endpoint"
+
+The error message `INVALID_ENDPOINT: Failed to discover endpoint` can occur for several reasons, including:
+
+- Authentication failure. If invalid AWS Access Key Id or Secret Access Key is entered, this error message can appear.
+
+- Incorrect region. If the region specified in the connection string or DSN configuration is different from the region the client is trying to access, this error message can appear.
+
+- Incorrect endpoint. If the endpoint specified in the connection string or DSN configuration is incorrect, this error message can appear.
+
+- Unavailable endpoint. If the endpoint is temporarily down or experiencing a service interruption, this error message can appear.
+
+- Network connectivity issues. If there is a network issue that is preventing the client from connecting to the endpoint, this error message can appear.
+
+- AWS Timestream service issue. If there is a problem with the AWS Timestream service that the client is trying to access, this error message can appear.
+
+When this error message is seen, you can check the aws sdk log `aws_sdk_year_month_date-hour.log` (e.g., `aws_sdk_2023-02-01-23.log`)  in your executable directory and search the pattern `Failed to discover endpoints` to identify the real root cause. For example, the following log line shows the `Failed to discover endpoints` is caused by `The request signature we calculated does not match the signature you provided`, which means the credentials are invalid.
+
+```
+[ERROR] 2023-02-07 19:28:43.944 Query [140737321622080] Failed to discover endpoints HTTP response code: 403
+Resolved remote host IP address: 44.233.100.2
+Request ID: d0f595b2-c971-4718-b56b-c06d073d4e8a
+Exception name: InvalidSignatureException
+Error message: The request signature we calculated does not match the signature you provided. Check your AWS Secret Access Key and signing method. Consult the service documentation for details.
+```
