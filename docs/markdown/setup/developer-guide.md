@@ -67,21 +67,23 @@ C/C++ usage and formatting.
    4. Install Boost and AWS SDK
 
       `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
-5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
-6. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
+5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects. 
+6. Set environment variable `VCPKG_ROOT` to your vcpkg directory. Add `vcpkg.exe` path to environment variable `Path`.
+7. Install [opencppcoverage](https://github.com/OpenCppCoverage/OpenCppCoverage/releases) if you want to get code coverage data. For `opencppcoverage` options, please refer [here](https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/Command-line-reference) and windows workflow file.
+8. On PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
-   2. Navigate to the `build\odbc\cmake` folder to use the generated solution file, `Ignite.C++.sln` to work on
+   2. Navigate to the `build\odbc\cmake` folder to use the generated solution file, `Timestream-ODBC.sln` to work on
    source code development and testing.
-7. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
+9. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
    ```
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ```
    Ensure that backslashes are used in your command.
-8. Set environment variable REPOSITORY_ROOT to your repository root.
-9. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
-10. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
-11. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-12. Once configured, run the tests:
+10. Set environment variable REPOSITORY_ROOT to your repository root.
+11. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
+12. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
+13. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+14. Once configured, run the tests:
     - Run integration tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-integration-tests.exe`.
     - Run unit tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-unit-tests.exe`.
 
