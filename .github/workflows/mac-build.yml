@@ -85,7 +85,6 @@ jobs:
         brew install libiodbc
         brew link --overwrite --force libiodbc
         brew install cmake
-        brew install openssl
         brew install boost
 
     - name: create-credentials-files
@@ -100,8 +99,6 @@ jobs:
     - name: configure-and-build-driver
       run: |
         ./build_mac_release64.sh
-      env:
-        OPENSSL_ROOT_DIR: /usr/local/opt/openssl
 
     - name: update-environment-with-ODBC_DRIVER_VERSION
       run: |

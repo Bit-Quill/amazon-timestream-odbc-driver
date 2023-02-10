@@ -51,13 +51,9 @@ C/C++ usage and formatting.
       1. Open Settings -> Apps -> Optional Features -> Under "Related Settings", click on "More Windows features", and select ".Net Framework 3.5".
       ![Alt text](../images/dotNet_screenshot.PNG "Example")
    6. [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset)
-2. OpenSSL (full)
-   1. Installed via [VCPKG](https://vcpkg.io/en/getting-started.html) (`.\vcpkg install openssl`).
-   2. Or installed via [Chocolatey](https://community.chocolatey.org/packages/openssl).
-   3. Ensure to set the OPENSSL_ROOT_DIR.
-3. [WiX Installer (3.11)](https://wixtoolset.org/releases/)
+2. [WiX Installer (3.11)](https://wixtoolset.org/releases/)
    1. Ensure to add path to WiX executables (e.g. `C:\Program Files (x86)\WiX Toolset v3.11\bin`)
-4. Boost Test Framework
+3. Boost Test Framework
    1. Install [VCPKG](https://vcpkg.io/en/getting-started.html)
    2. `cd vcpkg`
    3. Checkout 2022.09.27 to ensure AWS SDK 1.9.220 is used.
@@ -66,24 +62,24 @@ C/C++ usage and formatting.
 
    4. Install Boost and AWS SDK
 
-      `.\vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
-5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects. 
-6. Set environment variable `VCPKG_ROOT` to your vcpkg directory. Add `vcpkg.exe` path to environment variable `Path`.
-7. Install [opencppcoverage](https://github.com/OpenCppCoverage/OpenCppCoverage/releases) if you want to get code coverage data. For `opencppcoverage` options, please refer [here](https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/Command-line-reference) and windows workflow file.
-8. On PowerShell, run one of the build scripts to create an initial compilation.
+      `.\vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
+4. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
+5. Set environment variable `VCPKG_ROOT` to your vcpkg directory. Add `vcpkg.exe` path to environment variable `Path`.
+6. Install [opencppcoverage](https://github.com/OpenCppCoverage/OpenCppCoverage/releases) if you want to get code coverage data. For `opencppcoverage` options, please refer [here](https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/Command-line-reference) and windows workflow file.
+7. On PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
    2. Navigate to the `build\odbc\cmake` folder to use the generated solution file, `Timestream-ODBC.sln` to work on
    source code development and testing.
-9. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
+8. Open a **64-bit** command shell or **64-bit** PowerShell window, **as Administrator**, run the command below
    ```
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ```
    Ensure that backslashes are used in your command.
-10. Set environment variable REPOSITORY_ROOT to your repository root.
-11. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
-12. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
-13. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-14. Once configured, run the tests:
+9. Set environment variable REPOSITORY_ROOT to your repository root.
+10. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
+11. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
+12. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+13. Once configured, run the tests:
     - Run integration tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-integration-tests.exe`.
     - Run unit tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-unit-tests.exe`.
 
@@ -91,12 +87,11 @@ C/C++ usage and formatting.
 
 1. Install dependencies
    1. `brew install cmake`
-   2. `brew install openssl`
-   3. `brew install libiodbc`  
+   2. `brew install libiodbc`  
       - You may need to unlink `unixodbc` if you already have this installed. Use `brew unlink unixodbc`.
       - You may need to run `brew link --overwrite --force libiodbc`.
-   4. `brew install boost`
-   5. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
+   3. `brew install boost`
+   4. If creating a debug build (`./build_mac_debug64.sh`), LLVM is required.
       - If you only have XCode Command Line Tools, use the LLVM included with XCode by modifying the PATH with `export PATH=/Library/Developer/CommandLineTools/usr/bin/:$PATH`. Ensure this XCode path comes first in $PATH. If error occurs, check that clang and llvm are under folder Library/Developer/CommandLineTools/usr/bin.
       - If you have XCode application, to ensure LLVM and CMake are compatible, use the LLVM included with XCode by modifying the PATH with `export PATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH`.
 2. Run one of the build scripts to create an initial compilation.
@@ -213,8 +208,6 @@ There are two ways to fix the issue.
            apt-get -y update \
            && apt-get -y install wget \
                                  curl \
-                                 libcurl4-openssl-dev \
-                                 libssl-dev \
                                  uuid-dev \
                                  zlib1g-dev \
                                  libpulse-dev \
@@ -265,7 +258,7 @@ There are two ways to fix the issue.
 ```
    sudo dpkg --add-architecture i386
    sudo apt update
-   sudo apt install unixodbc-dev:i386 odbcinst1debian2:i386 libodbc1:i386 libcurl4-openssl-dev:i386 libssl-dev:i386 uuid-dev:i386 cpp:i386 cpp-9:i386 gcc:i386 g++:i386 zlib1g-dev:i386 linux-headers-$(uname -r) gcc-multilib:i386 g++-multilib:i386 cmake g++-9:i386 gcc-9:i386 gcc-9-multilib:i386 g++-9-multilib:i386 binutils:i386 make:i386
+   sudo apt install unixodbc-dev:i386 odbcinst1debian2:i386 libodbc1:i386 uuid-dev:i386 cpp:i386 cpp-9:i386 gcc:i386 g++:i386 zlib1g-dev:i386 linux-headers-$(uname -r) gcc-multilib:i386 g++-multilib:i386 cmake g++-9:i386 gcc-9:i386 gcc-9-multilib:i386 g++-9-multilib:i386 binutils:i386 make:i386
 ```
 2. Install git
 

@@ -104,7 +104,7 @@ jobs:
         key: ${{ runner.os }}-cache-dependencies-windows-32-v1
 
     - name: Install dependencies Windows
-      run: cd ${{ env.VCPKG_ROOT }}; git checkout 2022.09.27; vcpkg integrate install; vcpkg install openssl:x86-windows boost-test:x86-windows boost-asio:x86-windows boost-chrono:x86-windows boost-interprocess:x86-windows boost-regex:x86-windows boost-system:x86-windows boost-thread:x86-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x86-windows" --recurse
+      run: cd ${{ env.VCPKG_ROOT }}; git checkout 2022.09.27; vcpkg integrate install; vcpkg install boost-test:x86-windows boost-asio:x86-windows boost-chrono:x86-windows boost-interprocess:x86-windows boost-regex:x86-windows boost-system:x86-windows boost-thread:x86-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x86-windows" --recurse
       env:
         VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
 
@@ -120,8 +120,6 @@ jobs:
     - name: configure-and-build-driver
       run: |
         .\build_win_release32.ps1
-      env:
-        OPENSSL_ROOT_DIR: '${{ env.VCPKG_ROOT }}/packages/openssl_x86-windows'
 
     - name: register-driver
       run: |
@@ -241,7 +239,7 @@ jobs:
         key: ${{ runner.os }}-cache-dependencies-windows-64-v1
         
     - name: Install dependencies Windows
-      run: cd ${{ env.VCPKG_ROOT }}; git checkout 2022.09.27; vcpkg integrate install; vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse
+      run: cd ${{ env.VCPKG_ROOT }}; git checkout 2022.09.27; vcpkg integrate install; vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse
       env:
         VCPKG_ROOT: ${{env.VCPKG_ROOT}}
 
@@ -257,8 +255,6 @@ jobs:
     - name: configure-and-build-driver
       run: |
         .\build_win_release64.ps1
-      env:
-        OPENSSL_ROOT_DIR: '${{env.VCPKG_ROOT}}/packages/openssl_x64-windows'
 
     - name: Upload ODBC driver build at push to develop
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -375,7 +371,7 @@ jobs:
         key: ${{ runner.os }}-cache-dependencies-windows-64-v1
   
     - name: Install dependencies Windows
-      run: cd ${{ env.VCPKG_ROOT }}; git checkout 2022.09.27; vcpkg integrate install; vcpkg install openssl:x64-windows boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core, sts,timestream-query,timestream-write]:x64-windows" --recurse
+      run: cd ${{ env.VCPKG_ROOT }}; git checkout 2022.09.27; vcpkg integrate install; vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core, sts,timestream-query,timestream-write]:x64-windows" --recurse
       env:
         VCPKG_ROOT: ${{env.VCPKG_ROOT}}
 
@@ -391,8 +387,6 @@ jobs:
     - name: configure-and-build-driver
       run: |
         .\build_win_debug64.ps1
-      env:
-        OPENSSL_ROOT_DIR: '${{env.VCPKG_ROOT}}/packages/openssl_x64-windows'
 
     - name: register-driver
       run: |

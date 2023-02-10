@@ -21,9 +21,7 @@ ENV PATH="/usr/bin/cmake/bin:${PATH}"
 
 #installing dependicies
 RUN apt-get -y update \
-    && apt-get -y install libcurl4-openssl-dev \
-                          libssl-dev \
-                          uuid-dev \
+    && apt-get -y install uuid-dev \
                           zlib1g-dev \
                           libpulse-dev \
                           gcc \
