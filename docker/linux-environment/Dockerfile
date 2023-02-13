@@ -42,15 +42,7 @@ RUN apt-get -y update \
                           tar \
     && rm -r /var/lib/apt/lists/*
 
-#install aws-sdk-dependencies
-RUN git clone https://github.com/Microsoft/vcpkg.git \
-    && cd vcpkg \
-    && git checkout 2022.09.27 \
-    && ./bootstrap-vcpkg.sh \
-    && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
-
 ENV REPOSITORY_ROOT /timestream-odbc/
-ENV VCPKG_ROOT /timestream-odbc/vcpkg
 ENV ODBC_LIB_PATH /timestream-odbc/build/odbc/lib/
 
 WORKDIR /timestream-odbc

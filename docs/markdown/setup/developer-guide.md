@@ -56,17 +56,11 @@ C/C++ usage and formatting.
 3. Boost Test Framework
    1. Install [VCPKG](https://vcpkg.io/en/getting-started.html)
    2. `cd vcpkg`
-   3. Checkout 2022.09.27 to ensure AWS SDK 1.9.220 is used.
+   3. Install Boost and AWS SDK
 
-      `git checkout 2022.09.27`
-
-   4. Install Boost and AWS SDK
-
-      `.\vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows "aws-sdk-cpp[core,sts,timestream-query,timestream-write]:x64-windows" --recurse`
-4. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
-5. Set environment variable `VCPKG_ROOT` to your vcpkg directory. Add `vcpkg.exe` path to environment variable `Path`.
-6. Install [opencppcoverage](https://github.com/OpenCppCoverage/OpenCppCoverage/releases) if you want to get code coverage data. For `opencppcoverage` options, please refer [here](https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/Command-line-reference) and windows workflow file.
-7. On PowerShell, run one of the build scripts to create an initial compilation.
+      `.\vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows --recurse`
+5. Run `.\vcpkg integrate install` to implicitly add Include Directories, Link Directories, and Link Libraries for all packages installed with Vcpkg to all VS2015, VS2017 and VS2019 MSBuild projects
+6. On the Developer PowerShell, run one of the build scripts to create an initial compilation.
    1. E.g.: `.\build_win_debug64.ps1`
    2. Navigate to the `build\odbc\cmake` folder to use the generated solution file, `Timestream-ODBC.sln` to work on
    source code development and testing.
@@ -169,26 +163,19 @@ set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_
 1. Run docker container with interactive mode. E.g.: `docker run --add-host host.docker.internal:host-gateway -v "<path-to-repo>:/timestream-odbc" -it timestream-dev-linux`
 2. Next steps all are from inside the container
    1. Set environment variables for testing and double-check if all dev environmnet variables are set by running `scripts/env_variables_check.sh`. More info [Environment Variables for Testing Accounts/Secrets ](#environment-variables-for-testing-accounts/secrets)
-      Note. Since the environment variables `ODBC_LIB_PATH`, `REPOSITORY_ROOT`, and `VCPKG_ROOT` are already set in the container, it is not recommended to change those.
-   2. Git clone `vcpkg` and install the dependencies by running the following command
-    ```
-    git clone https://github.com/Microsoft/vcpkg.git \
-    && cd vcpkg \
-    && git checkout 2022.09.27 \
-    && ./bootstrap-vcpkg.sh \
-    && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
-    ```
-   3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
-   4. Run the following command to register the ODBC driver.
+      Note. Since the environment variables `ODBC_LIB_PATH` and `REPOSITORY_ROOT` are already set in the container, it is not recommended to change those.
+   2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
+   3. Run the following command to register the ODBC driver. 
+   
       `./scripts/register_driver_unix.sh`
-   5. Set environment variable REPOSITORY_ROOT to your repository root
+   4. Set environment variable REPOSITORY_ROOT to your repository root
 
         `export REPOSITORY_ROOT=<your repository root>`
-   6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   7. Set environment variable AWS_SHARED_CREDENTIALS_FILE
+   5. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+   6. Set environment variable AWS_SHARED_CREDENTIALS_FILE
 
        `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   8. You are ready to run the tests.
+   7. You are ready to run the tests.
    E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
    E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
 
@@ -227,25 +214,16 @@ There are two ways to fix the issue.
                                  unzip \
                                  tar                            
 ```
-   2. Install VCPKG and install aws-sdk-cpp dependencies
-```
-           cd <odbc-repo> \
-           git clone https://github.com/Microsoft/vcpkg.git \
-           && cd vcpkg \
-           && git checkout 2022.09.27 \
-           && ./bootstrap-vcpkg.sh \
-           && ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse \
-           export VCPKG_ROOT=<odbc-repo>/vcpkg
-```
-   3. Set all necessary environment variables and run the following command to register the ODBC driver.
+   2. Set all necessary environment variables and run the following command to register the ODBC driver. 
+
       `./scripts/register_driver_unix.sh`
-   4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
-   5. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   6. Set environment variable REPOSITORY_ROOT to your repository root
+   3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
+   4. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
+   5. Set environment variable REPOSITORY_ROOT to your repository root
 
         `export REPOSITORY_ROOT=<your repository root>`
-   7. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   8. Set environment variable AWS_SHARED_CREDENTIALS_FILE
+   6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+   7. Set environment variable AWS_SHARED_CREDENTIALS_FILE
 
        `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
    9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).

@@ -21,35 +21,24 @@ fi
 if [[ $1 -eq 32 ]]
 then
     CMAKE_TOOLCHAIN_FILE="$PROJECT_DIR/src/linux_32bit_toolchain.cmake"
-    
-    # build AWS SDK
-    cd src
-    git clone --recurse-submodules -b "1.9.220" "https://github.com/aws/aws-sdk-cpp.git"
-    cd aws-sdk-cpp
-    mkdir install
-    mkdir build
-    cd build
-    cmake ../ -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE="Release" -DBUILD_ONLY="core;sts;timestream-query;timestream-write" -DCUSTOM_MEMORY_MANAGEMENT="OFF" -DENABLE_TESTING="OFF" -DBUILD_SHARED_LIBS="OFF" -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}"
-    make -j 4
-    make install
-    cd ../../../
-elif [[ $1 -eq 64 ]]
-then
-    VCPKG_TARGET_TRIPLET="x64-linux"
-    if [ -z "$VCPKG_ROOT" ]; then
-       VCPKG_ROOT="$PROJECT_DIR/vcpkg"
-    fi
-    CMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-else
-    echo "Invalid parameter: $1"
-    echo $Usage
-    exit 1
 fi
+    
+# build AWS SDK
+cd src
+git clone --recurse-submodules -b "1.9.220" "https://github.com/aws/aws-sdk-cpp.git"
+cd aws-sdk-cpp
+mkdir install
+mkdir build
+cd build
+cmake ../ -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-declarations" -DCMAKE_INSTALL_PREFIX="../install" -DCMAKE_BUILD_TYPE="Release" -DBUILD_ONLY="core;sts;timestream-query;timestream-write" -DCUSTOM_MEMORY_MANAGEMENT="OFF" -DENABLE_TESTING="OFF" -DBUILD_SHARED_LIBS="OFF"
+make -j 4
+make install
+cd ../../../
 
 # build Timestream ODBC driver
 mkdir $BUILD_DIR
 cd $BUILD_DIR
-cmake ../src -DBITNESS=$1 -DCMAKE_BUILD_TYPE=$2 -DCODE_COVERAGE="ON" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON" -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE" -DINSTALLER_TYPE=$3 -DVCPKG_TARGET_TRIPLET="$VCPKG_TARGET_TRIPLET"
+cmake ../src -DBITNESS=$1 -DCMAKE_BUILD_TYPE=$2 -DCODE_COVERAGE="ON" -DBUILD_SHARED_LIBS="OFF" -DWITH_TESTS="ON" -DWITH_ODBC="ON" -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE" -DINSTALLER_TYPE=$3
 make -j 4
 
 RET_CODE=$?

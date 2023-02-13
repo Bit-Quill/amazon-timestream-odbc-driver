@@ -22,9 +22,6 @@ include(InstallRequiredSystemLibraries)
 include(CPackComponent)
 
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-message(STATUS "INSTALL_ROOT: ${INSTALL_ROOT}")
-
-set(CMAKE_INSTALL_PREFIX ${INSTALL_ROOT})
 
 find_package(ODBC REQUIRED)
 find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query timestream-write)
@@ -37,7 +34,7 @@ if (${CODE_COVERAGE})
     add_code_coverage()    
 endif()
 
-include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${AWSSDK_INCLUDE_DIRS})
 
 include_directories(include)
 
@@ -157,6 +154,14 @@ add_library(${TARGET} SHARED ${SOURCES} version.rc)
 if (WIN32)
     # static library created for Windows only for tests linking
     add_library(${TARGET}-static STATIC ${SOURCES} version.rc)
+
+    # ensure ourself build aws sdk library could be found
+    set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query aws-cpp-sdk-timestream-write PROPERTIES
+      IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/bin
+    )
+    set_target_properties(AWS::aws-crt-cpp AWS::aws-c-cal AWS::aws-c-auth AWS::aws-c-common AWS::aws-c-io AWS::aws-checksums AWS::aws-c-event-stream AWS::aws-c-s3  AWS::aws-c-http AWS::aws-c-mqtt AWS::aws-c-compression PROPERTIES
+      IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/lib
+    )
 endif ()
 
 set_target_properties(${TARGET} PROPERTIES VERSION ${CMAKE_PROJECT_VERSION})
@@ -212,7 +217,6 @@ if (WIN32 AND ${WITH_ODBC_MSI})
     set(WIX_PROJECT_NAME "Amazon Timestream")
     set(WIX_MANUFACTURER "Amazon Web Services")
     set(WIX_COPYRIGHT_COMMENT "Apache, Apache Ignite, the Apache feather and the Apache Ignite logo are trademarks of The Apache Software Foundation.")
-    set(CMAKE_BUILD_DIR ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
         set(WIX_BIT_SUFFIX "64-bit")
@@ -439,10 +443,6 @@ install(TARGETS ${TARGET}
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
-
-if (WIN32 AND ${WITH_ODBC_MSI})
-   install(FILES ${WIX_INSTALLER_PREFIX}.msi ${WIX_INSTALLER_EXE_PREFIX}.exe DESTINATION bin)
-endif()
 
 if (WIN32)
     if (MSVC_VERSION GREATER_EQUAL 1900)

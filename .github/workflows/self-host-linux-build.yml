@@ -17,7 +17,6 @@ env:
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
   AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
   AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}  
-  VCPKG_ROOT: "${{github.workspace}}/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
   AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
@@ -68,14 +67,6 @@ jobs:
         sudo apt update
         sudo apt install -y uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
    
-    - name: get-vcpkg-dependencies
-      run: |
-        git clone https://github.com/microsoft/vcpkg
-        cd vcpkg
-        git checkout 2022.09.27
-        ./bootstrap-vcpkg.sh -disableMetrics
-        ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
-
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726
     
@@ -200,14 +191,6 @@ jobs:
         sudo apt update
         sudo apt install -y uuid-dev zlib1g-dev libpulse-dev linux-headers-$(uname -r) gcc gcc-multilib  g++ g++-multilib linux-headers-$(uname -r) build-essential valgrind libboost-all-dev libsasl2-dev lcov
 
-    - name: get-vcpkg-dependencies
-      run: |
-        git clone https://github.com/microsoft/vcpkg
-        cd vcpkg
-        git checkout 2022.09.27
-        ./bootstrap-vcpkg.sh -disableMetrics
-        ./vcpkg install "aws-sdk-cpp[core,sts,timestream-query,timestream-write]" --recurse
-
     # TODO enable clang-tidy-check
     # https://bitquill.atlassian.net/browse/AD-726
     
@@ -284,7 +267,7 @@ jobs:
       id: runodbctests
       run: |
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
-        gcovr --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ -e "${{env.VCPKG_ROOT}}" --cobertura --output coverage.cobertura.xml
+        gcovr --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
 
     - name: Code Coverage Summary Report
       uses: irongut/CodeCoverageSummary@v1.2.0
