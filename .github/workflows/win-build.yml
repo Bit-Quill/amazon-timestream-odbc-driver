@@ -52,19 +52,25 @@ jobs:
   check:
     runs-on: windows-2022
     outputs:
-      status: ${{ steps.early.conclusion }}
+      status: ${{env.CheckStatus}}
     steps:
       - uses: actions/checkout@v2
       - id: early
         name: Early exit
         run: |
-          ${{github.workspace}}\scripts\win_check_changes.ps1
+          $output = powershell.exe -File ${{github.workspace}}\scripts\win_check_changes.ps1
+          echo $output
+          if ($output -match 'continue') {
+            echo "CheckStatus=continue" | Out-File -FilePath $env:GITHUB_ENV -Append
+          } else {
+            echo "CheckStatus=skip" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
 
   build-windows32:
     runs-on: windows-2022
 
     needs: check
-    if: needs.check.outputs.status == 'success'
+    if: needs.check.outputs.status == 'continue'
     steps:
     - uses: actions/checkout@v2
     # TODO Reactivate cppcheck
@@ -199,7 +205,7 @@ jobs:
     runs-on: windows-2022
 
     needs: check
-    if: needs.check.outputs.status == 'success'
+    if: needs.check.outputs.status == 'continue'
     steps:
     - uses: actions/checkout@v2
     # TODO Reactivate cppcheck
@@ -342,7 +348,7 @@ jobs:
     runs-on: windows-2022
 
     needs: check
-    if: needs.check.outputs.status == 'success'
+    if: needs.check.outputs.status == 'continue'
     steps:
     - uses: actions/checkout@v2
 
