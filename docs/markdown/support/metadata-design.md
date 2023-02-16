@@ -12,18 +12,29 @@ graph TD
     C -->|With| E(Column data type)
 ```
 ## How table metadata works
-Below is a diagram of how table metadata (type TableMeta) is populated using TableMetadataQuery class functions.
+Below is a diagram of how table metadata (type TableMeta) is populated using TableMetadataQuery class functions. 
+
+`MetadataId` in the graph is referring to `SQL_ATTR_METADATA_ID`, a supported [connection attribute](odbc-support-and-limitations.md/#supported-connection-attributes) which affects [SQLTables](odbc-support-and-limitations.md/#sqltables). 
 
 ```mermaid
 graph TD
+    a[SQLTables] --> A
     A[TableMetadataQuery::Execute] --> G
-    G[TableMetadataQuery::MakeRequestGetTablesMeta] --> |case of SQL_ALL_SCHEMAS| B[DataQuery::ReadDatabaseMetaVector]
-    G --> |retrieve tables| C[meta::ReadTableMetaVector]
-    B --> |populates| H(database metadata)
-    C --> |populates| D(table metadata)
-    D --> |With| E(Database name)
-    D --> |With| F(Table name)
-    H --> |With| E
+    G[TableMetadataQuery::MakeRequestGetTablesMeta] 
+    G --> |MetadataId true| B[filter by exact match with case-insensitive identifiers]
+    G --> |MetadataId false| C[filter by case-sensitive search patterns]
+    C --> D[getTablesWithSearchPattern]
+    B --> E[getTablesWithIdentifier]
+    F(getMatchedDatabases, called by getTablesWithSearchPattern)
+    H(getMatchedTables, called by getTablesWithSearchPattern)
+    D --> |1. Get database names that matches database pattern| F
+    F --> |2. Get table names matches table pattern| H
+
+    I(getMatchedDatabases, called by getTablesWithIdentifier)
+    J(getMatchedTables, called by getTablesWithIdentifier)
+    E --> |1. Get all database names|I
+    I --> K[Filter database names based on database identifier]
+    K --> |2. Get all table names| J
+    J --> M[Filter table names based on table identifier]
 ```
 
-In order to retrieve all database information and all table information, TimestreamWriteClient is used for its API functions [ListDatabases](https://sdk.amazonaws.com/cpp/api/LATEST/class_aws_1_1_timestream_write_1_1_timestream_write_client.html#a74b00020da99c43e0e71f57ef68720e6) and [ListTables](https://sdk.amazonaws.com/cpp/api/LATEST/class_aws_1_1_timestream_write_1_1_timestream_write_client.html#abe2ccbfbe9f2424ce7b9dc182d64c86b). Although it is a write client, the current code only uses it for query purposes in this read-only driver.

@@ -16,38 +16,27 @@
  */
 #include "ignite/odbc/query/table_metadata_query.h"
 
-#include <aws/timestream-write/model/ListTablesRequest.h>
-#include <aws/timestream-write/model/ListTablesResult.h>
-#include <aws/timestream-write/model/ListDatabasesRequest.h>
-#include <aws/timestream-write/model/ListDatabasesResult.h>
-#include <aws/timestream-write/TimestreamWriteClient.h>
 #include <aws/timestream-query/model/ScalarType.h>
 
 #include <vector>
 
-#include "ignite/odbc/common/concurrent.h"
 #include "ignite/odbc/connection.h"
-#include "ignite/odbc/ignite_error.h"
-#include "ignite/odbc/impl/binary/binary_common.h"
 #include "ignite/odbc/log.h"
-#include "ignite/odbc/message.h"
-#include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/type_traits.h"
 
 using Aws::TimestreamQuery::Model::ScalarType;
-using ignite::odbc::IgniteError;
 using ignite::odbc::common::concurrent::SharedPointer;
-using Aws::TimestreamWrite::Model::Database;
-using Aws::TimestreamWrite::Model::ListDatabasesRequest;
-using Aws::TimestreamWrite::Model::ListDatabasesResult;
 
 namespace ignite {
 namespace odbc {
 namespace query {
+using ignite::odbc::type_traits::OdbcNativeType;
+
 TableMetadataQuery::TableMetadataQuery(
     diagnostic::DiagnosableAdapter& diag, Connection& connection,
     const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema, const std::string& table,
+    const boost::optional< std::string >& schema,
+    const boost::optional< std::string >& table,
     const boost::optional< std::string >& tableType)
     : Query(diag, QueryType::TABLE_METADATA),
       connection(connection),
@@ -62,9 +51,6 @@ TableMetadataQuery::TableMetadataQuery(
       all_table_types(false),
       meta(),
       columnsMeta() {
-  using namespace ignite::odbc::impl::binary;
-  using namespace ignite::odbc::type_traits;
-
   using meta::ColumnMeta;
   using meta::Nullability;
 
@@ -75,15 +61,17 @@ TableMetadataQuery::TableMetadataQuery(
 
   if (!connection.GetMetadataID()) {
     all_catalogs = catalog && *catalog == SQL_ALL_CATALOGS && schema
-                   && schema->empty() && table.empty();
+                   && schema->empty() && table && table->empty();
 
     all_schemas = schema && *schema == SQL_ALL_SCHEMAS && catalog
-                  && catalog->empty() && table.empty();
-
-    all_table_types = tableType && *tableType == SQL_ALL_TABLE_TYPES && catalog
-                      && catalog->empty() && schema && schema->empty()
-                      && table.empty();
+                  && catalog->empty() && table && table->empty();
   }
+
+  // TableType is a value list argument, regardless of the setting of SQL_ATTR_METADATA_ID.
+  all_table_types = tableType && *tableType == SQL_ALL_TABLE_TYPES && catalog
+                    && catalog->empty() && schema && schema->empty() && table
+                    && table->empty();
+
   int32_t odbcVer = connection.GetEnvODBCVer();
 
 // driver needs to have have 2.0 column names for applications (e.g., Excel on macOS) 
@@ -177,16 +165,6 @@ TableMetadataQuery::TableMetadataQuery(
         sch, tbl, "TABLE_TYPE", ScalarType::VARCHAR, Nullability::NO_NULL));
     columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", ScalarType::VARCHAR,
                                      Nullability::NULLABLE));
-  }
-
-  if (DATABASE_AS_SCHEMA) {
-    if (!connection.GetMetadataID() && schema && !schema->empty()) {
-      schema_regex = utility::ConvertPatternToRegex(schema.value());
-    }
-  } else {
-    if (!connection.GetMetadataID() && catalog && !catalog->empty()) {
-      catalog_regex = utility::ConvertPatternToRegex(catalog.value());
-    }
   }
 }
 
@@ -321,14 +299,12 @@ SqlResult::Type TableMetadataQuery::NextResultSet() {
   return SqlResult::AI_NO_DATA;
 }
 
-// TODO [AT-1154] Send Query to server from driver internally to filter tables
-// https://bitquill.atlassian.net/browse/AT-1154
 SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
   // clear meta object at beginning of function
   meta.clear();
 
   if (all_table_types) {
-    // case for SQL_ALL_TABLE_TYPES is THE same whether databases are reported as schemas or catalogs
+    // case for SQL_ALL_TABLE_TYPES is the same whether databases are reported as schemas or catalogs
     using meta::TableMeta;
     std::string tableType = "TABLE";
     meta.emplace_back(TableMeta());
@@ -336,12 +312,6 @@ SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
 
     return SqlResult::AI_SUCCESS;
   }
-
-  // Check for corner cases in tables meta retrieval 
-  const boost::optional< SqlResult::Type > sqlResult =
-      getTablesMetaCornerCase();
-  if (sqlResult)
-    return *sqlResult;
 
   if (tableType) {
     // Parse provided table types
@@ -372,111 +342,233 @@ SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
     }
   }
 
-  // The default case: Get tables and update meta object
+  // Check for corner cases and handle database search patterns / identifiers in tables meta retrieval
   return getTables();
 }
 
- boost::optional< SqlResult::Type > TableMetadataQuery::getTablesMetaCornerCase() {
+SqlResult::Type TableMetadataQuery::getTables() {
   if (DATABASE_AS_SCHEMA) {
-     // Databases are reported as schemas
-     if (catalog && !catalog->empty() && *catalog != SQL_ALL_CATALOGS) {
-       // check if catalog is set and does not equal to SQL_ALL_CATALOGS
-       std::string warnMsg;
-       if (all_catalogs) {
-         warnMsg =
-             "Empty result set is returned as catalog is set to "
-             "SQL_ALL_CATALOGS "
-             "and Timestream does not have catalogs";
-       } else {
-         // catalog has been provided with a non-empty value that isn't
-         // SQL_ALL_CATALOGS. Return empty result set by default since
-         // Timestream does not have catalogs.
-         warnMsg = "Empty result set is returned as catalog is set to \""
-                   + *catalog + "\" and Timestream does not have catalogs";
-       }
-       LOG_WARNING_MSG(warnMsg);
-       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+    // Databases are reported as schemas
+    if (connection.GetMetadataID()) {
+      // Parameters are case-insensitive identifiers
+      if (!schema || !table) {
+        // catalogs not supported, only check if schema/table names are
+        // nullptrs
+        diag.AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
+                             "The SQL_ATTR_METADATA_ID statement attribute "
+                             "is set to SQL_TRUE, "
+                             "and SchemaName or "
+                             "the TableName argument was a null pointer.");
+        return SqlResult::AI_ERROR;
+      }
+      return getTablesWithIdentifier(*schema);
+    } else {
+      // Parameters are case-sensitive search patterns
+      if (all_schemas) {
+        LOG_DEBUG_MSG("Attempting to retrieve list of all schemas (databases)");
+        return getAllDatabases();
+      } else if (catalog && !catalog->empty() && *catalog != SQL_ALL_CATALOGS) {
+        // catalog has been provided with a non-empty value that isn't
+        // SQL_ALL_CATALOGS. Return empty result set by default since
+        // Timestream does not have catalogs.
+        std::string warnMsg =
+            "Empty result set is returned as catalog is set to \"" + *catalog
+            + "\" and Timestream does not have catalogs";
 
-       return SqlResult::AI_SUCCESS_WITH_INFO;
-     } else if (all_schemas) {
-       LOG_DEBUG_MSG("Attempting to retrieve list of all schemas (databases)");
-       return getDatabases();
-     } else if ((schema && schema->empty()) || table.empty()) {
-       // empty schema or empty table should match nothing
-       std::string warnMsg = "Schema and table name should not be empty";
-       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-       return SqlResult::AI_SUCCESS_WITH_INFO;
-     }
-   } else {
-     // Databases are reported as catalogs
-     if (schema && !schema->empty() && *schema != SQL_ALL_SCHEMAS) {
-       // check if schema is set and does not equal to SQL_ALL_SCHEMAS
-       std::string warnMsg;
-       if (all_schemas) {
-         warnMsg =
-             "Empty result set is returned as schemas is set to "
-             "SQL_ALL_SCHEMAS "
-             "and Timestream does not have schemas";
-       } else {
-         // catalog has been provided with a non-empty value that isn't
-         // SQL_ALL_SCHEMAS. Return empty result set by default since Timestream
-         // does not have schemas.
-         warnMsg = "Empty result set is returned as schema is set to \""
-                   + *schema + "\" and Timestream does not have schemas";
-       }
-       LOG_WARNING_MSG(warnMsg);
-       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+        LOG_WARNING_MSG(warnMsg);
+        diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
 
-       return SqlResult::AI_SUCCESS_WITH_INFO;
-     } else if (all_catalogs) {
-       LOG_DEBUG_MSG("Attempting to retrieve list of all catalogs (databases)");
-       return getDatabases();
-     } else if ((catalog && catalog->empty()) || table.empty()) {
-       // empty catalog or empty table should match nothing
-       std::string warnMsg = "Catalog and table name should not be empty";
-       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-       return SqlResult::AI_SUCCESS_WITH_INFO;
-     }
+        return SqlResult::AI_SUCCESS_WITH_INFO;
+      } else if (all_catalogs) {
+        std::string warnMsg =
+            "Empty result set is returned for a list of catalogs "
+            "because Timestream does not have catalogs";
+        LOG_WARNING_MSG(warnMsg);
+        diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+
+        return SqlResult::AI_SUCCESS_WITH_INFO;
+      } else if ((schema && schema->empty()) || (table && table->empty())) {
+        // empty schema or empty table should match nothing
+        std::string warnMsg = "Schema and table name should not be empty";
+        diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+        return SqlResult::AI_SUCCESS_WITH_INFO;
+      }
+      // Timestream does not support catalogs, so catalog name field would be
+      // empty string. If catalog variable is "%" (SQL_ALL_CATALOGS), it is
+      // ignored for two reasons:
+      // 1. The percent sign (%) search pattern represents any sequence of
+      // **zero** or more characters and it would match empty string catalog
+      // names.
+      // 2. Sometimes BI tools can pass SQLTables(catalogname - %, schemaname -
+      // %, tablename - %,...) to get all tables, and we want to support this
+      // case.
+      return getTablesWithSearchPattern(schema);
+    }
+  } else {
+    // Databases are reported as catalogs
+    if (connection.GetMetadataID()) {
+      // Parameters are case-insensitive identifiers
+      if (!catalog || !table) {
+        // schemas not supported, only check if catalog/table names are
+        // nullptrs
+        diag.AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
+                             "The SQL_ATTR_METADATA_ID statement attribute "
+                             "is set to SQL_TRUE, "
+                             "and CatalogName or "
+                             "the TableName argument was a null pointer.");
+        return SqlResult::AI_ERROR;
+      }
+      return getTablesWithIdentifier(*catalog);
+    } else {
+      // Parameters are case-sensitive search patterns
+      if (all_catalogs) {
+        LOG_DEBUG_MSG(
+            "Attempting to retrieve list of all catalogs (databases)");
+        return getAllDatabases();
+      } else if (schema && !schema->empty() && *schema != SQL_ALL_SCHEMAS) {
+        // catalog has been provided with a non-empty value that isn't
+        // SQL_ALL_SCHEMAS. Return empty result set by default since
+        // Timestream does not have schemas.
+        std::string warnMsg =
+            "Empty result set is returned as schema is set to \"" + *schema
+            + "\" and Timestream does not have schemas";
+
+        LOG_WARNING_MSG(warnMsg);
+        diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+
+        return SqlResult::AI_SUCCESS_WITH_INFO;
+      } else if (all_schemas) {
+        std::string warnMsg =
+            "Empty result set is returned for a list of schemas "
+            "because Timestream does not have schemas";
+        LOG_WARNING_MSG(warnMsg);
+        diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+
+        return SqlResult::AI_SUCCESS_WITH_INFO;
+      } else if ((catalog && catalog->empty()) || (table && table->empty())) {
+        // empty catalog or empty table should match nothing
+        std::string warnMsg = "Catalog and table name should not be empty";
+        diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+        return SqlResult::AI_SUCCESS_WITH_INFO;
+      }
+      // Timestream does not support schemas, so schema name field would be
+      // empty string. If schema variable is "%" (SQL_ALL_SCHEMAS), it is
+      // ignored for two reasons:
+      // 1. The percent sign (%) search pattern represents any sequence of
+      // **zero** or more characters and it would match empty string schema
+      // names.
+      // 2. Sometimes BI tools can pass SQLTables(catalogname - %, schemaname -
+      // %, tablename - %,...) to get all tables, and we want to support this
+      // case.
+      return getTablesWithSearchPattern(catalog);
+    }
+  }
+}
+
+SqlResult::Type TableMetadataQuery::getMatchedDatabases(
+     const std::string& databasePattern, std::vector< std::string >& databaseNames) {
+   std::string sql = "SHOW DATABASES LIKE \'" + databasePattern + "\'";
+
+   app::ParameterSet params;
+   int32_t timeout = 60;
+
+   dataQuery_ =
+       std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
+   SqlResult::Type result = dataQuery_->Execute();
+
+   if (result == SqlResult::AI_NO_DATA) {
+     std::string warnMsg =
+         "No database is found with pattern \'" + databasePattern + "\'";
+     LOG_WARNING_MSG(warnMsg);
+     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+     return SqlResult::AI_SUCCESS_WITH_INFO;
+   } else if (result != SqlResult::AI_SUCCESS) {
+     LOG_ERROR_MSG("Failed to execute sql:" << sql);
+     return result;
    }
 
-  return boost::none;
- }
+   app::ColumnBindingMap columnBindings;
+   SqlLen buflen = STRING_BUFFER_SIZE;
+   // According to Timestream, table name could only contain
+   // letters, digits, dashes, periods or underscores. It could
+   // not be a unicode string.
+   char databaseName[STRING_BUFFER_SIZE]{};
+   ApplicationDataBuffer buf(OdbcNativeType::Type::AI_CHAR, &databaseName,
+                              buflen, nullptr);
+   columnBindings[1] = buf;
 
-SqlResult::Type TableMetadataQuery::getDatabases() {
-  // Use TimestreamWriteClient API to retrieve databases and tables. 
-  ListDatabasesRequest dbRequest;
+   while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
+     databaseNames.emplace_back(std::string(databaseName));
+   }
 
-  std::string nextDatabaseToken("");
-  
-  LOG_DEBUG_MSG("Entering while loop for using nextDatabaseToken");
-  do {
-    ListDatabasesOutcome dbOutcome = connection.GetWriteClient()->ListDatabases(dbRequest);
+   return SqlResult::AI_SUCCESS;
+}
 
-    if (!dbOutcome.IsSuccess()) {
-      return checkOutcomeError(dbOutcome);
-    }
+SqlResult::Type TableMetadataQuery::getMatchedTables(
+    const std::string& databaseName, const std::string& tablePattern,
+    std::vector< std::string >& tableNames) {
+  std::string sql = "SHOW TABLES FROM \"" + databaseName + "\" LIKE \'" + tablePattern + "\'";
 
-    ListDatabasesResult dbResult = dbOutcome.GetResult();
-    Aws::Vector< Database > dbVector = dbResult.GetDatabases();
-  
-    meta::ReadDatabaseMetaVector(dbVector, meta);
+  app::ParameterSet params;
+  int32_t timeout = 60;
 
-    nextDatabaseToken = dbResult.GetNextToken();
+  dataQuery_ =
+      std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
+  SqlResult::Type result = dataQuery_->Execute();
 
-    dbRequest.SetNextToken(nextDatabaseToken);
-  } while (!nextDatabaseToken.empty());
-
-  LOG_DEBUG_MSG(
-      "The while loop for using nextDatabaseToken has finished running. "
-      "Database retrieval is finished.");
-
-  if (meta.empty()) {
-    std::string warnMsg =
-        "Empty result set is returned as no databases could be "
-        "found.";
+  if (result == SqlResult::AI_NO_DATA) {
+    std::string warnMsg = "No table is found with pattern \'" + tablePattern
+                          + "\' from database (" + databaseName + ")";
     LOG_WARNING_MSG(warnMsg);
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
     return SqlResult::AI_SUCCESS_WITH_INFO;
+    // DataQuery::Execute() does not return SUCCESS_WITH_INFO
+  } else if (result != SqlResult::AI_SUCCESS) {
+    LOG_ERROR_MSG("Failed to execute sql:" << sql);
+    return result;
+  }
+
+  app::ColumnBindingMap columnBindings;
+  SqlLen buflen = STRING_BUFFER_SIZE;
+  // According to Timestream, table name could only contain
+  // letters, digits, dashes, periods or underscores. It could
+  // not be a unicode string.
+  char tableName[STRING_BUFFER_SIZE]{};
+  ApplicationDataBuffer buf(OdbcNativeType::Type::AI_CHAR, &tableName, buflen,
+                             nullptr);
+  columnBindings[1] = buf;
+
+  while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
+    tableNames.emplace_back(std::string(tableName));
+  }
+
+  return SqlResult::AI_SUCCESS;
+}
+
+SqlResult::Type TableMetadataQuery::getAllDatabases() {
+  LOG_DEBUG_MSG("entering getAllDatabases");
+
+  std::vector< std::string > databaseNames;
+  SqlResult::Type result = getMatchedDatabases("%", databaseNames);
+
+  if (result != SqlResult::AI_SUCCESS) {
+    LOG_DEBUG_MSG("getAllDatabases early exisitng with result: " << result);
+    return result;
+  }
+
+  int numDatabases = databaseNames.size();
+
+  for (int i = 0; i < numDatabases; i++) {
+    using meta::TableMeta;
+
+    std::string databaseName = databaseNames.at(i);
+    if (DATABASE_AS_SCHEMA) {
+      meta.emplace_back(TableMeta(std::string(""), databaseName,
+                                  std::string(""), std::string("TABLE")));
+    } else {
+      meta.emplace_back(TableMeta(databaseName, std::string(""),
+                                  std::string(""), std::string("TABLE")));
+    }
   }
 
   // Log the results
@@ -488,150 +580,143 @@ SqlResult::Type TableMetadataQuery::getDatabases() {
     for (size_t i = 0; i < meta.size(); ++i) {
       LOG_INFO_MSG("\n[" << i
                          << "] CatalogName:  " << meta[i].GetCatalogName());
-    }    
+    }
   }
 
+  LOG_DEBUG_MSG("exiting getAllDatabases");
   return SqlResult::AI_SUCCESS;
 }
 
-bool TableMetadataQuery::checkIfDatabaseMatch(
-    const std::string& databaseName,
-    const boost::optional< std::string >& databasePattern,
-    const std::string& allDatabasePattern,
-    const std::regex db_pattern_regex) {
-  if (!databasePattern || *databasePattern == allDatabasePattern) {
-    return true;
+SqlResult::Type TableMetadataQuery::getTablesWithIdentifier(
+   const std::string& databaseIdentifier) {
+  LOG_DEBUG_MSG("Entering getTablesWithIdentifier");
+
+  std::vector< std::string > databaseNames;
+  SqlResult::Type result = getMatchedDatabases("%", databaseNames);
+
+  if (result != SqlResult::AI_SUCCESS) {
+    LOG_DEBUG_MSG("getTablesWithIdentifier early exisitng with result: " << result);
+    return result;
   }
 
-  bool match;
-  if (connection.GetMetadataID()) {
-    Aws::String schemaUpper =
-        Aws::Utils::StringUtils::ToUpper(databasePattern.value().data());
+  // get all database names, then do filtering based on database name identifier
+  int numDatabases = databaseNames.size();
+  for (int i = 0; i < numDatabases; i++) {
+    std::string databaseName = databaseNames.at(i);
+
+    bool match = false;
+    Aws::String databaseUpper =
+        Aws::Utils::StringUtils::ToUpper(databaseIdentifier.data());
     Aws::String dbNameUpper =
         Aws::Utils::StringUtils::ToUpper(databaseName.data());
-    match = (schemaUpper == dbNameUpper);
-  } else {
-    match = std::regex_match(databaseName, db_pattern_regex);
-  }
+    match = (databaseUpper == dbNameUpper);
 
-  return match;
-}
-
-SqlResult::Type TableMetadataQuery::getTables() {
-  // Use TimestreamWriteClient API to retrieve databases and tables. 
-  ListDatabasesRequest dbRequest;
-
-  std::string nextDatabaseToken("");
-  
-  LOG_DEBUG_MSG("Entering while loop for using nextDatabaseToken");
-  do {
-    // retrieve next database result set before proceeding.
-    ListDatabasesOutcome dbOutcome = connection.GetWriteClient()->ListDatabases(dbRequest);
-      if (!dbOutcome.IsSuccess()) {
-        return checkOutcomeError(dbOutcome);
-      }
-
-    ListDatabasesResult dbResult = dbOutcome.GetResult();
-    Aws::Vector< Database > dbVector = dbResult.GetDatabases();
-
-    for (Database db : dbVector) {
-      std::string databaseName = db.GetDatabaseName();
-
-      bool match = true;
-
-      if (DATABASE_AS_SCHEMA) {
-        match = checkIfDatabaseMatch(databaseName, schema, SQL_ALL_SCHEMAS,
-                                     schema_regex);
-      } else {
-        match = checkIfDatabaseMatch(databaseName, catalog, SQL_ALL_CATALOGS,
-                                     catalog_regex);
-      }
-
-      if (!match) {
-        // If database name does not equal database search pattern, then do not include the
-        // database in the result set
-        continue;
-      }
-
-      // retrieve tables using database name
-      SqlResult::Type res = getTablesWithDBName(databaseName);
-      if (res != SqlResult::AI_SUCCESS)
-        return res;
+    if (!match) {
+      // If database name does not equal database case-insensitive identifier, then do not
+      // include the database in the result set
+      continue;
+    } else {
+      LOG_DEBUG_MSG(
+          "database ("
+          << databaseName << ") has exact match with provided database case-insensitive identifier ("
+          << databaseIdentifier
+          << "), so the database will be included in the result set.");
     }
 
-    nextDatabaseToken = dbResult.GetNextToken();
 
-    dbRequest.SetNextToken(nextDatabaseToken);
-  } while (!nextDatabaseToken.empty());
-  LOG_DEBUG_MSG(
-      "The while loop for using nextDatabaseToken has finished running. "
-      "Database retrieval is finished.");
-  
+    // retrieve tables using database name
+    std::vector< std::string > tableNames;
+    SqlResult::Type res =
+        getMatchedTables(databaseName, "%", tableNames);
+
+    if (res != SqlResult::AI_SUCCESS
+        && res != SqlResult::AI_SUCCESS_WITH_INFO) {
+      LOG_DEBUG_MSG(
+          "getTablesWithIdentifier early exisitng with result: " << res);
+      return res;
+    }
+
+    // get all database names, then do filtering based on database name
+    // identifier
+    int numTables = tableNames.size();
+    for (int j = 0; j < numTables; j++) {
+      using meta::TableMeta;
+
+      // Check exact match for table name case-insensitive identifier
+      std::string foundTableName = tableNames.at(j);
+      Aws::String tableUpper =
+          Aws::Utils::StringUtils::ToUpper(table.get().data());
+      Aws::String tbNameUpper =
+          Aws::Utils::StringUtils::ToUpper(foundTableName.data());
+      match = (tableUpper == tbNameUpper);
+
+      if (match) {
+        if (DATABASE_AS_SCHEMA) {
+          meta.emplace_back(TableMeta(std::string(""), databaseName,
+                                      std::string(foundTableName),
+                                      std::string("TABLE")));
+        } else {
+          meta.emplace_back(TableMeta(databaseName, std::string(""),
+                                      std::string(foundTableName),
+                                      std::string("TABLE")));
+        }
+        LOG_DEBUG_MSG(
+            "current table name ("
+                      << foundTableName
+                      << ") matches the provided table name identifier ("
+                      << *table
+                      << "), so it will be included in the resultset.");
+      }
+    }
+  }
+
+  LOG_DEBUG_MSG("Exiting getTablesWithIdentifier");
   // Log contents of meta object
   return checkMeta();
 }
 
-SqlResult::Type TableMetadataQuery::getTablesWithDBName(std::string& databaseName) {
-  using Aws::TimestreamWrite::Model::ListTablesRequest;
-  using Aws::TimestreamWrite::Model::ListTablesResult;
-  using Aws::TimestreamWrite::Model::Table;
+SqlResult::Type TableMetadataQuery::getTablesWithSearchPattern(const boost::optional < std::string > &databasePattern) {
+  std::vector< std::string > databaseNames;
+  SqlResult::Type result =
+      getMatchedDatabases(databasePattern.get_value_or("%"), databaseNames);
 
-  // List tables
-  ListTablesRequest tbRequest;
-  tbRequest.SetDatabaseName(databaseName);
+  if (result != SqlResult::AI_SUCCESS) {
+    LOG_DEBUG_MSG("getAllDatabases early exisitng with result: " << result);
+    return result;
+  }
 
-  std::string nextTableToken("");
+  int numDatabases = databaseNames.size();
 
-  LOG_DEBUG_MSG("Entering while loop for using nextTableToken. Database name: "
-                << databaseName);
-  do {
-    ListTablesOutcome tbOutcome = connection.GetWriteClient()->ListTables(tbRequest);
+  for (int i = 0; i < numDatabases; i++) {
+    std::string databaseName = databaseNames.at(i);
+   
+    // retrieve tables using database name
+    std::vector< std::string > tableNames;
+    SqlResult::Type res =
+        getMatchedTables(databaseName, table.get_value_or("%"), tableNames);
 
-    if (!tbOutcome.IsSuccess()) {
-      return checkOutcomeError(tbOutcome);
+    if (res != SqlResult::AI_SUCCESS && res != SqlResult::AI_SUCCESS_WITH_INFO)
+      return res;
+
+    int numTables = tableNames.size();
+    for (int j = 0; j < numTables; j++) {
+      using meta::TableMeta;
+
+      std::string foundTableName = tableNames.at(j);
+      if (DATABASE_AS_SCHEMA) {
+        meta.emplace_back(TableMeta(std::string(""), databaseName,
+                                    std::string(foundTableName),
+                                    std::string("TABLE")));
+      } else {
+        meta.emplace_back(TableMeta(databaseName, std::string(""),
+                                    std::string(foundTableName),
+                                    std::string("TABLE")));
+      }
     }
+  }
 
-    ListTablesResult tbResult = tbOutcome.GetResult();
-    Aws::Vector< Table > tbVector = tbResult.GetTables();
-
-    meta::ReadTableMetaVector(table, connection.GetMetadataID(), tbVector, meta);
-
-    nextTableToken = tbResult.GetNextToken();
-
-    tbRequest.SetNextToken(nextTableToken);
-  } while(!nextTableToken.empty());
-
-  LOG_DEBUG_MSG(
-      "The while loop for using nextTableToken has finished running. "
-      "Database name: "
-      << databaseName);
-
-  return SqlResult::AI_SUCCESS;
-}
-
-SqlResult::Type TableMetadataQuery::checkOutcomeError(ListDatabasesOutcome const& dbOutcome) {
-  auto& error = dbOutcome.GetError();
-  LOG_ERROR_MSG("ERROR from ListDatabasesOutcome: "
-                << error.GetExceptionName() << ": " << error.GetMessage());
-
-  diag.AddStatusRecord(
-      SqlState::SHY000_GENERAL_ERROR,
-      "AWS API ERROR: " + error.GetExceptionName() + ": " + error.GetMessage());
-
-  return SqlResult::AI_ERROR;
-}
-
-SqlResult::Type TableMetadataQuery::checkOutcomeError(
-    ListTablesOutcome const& tbOutcome) {
-  auto& error = tbOutcome.GetError();
-  LOG_ERROR_MSG("ERROR from ListTablesOutcome: " << error.GetExceptionName()
-                                                 << ": " << error.GetMessage());
-
-  diag.AddStatusRecord(
-      SqlState::SHY000_GENERAL_ERROR,
-      "AWS API ERROR: " + error.GetExceptionName() + ": " + error.GetMessage());
-
-  return SqlResult::AI_ERROR;
+  // Log contents of meta object
+  return checkMeta();
 }
 
 SqlResult::Type TableMetadataQuery::checkMeta() {
@@ -639,18 +724,15 @@ SqlResult::Type TableMetadataQuery::checkMeta() {
   if (meta.empty()) {
     std::string warnMsg =
         "Empty result set is returned as we could not find tables with the "
-        "table search pattern \""
-        + table + "\"";
+        "tableName \""
+        + table.get_value_or("(tableName was nullptr)") + "\"";
     if (DATABASE_AS_SCHEMA) {
-      if (schema) {
-        warnMsg = warnMsg + " and from schema with search pattern \"" + *schema
-                  + "\"";
-      }
+      warnMsg = warnMsg + " and from schema with schemaName \""
+                + schema.get_value_or("(schemaName was nullptr)") + "\"";
+
     } else {
-      if (catalog) {
-        warnMsg = warnMsg + " and from catalog with search pattern \""
-                  + *catalog + "\"";
-      }
+      warnMsg = warnMsg + " and from catalog with catalogName \""
+                + catalog.get_value_or("(catalogName was nullptr)") + "\"";
     }
     LOG_WARNING_MSG(warnMsg);
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);

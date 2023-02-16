@@ -6,6 +6,7 @@
 - [Supported Connection Attributes](#supported-connection-attributes)
 - [Supported Statements Attributes](#supported-statements-attributes)
 - [SQLPrepare, SQLExecute and SQLExecDirect](#sqlprepare-sqlexecute-and-sqlexecdirect)
+- [SQLTables](#sqltables)
 
 ## ODBC API Support
 Note that the following table describes the planned functionality for the GA release. As the driver is still in development, not all functions marked as "yes" under the "Support" column below are supported at this time.
@@ -300,6 +301,19 @@ Related function: `SQLSetStmtAttr`
 
 To support BI tools that may use the SQLPrepare interface in auto-generated queries, the driver
 supports the use of SQLPrepare. However, the use of parameters in queries (values left as ?) is not supported in SQLPrepare, SQLExecute and SQLExecDirect. 
+
+Timestream does not support SQL queries with ";", so SQLExecDirect does work with SQL queries with ";" at the end. For the types of SQL queries supported by Timestream, visit the official Timestream query [language support page](https://docs.aws.amazon.com/timestream/latest/developerguide/reference.html).
+
+## SQLTables
+The driver supports catalog patterns for SQLTables for both ODBC ver 2.0 and ODBC ver 3.0. 
+When `SQL_ATTR_METADATA_ID` is set to `false` (default), it means database name and table name need to be treated as case-sensitive search patterns. Parameters passed as nullptr has same meaning as "%" (search pattern that match everything). Read more about search patterns [here](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/pattern-value-arguments?view=sql-server-ver16).
+
+When `SQL_ATTR_METADATA_ID` is set to `true`, it means database name and table name need to be treated as case-insensitive identifiers. In this case, if database name/table name are passed as nullptr to the driver, then the driver would give HY009: invalid use of null pointer error. Read more about identifiers [here](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/identifier-arguments?view=sql-server-ver16).
+
+|`SQL_ATTR_METADATA_ID` is set to `true`| CatalogName null value allowed? | SchemaName null value allowed? | TableName null value allowed? 
+|---------------------------------------|---------------------------------|--------------------------------|------------------------------|
+|Driver supports catalog only ([`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) not set)      | no | yes | no |
+|Driver supports schema only ([`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`) | yes | no | no |
 
 ## Timestream Data Types
 Timestream SQL support scalar types int, bigint, boolean, double, varchar, date, time, timestamp, interval_year_month and interval_day_second. Their values could be fetched based using their corresponding SQL data types or as a string/unicode string.

@@ -185,7 +185,8 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   void ExecuteGetTablesMetaQuery(
       const boost::optional< std::string >& catalog,
-      const boost::optional< std::string >& schema, const std::string& table,
+      const boost::optional< std::string >& schema,
+      const boost::optional< std::string >& table,
       const boost::optional< std::string >& tableType);
 
   /**
@@ -564,7 +565,8 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalExecuteGetTablesMetaQuery(
       const boost::optional< std::string >& catalog,
-      const boost::optional< std::string >& schema, const std::string& table,
+      const boost::optional< std::string >& schema,
+      const boost::optional< std::string >& table,
       const boost::optional< std::string >& tableType);
 
   /**

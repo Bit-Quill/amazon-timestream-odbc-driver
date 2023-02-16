@@ -18,26 +18,12 @@
 #ifndef _IGNITE_ODBC_META_TABLE_META
 #define _IGNITE_ODBC_META_TABLE_META
 
-#include <stdint.h>
-
 #include <string>
-
-#include <ignite/odbc/common/concurrent.h>
 
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 
-#include "ignite/odbc/impl/binary/binary_reader_impl.h"
-#include "ignite/odbc/result_set.h"
 #include "ignite/odbc/utility.h"
-#include "ignite/odbc/ts_error.h"
-
-#include <aws/timestream-write/TimestreamWriteClient.h>
-
-using Aws::TimestreamWrite::Model::Database;
-using Aws::TimestreamWrite::Model::Table;
-using ignite::odbc::ResultSet;
-using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {
 namespace odbc {
@@ -104,18 +90,6 @@ class TableMeta {
   }
 
   /**
-   * Read table object from AWS SDK.
-   * @param tb Table.
-   */
-  void Read(Table& tb);
-
-  /**
-   * Read database object from AWS SDK.
-   * @param db Database.
-   */
-  void Read(Database& db);
-
-  /**
    * Read table type
    * @param tbType string for table type.
    */
@@ -180,27 +154,6 @@ class TableMeta {
 
 /** Table metadata vector alias. */
 typedef std::vector< TableMeta > TableMetaVector;
-
-/**
- * Read tables metadata collection.
- * @param tableName table name for result set
- * @param isIdentifier flag to indicate if the tableName is treated as identifier or not
- * @param tbVector Aws::Vector< Table >.
- * @param meta Collection.
- */
-void ReadTableMetaVector(const std::string& tableName,
-                         bool isIdentifier,
-                         const Aws::Vector< Table >& tbVector,
-                         TableMetaVector& meta);
-
-/**
- * Read database metadata collection.
- * Will make meta contain a list of valid schemas for the data source
- * @param dbVector Aws::Vector< Database >.
- * @param meta Collection.
- */
-void ReadDatabaseMetaVector(const Aws::Vector< Database >& tbVector,
-                            TableMetaVector& meta);
 }  // namespace meta
 }  // namespace odbc
 }  // namespace ignite

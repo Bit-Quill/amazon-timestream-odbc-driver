@@ -123,7 +123,28 @@ struct OdbcTestSuite {
   void DeleteDsnConfiguration(const std::string& dsn);
 
   /**
-   * Expect connection to be rejected by the node.
+   * Expect SQLTables to fail.
+   * 
+   * @param catalogName Catalog name
+   * @param catalogNameLen Catalog name len
+   * @param schemaName Schema name
+   * @param schemaNameLen Schema name len
+   * @param tableName Table name
+   * @param tableNameLen Table name len
+   * @param tableType Table type
+   * @param tableTypeLen Table type len
+   * @param expectedState Expected error state
+   * @param expectedError Expected error message
+   * @return SQL State. 
+   */
+  std::string ExpectSQLTablesReject(
+      SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+      SQLSMALLINT schemaNameLen, SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
+      SQLWCHAR* tableType, SQLSMALLINT tableTypeLen,
+      const std::string& expectedState, const std::string& expectedError);
+
+  /**
+   * Expect connection to be rejected by the server.
    *
    * @param connectStr Connection string.
    * @return SQL State.
@@ -133,7 +154,7 @@ struct OdbcTestSuite {
                                      const std::string& expectedError);
 
   /**
-   * Expect connection to be rejected by the node.
+   * Expect connection to be rejected by the server.
    *
    * @param dsn the DSN for the connection
    * @param username the username for the connection.

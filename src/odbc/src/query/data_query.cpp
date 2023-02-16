@@ -328,7 +328,8 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
     result_ = std::make_shared< QueryResult >(outcome.GetResult());
     if (result_->GetRows().empty()) {
       if (result_->GetNextToken().empty()) {
-        // table is empty
+        // result is empty
+        LOG_DEBUG_MSG("Returning no data (AI_NO_DATA)");
         return SqlResult::AI_NO_DATA;
       }
       request_.SetNextToken(result_->GetNextToken());

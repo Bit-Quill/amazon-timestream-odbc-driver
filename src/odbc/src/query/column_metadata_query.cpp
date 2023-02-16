@@ -29,6 +29,9 @@
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/type_traits.h"
 
+// TODO [AT-1270] fix SQLColumns implementation to have correct handling of
+// empty string/nullptr inputs https://bitquill.atlassian.net/browse/AT-1270
+
 using ignite::odbc::IgniteError;
 using ignite::odbc::common::concurrent::SharedPointer;
 
@@ -391,9 +394,11 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     // database name and table name are treated as search patterns
     SqlResult::Type result = tableMetadataQuery_->Execute();
     if (result != SqlResult::AI_SUCCESS) {
-      LOG_WARNING_MSG("Failed to get table metadata for "
-                      << databasePattern.get_value_or("") << "." << table);
-      return SqlResult::AI_NO_DATA;
+      std::string warnMsg = "Failed to get table metadata for "
+                            + databasePattern.get_value_or("") + "." + table;
+      LOG_WARNING_MSG(warnMsg);
+      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+      return SqlResult::AI_SUCCESS_WITH_INFO;
     }
 
     app::ColumnBindingMap columnBindings;
@@ -496,7 +501,7 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
       meta.back().Read(columnBindings, ++prevPosition);
     }
   }
-
+  
   return result;
 }
 }  // namespace query

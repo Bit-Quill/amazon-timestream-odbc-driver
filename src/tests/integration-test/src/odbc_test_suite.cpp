@@ -190,6 +190,34 @@ void OdbcTestSuite::DeleteDsnConfiguration(const std::string& dsn) {
   }
 }
 
+std::string OdbcTestSuite::ExpectSQLTablesReject(
+    SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+    SQLSMALLINT schemaNameLen, SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
+    SQLWCHAR* tableType, SQLSMALLINT tableTypeLen,
+    const std::string& expectedState,
+    const std::string& expectedError) {
+  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
+  SQLSMALLINT outstrlen;
+
+  // Connecting to ODBC server.
+  SQLRETURN ret = SQLTables(stmt, catalogName, catalogNameLen, schemaName, schemaNameLen,
+                  tableName, tableNameLen, tableType, tableTypeLen);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  OdbcClientError error = GetOdbcError(SQL_HANDLE_STMT, stmt);
+  BOOST_CHECK_EQUAL(error.sqlstate, expectedState);
+  size_t start = 0;
+  if (error.message.substr(0, 10) == "[unixODBC]") {
+    start += 10;
+  }
+
+  BOOST_REQUIRE_MESSAGE(
+      error.message.substr(start, expectedError.size()) == expectedError,
+      error.message.substr(start, expectedError.size()) + "!=" + expectedError);
+
+  return GetOdbcErrorState(SQL_HANDLE_STMT, stmt);
+}
+
 std::string OdbcTestSuite::ExpectConnectionReject(
     const std::string& connectStr, const std::string& expectedState,
     const std::string& expectedError) {

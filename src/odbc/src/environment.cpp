@@ -126,12 +126,6 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
       int32_t version =
           static_cast< int32_t >(reinterpret_cast< intptr_t >(value));
 
-      // TODO [SPIKE] After allowing ODBC Version to be set as 2,
-      // we may need to support more ODBC Ver 2 functionalities,
-      // as currently we do not have backward comaptibility for 
-      // ODBC Ver 2.
-      // https://bitquill.atlassian.net/browse/AT-1166
-
       if (version == SQL_OV_ODBC2 || version == SQL_OV_ODBC3) {
         odbcVersion = version;
         LOG_INFO_MSG("ODBC version has been set to ODBC " << version);

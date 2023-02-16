@@ -57,6 +57,9 @@ using ignite::odbc::IgniteError;
 // Uncomment for per-byte debug.
 //#define PER_BYTE_DEBUG
 
+// TODO [AT-1272] Remove TimestreamWrite dependency 
+// https://bitquill.atlassian.net/browse/AT-1272
+
 namespace {
 #pragma pack(push, 1)
 struct OdbcProtocolHeader {
@@ -435,7 +438,7 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
     case SQL_ATTR_METADATA_ID: {
       SQLUINTEGER* val = reinterpret_cast< SQLUINTEGER* >(buf);
 
-      *val = metadataID_;
+      *val = metadataID_ ? SQL_TRUE : SQL_FALSE;
 
       if (valueLen)
         *valueLen = SQL_IS_INTEGER;
@@ -486,6 +489,8 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
       return SqlResult::AI_ERROR;
     }
   }
+
+  LOG_DEBUG_MSG("buf: " << *reinterpret_cast< SQLUINTEGER* >(buf));
 
   return SqlResult::AI_SUCCESS;
 }

@@ -14,7 +14,6 @@
 ### Additional Reviewers
 @alexey-temnikov
 @alinaliBQ
-@mitchell-elholm
 @RoyZhang2022
 @trevorbonas
 <!-- Any additional reviewers -->

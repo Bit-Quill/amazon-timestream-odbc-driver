@@ -631,7 +631,6 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-/** If NULL tableName is passed, it will automatically be converted to "%". */
 SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -654,8 +653,8 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
       SqlWcharToOptString(catalogName, catalogNameLen);
   boost::optional< std::string > schema =
       SqlWcharToOptString(schemaName, schemaNameLen);
-  std::string table =
-      SqlWcharToOptString(tableName, tableNameLen).get_value_or("%");
+  boost::optional< std::string > table =
+      SqlWcharToOptString(tableName, tableNameLen);
   boost::optional< std::string > tableTypeStr =
       SqlWcharToOptString(tableType, tableTypeLen);
 
@@ -670,6 +669,10 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
+
+// TODO [AT-1270] fix SQLColumns implementation to have correct handling of
+// empty string/nullptr inputs. Do not convert any value to "%".
+// https://bitquill.atlassian.net/browse/AT-1270
 
 /** If NULL tableName is passed, it will automatically be converted to "%".
  * If NULL columnName is passed, it will automatically be converted to "%". */
@@ -1131,7 +1134,7 @@ SQLRETURN SQLGetDiagField(SQLSMALLINT handleType, SQLHANDLE handle,
 
   using odbc::app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLGetDiagField called: " << recNum);
+  LOG_DEBUG_MSG("SQLGetDiagField called, recNum: " << recNum);
 
   SqlLen outResLen;
   ApplicationDataBuffer outBuffer(OdbcNativeType::AI_DEFAULT, buffer, bufferLen,

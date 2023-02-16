@@ -20,12 +20,8 @@
 
 #include "ignite/odbc/meta/table_meta.h"
 #include "ignite/odbc/query/query.h"
+#include "ignite/odbc/query/data_query.h"
 #include "ignite/odbc/statement.h"
-
-#include <regex>
-
-using Aws::TimestreamWrite::Model::ListDatabasesOutcome;
-using Aws::TimestreamWrite::Model::ListTablesOutcome;
 
 namespace ignite {
 namespace odbc {
@@ -72,7 +68,7 @@ class TableMetadataQuery : public Query {
                      Connection& connection,
                      const boost::optional< std::string >& catalog,
                      const boost::optional< std::string >& schema,
-                     const std::string& table,
+                     const boost::optional< std::string >& table,
                      const boost::optional< std::string >& tableType);
 
   /**
@@ -150,73 +146,65 @@ class TableMetadataQuery : public Query {
   SqlResult::Type MakeRequestGetTablesMeta();
 
   /**
-   * Checks for special cases for table metadata retrieval
+   * Validate and handle database search patterns / identifiers in tables meta retrieval
    * 
-   * @return Optional operation result.
+   * @return Operation result.
    */
-  boost::optional< SqlResult::Type > getTablesMetaCornerCase();
+  SqlResult::Type getTables();
 
   /**
    * Get the list of all databases.
    * 
    * @return Operation result
    */
-  SqlResult::Type getDatabases();
+  SqlResult::Type getAllDatabases();
 
   /**
-   * Get the list of all tables.
+   * Get tables that have exact match with the database and table case-sensitivie identifier
    * 
-   * @return Operation result
+   * @param databasePattern Database pattern 
+   * @return Operation result 
    */
-  SqlResult::Type getTables();
+  SqlResult::Type getTablesWithIdentifier(
+      const std::string& databaseIdentifier);
 
   /**
-   * Update metadata by adding tables from database named databaseName
-   *
-   * @param database name
-   * @return Operation result
-   */
-  SqlResult::Type getTablesWithDBName(std::string& databaseName);
-
-  /**
-   * Check and log error from ListDatabasesOutcome
-   * Only run this function if dbOutcome has error
+   * Get tables that match the database and table case-insensitivie search patterns
    * 
-   * @param dbOutcome ListDatabasesOutcome
-   * @return Operation result
+   * @param databasePattern Database pattern 
+   * @return Operation result 
    */
-  SqlResult::Type checkOutcomeError(ListDatabasesOutcome const& dbOutcome);
-
+  SqlResult::Type getTablesWithSearchPattern(
+      const boost::optional< std::string >& databasePattern);
 
   /**
-   * Check and log error from ListTablesOutcome
-   * Only run this function if tbOutcome has error
+   *  Get the database names that match database pattern
    *
-   * @param dbOutcome ListTablesOutcome
+   * @param databasePattern Database name search pattern
+   * @param databaseNames Vector to store database names
    * @return Operation result
    */
-  SqlResult::Type checkOutcomeError(ListTablesOutcome const& tbOutcome);
+  SqlResult::Type getMatchedDatabases(
+      const std::string& databasePattern,
+      std::vector< std::string >& databaseNames);
+
+  /**
+   *  Get the table names that match table pattern from specified database
+   *
+   * @param databaseName Database name
+   * @param tablePattern Table name search pattern
+   * @param tablePattern Vector to store table names
+   * @return Operation result
+   */
+  SqlResult::Type getMatchedTables(const std::string& databaseName,
+                                const std::string& tablePattern,
+                                std::vector< std::string >& c);
 
   /**
    * Check if meta object is empty and print logs of it.
    * @return Operation result
    */
   SqlResult::Type checkMeta();
-
-  /**
-   * Check if database name matches database search pattern
-   *
-   * @param databaseName Database name to check
-   * @param databasePattern Database pattern
-   * @param allDatabasePattern Database pattern that indicates all databases are selected
-   * @param db_pattern_regex Database pattern regex
-   * @return true if match, false otherwise
-   */
-  bool checkIfDatabaseMatch(
-      const std::string& databaseName,
-      const boost::optional< std::string >& databasePattern,
-      const std::string& allDatabasePattern,
-      const std::regex db_pattern_regex);
 
   /**
    * Remove outer matching quotes from a string. They can be either single (')
@@ -237,7 +225,7 @@ class TableMetadataQuery : public Query {
   boost::optional< std::string > schema;
 
   /** Table search pattern. */
-  std::string table;
+  boost::optional< std::string > table;
 
   /** Table type search pattern. */
   boost::optional< std::string > tableType;
@@ -266,11 +254,8 @@ class TableMetadataQuery : public Query {
   /** Columns metadata. */
   meta::ColumnMetaVector columnsMeta;
 
-  /** Catalog regex. */
-  std::regex catalog_regex;
-
-  /** Schema regex. */
-  std::regex schema_regex;
+  /** DataQuery pointer for "show" command to run **/
+  std::shared_ptr< DataQuery > dataQuery_;
 };
 }  // namespace query
 }  // namespace odbc
