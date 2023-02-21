@@ -707,16 +707,16 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidHost) {
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, "invalid_host");
 
-#ifdef __linux__
-    ExpectConnectionReject(connectionString, "08001",
-        "Failed to establish connection to Timestream.\n"
-        "Failed to get Okta session token. Error info: 'curlCode: 6, Couldn't resolve host name'");
-#else
+#ifdef _WIN32
     ExpectConnectionReject(
         connectionString, "08001",
         "Failed to establish connection to Timestream.\n"
         "Failed to get Okta session token. Error info: 'Encountered network "
         "error when sending http request'");
+#else
+    ExpectConnectionReject(connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Failed to get Okta session token. Error info: 'curlCode: 6, Couldn't resolve host name'");
 #endif
 
     Disconnect();
