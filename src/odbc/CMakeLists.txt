@@ -155,7 +155,7 @@ if (WIN32)
     # static library created for Windows only for tests linking
     add_library(${TARGET}-static STATIC ${SOURCES} version.rc)
 
-    # ensure ourself build aws sdk library could be found
+    # ensure our self-build aws sdk library could be found
     set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query aws-cpp-sdk-timestream-write PROPERTIES
       IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/bin
     )

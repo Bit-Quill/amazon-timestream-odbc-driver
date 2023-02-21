@@ -29,7 +29,7 @@ include_directories(include ../../odbc/include ../integration-test/include ${AWS
 if (WIN32)
     include_directories(../../odbc/os/win/include)
 
-    # ensure ourself build aws sdk library could be found
+    # ensure our self-build aws sdk library could be found
     set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query aws-cpp-sdk-timestream-write PROPERTIES
       IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/bin
     )

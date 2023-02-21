@@ -27,7 +27,7 @@ There are the following levels of logging:
 | `1` (means ERROR) | Shows messages classified as ERROR.|
 | `2` (means WARNING) | Shows messages classified as WARNING and ERROR.|
 | `3` (means INFO) | Shows messages classified as INFO, WARNING and ERROR.|
-| `4` (means DEBUG) | Shows messages classified as DEBUG, INFO, WARNING and ERROR.|
+| `4` (means DEBUG) | Shows messages classified as DEBUG, INFO, WARNING and ERROR. </br > **Warning:** personal information can be logged by the driver when using the driver in **DEBUG** mode.|
 | `0` (means OFF) | No log messages displayed.|
 
 | Property Name | Description | Platform | Default |

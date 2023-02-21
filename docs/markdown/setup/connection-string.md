@@ -94,7 +94,7 @@ For how to find the connection values, go to the [SAML 2.0 Azure AD set up guide
 
 | Option | Description | Default |
 |--------|-------------|---------------|
-| `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3, 4}<br /> meaning<br />{OFF, ERROR, WARNING, INFO, DEBUG} | `1` (means ERROR)
+| `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3, 4}<br /> meaning<br />{OFF, ERROR, WARNING, INFO, DEBUG}<br /> **Warning:** personal information can be logged by the driver when using the driver in **DEBUG** mode. | `1` (means ERROR)
 | `LogOutput` | Folder to store the log file | Windows: `%USERPROFILE%`, or if not available, `%HOMEDRIVE%%HOMEPATH%` <br /> macOS/Linux: `getpwuid()`, or if not available, `$HOME` 
 
 ## Examples

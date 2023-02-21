@@ -7,6 +7,7 @@
 - [Supported Statements Attributes](#supported-statements-attributes)
 - [SQLPrepare, SQLExecute and SQLExecDirect](#sqlprepare-sqlexecute-and-sqlexecdirect)
 - [SQLTables](#sqltables)
+- [Database Reporting Differences Between Timestream JDBC Driver and ODBC Driver](#database-reporting-differences-between-timestream-jdbc-driver-and-odbc-driver)
 
 ## ODBC API Support
 Note that the following table describes the planned functionality for the GA release. As the driver is still in development, not all functions marked as "yes" under the "Support" column below are supported at this time.
@@ -314,6 +315,12 @@ When `SQL_ATTR_METADATA_ID` is set to `true`, it means database name and table n
 |---------------------------------------|---------------------------------|--------------------------------|------------------------------|
 |Driver supports catalog only ([`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) not set)      | no | yes | no |
 |Driver supports schema only ([`DATABASE_AS_SCHEMA`](../setup/developer-guide.md/#database-reporting) set to `TRUE`) | yes | no | no |
+
+## Database Reporting Differences Between Timestream JDBC Driver and ODBC Driver
+| --- | [Timestream JDBC Driver](https://github.com/awslabs/amazon-timestream-driver-jdbc) | Timestream ODBC Driver |
+|-----|------------------------------------------------------------------------------------|------------------------|
+| Database reporting | Databases reported as schemas. This behavior is not configurable. | Databases reported as catalogs by default. This behavior is configurable by setting [`DATABASE_AS_SCHEMA`](docs/markdown/setup/developer-guide.md/#database-reporting) environment variable
+| Reasons for the design decisions  | Databases are reported as schemas for driver to work on Tableau, as Tableau will not include database names in auto-generated queries if databases are reported as catalogs, and Timestream server does not work with queries without database names. | Databases are reported as catalogs for driver to work on macOS Excel, as not all databases show properly on macOS Excel when databases are reported as schemas.
 
 ## Timestream Data Types
 Timestream SQL support scalar types int, bigint, boolean, double, varchar, date, time, timestamp, interval_year_month and interval_day_second. Their values could be fetched based using their corresponding SQL data types or as a string/unicode string.
