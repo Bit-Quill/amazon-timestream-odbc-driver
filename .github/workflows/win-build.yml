@@ -58,6 +58,9 @@ jobs:
       - id: early
         name: Early exit
         run: |
+          # The powershell script output will set the environment variable CheckStatus value.
+          # The CheckStatus is set to the check.outputs.status which could be used
+          # to determine if the steps should be continued or not.
           $output = powershell.exe -File ${{github.workspace}}\scripts\win_check_changes.ps1
           echo $output
           if ($output -match 'continue') {

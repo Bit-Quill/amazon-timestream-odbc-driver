@@ -59,6 +59,8 @@ jobs:
         name: Check last commit
         run: |
           # store multi-line script output in environment variable CheckStatus
+          # The CheckStatus is set to the check.outputs.status which could be used
+          # to determine if the steps should be continued or not.
           echo 'CheckStatus<<EOF' >> $GITHUB_ENV
           ${{github.workspace}}/scripts/unix_check_changes.sh >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
