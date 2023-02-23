@@ -195,6 +195,8 @@ There are two ways to fix the issue.
            apt-get -y update \
            && apt-get -y install wget \
                                  curl \
+                                 libcurl4-openssl-dev \
+                                 libssl-dev \
                                  uuid-dev \
                                  zlib1g-dev \
                                  libpulse-dev \
@@ -236,7 +238,7 @@ There are two ways to fix the issue.
 ```
    sudo dpkg --add-architecture i386
    sudo apt update
-   sudo apt install unixodbc-dev:i386 odbcinst1debian2:i386 libodbc1:i386 uuid-dev:i386 cpp:i386 cpp-9:i386 gcc:i386 g++:i386 zlib1g-dev:i386 linux-headers-$(uname -r) gcc-multilib:i386 g++-multilib:i386 cmake g++-9:i386 gcc-9:i386 gcc-9-multilib:i386 g++-9-multilib:i386 binutils:i386 make:i386
+   sudo apt install unixodbc-dev:i386 odbcinst1debian2:i386 libodbc1:i386 libcurl4-openssl-dev:i386 libssl-dev:i386 uuid-dev:i386 cpp:i386 cpp-9:i386 gcc:i386 g++:i386 zlib1g-dev:i386 linux-headers-$(uname -r) gcc-multilib:i386 g++-multilib:i386 cmake g++-9:i386 gcc-9:i386 gcc-9-multilib:i386 g++-9-multilib:i386 binutils:i386 make:i386
 ```
 2. Install git
 
