@@ -214,24 +214,92 @@ There are two ways to fix the issue.
                                  valgrind \
                                  zip \
                                  unzip \
-                                 tar                            
+                                 tar \
+                                 rpm                         
 ```
-   2. Set all necessary environment variables and run the following command to register the ODBC driver. 
+   2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
+   3. Set all necessary environment variables and run the following command to register the ODBC driver. 
 
       `./scripts/register_driver_unix.sh`
-   3. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
    4. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   5. Set environment variable REPOSITORY_ROOT to your repository root
+   5. Set environment variable `REPOSITORY_ROOT` to your repository root
 
         `export REPOSITORY_ROOT=<your repository root>`
    6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   7. Set environment variable AWS_SHARED_CREDENTIALS_FILE
+   7. Set environment variable `AWS_SHARED_CREDENTIALS_FILE`
 
        `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-   10. Once configured, run the tests:
-         - Run integration tests: `/timestream-odbc/build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
-         - Run unit tests: `/timestream-odbc/build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
+   8. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   9. Once configured, run the tests under `$REPOSITORY_ROOT`:
+         - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
+         - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
+
+### Using Ubuntu 32bit
+
+1. Install all dependencies
+   1. Ubuntu dev dependencies
+      E.g.
+```
+           apt-get -y update \
+           && apt-get -y install wget \
+                                 curl \
+                                 libcurl4-openssl-dev \
+                                 libssl-dev \
+                                 uuid-dev \
+                                 zlib1g-dev \
+                                 libpulse-dev \
+                                 gcc \
+                                 gcc-multilib  \
+                                 g++ \
+                                 g++-multilib \
+                                 build-essential \
+                                 valgrind \
+                                 libboost-all-dev \
+                                 libsasl2-dev \
+                                 lcov \
+                                 git \
+                                 unixodbc-dev \
+                                 valgrind \
+                                 zip \
+                                 unzip \
+                                 tar \
+                                 rpm                           
+```
+   2. Install cmake
+   `apt-get install cmake`
+
+   3. The version of cmake installed is lower than 3.20 which is the minimal required version. Follow below steps to build cmake 3.20 (or above) from source. 
+    
+      1. Download cmake 3.20 or above from https://github.com/Kitware/CMake/releases/
+
+      2. Under cmake source directory create a build directory 
+         
+         `mkdir build`
+    
+      3. Run `cmake` under source directory
+      4. `cd build` and run `make`
+      5. Install the new cmake
+         
+         `sudo make install`
+
+      6. Add `/usr/local/bin` to PATH and make sure it is ahead of lower version cmake path
+         `export PATH=/usr/local/bin:$PATH`
+   4. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release32_deb.sh`
+   5. Set all necessary environment variables and run the following command to register the ODBC driver. 
+
+      `./scripts/register_driver_unix.sh`
+   6. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
+   7. Set environment variable `REPOSITORY_ROOT` to your repository root
+
+        `export REPOSITORY_ROOT=<your repository root>`
+   8. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+   9. Set environment variable `AWS_SHARED_CREDENTIALS_FILE`
+
+       `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
+   10. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   11. Once configured, run the tests under `$REPOSITORY_ROOT`:
+         - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
+         - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
 ### Build Linux 32-bit Deb/Rpm package on Ubuntu 64bit
 1. Run the following commands to install needed packages

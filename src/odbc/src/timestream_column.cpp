@@ -151,7 +151,8 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
 #ifdef _WIN32
       int64_t milliSecond = _mkgmtime(&tmTime)*1000;
 #else
-      int64_t milliSecond = timegm(&tmTime)*1000;
+      int64_t milliSecond = timegm(&tmTime);
+      milliSecond *= 1000;
 #endif     
       convRes = dataBuf.PutDate(Date(milliSecond));
       break;

@@ -18,6 +18,12 @@ sudo apt update
 sudo apt install unixodbc:i386
 ```
 
+### Installing on openSUSE 32 bit
+```
+sudo zypper refresh
+sudo zypper install unixODBC
+```
+
 ### Installing on Amazon Linux 2 64 bit
 
 ```
@@ -38,19 +44,23 @@ sudo yum install unixODBC
 
 #### Sample command for Debian 64 bit 
 ```
-sudo dpkg -i AmazonTimestreamODBC_2.0.0_amd64.deb
+sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_amd64.deb
 ```
 
 #### Sample command for Debian 32 bit 
 ```
-sudo dpkg -i AmazonTimestreamODBC_2.0.0_amd32.deb
+sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.deb
 ```
 
-#### Sample command for Amazon Linux2 64 bit
+#### Sample command for RPM based 64 bit
 ```
-sudo rpm -i AmazonTimestreamODBC_2.0.0_amd64.rpm
+sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_amd64.rpm
 ```
 
+#### Sample command for RPM based 32 bit
+```
+sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.rpm
+```
 
 3. Register the ODBC driver by running the following script.
 #### Command for Linux 32 bit
@@ -69,8 +79,30 @@ sudo /usr/lib64/timestream-odbc64/postinst_unix64.sh
 
 ## Uninstall Timestream ODBC Driver
 There is no automatical way to uninstall it. It has to be done manually.
-1. Remove "Amazon Timestream ODBC Driver" entry from /etc/odbcinst.ini
-2. Remove the driver residence directory
+1. Remove the package from repository
+
+#### Command for RPM based 64 bit
+```
+sudo zypper remove amazontimestreamodbc_2.0.0_release_amd64
+```
+
+#### Command for RPM based 32 bit
+```
+sudo zypper remove amazontimestreamodbc_2.0.0_release_i386
+```
+
+#### Command for Debian 64 bit
+```
+sudo apt remove amazontimestreamodbc_2.0.0_release_amd64
+```
+
+#### Command for Debian 32 bit
+```
+sudo apt remove amazontimestreamodbc_2.0.0_release_i386
+```
+
+2. If "Amazon Timestream ODBC Driver" entry still exists in /etc/odbcinst.ini or /etc/unixODBC/odbcinst.ini, remove it.
+3. Remove the driver residence directory
 #### Command for Linux 32 bit
 ```
 sudo rm -rf /usr/lib/timestream-odbc32
@@ -81,10 +113,12 @@ sudo rm -rf /usr/lib/timestream-odbc32
 sudo rm -rf /usr/lib64/timestream-odbc64
 ```
 
-3. Remove the libraries installed to /usr/lib (for Linux 64-bit only)
+4. Remove the libraries installed to /usr/lib if they exist
 ```
 sudo rm /usr/lib/libtimestream-odbc.so /usr/lib/libtimestream-odbc.so.2.0.0
 ```
+
+
 
 ## Notes
 The Linux packages could only be used on Linux with equal or higher kernel version than the package is built on.

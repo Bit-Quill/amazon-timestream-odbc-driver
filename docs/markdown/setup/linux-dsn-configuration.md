@@ -3,12 +3,14 @@
 ## Adding a Driver Entry
 
 ### Manually editing the odbcinst.ini file ###
-If /etc/odbcinst.ini does not contain Amazon Timestream ODBC Driver info, please add a driver entry following the steps below.
+If odbcinst.ini does not contain Amazon Timestream ODBC Driver info, please add a driver entry following the steps below. The odbcinst.ini could be found or created under /etc/unixODBC if /etc/unixODBC exists. Otherwise find or create under /etc.
 
 Use a text editor from the Unix shell to edit the odbcinst.ini file such as vi.
 
 **To create a System Driver Entry run:**
 `sudo vi /etc/odbcinst.ini`
+or
+`sudo vi /etc/unixODBC/odbcinst.ini`
 
 **To add the driver entries:**
 1. Add `Amazon Timestream ODBC Driver` in the `[ODBC Drivers]` section.
@@ -57,12 +59,12 @@ timestream-aws-profile     = Amazon Timestream ODBC Driver
 Driver    = Amazon Timestream ODBC Driver
 Region    = us-east-2
 Auth      = AWS_PROFILE
+ProfileName =
 
 [timestream-aad]
 Driver           = Amazon Timestream ODBC Driver
 Region           = us-east-1
 Auth             = AAD
-IdpName          = AzureAD
 AADApplicationID = 
 AADClientSecret  = 
 RoleARN          = 
@@ -75,7 +77,6 @@ IdpPassword      =
 Driver            = Amazon Timestream ODBC Driver
 Region            = us-east-1
 Auth              = OKTA
-IdpName           = Okta
 IdpHost           = 
 OktaApplicationID = 
 RoleARN           = 

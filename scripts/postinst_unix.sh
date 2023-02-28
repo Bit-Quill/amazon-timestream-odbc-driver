@@ -4,7 +4,7 @@
 #to different actual path when build the installer for 32-bit and 64-bit
 #ODBC_LIB_PATH
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux"* ]]; then
   ODBC_LIB_FILENAME="$ODBC_LIB_PATH/libtimestream-odbc.so"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   ODBC_LIB_FILENAME="$ODBC_LIB_PATH/libtimestream-odbc.dylib"
@@ -25,7 +25,7 @@ echo "Setup=$ODBC_LIB_FILENAME"  >> $ODBC_INSTALL_INI
 echo "DriverODBCVer=03.00"       >> $ODBC_INSTALL_INI
 echo "FileUsage=0"               >> $ODBC_INSTALL_INI
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux"* ]]; then
   odbcinst -i -d -f $ODBC_INSTALL_INI
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   export ODBCINSTINI=$ODBC_INSTALL_INI

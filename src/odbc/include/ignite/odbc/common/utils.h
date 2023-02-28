@@ -312,7 +312,8 @@ inline bool TimeToCTm(const Time& time, tm& ctime) {
  * @return Corresponding value of Date.
  */
 inline Date CTimeToDate(time_t ctime) {
-  return Date(ctime * 1000);
+  int64_t c = ctime;
+  return Date(c * 1000);
 }
 
 /**

@@ -242,7 +242,7 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
    * @return void.
    */
   void addThreads(std::thread& thread) {
-    threads_.push_back(std::move(thread));
+    threads_.push(std::move(thread));
   }
 
   /** Connection associated with the statement. */
@@ -278,8 +278,8 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
   /** Context for asynchornous result fetching. */
   DataQueryContext context_;
 
-  /** Vector for threads. */
-  std::vector< std::thread > threads_;
+  /** Queue for threads. */
+  std::queue< std::thread > threads_;
 
   /** Flag indicating asynchronous fetch is started. */
   bool hasAsyncFetch;

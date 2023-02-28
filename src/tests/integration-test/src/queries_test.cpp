@@ -1379,7 +1379,7 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPaginationEmptyTable) {
   // unixODBC DM/iODBC DM returns an error
   BOOST_CHECK_EQUAL(SQL_ERROR, ret);
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
-#ifdef __APPLE__
+#if defined(__APPLE__) || (defined(__linux__) && defined(__i386__))
   std::string pattern = "Function sequence error";
 #else
   std::string pattern = "Invalid cursor state";

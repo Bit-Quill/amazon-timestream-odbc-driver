@@ -147,6 +147,17 @@ SqlResult::Type DataQuery::SwitchCursor() {
     LOG_INFO_MSG(
         "Data fetching is finished, number of rows fetched: " << rowCounter);
   } else {
+    if (!threads_.empty()) {
+      std::thread& itr = threads_.front();
+      // wait for the last thread to end. The join() should be done before the
+      // thread is popped from the queue. The thread could not be joined after 
+      // it is popped from the queue, as it could cause crash.
+      if (itr.joinable()) {
+        itr.join();
+      }
+      threads_.pop();
+    }
+
     request_.SetNextToken(token);
     std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
                      std::ref(context_));
@@ -266,10 +277,15 @@ SqlResult::Type DataQuery::InternalClose() {
 
   // stop all asynchronous threads
   context_.isClosing_ = true;
-  for (auto& itr : threads_) {
+  while (!threads_.empty()) {
+    std::thread& itr = threads_.front();
+    // wait for the last thread to end. The join() should be done before the
+    // thread is popped from the queue. The thread could not be joined after
+    // it is popped from the queue, as it could cause crash.
     if (itr.joinable()) {
       itr.join();
     }
+    threads_.pop();
   }
 
   result_.reset();
