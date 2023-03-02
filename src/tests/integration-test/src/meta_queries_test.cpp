@@ -1762,7 +1762,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsIdentifier) {
   // Linux unixODBC DM could clear the diagnostic error message when 
   // function return value is not SQL_ERROR
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
-  std::string pattern = "Failed to execute query \"describe %.%\"";
+  std::string pattern = "Failed to execute query \"describe \"%\".\"%\"";
 
   if (error.find(pattern) == std::string::npos)
     BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");

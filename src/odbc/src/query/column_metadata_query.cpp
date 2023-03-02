@@ -456,10 +456,10 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
 }
 
 SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std::string& databaseName, const std::string& tableName) {
-  std::string sql = "describe ";
+  std::string sql = "describe \"";
   sql += databaseName;
-  sql += ".";
-  sql += tableName;
+  sql += "\".\"";
+  sql += tableName + "\"";
 
   app::ParameterSet params;
   int32_t timeout = 60;
