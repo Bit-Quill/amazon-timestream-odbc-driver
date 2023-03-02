@@ -265,19 +265,21 @@ jobs:
       run: |
         .\build_win_release64.ps1
 
-    - name: Upload ODBC driver build at push to develop
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+    - name: Upload ODBC driver build at push to main
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: actions/upload-artifact@v3
       with:
         name: timestream-odbc-driver
         path: build/odbc/cmake/Release
 
-    - name: Upload performance test at push to develop
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: performance
-        path: build/odbc/bin/Release/performance.exe
+    # [TODO] Migrate old driver performance tool into the new repository
+    # https://bitquill.atlassian.net/browse/AT-1288
+    # - name: Upload performance test at push to main
+    #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: performance
+    #     path: build/odbc/bin/Release/performance.exe
 
     - name: register-driver
       run: |

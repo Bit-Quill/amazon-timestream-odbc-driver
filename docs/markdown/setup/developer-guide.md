@@ -77,6 +77,13 @@ C/C++ usage and formatting.
     - Run integration tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-integration-tests.exe`.
     - Run unit tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-unit-tests.exe`.
 
+### Known issues
+Driver installer detects existing driver and isn't allowing installation
+   1. Go to `Apps & Features` settings page and search for `Timestream ODBC Driver`. If there is already a Timestream ODBC driver installed, manually uninstall the driver (optional to uninstall C++ Redistributable, for details see [Windows installation guide](windows-installation-guide#microsoft-visual-c-redistributable)), and then attempt installing again. 
+   2. If the driver is not showing under `Apps & Features`, remove driver registry `Computer\HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\Amazon Timestream ODBC Driver` using [Registry Editor](https://support.microsoft.com/en-us/windows/how-to-open-registry-editor-in-windows-10-deab38e6-91d6-e0aa-4b7c-8878d9e07b11), and then attempt installing again.
+
+   - If you wish to re-register the driver, follow step 6 under [Windows developer setup guide](#windows)
+
 ## MacOS
 
 1. Install dependencies

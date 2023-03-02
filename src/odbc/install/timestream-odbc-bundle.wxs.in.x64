@@ -5,7 +5,7 @@
 
   <Bundle Name='@WIX_PRODUCT_NAME@' Version='@CMAKE_PROJECT_VERSION@'
           Manufacturer='@WIX_MANUFACTURER@' UpgradeCode='@WIX_BUNDLE_UPGRADE_CODE@'>
-
+    <util:RegistrySearchRef Id='SearchForTimestreamDll' />
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
       <bal:WixStandardBootstrapperApplication
             LicenseFile="../../../../LICENSE.rtf"
@@ -29,4 +29,18 @@
 
     </Chain>
   </Bundle>
+  <Fragment>
+    <util:RegistrySearch
+      Id="SearchForTimestreamDll"
+      Condition="NOT WixBundleInstalled"
+      Variable="TimestreamDllInstalled"
+      Result="exists"
+      Root="HKLM"
+      Key="SOFTWARE\ODBC\ODBCINST.INI\Amazon Timestream ODBC Driver"
+      Win64="yes" />
+    <bal:Condition 
+      Message="Please manually uninstall existing Timestream ODBC driver before installing the current driver.">
+      NOT TimestreamDllInstalled
+    </bal:Condition>
+  </Fragment>
 </Wix>

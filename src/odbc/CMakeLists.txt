@@ -222,7 +222,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_BIT_SUFFIX "64-bit")
         set(WIX_PROGRAM_FILES_FOLDER_ID "Program Files (x86)")
         set(WIX_COMPONENT_IS_WIN64 "yes")
-	set(WIX_INSTALLER_BUNDLE_SRC "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc-bundle.wxs.in.x64")
+        set(WIX_INSTALLER_BUNDLE_SRC "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc-bundle.wxs.in.x64")
 
         if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm") 
             set(WIX_PRODUCT_ID "942F102A-BCF5-46BE-A568-8A0A544F6456")
@@ -276,7 +276,8 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_BIT_SUFFIX "32-bit")
         set(WIX_PROGRAM_FILES_FOLDER_ID "Program Files")
         set(WIX_COMPONENT_IS_WIN64 "no")
-	set(WIX_INSTALLER_BUNDLE_SRC "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc-bundle.wxs.in.x86")
+	    set(WIX_INSTALLER_BUNDLE_SRC "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc-bundle.wxs.in.x86")
+        
 
         set(WIX_PRODUCT_ID "9FAACB44-B1D9-4E9B-B22E-44FB20C083E2")
         set(WIX_UPGRADE_CODE "7BDC7F9E-BB0D-4288-B404-96A78AB0B69D")
@@ -334,7 +335,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
     add_custom_command(
         TARGET ${TARGET} POST_BUILD
         COMMAND ${WIX_CANDLE} ${WIX_INSTALLER_PREFIX}.wxs -out ${WIX_INSTALLER_PREFIX}.wxobj
-	COMMAND ${WIX_LIGHT} -ext WixUIExtension ${WIX_INSTALLER_PREFIX}.wxobj -out ${WIX_INSTALLER_PREFIX}.msi
+	COMMAND ${WIX_LIGHT} ${WIX_INSTALLER_PREFIX}.wxobj -out ${WIX_INSTALLER_PREFIX}.msi
 	COMMAND ${WIX_CANDLE} ${WIX_INSTALLER_BUNDLE_PREFIX}.wxs -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj
 	COMMAND ${WIX_LIGHT} ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_EXE_PREFIX}.exe
     )
