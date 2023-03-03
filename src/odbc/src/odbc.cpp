@@ -948,7 +948,7 @@ SQLRETURN SQLRowCount(SQLHSTMT stmt, SQLLEN* rowCnt) {
   LOG_INFO_MSG("Row count: " << res);
 
   if (rowCnt)
-    *rowCnt = static_cast< SQLLEN >(res);
+    *rowCnt = static_cast< SQLLEN >((res > 0 ? res : -1));
 
   LOG_DEBUG_MSG("SQLRowCount exiting");
 

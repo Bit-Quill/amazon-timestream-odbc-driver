@@ -1389,6 +1389,33 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPaginationEmptyTable) {
 #endif  //_WIN32
 }
 
+BOOST_AUTO_TEST_CASE(TestSQLRowCountWithNoResults) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+
+  std::vector< SQLWCHAR > sql = MakeSqlBuffer(
+      "select * from data_queries_test_db.TestScalarTypes limit 20");
+
+  ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
+
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  SQLLEN rows = 0;
+
+  ret = SQLRowCount(stmt, &rows);
+
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  // SQLRowCount should set rows to -1 as no rows were changed
+  BOOST_CHECK_EQUAL(-1, rows);
+}
+
 BOOST_AUTO_TEST_CASE(TestTwoRowsInt8, *disabled()) {
   CheckTwoRowsInt< signed char >(SQL_C_STINYINT);
 }
