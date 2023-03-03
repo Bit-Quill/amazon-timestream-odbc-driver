@@ -24,7 +24,7 @@ endif()
 
 find_package(Boost 1.53 REQUIRED COMPONENTS unit_test_framework chrono thread system regex)
 
-find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query timestream-write)
+find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
 if (UNIX AND NOT APPLE)
     find_package(ZLIB REQUIRED)
 endif()
@@ -55,7 +55,6 @@ set(SOURCES
          src/mock/mock_statement.cpp
          src/mock/mock_stsclient.cpp
          src/mock/mock_timestream_query_client.cpp
-         src/mock/mock_timestream_write_client.cpp
          src/mock/mock_timestream_service.cpp
         )
 
@@ -66,7 +65,7 @@ target_link_libraries(${TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_LIB
 
 if (WIN32)
     # ensure our self-build aws sdk library could be found
-    set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query aws-cpp-sdk-timestream-write PROPERTIES
+    set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query PROPERTIES
       IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/bin
     )
     set_target_properties(AWS::aws-crt-cpp AWS::aws-c-cal AWS::aws-c-auth AWS::aws-c-common AWS::aws-c-io AWS::aws-checksums AWS::aws-c-event-stream AWS::aws-c-s3  AWS::aws-c-http AWS::aws-c-mqtt AWS::aws-c-compression PROPERTIES

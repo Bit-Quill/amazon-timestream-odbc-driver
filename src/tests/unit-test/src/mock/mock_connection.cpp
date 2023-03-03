@@ -20,7 +20,6 @@
 #include <mock/mock_statement.h>
 #include <mock/mock_stsclient.h>
 #include <mock/mock_timestream_query_client.h>
-#include <mock/mock_timestream_write_client.h>
 
 namespace ignite {
 namespace odbc {
@@ -52,15 +51,6 @@ MockConnection::CreateTSQueryClient(
   return std::static_pointer_cast<
       Aws::TimestreamQuery::TimestreamQueryClient >(
       std::make_shared< ignite::odbc::MockTimestreamQueryClient >(credentials,
-                                                                  clientCfg));
-}
-std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
-MockConnection::CreateTSWriteClient(
-    const Aws::Auth::AWSCredentials& credentials,
-    const Aws::Client::ClientConfiguration& clientCfg) {
-  return std::static_pointer_cast<
-      Aws::TimestreamWrite::TimestreamWriteClient >(
-      std::make_shared< ignite::odbc::MockTimestreamWriteClient >(credentials,
                                                                   clientCfg));
 }
 

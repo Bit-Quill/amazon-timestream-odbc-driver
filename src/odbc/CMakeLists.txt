@@ -24,7 +24,7 @@ include(CPackComponent)
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 find_package(ODBC REQUIRED)
-find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query timestream-write)
+find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
 find_package(Boost REQUIRED)
 if (UNIX AND NOT APPLE)
     find_package(ZLIB REQUIRED)
@@ -156,7 +156,7 @@ if (WIN32)
     add_library(${TARGET}-static STATIC ${SOURCES} version.rc)
 
     # ensure our self-build aws sdk library could be found
-    set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query aws-cpp-sdk-timestream-write PROPERTIES
+    set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query PROPERTIES
       IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/bin
     )
     set_target_properties(AWS::aws-crt-cpp AWS::aws-c-cal AWS::aws-c-auth AWS::aws-c-common AWS::aws-c-io AWS::aws-checksums AWS::aws-c-event-stream AWS::aws-c-s3  AWS::aws-c-http AWS::aws-c-mqtt AWS::aws-c-compression PROPERTIES
@@ -200,7 +200,6 @@ if (WIN32 AND ${WITH_ODBC_MSI})
     set(WIX_ODBC_LIBRARY_PATH ".\\timestream.odbc.dll")
     set(WIX_ODBC_SDK_CORE_PATH ".\\aws-cpp-sdk-core.dll")
     set(WIX_ODBC_SDK_TS_QUERY_PATH ".\\aws-cpp-sdk-timestream-query.dll")
-    set(WIX_ODBC_SDK_TS_WRITE_PATH ".\\aws-cpp-sdk-timestream-write.dll")
     set(WIX_ODBC_SDK_STS_PATH ".\\aws-cpp-sdk-sts.dll")
     set(WIX_ODBC_AWS_C_AUTH ".\\aws-c-auth.dll")
     set(WIX_ODBC_AWS_C_CAL ".\\aws-c-cal.dll")
@@ -230,7 +229,6 @@ if (WIN32 AND ${WITH_ODBC_MSI})
             set(WIX_COMPONENT_ID_ODBC_LIBRARY "AA8B007D-C9B9-4F1D-9C9F-E9384401E214")
             set(WIX_COMPONENT_ID_SDK_CORE "9AAED0BC-281E-454A-8DDB-76787A46573D")
             set(WIX_COMPONENT_ID_SDK_TS_QUERY "268BB95C-696C-46BC-89F9-7129380A3825")
-            set(WIX_COMPONENT_ID_SDK_TS_WRITE "4D834DB4-FA4C-4371-908C-E5CC2DA7823B")
             set(WIX_COMPONENT_ID_SDK_STS "ECEEF57F-ECEC-4B80-A040-A5394C7B56FC")
 
             set(WIX_COMPONENT_ID_AWS_C_AUTH "ADCC5700-9051-449B-9C7E-9C765458BE3E")
@@ -253,7 +251,6 @@ if (WIN32 AND ${WITH_ODBC_MSI})
             set(WIX_COMPONENT_ID_ODBC_LIBRARY "6B9E12BF-7914-43A7-99C6-2821950EE249")
             set(WIX_COMPONENT_ID_SDK_CORE "82EE01C2-5D7E-4FE4-838B-34E10D6F1F71")
             set(WIX_COMPONENT_ID_SDK_TS_QUERY "42B2CA3E-5314-4D1D-9491-F945B6B33B5A")
-            set(WIX_COMPONENT_ID_SDK_TS_WRITE "A25C8187-DE1C-4423-8087-A15CCF2DB716")
             set(WIX_COMPONENT_ID_SDK_STS "B55B759D-88B3-47C0-9ABA-60F1504C0DA8")
 
             set(WIX_COMPONENT_ID_AWS_C_AUTH "D584F5F1-CCB1-47D8-9EB5-1854399B2715")
@@ -284,7 +281,6 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_COMPONENT_ID_ODBC_LIBRARY "F0B4778F-43BD-447C-B882-E70D9B16AEB6")
         set(WIX_COMPONENT_ID_SDK_CORE "1CD3936E-F8CF-42B9-90F9-7F33BC3E1CC1")
         set(WIX_COMPONENT_ID_SDK_TS_QUERY "4E88F45B-7623-4A80-9985-0AC2F81F371E")
-        set(WIX_COMPONENT_ID_SDK_TS_WRITE "6DCB316E-0B9E-44FD-A118-853463123743")
         set(WIX_COMPONENT_ID_SDK_STS "E3E41090-D480-40DE-A7E2-62C038D936BD")
 
         set(WIX_COMPONENT_ID_AWS_C_AUTH "5376FD5A-D940-4FAC-B666-F9F37BBCA80E")

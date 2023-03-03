@@ -42,9 +42,6 @@
 
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
-#include <aws/timestream-write/model/ListDatabasesRequest.h>
-#include <aws/timestream-write/model/ListDatabasesResult.h>
-#include <aws/timestream-query/model/DescribeEndpointsRequest.h>
 #include <aws/core/utils/logging/LogLevel.h>
 #include <aws/core/auth/AWSCredentialsProvider.h>
 #include<aws/core/client/DefaultRetryStrategy.h>
@@ -56,9 +53,6 @@ using ignite::odbc::IgniteError;
 
 // Uncomment for per-byte debug.
 //#define PER_BYTE_DEBUG
-
-// TODO [AT-1272] Remove TimestreamWrite dependency 
-// https://bitquill.atlassian.net/browse/AT-1272
 
 namespace {
 #pragma pack(push, 1)
@@ -184,19 +178,8 @@ SqlResult::Type Connection::InternalEstablish(
     const config::Configuration& cfg) {
   config_ = cfg;
 
-  if (queryClient_ && writeClient_) {
+  if (queryClient_) {
     AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.");
-
-    return SqlResult::AI_ERROR;
-  } else if (queryClient_ || writeClient_) {
-    // only one of the clients is valid
-    LOG_ERROR_MSG(
-        "Only one of queryClient_ and writeClient_ has been set."
-        "Both clients need to be valid to be properly connected.");
-    AddStatusRecord(SqlState::S08001_CANNOT_CONNECT,
-                    "Driver is not able to fully connect.");
-
-    Close();
 
     return SqlResult::AI_ERROR;
   }
@@ -237,13 +220,8 @@ Connection::GetQueryClient() const {
   return queryClient_;
 }
 
-std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
-Connection::GetWriteClient() const {
-  return writeClient_;
-}
-
 SqlResult::Type Connection::InternalRelease() {
-  if (!queryClient_ || !writeClient_) {
+  if (!queryClient_) {
     AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.");
 
     Close();
@@ -262,10 +240,6 @@ SqlResult::Type Connection::InternalRelease() {
 void Connection::Close() {
   if (queryClient_) {
     queryClient_.reset();
-  }
-
-  if (writeClient_) {
-    writeClient_.reset();
   }
 
   if (samlCredProvider_) {
@@ -752,7 +726,6 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   }
 
   queryClient_ = CreateTSQueryClient(credentials, clientCfg);
-  writeClient_ = CreateTSWriteClient(credentials, clientCfg);
 
   const std::string& endpoint = cfg.GetEndpoint();
   // endpoint could not be set to empty string
@@ -780,26 +753,6 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
     return false;
   }
 
-  // try a list databases request with write client
-  Aws::TimestreamWrite::Model::ListDatabasesRequest dbRequest;
-  Aws::TimestreamWrite::Model::ListDatabasesOutcome dbOutcome =
-      writeClient_->ListDatabases(dbRequest);
-
-  if (!dbOutcome.IsSuccess()) {
-    auto error = dbOutcome.GetError();
-    LOG_DEBUG_MSG("ListDatabases ERROR: " << error.GetExceptionName() << ": "
-                                          << error.GetMessage());
-
-    err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT,
-                      std::string(error.GetExceptionName())
-                          .append(": ")
-                          .append(error.GetMessage())
-                          .c_str());
-
-    Close();
-    return false;
-  }
-
   UpdateConnectionRuntimeInfo(config_, info_);
 
   return true;
@@ -810,14 +763,6 @@ Connection::CreateTSQueryClient(
     const Aws::Auth::AWSCredentials& credentials,
     const Aws::Client::ClientConfiguration& clientCfg) {
   return std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
-      credentials, clientCfg);
-}
-
-std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient >
-Connection::CreateTSWriteClient(
-    const Aws::Auth::AWSCredentials& credentials,
-    const Aws::Client::ClientConfiguration& clientCfg) {
-  return std::make_shared< Aws::TimestreamWrite::TimestreamWriteClient >(
       credentials, clientCfg);
 }
 }  // namespace odbc

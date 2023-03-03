@@ -71,7 +71,7 @@ jobs:
   build-mac:
     runs-on: macos-11
     needs: check
-    if: (contains(needs.check.outputs.status, 'continue')) && (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+    if: (contains(needs.check.outputs.status, 'continue')) && (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
     - uses: actions/checkout@v2
     - name: run-cppcheck

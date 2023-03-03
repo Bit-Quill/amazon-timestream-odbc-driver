@@ -168,19 +168,5 @@ Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamService::HandleQueryReq(
     return Aws::TimestreamQuery::Model::QueryOutcome(error);
   }
 }
-
-Aws::TimestreamWrite::Model::ListDatabasesOutcome
-MockTimestreamService::HandleDatabasesReq(
-    const Aws::TimestreamWrite::Model::ListDatabasesRequest& request) const {
-  // set up ListDatabasesOutcome
-  Aws::TimestreamWrite::Model::ListDatabasesResult result;
-
-  Aws::TimestreamWrite::Model::Database database;
-  database.SetDatabaseName("mockDatabase");
-
-  result.AddDatabases(database);
-
-  return Aws::TimestreamWrite::Model::ListDatabasesOutcome(result);
-}
 }  // namespace odbc
 }  // namespace ignite
