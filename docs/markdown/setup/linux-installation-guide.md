@@ -44,7 +44,7 @@ sudo yum install unixODBC
 
 #### Sample command for Debian 64 bit 
 ```
-sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_amd64.deb
+sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.deb
 ```
 
 #### Sample command for Debian 32 bit 
@@ -54,7 +54,7 @@ sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.deb
 
 #### Sample command for RPM based 64 bit
 ```
-sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_amd64.rpm
+sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.rpm
 ```
 
 #### Sample command for RPM based 32 bit
@@ -83,7 +83,7 @@ There is no automatical way to uninstall it. It has to be done manually.
 
 #### Command for RPM based 64 bit
 ```
-sudo zypper remove amazontimestreamodbc_2.0.0_release_amd64
+sudo zypper remove amazontimestreamodbc_2.0.0_release_x86_64
 ```
 
 #### Command for RPM based 32 bit
@@ -93,7 +93,7 @@ sudo zypper remove amazontimestreamodbc_2.0.0_release_i386
 
 #### Command for Debian 64 bit
 ```
-sudo apt remove amazontimestreamodbc_2.0.0_release_amd64
+sudo apt remove amazontimestreamodbc_2.0.0_release_x86_64
 ```
 
 #### Command for Debian 32 bit
@@ -121,19 +121,18 @@ sudo rm /usr/lib/libtimestream-odbc.so /usr/lib/libtimestream-odbc.so.2.0.0
 
 
 ## Notes
-The Linux packages could only be used on Linux with equal or higher kernel version than the package is built on.
-The following table list the package and the linux kernel version it is built on.
+The following table lists the package build platform and its linux kernel version. The packages could only be used on Linux with equal or higher kernel version than the package is built on. If the package is used on a Linux which has a different Linux distribution with the build platform, the driver may not be installed successfully or work properly. The solution for this problem is to setup development environment and build the driver from source code on the system the driver will be used. If you need an ODBC Driver built for a platform not listed below, please raise a GitHub Issue.
 
 ```
---------------------------------------------------------
-|        Package           |    Linux Kernel Version   |
---------------------------------------------------------
-| Linux 32 bit deb package |        5.15.0             |
---------------------------------------------------------
-| Linux 64 bit deb package |        5.15.0             |
---------------------------------------------------------
-| Linux 32 bit rpm package |        5.15.0             |
---------------------------------------------------------
-| Linux 64 bit rpm package |        5.10.135           |
---------------------------------------------------------
+-----------------------------------------------------------------------------------
+|        Package           |      Build Platform       |    Linux Kernel Version  |
+-----------------------------------------------------------------------------------
+| Linux 32 bit deb package |  Ubuntu 18.04 LTS 32-bit  |         5.4.0            |        
+-----------------------------------------------------------------------------------
+| Linux 64 bit deb package |     Ubuntu 22.04 LTS      |         5.15.0           |
+-----------------------------------------------------------------------------------
+| Linux 32 bit rpm package |  Ubuntu 18.04 LTS 32-bit  |         5.4.0            |
+-----------------------------------------------------------------------------------
+| Linux 64 bit rpm package |       Amazon Linux 2      |         5.10.135         |
+-----------------------------------------------------------------------------------
 ```

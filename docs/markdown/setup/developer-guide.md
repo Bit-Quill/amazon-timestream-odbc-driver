@@ -241,6 +241,57 @@ There are two ways to fix the issue.
          - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
          - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
+### Using openSUSE 64bit
+
+1. Install all dependencies
+   1. openSUSE dev dependencies
+      E.g.
+```
+           zypper refresh \
+           && zypper install wget \
+                                 curl \
+                                 gcc \
+                                 gcc-c++ \
+                                 valgrind \
+                                 lcov \
+                                 git \
+                                 valgrind \
+                                 zip \
+                                 unzip \
+                                 tar \
+                                 rpm    \
+                                 libopenssl-3-devel \
+                                 openssl \
+                                 cmake \
+                                 libcurl-devel \
+                                 unixODBC \
+                                 unixODBC-devel \
+                                 rpmbuild \
+                                 libboost_regex-devel \
+                                 libboost_system-devel \
+                                 libboost_thread-devel \
+                                 libboost_chrono-devel \
+                                 libboost_test-devel \
+                                 boost-devel 
+        
+```
+   2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_release64_deb.sh`
+   3. Set all necessary environment variables and run the following command to register the ODBC driver. 
+
+      `sudo ./scripts/register_driver_unix.sh`
+   4. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
+   5. Set environment variable `REPOSITORY_ROOT` to your repository root
+
+        `export REPOSITORY_ROOT=<your repository root>`
+   6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+   7. Set environment variable `AWS_SHARED_CREDENTIALS_FILE`
+
+       `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
+   8. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   9. Once configured, run the tests under `$REPOSITORY_ROOT`:
+         - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
+         - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
+
 ### Using Ubuntu 32bit
 
 1. Install all dependencies

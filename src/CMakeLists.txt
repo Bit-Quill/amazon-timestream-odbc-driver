@@ -23,7 +23,11 @@ string(STRIP ${ODBC_DRIVER_VERSION} ODBC_DRIVER_VERSION)
 project(Timestream-ODBC VERSION ${ODBC_DRIVER_VERSION})
 
 if (UNIX OR APPLE)
-    set(AWS_CMAKE_DIR ${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib)
+    if (${INSTALLER_TYPE} STREQUAL "RPM")
+        set(AWS_CMAKE_DIR ${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib64)
+    else()
+        set(AWS_CMAKE_DIR ${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib)
+    endif()
 elseif (WIN32)
     set(AWS_CMAKE_DIR ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/lib)
 

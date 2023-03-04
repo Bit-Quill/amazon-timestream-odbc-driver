@@ -11,7 +11,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 PROJECT_DIR="$SCRIPT_DIR/.."
 ODBC_LIB_PATH="$PROJECT_DIR/build/odbc/lib"
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux"* ]]; then
   ODBC_LIB_FILENAME="$ODBC_LIB_PATH/libtimestream-odbc.so"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   ODBC_LIB_FILENAME="$ODBC_LIB_PATH/libtimestream-odbc.dylib"
@@ -31,7 +31,7 @@ echo "Setup=$ODBC_LIB_FILENAME"  >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 echo "DriverODBCVer=03.00"       >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 echo "FileUsage=0"               >> "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux"* ]]; then
   odbcinst -i -d -f "$ODBC_LIB_PATH/timestream-odbc-install.ini"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   export ODBCINSTINI="$ODBC_LIB_PATH/timestream-odbc-install.ini"
