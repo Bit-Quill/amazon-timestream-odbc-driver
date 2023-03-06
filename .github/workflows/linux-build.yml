@@ -42,9 +42,27 @@ env:
   # OKTA_IDP_ARN: ${{secrets.OKTA_IDP_ARN}}  
 
 jobs:
+  check:
+    runs-on: ubuntu-20.04
+    outputs:
+      status: ${{env.CheckStatus}}
+    steps:
+      - uses: actions/checkout@v2
+      - id: early
+        name: Check last commit
+        run: |
+          # store multi-line script output in environment variable CheckStatus
+          echo 'CheckStatus<<EOF' >> $GITHUB_ENV
+          ${{github.workspace}}/scripts/unix_check_changes.sh >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - id: late
+        name: Print last commit info
+        run: echo "${{ env.CheckStatus }}"
+
   build-linux64:
     runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: check
+    if: (contains(needs.check.outputs.status, 'continue')) && (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
     - uses: actions/checkout@v2
         
@@ -166,6 +184,8 @@ jobs:
 
   build-linux64-debug:
     runs-on: ubuntu-20.04
+    needs: check
+    if: contains(needs.check.outputs.status, 'continue')
     steps:
     - uses: actions/checkout@v2
     - name: Get gcovr
@@ -320,6 +340,8 @@ jobs:
 
   build-linux-docker-image:
     runs-on: ubuntu-20.04
+    needs: check
+    if: contains(needs.check.outputs.status, 'continue')
     steps:
     - uses: actions/checkout@v2
     - name: build-image
