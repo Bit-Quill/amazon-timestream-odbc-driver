@@ -666,14 +666,14 @@ BOOST_AUTO_TEST_CASE(TestSQLNativeSql) {
   BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLColAttribute, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLColAttribute) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
   ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+      MakeSqlBuffer("SELECT * FROM meta_queries_test_db.TestColumnsMetadata1");
 
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 

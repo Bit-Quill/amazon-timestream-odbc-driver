@@ -434,7 +434,7 @@ boost::optional< int32_t > SqlTypeDisplaySize(boost::optional< int16_t > type) {
       return 8;
 
     case SQL_TYPE_TIMESTAMP:
-      return 19;
+      return 20;
 
     case SQL_GUID:
       return 36;

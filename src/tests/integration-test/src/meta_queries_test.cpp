@@ -134,29 +134,6 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
   }
 
   /**
-   * Check string column.
-   *
-   * @param stmt Statement.
-   * @param colId Column ID to check.
-   * @param value Expected value.
-   */
-  void CheckStringColumn(SQLHSTMT stmt, int colId, const std::string &value) {
-    char buf[1024];
-    SQLLEN bufLen = sizeof(buf);
-
-    SQLRETURN ret =
-        SQLGetData(stmt, colId, SQL_C_CHAR, buf, sizeof(buf), &bufLen);
-
-    if (!SQL_SUCCEEDED(ret))
-      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-    if (bufLen <= 0)
-      BOOST_CHECK(value.empty());
-    else
-      BOOST_CHECK_EQUAL(std::string(buf, static_cast< size_t >(bufLen)), value);
-  }
-
-  /**
    * Constructor.
    */
   MetaQueriesTestSuiteFixture() = default;
@@ -366,15 +343,15 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK_EQUAL(columnCount, 9);
 
     CheckColumnMetaWithSQLDescribeCol(stmt, 1, "meta_queries_test_001__id",
-                                      SQL_WVARCHAR, SQL_NO_TOTAL, -1,
+                                      SQL_VARCHAR, SQL_NO_TOTAL, -1,
                                       SQL_NO_NULLS);
     CheckColumnMetaWithSQLDescribeCol(stmt, 2, "fieldDecimal128", SQL_DECIMAL,
                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 3, "fieldDouble", SQL_DOUBLE, 15,
                                       -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "fieldString", SQL_WVARCHAR,
+    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "fieldString", SQL_VARCHAR,
                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 5, "fieldObjectId", SQL_WVARCHAR,
+    CheckColumnMetaWithSQLDescribeCol(stmt, 5, "fieldObjectId", SQL_VARCHAR,
                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 6, "fieldBoolean", SQL_BIT, 1, -1,
                                       SQL_NULLABLE);
@@ -452,10 +429,8 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     ConnectToTS();
 
     SQLRETURN ret = (this->*func)(
-        "select meta_queries_test_001__id, fieldDecimal128, fieldDouble, "
-        "fieldString, fieldObjectId,"
-        "fieldBoolean, fieldDate, fieldInt, fieldBinary from "
-        "meta_queries_test_001");
+        "select device_id, time, flag, rebuffering_ratio,"
+        "video_startup_time from meta_queries_test_db.TestColumnsMetadata1");
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
     SQLSMALLINT columnCount = 0;
@@ -463,27 +438,17 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     ret = SQLNumResultCols(stmt, &columnCount);
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-    BOOST_CHECK_EQUAL(columnCount, 9);
+    BOOST_CHECK_EQUAL(columnCount, 5);
 
-    CheckColumnMetaWithSQLColAttribute(stmt, 1, "meta_queries_test_001__id",
-                                       SQL_WVARCHAR, SQL_NO_TOTAL, -1,
-                                       SQL_NO_NULLS);
-    CheckColumnMetaWithSQLColAttribute(stmt, 2, "fieldDecimal128", SQL_DECIMAL,
-                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 3, "fieldDouble", SQL_DOUBLE, 15,
-                                       -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 4, "fieldString", SQL_WVARCHAR,
-                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 5, "fieldObjectId", SQL_WVARCHAR,
-                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 6, "fieldBoolean", SQL_BIT, 1, -1,
-                                       SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 7, "fieldDate", SQL_TYPE_TIMESTAMP,
-                                       19, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 8, "fieldInt", SQL_INTEGER, 10, 0,
-                                       SQL_NULLABLE);
-    CheckColumnMetaWithSQLColAttribute(stmt, 9, "fieldBinary", SQL_VARBINARY,
-                                       SQL_NO_TOTAL, -1, SQL_NULLABLE);
+    CheckColumnMetaWithSQLColAttribute(stmt, 1, "device_id",
+                                       SQL_VARCHAR, SQL_NO_TOTAL, -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLColAttribute(stmt, 2, "time", SQL_TYPE_TIMESTAMP, 19,
+                                       -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLColAttribute(stmt, 3, "flag", SQL_BIT, 1, -1,
+                                       SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLColAttribute(stmt, 4, "rebuffering_ratio", SQL_DOUBLE,
+                                       15, -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLColAttribute(stmt, 5, "video_startup_time", SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
   }
 
   // check SQLGetTypeInfo result 1st and 2nd column
@@ -548,28 +513,11 @@ BOOST_AUTO_TEST_CASE(TestGetTypeInfoAllTypes) {
   CheckSQLGetTypeInfoResult("UNKNOWN", SQL_VARCHAR);
 }
 
-BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeLiteral, *disabled()) {
-  ConnectToTS();
-
-  std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select DATE '2020-10-25' from meta_queries_test_001");
-  SQLExecDirect(stmt, req.data(), SQL_NTS);
-
-  SQLLEN intVal = 0;
-
-  SQLRETURN ret = SQLColAttribute(stmt, 1, SQL_DESC_TYPE, 0, 0, 0, &intVal);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  BOOST_CHECK_EQUAL(intVal, SQL_TYPE_DATE);
-}
-
-BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeField, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeLiteral) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > req = MakeSqlBuffer(
-      "select CAST (fieldDate as DATE) from meta_queries_test_001");
+      "select date('2020-10-25') ");
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal = 0;
@@ -582,11 +530,28 @@ BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeField, *disabled()) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_DATE);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeLiteral, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestDateTypeColumnAttributeField) {
+  ConnectToTS();
+
+  std::vector< SQLWCHAR > req = MakeSqlBuffer(
+      "select date(time) from meta_queries_test_db.TestColumnsMetadata2");
+  SQLExecDirect(stmt, req.data(), SQL_NTS);
+
+  SQLLEN intVal = 0;
+
+  SQLRETURN ret = SQLColAttribute(stmt, 1, SQL_DESC_TYPE, 0, 0, 0, &intVal);
+
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  BOOST_CHECK_EQUAL(intVal, SQL_TYPE_DATE);
+}
+
+BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeLiteral) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select TIME '12:42:13' from meta_queries_test_001");
+      MakeSqlBuffer("select time '12:42:13'");
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal = 0;
@@ -599,11 +564,11 @@ BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeLiteral, *disabled()) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_TIME);
 }
 
-BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeField, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeField) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldDate from meta_queries_test_001");
+      MakeSqlBuffer("select time from meta_queries_test_db.TestColumnsMetadata2");
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal = 0;
@@ -616,11 +581,11 @@ BOOST_AUTO_TEST_CASE(TestTimeTypeColumnAttributeField, *disabled()) {
   BOOST_CHECK_EQUAL(intVal, SQL_TYPE_TIMESTAMP);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldInt from meta_queries_test_001");
+      MakeSqlBuffer("select cast(video_startup_time as int) from meta_queries_test_db.TestColumnsMetadata1");
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal;
@@ -636,11 +601,11 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength, *disabled()) {
   BOOST_CHECK_EQUAL(intVal, 4);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldInt from meta_queries_test_001");
+      MakeSqlBuffer("select cast(video_startup_time as int) from meta_queries_test_db.TestColumnsMetadata1");
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal;
@@ -705,32 +670,22 @@ BOOST_AUTO_TEST_CASE(TestColAttributeWithOneTable) {
   }
 }
 
-// [AT-1146] TODO add/enable SQLColAttribute tests
-// https://bitquill.atlassian.net/browse/AT-1146
-BOOST_AUTO_TEST_CASE(TestColAttributeDataTypesAndColumnNames, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDataTypesAndColumnNames) {
   ConnectToTS();
 
   std::pair< int16_t, std::string > tests[] = {
-      std::make_pair(SQL_WVARCHAR, std::string("meta_queries_test_002__id")),
-      std::make_pair(SQL_DECIMAL, std::string("fieldDecimal128")),
-      std::make_pair(SQL_DOUBLE, std::string("fieldFloat")),
-      // our ODBC driver identifies float fields as double by default
-      std::make_pair(SQL_DOUBLE, std::string("fieldDouble")),
-      std::make_pair(SQL_WVARCHAR, std::string("fieldString")),
-      std::make_pair(SQL_WVARCHAR, std::string("fieldObjectId")),
-      std::make_pair(SQL_BIT, std::string("fieldBoolean")),
-      std::make_pair(SQL_TYPE_TIMESTAMP, std::string("fieldDate")),
-      std::make_pair(SQL_INTEGER, std::string("fieldInt")),
-      std::make_pair(SQL_DOUBLE, std::string("fieldLong")),
-      std::make_pair(SQL_WVARCHAR, std::string("fieldMaxKey")),
-      std::make_pair(SQL_WVARCHAR, std::string("fieldMinKey")),
-      std::make_pair(SQL_TYPE_NULL, std::string("fieldNull")),
-      std::make_pair(SQL_VARBINARY, std::string("fieldBinary"))};
+      std::make_pair(SQL_VARCHAR, std::string("地区")),
+      std::make_pair(SQL_VARCHAR, std::string("device_id")),
+      std::make_pair(SQL_VARCHAR, std::string("measure_name")),
+      std::make_pair(SQL_TYPE_TIMESTAMP, std::string("time")),
+      std::make_pair(SQL_BIT, std::string("flag")),
+      std::make_pair(SQL_DOUBLE, std::string("rebuffering_ratio")),
+      std::make_pair(SQL_BIGINT, std::string("video_startup_time"))};
 
   int numTests = sizeof(tests) / sizeof(std::pair< int16_t, std::string >);
 
   std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select * from meta_queries_test_002");
+      MakeSqlBuffer("select * from meta_queries_test_db.TestColumnsMetadata1");
   SQLLEN intVal;
   SQLSMALLINT strLen;
   SQLWCHAR strBuf[1024];
@@ -738,12 +693,6 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDataTypesAndColumnNames, *disabled()) {
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   for (int i = 1; i <= numTests; i++) {
-    // TODO remove below if statement when bug from JDBC (AD-765) is fixed.
-    // https://bitquill.atlassian.net/browse/AD-766
-    // the fieldNull pair is the 13th pair
-    if (i == 13)
-      continue;
-
     SQLRETURN ret = SQLColAttribute(stmt, SQLUSMALLINT(i), SQL_DESC_TYPE,
                                     nullptr, 0, nullptr, &intVal);
     if (!SQL_SUCCEEDED(ret))
@@ -769,9 +718,6 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescAutoUniqueValue) {
   callSQLColAttribute(stmt, req, SQL_DESC_AUTO_UNIQUE_VALUE, SQL_FALSE);
 }
 
-// TODO [AT-1146] enable this test on macOS
-// https://bitquill.atlassian.net/browse/AT-1146
-#if !defined(__APPLE__)
 BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseColumnName) {
   ConnectToTS();
 
@@ -780,7 +726,6 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseColumnName) {
   callSQLColAttribute(stmt, req, SQL_DESC_BASE_COLUMN_NAME,
                       std::string("fuel-reading"));
 }
-#endif // #if !defined(__APPLE__)
 
 BOOST_AUTO_TEST_CASE(TestColAttributeDescBaseTableName) {
   ConnectToTS();
@@ -840,33 +785,39 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescCount) {
   callSQLColAttribute(stmt, req, SQL_DESC_COUNT, 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescDisplaySize, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescDisplaySize) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldBinary from meta_queries_test_001";
+  const SQLCHAR req1[] = "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_VARBINARY should have display size SQL_NO_TOTAL
+  // SQL_VARCHAR should have display size SQL_NO_TOTAL
   callSQLColAttribute(stmt, req1, SQL_DESC_DISPLAY_SIZE, SQL_NO_TOTAL);
 
-  const SQLCHAR req2[] = "select fieldInt from meta_queries_test_001";
+  const SQLCHAR req2[] = "select cast(video_startup_time as int) from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_INTEGER should have display size 11
   callSQLColAttribute(stmt, req2, SQL_DESC_DISPLAY_SIZE, 11);
 
-  const SQLCHAR req3[] = "select fieldLong from meta_queries_test_001";
+  const SQLCHAR req3[] = "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BIGINT should have display size 20
   callSQLColAttribute(stmt, req3, SQL_DESC_DISPLAY_SIZE, 20);
 
-  const SQLCHAR req4[] = "select fieldDouble from meta_queries_test_001";
+  const SQLCHAR req4[] = "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_DOUBLE should have display size 24
   callSQLColAttribute(stmt, req4, SQL_DESC_DISPLAY_SIZE, 24);
 
-  const SQLCHAR req5[] = "select fieldDate from meta_queries_test_001";
+  const SQLCHAR req5[] = "select time from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_TYPE_TIMESTAMP should have display size 19
-  callSQLColAttribute(stmt, req5, SQL_DESC_DISPLAY_SIZE, 19);
+  // SQL_TYPE_TIMESTAMP should have display size 20
+  callSQLColAttribute(stmt, req5, SQL_DESC_DISPLAY_SIZE, 20);
+
+  const SQLCHAR req6[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
+
+  // SQL_BIT should have display size 20 for Timestream
+  callSQLColAttribute(stmt, req6, SQL_DESC_DISPLAY_SIZE, 1);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributeDescFixedPrecScale) {
@@ -878,218 +829,242 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescFixedPrecScale) {
   callSQLColAttribute(stmt, req, SQL_DESC_FIXED_PREC_SCALE, SQL_FALSE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLabel, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLabel) {
   ConnectToTS();
 
-  const SQLCHAR req[] = "select fieldBoolean from meta_queries_test_002";
+  const SQLCHAR req[] = "select flag from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req, SQL_DESC_LABEL, std::string("fieldBoolean"));
+  callSQLColAttribute(stmt, req, SQL_DESC_LABEL, std::string("flag"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLength, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLength) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldString from meta_queries_test_002";
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_WVARCHAR should have length SQL_NO_TOTAL
+  // SQL_VARCHAR should have length SQL_NO_TOTAL
   callSQLColAttribute(stmt, req1, SQL_DESC_LENGTH, SQL_NO_TOTAL);
 
-  const SQLCHAR req2[] = "select fieldInt from meta_queries_test_002";
+  const SQLCHAR req2[] =
+      "select cast(video_startup_time as int) from "
+      "meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_INTEGER should have length 4
   callSQLColAttribute(stmt, req2, SQL_DESC_LENGTH, 4);
 
-  const SQLCHAR req3[] = "select fieldLong from meta_queries_test_002";
+  const SQLCHAR req3[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BIGINT should have length 8
   callSQLColAttribute(stmt, req3, SQL_DESC_LENGTH, 8);
 
-  const SQLCHAR req4[] = "select fieldDouble from meta_queries_test_002";
+  const SQLCHAR req4[] =
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_DOUBLE should have length 8
   callSQLColAttribute(stmt, req4, SQL_DESC_LENGTH, 8);
 
-  const SQLCHAR req5[] = "select fieldDate from meta_queries_test_002";
+  const SQLCHAR req5[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_TYPE_TIMESTAMP should have length 16
   callSQLColAttribute(stmt, req5, SQL_DESC_LENGTH, 16);
+
+  const SQLCHAR req6[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
+
+  // SQL_BIT should have length 1
+  callSQLColAttribute(stmt, req6, SQL_DESC_LENGTH, 1);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralPrefix, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralPrefix) {
   ConnectToTS();
 
   // test that empty string is returned for non-char and non-binary type
-  const SQLCHAR req1[] = "select fieldDouble from meta_queries_test_001";
+  const SQLCHAR req1[] = "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   callSQLColAttribute(stmt, req1, SQL_DESC_LITERAL_PREFIX, std::string(""));
 
-  // test that "'" is returned for *CHAR type
-  const SQLCHAR req2[] = "select fieldString from meta_queries_test_002";
+  // test that "'" is returned for VARCHAR type
+  const SQLCHAR req2[] = "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   callSQLColAttribute(stmt, req2, SQL_DESC_LITERAL_PREFIX, std::string("'"));
-
-  // test that "0x" is returned for *CHAR type
-  const SQLCHAR req3[] = "select fieldBinary from meta_queries_test_002";
-
-  callSQLColAttribute(stmt, req3, SQL_DESC_LITERAL_PREFIX, std::string("0x"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralSuffix, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLiteralSuffix) {
   ConnectToTS();
 
   // test that empty string is returned for non-char and non-binary type
-  const SQLCHAR req1[] = "select fieldBoolean from meta_queries_test_001";
+  const SQLCHAR req1[] =
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   callSQLColAttribute(stmt, req1, SQL_DESC_LITERAL_SUFFIX, std::string(""));
 
   // test that "'" is returned for *CHAR type
-  const SQLCHAR req2[] = "select fieldString from meta_queries_test_002";
+  const SQLCHAR req2[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   callSQLColAttribute(stmt, req2, SQL_DESC_LITERAL_SUFFIX, std::string("'"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescLocalTypeName, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescLocalTypeName) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldDouble from meta_queries_test_001";
+  const SQLCHAR req1[] =
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_DOUBLE should have type name SqlTypeName::DOUBLE
   callSQLColAttribute(stmt, req1, SQL_DESC_LOCAL_TYPE_NAME,
                       SqlTypeName::DOUBLE);
 
-  const SQLCHAR req2[] = "select fieldString from meta_queries_test_002";
+  const SQLCHAR req2[] = "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_WVARCHAR should have type name SqlTypeName::VARCHAR
+  // SQL_VARCHAR should have type name SqlTypeName::VARCHAR
   callSQLColAttribute(stmt, req2, SQL_DESC_LOCAL_TYPE_NAME,
                       SqlTypeName::VARCHAR);
 
-  const SQLCHAR req3[] = "select fieldBinary from meta_queries_test_002";
+  const SQLCHAR req3[] = "select flag from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BINARY should have type name SqlTypeName::VARCHAR
   callSQLColAttribute(stmt, req3, SQL_DESC_LOCAL_TYPE_NAME,
-                      SqlTypeName::VARCHAR);
+                      SqlTypeName::BIT);
 
-  const SQLCHAR req4[] = "select fieldDate from meta_queries_test_002";
+  const SQLCHAR req4[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_TYPE_TIMESTAMP should have type name SqlTypeName::TIMESTAMP
   callSQLColAttribute(stmt, req4, SQL_DESC_LOCAL_TYPE_NAME,
                       SqlTypeName::TIMESTAMP);
 
-  const SQLCHAR req5[] = "select fieldInt from meta_queries_test_002";
+  const SQLCHAR req5[] = "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_INTEGER should have type name SqlTypeName::INTEGER
   callSQLColAttribute(stmt, req5, SQL_DESC_LOCAL_TYPE_NAME,
-                      SqlTypeName::INTEGER);
+                      SqlTypeName::BIGINT);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescName, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescName) {
   ConnectToTS();
 
-  const SQLCHAR req[] = "select field from meta_queries_test_002_with_array";
+  const SQLCHAR req[] = "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req, SQL_DESC_NAME, std::string("field"));
+  callSQLColAttribute(stmt, req, SQL_DESC_NAME, std::string("video_startup_time"));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescNullable, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescNullable) {
   ConnectToTS();
 
-  // test meta_queries_test_001__id (a primary key) should not be nullable
   const SQLCHAR req1[] =
-      "select meta_queries_test_001__id from meta_queries_test_001";
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req1, SQL_DESC_NULLABLE, SQL_NO_NULLS);
+  callSQLColAttribute(stmt, req1, SQL_DESC_NULLABLE, SQL_NULLABLE_UNKNOWN);
 
-  // test non-primary key field should be nullable.
-  const SQLCHAR req2[] = "select fieldNull from meta_queries_test_001";
+  const SQLCHAR req2[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req2, SQL_DESC_NULLABLE, SQL_NULLABLE);
+  callSQLColAttribute(stmt, req2, SQL_DESC_NULLABLE, SQL_NULLABLE_UNKNOWN);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescNumPrecRadix, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescNumPrecRadix) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldFloat from meta_queries_test_002";
+  const SQLCHAR req1[] =
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_FLOAT should have precision radix 2
+  // SQL_DOUBLE should have precision radix 2
   callSQLColAttribute(stmt, req1, SQL_DESC_NUM_PREC_RADIX, 2);
 
-  const SQLCHAR req2[] = "select fieldInt from meta_queries_test_001";
+  const SQLCHAR req2[] =
+      "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_INT should have precision radix 10
+  // SQL_BIGINT should have precision radix 10
   callSQLColAttribute(stmt, req2, SQL_DESC_NUM_PREC_RADIX, 10);
 
-  const SQLCHAR req3[] = "select fieldString from meta_queries_test_002";
+  const SQLCHAR req3[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_WVARCHAR (non-numeric type) should have precision radix 0
+  // SQL_VARCHAR (non-numeric type) should have precision radix 0
   callSQLColAttribute(stmt, req3, SQL_DESC_NUM_PREC_RADIX, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
   ConnectToTS();
 
   size_t size_of_char = sizeof(char);
 
-  const SQLCHAR req1[] = "select fieldString from meta_queries_test_002";
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_WVARCHAR should have octet length SQL_NO_TOTAL
+  // SQL_VARCHAR should have octet length SQL_NO_TOTAL
   callSQLColAttribute(stmt, req1, SQL_DESC_OCTET_LENGTH, SQL_NO_TOTAL);
 
-  const SQLCHAR req2[] = "select fieldInt from meta_queries_test_002";
+  const SQLCHAR req2[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_INTEGER should have octet length 4 * sizeof(char)
-  callSQLColAttribute(stmt, req2, SQL_DESC_OCTET_LENGTH, 4 * size_of_char);
+  // SQL_BIT should have octet length 1 * sizeof(char)
+  callSQLColAttribute(stmt, req2, SQL_DESC_OCTET_LENGTH, 1 * size_of_char);
 
-  const SQLCHAR req3[] = "select fieldLong from meta_queries_test_002";
+  const SQLCHAR req3[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BIGINT should have octet length 8 * sizeof(char)
   callSQLColAttribute(stmt, req3, SQL_DESC_OCTET_LENGTH, 8 * size_of_char);
 
-  const SQLCHAR req4[] = "select fieldDouble from meta_queries_test_002";
+  const SQLCHAR req4[] =
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_DOUBLE should have octet length 8 * sizeof(char)
   callSQLColAttribute(stmt, req4, SQL_DESC_OCTET_LENGTH, 8 * size_of_char);
 
-  const SQLCHAR req5[] = "select fieldDate from meta_queries_test_002";
+  const SQLCHAR req5[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_TYPE_TIMESTAMP should have octet length 16 * sizeof(char)
   callSQLColAttribute(stmt, req5, SQL_DESC_OCTET_LENGTH, 16 * size_of_char);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldString from meta_queries_test_001";
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_WVARCHAR should have precision SQL_NO_TOTAL
+  // SQL_VARCHAR should have precision SQL_NO_TOTAL
   callSQLColAttribute(stmt, req1, SQL_DESC_PRECISION, SQL_NO_TOTAL);
 
-  const SQLCHAR req2[] = "select fieldInt from meta_queries_test_001";
+  const SQLCHAR req2[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_INTEGER should have precision 10
-  callSQLColAttribute(stmt, req2, SQL_DESC_PRECISION, 10);
+  // SQL_BIT should have precision 10
+  callSQLColAttribute(stmt, req2, SQL_DESC_PRECISION, 1);
 
-  const SQLCHAR req3[] = "select fieldLong from meta_queries_test_001";
+  const SQLCHAR req3[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BIGINT should have precision 19
   callSQLColAttribute(stmt, req3, SQL_DESC_PRECISION, 19);
 
-  const SQLCHAR req4[] = "select fieldDouble from meta_queries_test_001";
+  const SQLCHAR req4[] =
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_DOUBLE should have precision 15
   callSQLColAttribute(stmt, req4, SQL_DESC_PRECISION, 15);
 
-  const SQLCHAR req5[] = "select fieldDate from meta_queries_test_001";
+  const SQLCHAR req5[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_TIMESTAMP should have precision 19
   callSQLColAttribute(stmt, req5, SQL_DESC_PRECISION, 19);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescScale, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescScale) {
   ConnectToTS();
 
-  // [AT-1146] TODO add/enable SQLColAttribute test
-  // For scale to be 0, data type needs to be SQL_INTEGER
-  const SQLCHAR req[] = "select fieldLong from meta_queries_test_001";
+  const SQLCHAR req[] = "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
   // default scale value is 0
   callSQLColAttribute(stmt, req, SQL_DESC_SCALE, 0);
@@ -1105,84 +1080,86 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescSchemaName) {
                       std::string(""));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescSearchable, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescSearchable) {
   ConnectToTS();
 
-  const SQLCHAR req[] = "select fieldString from meta_queries_test_002";
+  const SQLCHAR req[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   // only SQL_PRED_BASIC is returned
   callSQLColAttribute(stmt, req, SQL_DESC_SEARCHABLE, SQL_PRED_BASIC);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescTableName, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescTableName) {
   ConnectToTS();
 
-  const SQLCHAR req[] = "select field from meta_queries_test_002_with_array";
+  const SQLCHAR req[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req, SQL_DESC_TABLE_NAME,
-                      std::string("meta_queries_test_002_with_array"));
+  // table name is not set for a column
+  callSQLColAttribute(stmt, req, SQL_DESC_TABLE_NAME, "");
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescType, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescType) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldString from meta_queries_test_001";
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req1, SQL_DESC_TYPE, SQL_WVARCHAR);
+  callSQLColAttribute(stmt, req1, SQL_DESC_TYPE, SQL_VARCHAR);
 
-  const SQLCHAR req2[] = "select fieldInt from meta_queries_test_001";
+  const SQLCHAR req2[] =
+      "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req2, SQL_DESC_TYPE, SQL_INTEGER);
+  callSQLColAttribute(stmt, req2, SQL_DESC_TYPE, SQL_BIGINT);
 
-  const SQLCHAR req3[] = "select fieldBinary from meta_queries_test_001";
+  const SQLCHAR req3[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
 
-  callSQLColAttribute(stmt, req3, SQL_DESC_TYPE, SQL_VARBINARY);
-
-  // TODO re-enable this test when bug from JDBC (AD-765) is fixed.
-  // https://bitquill.atlassian.net/browse/AD-766
-  // const SQLCHAR req4[] = "select fieldNull from meta_queries_test_001";
-  //
-  // callSQLColAttribute(stmt, req4, SQL_DESC_TYPE, SQL_TYPE_NULL);
+  callSQLColAttribute(stmt, req3, SQL_DESC_TYPE, SQL_TYPE_TIMESTAMP);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescUnnamed, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescUnnamed) {
   ConnectToTS();
 
-  const SQLCHAR req[] = "select fieldNull from meta_queries_test_001";
+  const SQLCHAR req[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
 
   // all columns should be named bacause they cannot be null
   callSQLColAttribute(stmt, req, SQL_DESC_UNNAMED, SQL_NAMED);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescUnsigned, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescUnsigned) {
   ConnectToTS();
 
-  const SQLCHAR req1[] = "select fieldInt from meta_queries_test_001";
+  const SQLCHAR req1[] = "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1";
 
   // numeric type should be signed
   callSQLColAttribute(stmt, req1, SQL_DESC_UNSIGNED, SQL_FALSE);
 
-  const SQLCHAR req2[] = "select fieldString from meta_queries_test_001";
+  const SQLCHAR req2[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   // non-numeric types should be unsigned
   callSQLColAttribute(stmt, req2, SQL_DESC_UNSIGNED, SQL_TRUE);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributeDescUpdatable, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributeDescUpdatable) {
   ConnectToTS();
 
-  const SQLCHAR req[] = "select fieldMaxKey from meta_queries_test_002";
+  const SQLCHAR req[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   // only SQL_ATTR_READWRITE_UNKNOWN is returned
   callSQLColAttribute(stmt, req, SQL_DESC_UPDATABLE,
                       SQL_ATTR_READWRITE_UNKNOWN);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldDecimal128 from meta_queries_test_001");
+  std::vector< SQLWCHAR > req = MakeSqlBuffer(
+      "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1");
   SQLExecDirect(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal;
@@ -1196,11 +1173,11 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnScale, *disabled()) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldInt from meta_queries_test_001");
+  std::vector< SQLWCHAR > req = MakeSqlBuffer(
+      "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1");
   SQLPrepare(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal;
@@ -1213,7 +1190,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare, *disabled()) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 4);
+  BOOST_CHECK_EQUAL(intVal, 8);
 
   ret = SQLExecute(stmt);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
@@ -1224,14 +1201,14 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare, *disabled()) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 4);
+  BOOST_CHECK_EQUAL(intVal, 8);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldInt from meta_queries_test_001");
+  std::vector< SQLWCHAR > req = MakeSqlBuffer(
+      "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1");
   SQLPrepare(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal;
@@ -1244,7 +1221,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare, *disabled()) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 10);
+  BOOST_CHECK_EQUAL(intVal, 19);
 
   ret = SQLExecute(stmt);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
@@ -1255,14 +1232,14 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare, *disabled()) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 10);
+  BOOST_CHECK_EQUAL(intVal, 19);
 }
 
-BOOST_AUTO_TEST_CASE(TestColAttributesColumnScalePrepare, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestColAttributesColumnScalePrepare) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > req =
-      MakeSqlBuffer("select fieldString from meta_queries_test_001");
+  std::vector< SQLWCHAR > req = MakeSqlBuffer(
+      "select video_startup_time from meta_queries_test_db.TestColumnsMetadata1");
   SQLPrepare(stmt, req.data(), SQL_NTS);
 
   SQLLEN intVal;
@@ -2575,12 +2552,12 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithForeignKeysReturnsNone, *disabled()) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > empty = {0};
-  std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
-  std::vector< SQLWCHAR > column = MakeSqlBuffer("meta_queries_test_001__id");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("device_id");
 
   SQLRETURN ret = SQL_SUCCESS;
 
@@ -2648,16 +2625,23 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols, *disabled()) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   bool errorExpected = false;
-  BOOST_CHECK_EQUAL(true, WasNull(table_cat_len));
-  BOOST_CHECK_EQUAL("", table_cat);  // TABLE_CAT
-  BOOST_CHECK_EQUAL(false, WasNull(table_schem_len));
-  BOOST_CHECK_EQUAL("odbc-test", table_schem);  // TABLE_SCHEM
+  if (DATABASE_AS_SCHEMA) {
+    BOOST_CHECK_EQUAL(true, WasNull(table_cat_len));
+    BOOST_CHECK_EQUAL("", table_cat);  // TABLE_CAT
+    BOOST_CHECK_EQUAL(false, WasNull(table_schem_len));
+    BOOST_CHECK_EQUAL("meta_queries_test_db", table_schem);  // TABLE_SCHEM
+  } else {
+    BOOST_CHECK_EQUAL(false, WasNull(table_cat_len));
+    BOOST_CHECK_EQUAL("meta_queries_test_db", table_cat);  // TABLE_CAT
+    BOOST_CHECK_EQUAL(true, WasNull(table_schem_len));
+    BOOST_CHECK_EQUAL("", table_schem);  // TABLE_SCHEM 
+  }
   BOOST_CHECK_EQUAL(false, WasNull(table_name_len));
-  BOOST_CHECK_EQUAL("meta_queries_test_001", table_name);  // TABLE_NAME
+  BOOST_CHECK_EQUAL("TestColumnsMetadata1", table_name);  // TABLE_NAME
   BOOST_CHECK_EQUAL(false, WasNull(column_name_len));
-  BOOST_CHECK_EQUAL("meta_queries_test_001__id", column_name);  // COLUMN_NAME
+  BOOST_CHECK_EQUAL("device_id", column_name);  // COLUMN_NAME
   BOOST_CHECK_EQUAL(false, WasNull(data_type_len));
-  BOOST_CHECK_EQUAL(SQL_WVARCHAR, data_type);  // DATA_TYPE
+  BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);  // DATA_TYPE
   BOOST_CHECK_EQUAL(false, WasNull(type_name_len));
   BOOST_CHECK_EQUAL("VARCHAR", type_name);  // TYPE_NAME
   BOOST_CHECK_EQUAL(false, WasNull(column_size_len));
@@ -2670,12 +2654,12 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols, *disabled()) {
   BOOST_CHECK_EQUAL(0, num_prec_radix);  // NUM_PREC_RADIX
   BOOST_CHECK_EQUAL(false, WasNull(nullable_len));
   BOOST_CHECK_EQUAL(SQL_NO_NULLS, nullable);  // NULLABLE
-  BOOST_CHECK_EQUAL(true, WasNull(remarks_len));
-  BOOST_CHECK_EQUAL("", remarks);  // REMARKS
+  BOOST_CHECK_EQUAL(false, WasNull(remarks_len));
+  BOOST_CHECK_EQUAL("DIMENSION", remarks);  // REMARKS
   BOOST_CHECK_EQUAL(true, WasNull(column_def_len));
   BOOST_CHECK_EQUAL("", column_def);  // COLUMN_DEF
   BOOST_CHECK_EQUAL(false, WasNull(sql_data_type_len));
-  BOOST_CHECK_EQUAL(SQL_WVARCHAR, sql_data_type);  // SQL_DATA_TYPE
+  BOOST_CHECK_EQUAL(SQL_VARCHAR, sql_data_type);  // SQL_DATA_TYPE
   BOOST_CHECK_EQUAL(true, WasNull(sql_datetime_sub_len));
   BOOST_CHECK_EQUAL(0, sql_datetime_sub);  // SQL_DATETIME_SUB
   BOOST_CHECK_EQUAL(false, WasNull(char_octet_length_len));
@@ -2932,7 +2916,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterExec, *disabled()) 
  * 4. Prepare statement.
  * 5. Check precision and scale of every column using SQLColAttribute.
  */
-BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare) {
   CheckSQLColAttributePrecisionAndScale(&OdbcTestSuite::PrepareQuery);
 }
 
@@ -2945,7 +2929,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare, *disabled
  * 3. Create table with decimal and char columns with specified size and scale.
  * 4. Execute statement.
  * 5. Check precision and scale of every column using SQLColAttribute. */
-BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterExec, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterExec) {
   CheckSQLColAttributePrecisionAndScale(&OdbcTestSuite::ExecQuery);
 }
 
