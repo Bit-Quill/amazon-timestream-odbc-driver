@@ -74,6 +74,28 @@ jobs:
     if: contains(needs.check.outputs.status, 'continue')
     steps:
     - uses: actions/checkout@v2
+
+    - name: Checkout repolinter
+      uses: actions/checkout@v2
+      with:
+        repository: todogroup/repolinter
+        path: repolinter
+
+    - name: Run repolinter
+      run: |
+        brew install npm node awscli
+        sudo npm install -g ajv@latest
+        rm -rf ../repolinter
+        mv repolinter ..
+        export NVM_DIR=~/.nvm
+        source ~/.nvm/nvm.sh
+        cd ../repolinter
+        npm install
+        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} .
+        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+        cd ${{github.workspace}}
+        rm -rf ../repolinter
+
     - name: run-cppcheck
       run: |
         brew install cppcheck
