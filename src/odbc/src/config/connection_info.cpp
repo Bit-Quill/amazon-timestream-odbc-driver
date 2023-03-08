@@ -867,7 +867,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // This InfoType is limited to catalog functions. For a description of the use
   // of the escape character in search pattern strings, see Pattern Value
   // Arguments.
-  strParams[SQL_SEARCH_PATTERN_ESCAPE] = "\\";
+  strParams[SQL_SEARCH_PATTERN_ESCAPE] = "";
 #endif  // SQL_SEARCH_PATTERN_ESCAPE
 
 #ifdef SQL_SERVER_NAME

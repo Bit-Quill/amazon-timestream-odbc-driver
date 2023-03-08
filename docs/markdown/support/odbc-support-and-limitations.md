@@ -124,7 +124,7 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_PROCEDURE_TERM | 'stored procedure' | no |
 | SQL_PROCEDURES | 'N' | no |
 | SQL_ROW_UPDATES | 'N' | no |
-| SQL_SEARCH_PATTERN_ESCAPE | '\\\\' | no |
+| SQL_SEARCH_PATTERN_ESCAPE | '' | no |
 | SQL_SERVER_NAME | 'Amazon Timestream' | no |
 | SQL_USER_NAME | '\<user\>' | no |
 | SQL_ASYNC_DBC_FUNCTIONS | SQL_ASYNC_DBC_NOT_CAPABLE | no |

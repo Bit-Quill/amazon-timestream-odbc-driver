@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckStrInfo(SQL_PROCEDURE_TERM, "stored procedure");
   CheckStrInfo(SQL_PROCEDURES, "N");
   CheckStrInfo(SQL_ROW_UPDATES, "N");
-  CheckStrInfo(SQL_SEARCH_PATTERN_ESCAPE, "\\");
+  CheckStrInfo(SQL_SEARCH_PATTERN_ESCAPE, "");
   CheckStrInfo(SQL_SERVER_NAME, "Amazon Timestream");
   std::string expectedUserName =
       common::GetEnv("AWS_ACCESS_KEY_ID");

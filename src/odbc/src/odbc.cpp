@@ -564,9 +564,6 @@ SQLRETURN SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orientation,
   LOG_DEBUG_MSG("SQLFetchScroll called");
   LOG_INFO_MSG("Orientation: " << orientation << " Offset: " << offset);
 
-  // For AT-1095 PowerBI connect to Timestream
-  return SQL_NO_DATA;
-
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
