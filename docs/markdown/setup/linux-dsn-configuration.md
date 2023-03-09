@@ -101,4 +101,7 @@ Use [isql](https://www.systutorials.com/docs/linux/man/1-isql/#:~:text=isql%20is
 * Type `isql timestream-aws-profile` to make a connection and enter interactive mode.
 
 * Once the SQL prompt appears type a sample query such as `SELECT * FROM sampleDB.IoT`. 
+* Type `help table_name` to get all columns of the table using SQLColumns. No database name should be prefixed before the table name.
+* Type `help catalog schema table type` to get the table info using SQLTables.
+* Type `help help` to get all help options.
 * Type `quit` to exit interactive mode.

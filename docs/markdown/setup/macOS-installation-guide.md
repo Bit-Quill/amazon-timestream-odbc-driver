@@ -1,5 +1,14 @@
 # Amazon Timestream ODBC Driver Setup on MacOS
 
+## Supported versions
+macOS 11 (Big Sur) and above on 64-bit Intel processor
+
+## Prerequisites
+In order to use the Timestream ODBC Driver, [libiodbc](https://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/WelcomeVisitors) must be installed.
+```
+brew install libiodbc
+```
+
 ## Install Timestream ODBC Driver
 1. Download the Timestream ODBC driver installer AmazonTimestreamODBC-[version].pkg.
 2. Double-click the installer to install by GUI or use the following command line to install it directly.

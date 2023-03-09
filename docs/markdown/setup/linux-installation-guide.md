@@ -1,7 +1,7 @@
 # Amazon Timestream ODBC Driver Setup on Linux 
 
 ## Prerequisites
-In order to install the Timestream ODBC Driver, [unixODBC](http://www.unixodbc.org/) must be installed.
+In order to use the Timestream ODBC Driver, [unixODBC](http://www.unixodbc.org/) must be installed.
 
 ### Installing on Ubuntu 64 bit
 

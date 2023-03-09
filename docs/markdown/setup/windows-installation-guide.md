@@ -1,5 +1,8 @@
 # Amazon Timestream ODBC Driver Setup on Windows
 
+## Supported versions
+Windows 10 22H2, Windows 11 and Windows Server 2022
+
 ## Install Timestream ODBC Driver
 1. Download the Timestream ODBC installer exe.
 2. Double-click the installer
