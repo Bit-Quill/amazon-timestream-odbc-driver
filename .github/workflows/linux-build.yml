@@ -84,7 +84,7 @@ jobs:
         mv repolinter ..
         cd ../repolinter
         npm install
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} .
+        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
         node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
         cd ${{github.workspace}}
         rm -rf ../repolinter
@@ -226,7 +226,7 @@ jobs:
         mv repolinter ..
         cd ../repolinter
         npm install
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} .
+        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
         node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
         cd ${{github.workspace}}
         rm -rf ../repolinter
