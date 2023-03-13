@@ -83,15 +83,14 @@ jobs:
 
     - name: Run repolinter
       run: |
+        rm -rf ~/.npm
         brew install npm node
         test -f "/usr/local/bin/aws" || brew install awscli
-        sudo npm install -g ajv@latest
         rm -rf ../repolinter
         mv repolinter ..
-        export NVM_DIR=~/.nvm
-        source ~/.nvm/nvm.sh
         cd ../repolinter
         npm install
+        sudo npm install -g ajv@latest
         aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
         node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
         cd ${{github.workspace}}
