@@ -46,7 +46,8 @@ class ColumnMetadataQuery : public Query {
                       Connection& connection,
                       const boost::optional< std::string >& catalog,
                       const boost::optional< std::string >& schema,
-                      const std::string& table, const std::string& column);
+                      const boost::optional< std::string >& table, 
+                      const boost::optional< std::string >& column);
 
   /**
    * Destructor.
@@ -155,10 +156,10 @@ class ColumnMetadataQuery : public Query {
   boost::optional< std::string > schema;
 
   /** Table search pattern. */
-  std::string table;
+  boost::optional< std::string > table;
 
   /** Column search pattern. */
-  std::string column;
+  boost::optional< std::string > column;
 
   /** Query executed. */
   bool executed;

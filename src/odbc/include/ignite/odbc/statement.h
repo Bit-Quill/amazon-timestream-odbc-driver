@@ -167,13 +167,13 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    *
    * @param catalog Catalog search pattern, nullable.
    * @param schema Schema search pattern, nullable.
-   * @param table Table search pattern.
-   * @param column Column search pattern.
+   * @param table Table search pattern, nullable.
+   * @param column Column search pattern, nullable.
    */
   void ExecuteGetColumnsMetaQuery(const boost::optional< std::string >& catalog,
                                   const boost::optional< std::string >& schema,
-                                  const std::string& table,
-                                  const std::string& column);
+                                  const boost::optional< std::string >& table,
+                                  const boost::optional< std::string >& column);
 
   /**
    * Get tables metadata.
@@ -551,8 +551,9 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalExecuteGetColumnsMetaQuery(
       const boost::optional< std::string >& catalog,
-      const boost::optional< std::string >& schema, const std::string& table,
-      const std::string& column);
+      const boost::optional< std::string >& schema, 
+      const boost::optional< std::string >& table,
+      const boost::optional< std::string >& column);
 
   /**
    * Get tables metadata.

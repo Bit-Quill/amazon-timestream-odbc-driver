@@ -677,16 +677,18 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
 
 void Statement::ExecuteGetColumnsMetaQuery(
     const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema, const std::string& table,
-    const std::string& column) {
+    const boost::optional< std::string >& schema, 
+    const boost::optional< std::string >& table,
+    const boost::optional< std::string >& column) {
   IGNITE_ODBC_API_CALL(
       InternalExecuteGetColumnsMetaQuery(catalog, schema, table, column));
 }
 
 SqlResult::Type Statement::InternalExecuteGetColumnsMetaQuery(
     const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema, const std::string& table,
-    const std::string& column) {
+    const boost::optional< std::string >& schema, 
+    const boost::optional< std::string >& table,
+    const boost::optional< std::string >& column) {
   if (currentQuery.get())
     currentQuery->Close();
 

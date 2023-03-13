@@ -45,6 +45,7 @@ using namespace ignite::odbc::impl::binary;
 using namespace ignite::odbc::impl::interop;
 using ignite::odbc::TestType;
 using namespace ignite::odbc::type_traits;
+using namespace ignite::odbc::utility;
 
 using namespace boost::unit_test;
 
@@ -1509,6 +1510,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNull) {
                      column.data(), SQL_NTS);
   }
 
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
@@ -1530,6 +1532,8 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNull) {
                      nullptr, 0);
   }
 
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
@@ -1543,11 +1547,369 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNull) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-// TODO [AT-1270] fix SQLColumns implementation to have correct handling of empty string/nullptr inputs
-// https://bitquill.atlassian.net/browse/AT-1270
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsEmptyMetadataIdTrue) {
+  ConnectToTS();
+  // Set SQL_ATTR_METADATA_ID to SQL_TRUE
+  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_METADATA_ID,
+                            reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
+
+  std::vector< SQLWCHAR > any = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > empty = {0};
+  std::vector< SQLWCHAR > database = MakeSqlBuffer("meta_queries_test_db");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("device_id");
+
+  // catalogName and schemaName are empty strings case
+  // This should always return a warning
+  ret = SQLColumns(stmt, empty.data(), SQL_NTS, empty.data(), SQL_NTS,
+                             table.data(), SQL_NTS, column.data(), SQL_NTS);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+  CheckSQLStatementDiagnosticError("01000");
+  BOOST_REQUIRE_EQUAL(
+      "01000: catalogName and schemaName are empty strings.",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  if (DATABASE_AS_SCHEMA) {
+    // catalogName is empty case
+    ret = SQLColumns(stmt, empty.data(), SQL_NTS, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // schemaName is empty case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, empty.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Schema and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // tableName is empty case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               empty.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Schema and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // columnName is empty case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, empty.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: No columns with name \'" + SqlWcharToString(empty.data()) + "\' found",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  } else {
+    // catalogName is empty case
+    ret = SQLColumns(stmt, empty.data(), SQL_NTS, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Catalog and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // schemaName is empty case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // tableName is empty case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               empty.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Catalog and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // columnName is empty case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, empty.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: No columns with name \'" + SqlWcharToString(empty.data()) + "\' found",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsEmptyMetadataIdFalse) {
+  ConnectToTS();
+
+  std::vector< SQLWCHAR > any = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > empty = {0};
+  std::vector< SQLWCHAR > database = MakeSqlBuffer("meta_queries_test_db");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("device_id");
+
+  // catalogName and schemaName are empty strings case
+  // This should always return a warning
+  SQLRETURN ret = SQLColumns(stmt, empty.data(), SQL_NTS, empty.data(), SQL_NTS,
+                             table.data(), SQL_NTS, column.data(), SQL_NTS);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+  CheckSQLStatementDiagnosticError("01000");
+  BOOST_REQUIRE_EQUAL(
+      "01000: catalogName and schemaName are empty strings.",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  if (DATABASE_AS_SCHEMA) {
+    // catalogName is empty case
+    ret = SQLColumns(stmt, empty.data(), SQL_NTS, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // schemaName is empty case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, empty.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Schema and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // tableName is empty case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               empty.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Schema and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // columnName is empty case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, empty.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: No columns with name \'" + SqlWcharToString(empty.data()) + "\' found",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  } else {
+    // catalogName is empty case
+    ret = SQLColumns(stmt, empty.data(), SQL_NTS, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Catalog and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // schemaName is empty case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // tableName is empty case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               empty.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: Catalog and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // columnName is empty case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, (SQLWCHAR*)L"%", SQL_NTS,
+                               table.data(), SQL_NTS, empty.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+    CheckSQLStatementDiagnosticError("01000");
+    BOOST_REQUIRE_EQUAL(
+        "01000: No columns with name \'" + SqlWcharToString(empty.data()) + "\' found",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNullMetadataIdTrue) {
+  ConnectToTS();
+  // Set SQL_ATTR_METADATA_ID to SQL_TRUE
+  SQLRETURN ret = SQLSetConnectAttr(dbc, SQL_ATTR_METADATA_ID,
+                            reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
+
+  std::vector< SQLWCHAR > any = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > database = MakeSqlBuffer("meta_queries_test_db");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("device_id");
+
+  // catalogName and schemaName are null case
+  ret = SQLColumns(stmt, nullptr, 0, nullptr, 0,
+                             table.data(), SQL_NTS, column.data(), SQL_NTS);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  CheckSQLStatementDiagnosticError("HY009");
+
+  if (DATABASE_AS_SCHEMA) {
+    // Check error message for catalogName and schemaName being null
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the SchemaName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // catalogName is null case
+    ret = SQLColumns(stmt, nullptr, 0, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // schemaName is null case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, nullptr, 0,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+    CheckSQLStatementDiagnosticError("HY009");
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the SchemaName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // tableName is null case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               nullptr, 0, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+    CheckSQLStatementDiagnosticError("HY009");
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the SchemaName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // columnName is null case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, nullptr, 0);
+    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+    CheckSQLStatementDiagnosticError("HY009");
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the SchemaName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  } else {
+    // Check error message for catalogName and schemaName being null
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the CatalogName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // catalogName is null case
+    ret = SQLColumns(stmt, nullptr, 0, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+    CheckSQLStatementDiagnosticError("HY009");
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the CatalogName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // schemaName is null case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, nullptr, 0,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // tableName is null case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               nullptr, 0, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+    CheckSQLStatementDiagnosticError("HY009");
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the CatalogName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // columnName is null case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, nullptr, 0);
+    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+    CheckSQLStatementDiagnosticError("HY009");
+    BOOST_REQUIRE_EQUAL(
+        "HY009: SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+        "the CatalogName, TableName, or ColumnName argument was a null pointer.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNullMetadataIdFalse) {
+  ConnectToTS();
+
+  std::vector< SQLWCHAR > any = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > database = MakeSqlBuffer("meta_queries_test_db");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("device_id");
+
+  // catalogName and schemaName are null case
+  SQLRETURN ret = SQLColumns(stmt, nullptr, 0, nullptr, 0,
+                             table.data(), SQL_NTS, column.data(), SQL_NTS);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  if (DATABASE_AS_SCHEMA) {
+    // catalogName is null case
+    ret = SQLColumns(stmt, nullptr, 0, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // schemaName is null case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, nullptr, 0,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // tableName is null case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               nullptr, 0, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // columnName is null case
+    ret = SQLColumns(stmt, any.data(), SQL_NTS, database.data(), SQL_NTS,
+                               table.data(), SQL_NTS, nullptr, 0);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+  } else {
+    // catalogName is null case
+    ret = SQLColumns(stmt, nullptr, 0, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // schemaName is null case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, nullptr, 0,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // tableName is null case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               nullptr, 0, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+    // columnName is null case
+    ret = SQLColumns(stmt, database.data(), SQL_NTS, any.data(), SQL_NTS,
+                               table.data(), SQL_NTS, nullptr, 0);
+    BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TestGetColumnsWithUnsupportedDatabase) {
+  ConnectToTS();
+
+  std::vector< SQLWCHAR > database = MakeSqlBuffer("meta_queries_test_db");
+  std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
+  std::vector< SQLWCHAR > column = MakeSqlBuffer("device_id");
+
+  SQLRETURN ret = SQLColumns(stmt, database.data(), SQL_NTS, database.data(), SQL_NTS,
+                             table.data(), SQL_NTS, column.data(), SQL_NTS);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+  CheckSQLStatementDiagnosticError("01000");
+  if (DATABASE_AS_SCHEMA) {
+    BOOST_REQUIRE_EQUAL(
+        "01000: Empty result set is returned as catalog is set to \"" + SqlWcharToString(database.data()) +
+        "\" and Timestream does not have catalogs",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  } else {
+    BOOST_REQUIRE_EQUAL(
+        "01000: Empty result set is returned as schema is set to \"" + SqlWcharToString(database.data()) +
+        "\" and Timestream does not have schemas",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+}
+
 BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsEmpty) {
   ConnectToTS();
 
+  std::vector< SQLWCHAR > any = MakeSqlBuffer("%");
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > database = MakeSqlBuffer("meta_queries_test_db");
   std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
@@ -1559,13 +1921,25 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsEmpty) {
 
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
   CheckSQLStatementDiagnosticError("01000");
+  BOOST_REQUIRE_EQUAL(
+      "01000: catalogName and schemaName are empty strings.",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   // table is empty case
-  ret = SQLColumns(stmt, empty.data(), SQL_NTS, database.data(), SQL_NTS,
+  ret = SQLColumns(stmt, empty.data(), SQL_NTS, any.data(), SQL_NTS,
                    empty.data(), SQL_NTS, column.data(), SQL_NTS);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
   CheckSQLStatementDiagnosticError("01000");
+  if (DATABASE_AS_SCHEMA) {
+    BOOST_REQUIRE_EQUAL(
+        "01000: Schema and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  } else {
+    BOOST_REQUIRE_EQUAL(
+        "01000: Catalog and table name should not be empty.",
+        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
 
   // database and table non-empty case
   if (DATABASE_AS_SCHEMA) {
@@ -1576,17 +1950,10 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsEmpty) {
                      table.data(), SQL_NTS, empty.data(), 0);
   }
 
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  int count = 0;
-  do {
-    ret = SQLFetch(stmt);
-    count++;
-  } while (SQL_SUCCEEDED(ret));
-  BOOST_CHECK(--count > 1);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+  CheckSQLStatementDiagnosticError("01000"); 
+  BOOST_REQUIRE_EQUAL("01000: No columns with name '' found",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
 BOOST_DATA_TEST_CASE_F(
@@ -1726,14 +2093,19 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsIdentifier) {
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("%");
+  std::vector< SQLWCHAR > databaseName = MakeSqlBuffer("%");
   std::vector< SQLWCHAR > table = MakeSqlBuffer("%");
   std::vector< SQLWCHAR > column = MakeSqlBuffer("%");
 
-  ret = SQLColumns(stmt, nullptr, 0, schemaName.data(), SQL_NTS,
-                             table.data(), SQL_NTS, column.data(), SQL_NTS);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+  if (DATABASE_AS_SCHEMA) {
+    ret = SQLColumns(stmt, nullptr, 0, databaseName.data(), SQL_NTS,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+  } else {
+    ret = SQLColumns(stmt, databaseName.data(), SQL_NTS, nullptr, 0,
+                               table.data(), SQL_NTS, column.data(), SQL_NTS);
+    BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+  }
 
 #ifndef __linux__
   // Linux unixODBC DM could clear the diagnostic error message when 

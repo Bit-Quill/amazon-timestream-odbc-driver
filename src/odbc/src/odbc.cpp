@@ -667,12 +667,6 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-// TODO [AT-1270] fix SQLColumns implementation to have correct handling of
-// empty string/nullptr inputs. Do not convert any value to "%".
-// https://bitquill.atlassian.net/browse/AT-1270
-
-/** If NULL tableName is passed, it will automatically be converted to "%".
- * If NULL columnName is passed, it will automatically be converted to "%". */
 SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                      SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                      SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -691,19 +685,21 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
     return SQL_INVALID_HANDLE;
   }
 
-  boost::optional< std::string > catalog =
-      SqlWcharToOptString(catalogName, catalogNameLen);
-  boost::optional< std::string > schema =
-      SqlWcharToOptString(schemaName, schemaNameLen).get_value_or("%");
-  std::string table =
-      SqlWcharToOptString(tableName, tableNameLen).get_value_or("%");
-  std::string column =
-      SqlWcharToOptString(columnName, columnNameLen).get_value_or("%");
+  boost::optional< std::string > catalog = SqlWcharToOptString(catalogName, catalogNameLen);
+  boost::optional< std::string > schema = SqlWcharToOptString(schemaName, schemaNameLen);
+  boost::optional< std::string > table = SqlWcharToOptString(tableName, tableNameLen);
+  boost::optional< std::string > column = SqlWcharToOptString(columnName, columnNameLen);
 
   LOG_INFO_MSG("catalog: " << catalog.get_value_or(""));
   LOG_INFO_MSG("schema: " << schema.get_value_or(""));
   LOG_INFO_MSG("table: " << table);
   LOG_INFO_MSG("column: " << column);
+
+  if (catalog && catalog->empty() && schema && schema->empty()) {
+    statement->AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+      "catalogName and schemaName are empty strings.");
+    return SQL_SUCCESS_WITH_INFO;
+  }
 
   statement->ExecuteGetColumnsMetaQuery(catalog, schema, table, column);
 

@@ -102,8 +102,9 @@ namespace query {
 ColumnMetadataQuery::ColumnMetadataQuery(
     diagnostic::DiagnosableAdapter& diag, Connection& connection,
     const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema, const std::string& table,
-    const std::string& column)
+    const boost::optional< std::string >& schema,
+    const boost::optional< std::string >& table,
+    const boost::optional< std::string >& column)
     : Query(diag, QueryType::COLUMN_METADATA),
       connection(connection),
       catalog(catalog),
@@ -173,8 +174,56 @@ SqlResult::Type ColumnMetadataQuery::Execute() {
   if (executed)
     Close();
 
+  if (DATABASE_AS_SCHEMA && catalog && !catalog->empty() && *catalog != SQL_ALL_CATALOGS) {
+    // catalog has been provided with a non-empty value that isn't
+    // SQL_ALL_CATALOGS. Return empty result set by default since
+    // Timestream does not have catalogs.
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
+        "Empty result set is returned as catalog is set to \"" + *catalog
+        + "\" and Timestream does not have catalogs");
+    return SqlResult::AI_SUCCESS_WITH_INFO;
+  } else if (!DATABASE_AS_SCHEMA && schema && !schema->empty() && *schema != SQL_ALL_SCHEMAS) {
+    // schema has been provided with a non-empty value that isn't
+    // SQL_ALL_SCHEMAS. Return empty result set by default since
+    // Timestream does not have schemas.
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
+        "Empty result set is returned as schema is set to \"" + *schema
+        + "\" and Timestream does not have schemas");
+    return SqlResult::AI_SUCCESS_WITH_INFO;
+  }
+
+  if (connection.GetMetadataID()) {
+    if ((DATABASE_AS_SCHEMA && (schema == boost::none || table == boost::none)) ||
+        (!DATABASE_AS_SCHEMA && (catalog == boost::none || table == boost::none)) || 
+        column == boost::none) {
+      if (DATABASE_AS_SCHEMA) {
+        diag.AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
+            "SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+            "the SchemaName, TableName, or ColumnName argument was a null pointer.");
+      } else {
+        diag.AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
+            "SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
+            "the CatalogName, TableName, or ColumnName argument was a null pointer.");
+      }
+      return SqlResult::AI_ERROR;
+    }
+  } else { 
+    if (catalog == boost::none) {
+      catalog = std::string("%");
+    }
+    if (schema == boost::none) {
+      schema = std::string("%");
+    }
+    if (table == boost::none) {
+      table = std::string("%");
+    }
+    if (column == boost::none) {
+      column = std::string("%");
+    }
+  }
+
   if (DATABASE_AS_SCHEMA) {
-    if ((schema && schema->empty()) || table.empty()) {
+    if (schema->empty() || table->empty()) {
       std::string warnMsg = "Schema and table name should not be empty.";
       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
       LOG_WARNING_MSG(warnMsg);
@@ -182,13 +231,12 @@ SqlResult::Type ColumnMetadataQuery::Execute() {
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
   } else {
-    if ((catalog && catalog->empty()) || table.empty()) {
+    if (catalog->empty() || table->empty()) {
       std::string warnMsg = "Catalog and table name should not be empty.";
       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
       LOG_WARNING_MSG(warnMsg);
-
       return SqlResult::AI_SUCCESS_WITH_INFO;
-    }    
+    }
   }
 
   SqlResult::Type result = MakeRequestGetColumnsMeta();
@@ -395,7 +443,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     SqlResult::Type result = tableMetadataQuery_->Execute();
     if (result != SqlResult::AI_SUCCESS) {
       std::string warnMsg = "Failed to get table metadata for "
-                            + databasePattern.get_value_or("") + "." + table;
+                            + databasePattern.get_value_or("") + "." + table.get_value_or("");
       LOG_WARNING_MSG(warnMsg);
       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
       return SqlResult::AI_SUCCESS_WITH_INFO;
@@ -425,7 +473,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
            == SqlResult::AI_SUCCESS) {
       result = MakeRequestGetColumnsMetaPerTable(std::string(databaseName),
                                                  std::string(tableName));
-      if (result != SqlResult::AI_SUCCESS) {
+      if (result != SqlResult::AI_SUCCESS && result != SqlResult::AI_SUCCESS_WITH_INFO) {
         LOG_ERROR_MSG("Failed to get columns for " << databaseName << "."
                                                    << tableName);
         break;
@@ -434,8 +482,8 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     return result;
   } else {
     // database name and table name are treated as case insensitive identifiers
-    return MakeRequestGetColumnsMetaPerTable(databasePattern.get_value_or("%"),
-                                             table);
+    return MakeRequestGetColumnsMetaPerTable(databasePattern.get_value_or(""),
+                                             table.get_value_or(""));
   }
 }
 
@@ -495,11 +543,16 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
 
   int32_t prevPosition = 0;
   while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
-    if (column.empty() || column == "%"
-            || column == utility::SqlWcharToString(columnName,STRING_BUFFER_SIZE)) {
+    if (column.get_value_or("") == "%"
+            || column.get_value_or("") == utility::SqlWcharToString(columnName,STRING_BUFFER_SIZE)) {
       meta.emplace_back(meta::ColumnMeta(databaseName, tableName));
       meta.back().Read(columnBindings, ++prevPosition);
     }
+  }
+  if (meta.empty()) {
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
+        "No columns with name \'" + column.get_value_or("") + "\' found");
+    result = SqlResult::AI_SUCCESS_WITH_INFO;
   }
   
   return result;

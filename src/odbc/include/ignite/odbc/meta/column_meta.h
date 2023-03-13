@@ -101,7 +101,7 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * @param databaseName Database name.
    * @param tableName Table name.
    */
-  ColumnMeta(const std::string& databaseName, const std::string& tableName)
+  ColumnMeta(const std::string& databaseName, const boost::optional< std::string >& tableName)
       : tableName(tableName),
         columnName(""),
         dataType(static_cast< int16_t >(

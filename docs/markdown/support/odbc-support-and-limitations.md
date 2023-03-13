@@ -298,6 +298,13 @@ Related function: `SQLSetStmtAttr`
 |SQL_ATTR_ROW_STATUS_PTR| - | yes |
 |SQL_ATTR_ROWS_FETCHED_PTR| - | yes |
 
+## SQLColumns
+
+The driver supports catalog patterns for SQLColumns for both ODBC ver 2.0 and ODBC ver 3.0. 
+When `SQL_ATTR_METADATA_ID` is set to `false` (default), it means schema name, catalog name, column name, database name, and table name need to be treated as case-sensitive search patterns. Parameters passed as nullptr has same meaning as "%" (search pattern that match everything). Read more about search patterns [here](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/pattern-value-arguments?view=sql-server-ver16).
+
+When `SQL_ATTR_METADATA_ID` is set to `true`, it means schema name, catalog name, column name, database name and table name need to be treated as case-insensitive identifiers. In this case, if schema name, catalog name, column name, database name, or table name are passed as nullptr to the driver, then the driver would give HY009: invalid use of null pointer error. Read more about identifiers [here](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/identifier-arguments?view=sql-server-ver16).
+
 ## SQLPrepare, SQLExecute and SQLExecDirect
 
 To support BI tools that may use the SQLPrepare interface in auto-generated queries, the driver
@@ -306,7 +313,7 @@ supports the use of SQLPrepare. However, the use of parameters in queries (value
 Timestream does not support SQL queries with ";", so SQLExecDirect does work with SQL queries with ";" at the end. For the types of SQL queries supported by Timestream, visit the official Timestream query [language support page](https://docs.aws.amazon.com/timestream/latest/developerguide/reference.html).
 
 ## SQLTables
-The driver supports catalog patterns for SQLTables for both ODBC ver 2.0 and ODBC ver 3.0. 
+Similarly to SQLColumns, the driver supports catalog patterns for SQLTables for both ODBC ver 2.0 and ODBC ver 3.0. 
 When `SQL_ATTR_METADATA_ID` is set to `false` (default), it means database name and table name need to be treated as case-sensitive search patterns. Parameters passed as nullptr has same meaning as "%" (search pattern that match everything). Read more about search patterns [here](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/pattern-value-arguments?view=sql-server-ver16).
 
 When `SQL_ATTR_METADATA_ID` is set to `true`, it means database name and table name need to be treated as case-insensitive identifiers. In this case, if database name/table name are passed as nullptr to the driver, then the driver would give HY009: invalid use of null pointer error. Read more about identifiers [here](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/identifier-arguments?view=sql-server-ver16).
