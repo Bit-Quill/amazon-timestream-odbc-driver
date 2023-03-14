@@ -16,10 +16,17 @@ mv ${PKG_INSTALL_DIR}/lib ${FINAL_INSTALL_DIR}/lib
 mv ${PKG_INSTALL_DIR}/doc ${FINAL_INSTALL_DIR}/doc
 
 ODBCINST_INI=/Library/ODBC/odbcinst.ini
+odbc_drivers=`grep "\[ODBC Drivers\]" /Library/ODBC/odbcinst.ini`
 INSTALLED=`grep "Amazon Timestream ODBC Driver" /Library/ODBC/odbcinst.ini`
 if [ -z "${INSTALLED}" ]
 then
-    sed -i -e "s/\[ODBC Drivers\]/\[ODBC Drivers\]\nAmazon Timestream ODBC Driver = Installed/g" $ODBCINST_INI
+    if [ -z "${odbc_drivers}" ]
+    then 
+        echo -e "[ODBC Drivers]" >> $ODBCINST_INI
+        echo "Amazon Timestream ODBC Driver = Installed" >> $ODBCINST_INI
+    else
+        sed -i -e "s/\[ODBC Drivers\]/\[ODBC Drivers\]\nAmazon Timestream ODBC Driver = Installed/g" $ODBCINST_INI
+    fi
     echo -e "\n[Amazon Timestream ODBC Driver]" >> $ODBCINST_INI
     echo "Driver = ${FINAL_INSTALL_DIR}/lib/libtimestream-odbc.dylib" >> $ODBCINST_INI
     echo "Setup = ${FINAL_INSTALL_DIR}/lib/libtimestream-odbc.dylib" >> $ODBCINST_INI

@@ -4,6 +4,8 @@
 In order to use the Timestream ODBC Driver, [ODBC Manager](http://www.odbcmanager.net/) or [iODBC Driver Manager](http://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/Downloads) must be installed.
 
 ### Using ODBC Manager ###
+If ODBC Manager does not have an Amazon Timestream ODBC Driver entry, you can add it following the steps below.
+
 1. Open ODBC Manager.
 2. Go to the **Drivers** tab.
 3. Click **Add...**.
@@ -14,6 +16,8 @@ In order to use the Timestream ODBC Driver, [ODBC Manager](http://www.odbcmanage
 4. Click **OK** to save the options.
 
 ### Using iODBC Administrator ###
+If iODBC Administrator does not have an Amazon Timestream ODBC Driver entry, you can add it following the steps below.
+
 To give the application permission to save the Driver & DSN configurations, run the following from Terminal.
 
 `sudo /Applications/iODBC/iODBC\ Administrator64.app/Contents/MacOS/iODBC\ Administrator64`
@@ -26,7 +30,7 @@ To give the application permission to save the Driver & DSN configurations, run 
     * Set as a **System** driver
 3. Click **OK** to save the options.
 
-### Add a Driver Entry ###
+### Add a System Driver Entry ###
 If /Library/ODBC/odbcinst.ini does not have an Amazon Timestream ODBC Driver entry, you can add it following the steps below.
 
 Use a text editor from Terminal to edit the odbcinst.ini file such as vi.
