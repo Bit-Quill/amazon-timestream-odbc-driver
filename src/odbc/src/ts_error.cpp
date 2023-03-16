@@ -46,8 +46,6 @@ TSErrorInfo& TSErrorInfo::operator=(const TSErrorInfo& other) {
     std::swap(errMsg, tmp.errMsg);
   }
 
-  LOG_DEBUG_MSG("TSErrorInfo constructor exiting");
-
   return *this;
 }
 

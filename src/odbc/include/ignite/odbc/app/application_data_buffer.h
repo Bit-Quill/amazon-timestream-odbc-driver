@@ -246,25 +246,6 @@ class ApplicationDataBuffer {
   ConversionResult::Type PutString(const std::string& value, int32_t& written);
 
   /**
-   * Put in buffer value of type GUID.
-   *
-   * @param value Value.
-   * @return Conversion result.
-   */
-  ConversionResult::Type PutGuid(const Guid& value);
-
-  /**
-   * Put binary data in buffer.
-   *
-   * @param data Data pointer.
-   * @param len Data length.
-   * @param written Number of written characters.
-   * @return Conversion result.
-   */
-  ConversionResult::Type PutBinaryData(const void* data, size_t len,
-                                       int32_t& written);
-
-  /**
    * Put NULL.
    * @return Conversion result.
    */
@@ -399,13 +380,6 @@ class ApplicationDataBuffer {
    * @return Value of type double.
    */
   double GetDouble() const;
-
-  /**
-   * Get value of type GUID.
-   *
-   * @return Value of type Guid.
-   */
-  Guid GetGuid() const;
 
   /**
    * Get value of type Date.

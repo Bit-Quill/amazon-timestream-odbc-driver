@@ -35,6 +35,8 @@ using namespace odbc::common;
 size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
                                      size_t outBufferLenBytes,
                                      bool& isTruncated) {
+  LOG_DEBUG_MSG("CopyUtf8StringToSqlCharString is called with inBuffer is "
+                << inBuffer << ", outBufferLenBytes is " << outBufferLenBytes);
   if (!inBuffer || (outBuffer && outBufferLenBytes == 0))
     return 0;
 
@@ -46,6 +48,7 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
       converter;
   std::wstring inString = converter.from_bytes(inBuffer);
   size_t inBufferLenChars = inString.size();
+  LOG_DEBUG_MSG("inBufferLenChars is " << inBufferLenChars);
 
   // If no output buffer, return REQUIRED length.
   if (!outBuffer)
@@ -61,6 +64,7 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
   outBuffer[outBufferLenActual] = 0;
   isTruncated = (outBufferLenActual < inBufferLenChars);
 
+  LOG_DEBUG_MSG("outBufferLenActual is " << outBufferLenActual);
   return outBufferLenActual;
 }
 
@@ -68,6 +72,8 @@ template < typename OutCharT >
 size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
                                    size_t outBufferLenBytes,
                                    bool& isTruncated) {
+  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with inBuffer is "
+                << inBuffer << ", outBufferLenBytes is " << outBufferLenBytes);
   if (!inBuffer || (outBuffer && outBufferLenBytes == 0))
     return 0;
 
@@ -95,6 +101,8 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
     pOutBuffer = targetProxy.data();
     outBufferLenChars = inBufferLen;
   }
+  LOG_DEBUG_MSG("inBufferLen is " << inBufferLen << ", outBufferLenChars is "
+                                  << outBufferLenChars);
 
   // Setup conversion facet.
   const std::codecvt_utf8< OutCharT > convFacet;
@@ -109,6 +117,7 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
   std::codecvt_base::result result =
       convFacet.in(convState, inBuffer, inBufferEnd, pInBufferNext, pOutBuffer,
                    pOutBuffer + outBufferLenChars, pOutBufferNext);
+  LOG_DEBUG_MSG("result is " << result);
 
   size_t lenConverted = 0;
   switch (result) {
@@ -144,6 +153,8 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
       break;
   }
 
+  LOG_DEBUG_MSG("lenConverted is " << lenConverted);
+
   // Return the number of bytes transfered or required.
   return lenConverted * wCharSize;
 }
@@ -151,11 +162,14 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
 size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
                                       size_t outBufferLenBytes,
                                       bool& isTruncated) {
+  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with inBuffer is "
+                << inBuffer << ", outBufferLenBytes is " << outBufferLenBytes);
   if (!inBuffer)
     return 0;
 
   // Handles SQLWCHAR if either UTF-16 and UTF-32
   size_t wCharSize = sizeof(SQLWCHAR);
+  LOG_DEBUG_MSG("wCharSize is " << wCharSize);
   switch (wCharSize) {
     case 2:
       return CopyUtf8StringToWcharString(
@@ -175,6 +189,9 @@ size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
 // High-level entry point to handle buffer size in either bytes or characters
 size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
                           bool& isTruncated, bool isLenInBytes) {
+  LOG_DEBUG_MSG("CopyStringToBuffer is called with str is "
+                << str << ", buflen is " << buflen << ", isLenInBytes is "
+                << isLenInBytes);
   size_t wCharSize = sizeof(SQLWCHAR);
 
   // Ensure non-zero length in bytes is a multiple of wide char size.
@@ -185,9 +202,14 @@ size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
   isTruncated = false;
   size_t bytesWritten = CopyUtf8StringToSqlWcharString(
       str.c_str(), buf, bufLenInBytes, isTruncated);
+
+  LOG_DEBUG_MSG("wCharSize is " << wCharSize << ", bufLenInBytes is "
+                                << bufLenInBytes << ", bytesWritten is "
+                                << bytesWritten);
   return isLenInBytes ? bytesWritten : bytesWritten / wCharSize;
 }
 
+// To be deleted
 void ReadString(BinaryReaderImpl& reader, std::string& str) {
   int32_t strLen = reader.ReadString(0, 0);
 
@@ -210,6 +232,7 @@ void WriteString(BinaryWriterImpl& writer, const std::string& str) {
   writer.WriteString(str.data(), static_cast< int32_t >(str.size()));
 }
 
+// To be deleted
 void ReadDecimal(BinaryReaderImpl& reader, Decimal& decimal) {
   int8_t hdr = reader.ReadInt8();
 
@@ -241,6 +264,7 @@ void ReadDecimal(BinaryReaderImpl& reader, Decimal& decimal) {
   decimal.Swap(res);
 }
 
+// To be deleted
 void WriteDecimal(BinaryWriterImpl& writer, const Decimal& decimal) {
   writer.WriteInt8(IGNITE_TYPE_DECIMAL);
 
@@ -268,6 +292,8 @@ void WriteDecimal(BinaryWriterImpl& writer, const Decimal& decimal) {
 
 std::string SqlWcharToString(const SQLWCHAR* sqlStr, int32_t sqlStrLen,
                              bool isLenInBytes) {
+  LOG_DEBUG_MSG("SqlWcharToString is called with sqlStrLen is "
+                << sqlStrLen << ", isLenInBytes is " << isLenInBytes);
   if (!sqlStr)
     return std::string();
 
@@ -295,13 +321,18 @@ std::string SqlWcharToString(const SQLWCHAR* sqlStr, int32_t sqlStrLen,
 boost::optional< std::string > SqlWcharToOptString(const SQLWCHAR* sqlStr,
                                                    int32_t sqlStrLen,
                                                    bool isLenInBytes) {
+  LOG_DEBUG_MSG("SqlWcharToOptString is called with sqlStrLen is "
+                << sqlStrLen << ", isLenInBytes is " << isLenInBytes);
   if (!sqlStr)
     return boost::none;
 
   return SqlWcharToString(sqlStr, sqlStrLen, isLenInBytes);
 }
 
+// test sqlStr null case
 std::string SqlCharToString(const SQLCHAR* sqlStr, int32_t sqlStrLen) {
+  LOG_DEBUG_MSG("SqlCharToString is called with sqlStr is "
+                << sqlStr << ", sqlStrLen is " << sqlStrLen);
   std::string res;
 
   const char* sqlStrC = reinterpret_cast< const char* >(sqlStr);
@@ -337,6 +368,7 @@ std::wstring FromUtf8(const char* value) {
   return converter.from_bytes(value);
 }
 
+// To be deleted
 void ReadByteArray(BinaryReaderImpl& reader, std::vector< int8_t >& res) {
   int32_t len = reader.ReadInt8Array(0, 0);
 
@@ -353,6 +385,7 @@ std::vector< SQLWCHAR > ToWCHARVector(const std::string& value) {
 }
 
 std::vector< SQLWCHAR > ToWCHARVector(const char* value) {
+  LOG_DEBUG_MSG("ToWCHARVector is called with value is " << value);
   size_t wCharSize = sizeof(SQLWCHAR);
   size_t inBufferLenBytes = std::strlen(value);
   // Handle worst-case scenario where there is a one-to-one mapping.
@@ -392,14 +425,20 @@ std::string Trim(const std::string& s) {
 
 int UpdateRegexExpression(int index, int start, const std::string& pattern,
                           const std::string& str, std::string& converted) {
+  LOG_DEBUG_MSG("UpdateRegexExpression is called with index is "
+                << index << ", start is " << start << ", pattern is " << pattern
+                << ", str is " << str);
   if (index - start > 0) {
     converted.append(pattern.substr(start, index - start));
   }
   converted.append(str);
+
+  LOG_DEBUG_MSG("converted is " << converted);
   return index + 1;
 }
 
 std::string ConvertPatternToRegex(const std::string& pattern) {
+  LOG_DEBUG_MSG("ConvertPatternToRegex is called with pattern is " << pattern);
   std::string converted("");
   if (pattern.empty() || Trim(pattern).empty()) {
     return converted;
@@ -433,10 +472,13 @@ std::string ConvertPatternToRegex(const std::string& pattern) {
   if (pattern.length() - start > 0) {
     converted.append(pattern.substr(start));
   }
+  LOG_DEBUG_MSG("converted is " << converted);
   return converted;
 }
 
 int StringToInt(const std::string& s, size_t* idx, int base) {
+  LOG_DEBUG_MSG("StringToInt is called with s is " << s << ", idx is " << (idx ? *idx : -1)
+                                                   << ", base is " << base);
   if (s.empty())
     return 0;
 
@@ -445,12 +487,16 @@ int StringToInt(const std::string& s, size_t* idx, int base) {
   try {
     retval = std::stoi(s, idx, base);
   } catch (std::exception& e) {
-    LOG_ERROR_MSG("Failed to convert "<< s <<" to int, Exception caught: '" << e.what() << "'");
+    LOG_ERROR_MSG("Failed to convert " << s << " to int, Exception caught: '"
+                                       << e.what() << "'");
   }
   return retval;
 }
 
 long StringToLong(const std::string& s, size_t* idx, int base) {
+  LOG_DEBUG_MSG("StringToLong is called with s is "
+                << s << ", idx is " << (idx ? *idx : -1) << ", base is "
+                << base);
   if (s.empty())
     return 0;
 
@@ -466,11 +512,11 @@ long StringToLong(const std::string& s, size_t* idx, int base) {
 }
 
 bool CheckEnvVarSetToTrue(const std::string& envVar) {
-  std::string envVarStr = common::GetEnv(envVar);
-  std::transform(envVarStr.begin(), envVarStr.end(), envVarStr.begin(),
+  std::string envVarVal = common::GetEnv(envVar);
+  std::transform(envVarVal.begin(), envVarVal.end(), envVarVal.begin(),
                  ::toupper);
-
-  return envVarStr == "TRUE";
+  LOG_DEBUG_MSG(envVar << " is set to \"" << envVarVal << "\"");
+  return envVarVal == "TRUE";
 }
 
 }  // namespace utility

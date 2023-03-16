@@ -115,6 +115,7 @@ ColumnMetadataQuery::ColumnMetadataQuery(
       fetched(false),
       meta(),
       columnsMeta() {
+  LOG_DEBUG_MSG("ColumnMetadataQuery is called");
   using namespace ignite::odbc::impl::binary;
   using namespace ignite::odbc::type_traits;
 
@@ -171,6 +172,7 @@ ColumnMetadataQuery::~ColumnMetadataQuery() {
 }
 
 SqlResult::Type ColumnMetadataQuery::Execute() {
+  LOG_DEBUG_MSG("Execute is called");
   if (executed)
     Close();
 
@@ -225,16 +227,17 @@ SqlResult::Type ColumnMetadataQuery::Execute() {
   if (DATABASE_AS_SCHEMA) {
     if (schema->empty() || table->empty()) {
       std::string warnMsg = "Schema and table name should not be empty.";
-      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-      LOG_WARNING_MSG(warnMsg);
+      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
+                           LogLevel::Type::WARNING_LEVEL);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
   } else {
     if (catalog->empty() || table->empty()) {
       std::string warnMsg = "Catalog and table name should not be empty.";
-      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
-      LOG_WARNING_MSG(warnMsg);
+
+      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
+                           LogLevel::Type::WARNING_LEVEL);
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
   }
@@ -248,6 +251,7 @@ SqlResult::Type ColumnMetadataQuery::Execute() {
     cursor = meta.begin();
   }
 
+  LOG_DEBUG_MSG("Execute exiting with " << result);
   return result;
 }
 
@@ -257,6 +261,7 @@ const meta::ColumnMetaVector* ColumnMetadataQuery::GetMeta() {
 
 SqlResult::Type ColumnMetadataQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
+  LOG_DEBUG_MSG("FetchNextRow is called");
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -268,8 +273,10 @@ SqlResult::Type ColumnMetadataQuery::FetchNextRow(
     fetched = true;
   else if (cursor != meta.end())
     ++cursor;
-  if (cursor == meta.end())
+  if (cursor == meta.end()) {
+    LOG_DEBUG_MSG("cursor reaches meta end");
     return SqlResult::AI_NO_DATA;
+  }
 
   app::ColumnBindingMap::iterator it;
 
@@ -281,6 +288,7 @@ SqlResult::Type ColumnMetadataQuery::FetchNextRow(
 
 SqlResult::Type ColumnMetadataQuery::GetColumn(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
+  LOG_DEBUG_MSG("GetColumn is called with columnIdx " << columnIdx);
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -291,12 +299,12 @@ SqlResult::Type ColumnMetadataQuery::GetColumn(
   if (cursor == meta.end()) {
     std::string errMsg = "Cursor has reached end of the result set.";
     diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
-    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 
   const meta::ColumnMeta& currentColumn = *cursor;
   boost::optional< int16_t > columnType = currentColumn.GetDataType();
+  LOG_DEBUG_MSG("columnType is " << columnType.get_value_or(-1));
 
   switch (columnIdx) {
     case ResultColumn::TABLE_CAT: {
@@ -408,7 +416,6 @@ SqlResult::Type ColumnMetadataQuery::GetColumn(
       diag.AddStatusRecord(SqlState::S07009_INVALID_DESCRIPTOR_INDEX,
                            "Invalid index.");
       return SqlResult::AI_ERROR;
-      break;
     }
   }
 
@@ -438,14 +445,18 @@ SqlResult::Type ColumnMetadataQuery::NextResultSet() {
 SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     const boost::optional< std::string >& databasePattern,
     TableMetadataQuery::ResultColumn::Type databaseType) {
+  LOG_DEBUG_MSG(
+      "GetColumnsWithDatabaseSearchPattern is called with databasePattern "
+      << databasePattern.get_value_or(""));
   if (!connection.GetMetadataID()) {
     // database name and table name are treated as search patterns
     SqlResult::Type result = tableMetadataQuery_->Execute();
     if (result != SqlResult::AI_SUCCESS) {
       std::string warnMsg = "Failed to get table metadata for "
-                            + databasePattern.get_value_or("") + "." + table.get_value_or("");
-      LOG_WARNING_MSG(warnMsg);
-      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg);
+                            + databasePattern.get_value_or("") + "."
+                            + table.get_value_or("");
+      diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
+                           LogLevel::Type::WARNING_LEVEL);
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
 
@@ -469,6 +480,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
         buflen, nullptr);
     columnBindings[TableMetadataQuery::ResultColumn::TABLE_NAME] = buf2;
 
+    LOG_ERROR_MSG("table is " << databaseName << "." << tableName);
     while (tableMetadataQuery_->FetchNextRow(columnBindings)
            == SqlResult::AI_SUCCESS) {
       result = MakeRequestGetColumnsMetaPerTable(std::string(databaseName),
@@ -488,6 +500,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
 }
 
 SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
+  LOG_DEBUG_MSG("MakeRequestGetColumnsMeta is called");
   // meta should only be cleared here as MakeRequestGetColumnsMetaPerTable()
   // could be called multiple times
   meta.clear();
@@ -504,10 +517,13 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
 }
 
 SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std::string& databaseName, const std::string& tableName) {
+  LOG_DEBUG_MSG("MakeRequestGetColumnsMetaPerTable is called with databaseName: "
+                << databaseName << ", tableName: " << tableName);
   std::string sql = "describe \"";
   sql += databaseName;
   sql += "\".\"";
   sql += tableName + "\"";
+  LOG_DEBUG_MSG("sql is " << sql);
 
   app::ParameterSet params;
   int32_t timeout = 60;
@@ -516,7 +532,7 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
       std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
   SqlResult::Type result = dataQuery_->Execute();
   if (result != SqlResult::AI_SUCCESS) {
-    LOG_WARNING_MSG("Failed to execute sql:" << sql);
+    LOG_DEBUG_MSG("Sql execution result is " << result);
     return SqlResult::AI_NO_DATA;
   }
 
@@ -541,6 +557,8 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
       buflen, nullptr);
   columnBindings[3] = buf3;
 
+  LOG_DEBUG_MSG("column is " << columnName << ", dataType is " << dataType << ", remarks is " << remarks);
+
   int32_t prevPosition = 0;
   while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
     if (column.get_value_or("") == "%"
@@ -549,9 +567,13 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
       meta.back().Read(columnBindings, ++prevPosition);
     }
   }
+
+  LOG_DEBUG_MSG("meta size is " << meta.size());
+
   if (meta.empty()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
-        "No columns with name \'" + column.get_value_or("") + "\' found");
+        "No columns with name \'" + column.get_value_or("") + "\' found",
+        LogLevel::Type::WARNING_LEVEL);
     result = SqlResult::AI_SUCCESS_WITH_INFO;
   }
   

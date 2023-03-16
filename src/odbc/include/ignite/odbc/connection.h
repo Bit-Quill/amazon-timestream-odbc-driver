@@ -451,8 +451,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
     if (outQueryLen)
       *outQueryLen = actualBufferLen;
 
-    LOG_DEBUG_MSG("SQLNativeSql exiting");
-
     if (isTruncated) {
       AddStatusRecord(
           SqlState::S01004_DATA_TRUNCATED,
@@ -503,13 +501,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalSetAttribute(int attr, void* value,
                                        SQLINTEGER valueLen);
-
-  /**
-   * Ensure there is a connection to the cluster.
-   *
-   * @throw OdbcError on failure.
-   */
-  void EnsureConnected();
 
   /**
    * Try to restore connection to the cluster.

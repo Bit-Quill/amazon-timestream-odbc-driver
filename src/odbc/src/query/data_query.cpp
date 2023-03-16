@@ -45,7 +45,6 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
       hasAsyncFetch(false),
       rowCounter(0) {
   // No-op.
-  LOG_DEBUG_MSG("DataQuery constructor is called, and exiting");
 }
 
 DataQuery::~DataQuery() {
@@ -53,8 +52,6 @@ DataQuery::~DataQuery() {
 
   if (result_.get())
     InternalClose();
-
-  LOG_DEBUG_MSG("~DataQuery exiting");
 }
 
 SqlResult::Type DataQuery::Execute() {
@@ -63,9 +60,10 @@ SqlResult::Type DataQuery::Execute() {
   if (result_.get())
     InternalClose();
 
-  LOG_DEBUG_MSG("Execute exiting");
+  SqlResult::Type retval = MakeRequestExecute();
 
-  return MakeRequestExecute();
+  LOG_DEBUG_MSG("retval is " << retval);
+  return retval;
 }
 
 const meta::ColumnMetaVector* DataQuery::GetMeta() {
@@ -75,14 +73,11 @@ const meta::ColumnMetaVector* DataQuery::GetMeta() {
     MakeRequestResultsetMeta();
 
     if (!resultMetaAvailable_) {
-      LOG_ERROR_MSG("GetMeta exiting with error. Returning nullptr");
-      LOG_DEBUG_MSG("reason: result meta is not available");
+      LOG_ERROR_MSG("Returning nullptr due to no available result meta");
 
       return nullptr;
     }
   }
-
-  LOG_DEBUG_MSG("GetMeta exiting");
 
   return &resultMeta_;
 }
@@ -96,6 +91,7 @@ const meta::ColumnMetaVector* DataQuery::GetMeta() {
 void AsyncFetchOnePage(
     const std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > client,
     const QueryRequest& request, DataQueryContext& context_) {
+  LOG_DEBUG_MSG("AsyncFetchOnePage is called");
   Aws::TimestreamQuery::Model::QueryOutcome result;
   result = client->Query(request);
 
@@ -107,6 +103,7 @@ void AsyncFetchOnePage(
   });
 
   if (context_.queue_.empty()) {
+    LOG_DEBUG_MSG("Result queue is empty");
     // context_.queue_ hold one element at most
     context_.queue_.push(result);
     context_.cv_.notify_one();
@@ -114,6 +111,7 @@ void AsyncFetchOnePage(
 }
 
 SqlResult::Type DataQuery::SwitchCursor() {
+  LOG_DEBUG_MSG("SwitchCursor is called");
   std::unique_lock< std::mutex > locker(context_.mutex_);
   context_.cv_.wait(locker, [&]() { return !context_.queue_.empty(); });
   Aws::TimestreamQuery::Model::QueryOutcome outcome = context_.queue_.front();
@@ -152,15 +150,19 @@ SqlResult::Type DataQuery::SwitchCursor() {
       // wait for the last thread to end. The join() should be done before the
       // thread is popped from the queue. The thread could not be joined after 
       // it is popped from the queue, as it could cause crash.
+      LOG_DEBUG_MSG("Waiting for thread " << itr.get_id() << " to end");
       if (itr.joinable()) {
         itr.join();
       }
       threads_.pop();
+    } else {
+      LOG_DEBUG_MSG("The threads queue is empty");   
     }
 
     request_.SetNextToken(token);
     std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
                      std::ref(context_));
+    LOG_DEBUG_MSG("New thread " << next.get_id() << " is started");
     addThreads(next);
   }
 
@@ -172,11 +174,8 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
 
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                         "Cursor does not point to any data.");
-
-    LOG_ERROR_MSG(
-        "FetchNextRow exiting due to cursor does not point to any data");
-
+                         "Cursor does not point to any data.",
+                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_NO_DATA;
   }
 
@@ -185,14 +184,13 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
       SqlResult::Type result = SwitchCursor();
       if (result != SqlResult::AI_SUCCESS) {
         diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
-                             "Invalid cursor state.");
-
-        LOG_DEBUG_MSG("SwitchCursor does not return SUCCESS");
+                             "Invalid cursor state.",
+                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
         return result;
       }
     } else {
       LOG_INFO_MSG(
-          "FetchNextRow exiting with AI_NO_DATA due to cursor has reached the "
+          "Exit due to cursor has reached the "
           "end.");
       return SqlResult::AI_NO_DATA;
     }
@@ -201,9 +199,6 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   TimestreamRow* row = cursor_->GetRow();
   if (!row) {
     diag.AddStatusRecord("Cursor has a null row.");
-
-    LOG_ERROR_MSG(
-        "FetchNextRow exiting with AI_ERROR due to cursor has a null row");
     return SqlResult::AI_ERROR;
   }
 
@@ -220,14 +215,13 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
 
     if (result == SqlResult::AI_ERROR) {
       LOG_ERROR_MSG(
-          "FetchNextRow exiting with AI_ERROR due to data reading error");
+          "Exit due to data reading error");
       return SqlResult::AI_ERROR;
     }
   }
 
-  LOG_DEBUG_MSG("FetchNextRow exiting");
-
   rowCounter++;
+
   return SqlResult::AI_SUCCESS;
 }
 
@@ -237,9 +231,8 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
 
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                         "Cursor does not point to any data.");
-
-    LOG_INFO_MSG("GetColumn exiting due to cursor does not point to any data");
+                         "Cursor does not point to any data.",
+                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
 
     return SqlResult::AI_NO_DATA;
   }
@@ -250,10 +243,6 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
     diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
                          "Cursor has reached end of the result set.");
 
-    LOG_ERROR_MSG(
-        "GetColumn exiting with error: Cursor has reached end of the result "
-        "set");
-
     return SqlResult::AI_ERROR;
   }
 
@@ -262,14 +251,17 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
 
   SqlResult::Type result = ProcessConversionResult(convRes, 0, columnIdx);
 
-  LOG_DEBUG_MSG("GetColumn exiting");
+  LOG_DEBUG_MSG("result is " << result);
   return result;
 }
 
 SqlResult::Type DataQuery::Close() {
-  LOG_DEBUG_MSG("Close is called, and exiting");
+  LOG_DEBUG_MSG("Close is called");
 
-  return InternalClose();
+  SqlResult::Type retval = InternalClose();
+
+  LOG_DEBUG_MSG("retval is " << retval);
+  return retval;
 }
 
 SqlResult::Type DataQuery::InternalClose() {
@@ -291,22 +283,16 @@ SqlResult::Type DataQuery::InternalClose() {
   result_.reset();
   cursor_.reset();
 
-  LOG_DEBUG_MSG("InternalClose exiting");
-
   return SqlResult::AI_SUCCESS;
 }
 
 bool DataQuery::DataAvailable() const {
-  LOG_DEBUG_MSG("DataAvailable is called, and exiting");
-
   return cursor_ != nullptr;
 }
 
 int64_t DataQuery::AffectedRows() const {
   // Return zero by default, since number of affected rows is non-zero only
   // if we're executing update statements, which is not supported
-  LOG_DEBUG_MSG("AffectedRows is called, and exiting. 0 is returned.");
-
   return 0;
 }
 
@@ -321,6 +307,8 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
   LOG_INFO_MSG("sql query: " << sql_);
   request_.SetQueryString(sql_);
   if (connection_.GetConfiguration().IsMaxRowPerPageSet()) {
+    LOG_DEBUG_MSG("MaxRowPerPage is set to "
+                  << connection_.GetConfiguration().GetMaxRowPerPage());
     request_.SetMaxRows(connection_.GetConfiguration().GetMaxRowPerPage());
   }
 
@@ -345,7 +333,7 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
     if (result_->GetRows().empty()) {
       if (result_->GetNextToken().empty()) {
         // result is empty
-        LOG_DEBUG_MSG("Returning no data (AI_NO_DATA)");
+        LOG_DEBUG_MSG("QueryResult is empty, returning no data");
         return SqlResult::AI_NO_DATA;
       }
       request_.SetNextToken(result_->GetNextToken());
@@ -358,6 +346,7 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
   cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
 
   if (!result_->GetNextToken().empty()) {
+    LOG_DEBUG_MSG("Next token is not empty, starting async thread to fetch next page");
     request_.SetNextToken(result_->GetNextToken());
     std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
                      std::ref(context_));
@@ -365,9 +354,9 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
     hasAsyncFetch = true;
   }
 
-  LOG_DEBUG_MSG("MakeRequestExecute exiting");
+  SqlResult::Type retval = MakeRequestFetch();
 
-  return MakeRequestFetch();
+  return retval;
 }
 
 SqlResult::Type DataQuery::MakeRequestFetch() {
@@ -376,7 +365,6 @@ SqlResult::Type DataQuery::MakeRequestFetch() {
   if (!result_.get()) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "result_ is a null pointer");
-    LOG_DEBUG_MSG("result_ pointer is not populated.");
     return SqlResult::AI_ERROR;
   }
 
@@ -391,10 +379,11 @@ SqlResult::Type DataQuery::MakeRequestFetch() {
   if (result_->GetRows().empty()) {
     retval = SqlResult::AI_NO_DATA;
   } else {
+    LOG_DEBUG_MSG("Result has " << result_->GetRows().size() << " rows");
     cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
   }
 
-  LOG_DEBUG_MSG("MakeRequestFetch exiting");
+  LOG_DEBUG_MSG("retval is " << retval);
 
   return retval;
 }
@@ -416,9 +405,6 @@ SqlResult::Type DataQuery::MakeRequestResultsetMeta() {
                              + error.GetMessage() + " for query " + sql_);
 
     InternalClose();
-
-    LOG_ERROR_MSG("MakeRequestResultsetMeta exiting with error msg: "
-                  << error.GetExceptionName() << ": " << error.GetMessage());
     return SqlResult::AI_ERROR;
   }
   // outcome is successful
@@ -426,8 +412,6 @@ SqlResult::Type DataQuery::MakeRequestResultsetMeta() {
   const Aws::Vector< ColumnInfo >& columnInfo = result.GetColumnInfo();
 
   ReadColumnMetadataVector(columnInfo);
-
-  LOG_DEBUG_MSG("MakeRequestResultsetMeta exiting");
 
   return SqlResult::AI_SUCCESS;
 }
@@ -441,8 +425,7 @@ void DataQuery::ReadColumnMetadataVector(
 
   if (tsVector.empty()) {
     LOG_ERROR_MSG(
-        "ReadColumnMetadataVector exiting without reading Timestream vector");
-    LOG_INFO_MSG("reason: tsVector is empty");
+        "Exit due to column vector is empty");
 
     return;
   }
@@ -452,25 +435,19 @@ void DataQuery::ReadColumnMetadataVector(
     resultMeta_.back().ReadMetadata(tsMetadata);
   }
   resultMetaAvailable_ = true;
-
-  LOG_DEBUG_MSG("ReadColumnMetadataVector exiting");
 }
 
 SqlResult::Type DataQuery::ProcessConversionResult(
     app::ConversionResult::Type convRes, int32_t rowIdx, int32_t columnIdx) {
-  LOG_DEBUG_MSG("ProcessConversionResult is called");
+  LOG_DEBUG_MSG("ProcessConversionResult is called with convRes is " << static_cast<int>(convRes));
 
   switch (convRes) {
     case app::ConversionResult::Type::AI_SUCCESS: {
-      LOG_DEBUG_MSG("parameter: convRes: AI_SUCCESS");
-      LOG_DEBUG_MSG("ProcessConversionResult exiting");
 
       return SqlResult::AI_SUCCESS;
     }
 
     case app::ConversionResult::Type::AI_NO_DATA: {
-      LOG_DEBUG_MSG("parameter: convRes: AI_NO_DATA");
-      LOG_DEBUG_MSG("ProcessConversionResult exiting");
 
       return SqlResult::AI_NO_DATA;
     }
@@ -479,11 +456,8 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S01004_DATA_TRUNCATED,
           "Buffer is too small for the column data. Truncated from the right.",
+          ignite::odbc::LogLevel::Type::WARNING_LEVEL,
           rowIdx, columnIdx);
-      LOG_DEBUG_MSG("parameter: convRes: AI_VARLEN_DATA_TRUNCATED");
-      LOG_DEBUG_MSG(
-          "ProcessConversionResult exiting with AI_SUCCESS_WITH_INFO: Buffer "
-          "is too small for the column data. Truncated from the right.");
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -492,13 +466,8 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S01S07_FRACTIONAL_TRUNCATION,
           "Buffer is too small for the column data. Fraction truncated.",
+          ignite::odbc::LogLevel::Type::WARNING_LEVEL,
           rowIdx, columnIdx);
-
-      LOG_DEBUG_MSG("parameter: convRes: AI_FRACTIONAL_TRUNCATED");
-      LOG_DEBUG_MSG(
-          "ProcessConversionResult exiting with AI_SUCCESS_WITH_INFO: Buffer "
-          "is too small for the column data. "
-          "Fraction truncated.");
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -506,26 +475,19 @@ SqlResult::Type DataQuery::ProcessConversionResult(
     case app::ConversionResult::Type::AI_INDICATOR_NEEDED: {
       diag.AddStatusRecord(
           SqlState::S22002_INDICATOR_NEEDED,
-          "Indicator is needed but not suplied for the column buffer.", rowIdx,
+          "Indicator is needed but not suplied for the column buffer.", 
+          ignite::odbc::LogLevel::Type::WARNING_LEVEL, 
+          rowIdx,
           columnIdx);
-
-      LOG_DEBUG_MSG("parameter: convRes: AI_INDICATOR_NEEDED");
-      LOG_DEBUG_MSG(
-          "ProcessConversionResult exiting with AI_SUCCESS_WITH_INFO: "
-          "Indicator is needed but not suplied for the column buffer.");
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
 
     case app::ConversionResult::Type::AI_UNSUPPORTED_CONVERSION: {
       diag.AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                           "Data conversion is not supported.", rowIdx,
+                           "Data conversion is not supported.",
+                           ignite::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx,
                            columnIdx);
-
-      LOG_DEBUG_MSG("parameter: convRes: AI_UNSUPPORTED_CONVERSION");
-      LOG_DEBUG_MSG(
-          "ProcessConversionResult exiting with AI_SUCCESS_WITH_INFO: Data "
-          "conversion is not supported.");
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -533,15 +495,11 @@ SqlResult::Type DataQuery::ProcessConversionResult(
     case app::ConversionResult::Type::AI_FAILURE:
       LOG_DEBUG_MSG("parameter: convRes: AI_FAILURE");
     default: {
-      diag.AddStatusRecord(SqlState::S01S01_ERROR_IN_ROW,
-                           "Can not retrieve row column.", rowIdx, columnIdx);
-      LOG_ERROR_MSG(
-          "Default case: ProcessConversionResult exiting. msg: Can not "
-          "retrieve row column.");
+      diag.AddStatusRecord(SqlState::S01S01_ERROR_IN_ROW, "Can not retrieve row column.",
+          ignite::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
       break;
     }
   }
-  LOG_ERROR_MSG("ProcessConversionResult exiting with error");
 
   return SqlResult::AI_ERROR;
 }
@@ -575,7 +533,6 @@ void DataQuery::SetResultsetMeta(const meta::ColumnMetaVector& value) {
                 << "\n[" << i << "] ColumnType: not available");
     }
   }
-  LOG_DEBUG_MSG("SetResultsetMeta exiting");
 }
 }  // namespace query
 }  // namespace odbc

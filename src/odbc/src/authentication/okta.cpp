@@ -37,11 +37,11 @@ const std::string TimestreamOktaCredentialsProvider::SAML_RESPONSE_PATTERN =
 
 std::shared_ptr< Aws::Http::HttpRequest >
 TimestreamOktaCredentialsProvider::CreateSessionTokenReq() {
-  LOG_DEBUG_MSG(
-      "TimestreamOktaCredentialsProvider::CreateSessionTokenReq is "
-      "called");
+  LOG_DEBUG_MSG("CreateSessionTokenReq is called");
 
   std::string baseUri = "https://" + config_.GetIdPHost() + "/api/v1/authn";
+  LOG_DEBUG_MSG("baseUri is " << baseUri);
+
   std::shared_ptr< Aws::Http::HttpRequest > req = Aws::Http::CreateHttpRequest(
       baseUri, Aws::Http::HttpMethod::HTTP_POST,
       Aws::Utils::Stream::DefaultResponseStreamFactoryMethod);
@@ -64,14 +64,11 @@ TimestreamOktaCredentialsProvider::CreateSessionTokenReq() {
   req->AddContentBody(ss);
   req->SetContentLength(std::to_string(body.size()));
 
-  LOG_DEBUG_MSG("TimestreamOktaCredentialsProvider::CreateSessionTokenReq exiting");
   return req;
 }
 
 std::string TimestreamOktaCredentialsProvider::GetSessionToken(std::string& errInfo) {
-  LOG_DEBUG_MSG(
-      "TimestreamOktaCredentialsProvider::GetSessionToken is "
-      "called");
+  LOG_DEBUG_MSG("GetSessionToken is called");
 
   std::string sessionToken("");
 
@@ -87,8 +84,6 @@ std::string TimestreamOktaCredentialsProvider::GetSessionToken(std::string& errI
       errInfo += " Error info: '" + response->GetClientErrorMessage() + "'.";
     }
     LOG_ERROR_MSG(errInfo);
-    LOG_DEBUG_MSG(
-        "TimestreamOktaCredentialsProvider::GetSessionToken exiting");
     return sessionToken;
   }
 
@@ -97,7 +92,6 @@ std::string TimestreamOktaCredentialsProvider::GetSessionToken(std::string& errI
   if (!responseBody.WasParseSuccessful()) {
     errInfo = "Error parsing response body. " + responseBody.GetErrorMessage();
     LOG_ERROR_MSG(errInfo);
-    LOG_DEBUG_MSG("TimestreamOktaCredentialsProvider::GetSessionToken exiting");
     return sessionToken;
   }
 
@@ -110,17 +104,13 @@ std::string TimestreamOktaCredentialsProvider::GetSessionToken(std::string& errI
     LOG_ERROR_MSG(errInfo);
   }
 
-  LOG_DEBUG_MSG("TimestreamOktaCredentialsProvider::GetSessionToken exiting");
   return sessionToken;
 }
 
 std::string TimestreamOktaCredentialsProvider::DecodeNumericCharacters(
     const std::string& htmlString) {
-  LOG_DEBUG_MSG(
-      "TimestreamOktaCredentialsProvider::DecodeNumericCharacters is "
-      "called");
+  LOG_DEBUG_MSG("DecodeNumericCharacters is called");
   if (htmlString.length() < SINGLE_NUM_CHAR_REF_LENGTH) {
-    LOG_DEBUG_MSG("TimestreamOktaCredentialsProvider::DecodeNumericCharacters exiting");
     return htmlString;
   }
 
@@ -142,22 +132,17 @@ std::string TimestreamOktaCredentialsProvider::DecodeNumericCharacters(
     result += c;
   }
 
-  LOG_DEBUG_MSG("TimestreamOktaCredentialsProvider::DecodeNumericCharacters exiting");
   return result;
 }
 
 std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(std::string& errInfo) {
-  LOG_DEBUG_MSG(
-      "TimestreamOktaCredentialsProvider::GetSAMLAssertion is "
-      "called");
+  LOG_DEBUG_MSG("GetSAMLAssertion is called");
   std::string samlResponse("");
   
   // get session token
   std::string sessionToken = GetSessionToken(errInfo);
   if (sessionToken.empty()) {
     LOG_ERROR_MSG("Could not get one time session token for Okta");
-    LOG_DEBUG_MSG(
-        "TimestreamOktaCredentialsProvider::GetSAMLAssertion exiting");
     return samlResponse;
   }
 
@@ -181,8 +166,6 @@ std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(std::string& err
       errInfo += " Client error: '" + response->GetClientErrorMessage() + "'.";
     }
     LOG_ERROR_MSG(errInfo);
-    LOG_DEBUG_MSG(
-        "TimestreamOktaCredentialsProvider::GetSAMLAssertion exiting");
     return samlResponse;
   }
 
@@ -200,8 +183,6 @@ std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(std::string& err
     LOG_ERROR_MSG(errInfo);
   }
 
-  LOG_DEBUG_MSG(
-      "TimestreamOktaCredentialsProvider::GetSAMLAssertion exiting");
   return samlResponse;
 }
 

@@ -113,6 +113,7 @@ const std::string IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
 
 Aws::TimestreamQuery::Model::ScalarType ColumnMeta::GetScalarDataType(
     const std::string& dataType) {
+  LOG_DEBUG_MSG("GetScalarDataType is called with dataType " << dataType);
   if (dataType == "varchar") {
     return Aws::TimestreamQuery::Model::ScalarType::VARCHAR;
   } else if (dataType == "bigint") {
@@ -139,6 +140,7 @@ Aws::TimestreamQuery::Model::ScalarType ColumnMeta::GetScalarDataType(
 }
 
 void ColumnMeta::Read(app::ColumnBindingMap& columnBindings, int32_t position) {
+  LOG_DEBUG_MSG("Read is called");
   auto itr = columnBindings.find(1);
   if (itr == columnBindings.end()) {
     LOG_ERROR_MSG("Could not find the first column");
@@ -170,6 +172,7 @@ void ColumnMeta::Read(app::ColumnBindingMap& columnBindings, int32_t position) {
 }
 
 void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
+  LOG_DEBUG_MSG("ReadMetadata is called");
   using Aws::TimestreamQuery::Model::Type;
 
   columnInfo = tsMetadata;
@@ -178,6 +181,7 @@ void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
 
   // columnName and scalarType are the only 2 piece of info from Type object
   columnName = tsMetadata.GetName();
+  LOG_DEBUG_MSG("columnName is " << columnName);
   if (columnType.ScalarTypeHasBeenSet()) {
     dataType = static_cast< int16_t >(columnType.GetScalarType());
   } else {
@@ -187,10 +191,12 @@ void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
 }
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
+  LOG_DEBUG_MSG("GetAttribute is called with fieldId " << fieldId);
   using namespace ignite::odbc::impl::binary;
 
   // an empty string is returned if the column does not have the requested field
   value = "";
+  bool retval = true;
   switch (fieldId) {
     case SQL_DESC_LABEL:
     case SQL_DESC_BASE_COLUMN_NAME:
@@ -198,7 +204,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       if (columnName)
         value = *columnName;
 
-      return true;
+      break;
     }
 
     case SQL_DESC_TABLE_NAME:
@@ -206,21 +212,21 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       if (tableName)
         value = *tableName;
 
-      return true;
+      break;
     }
 
     case SQL_DESC_SCHEMA_NAME: {
       if (schemaName)
         value = *schemaName;
 
-      return true;
+      break;
     }
 
     case SQL_DESC_CATALOG_NAME: {
       if (catalogName)
         value = *catalogName;
 
-      return true;
+      break;
     }
 
     case SQL_DESC_LITERAL_PREFIX:
@@ -234,7 +240,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       else
         value.clear();
 
-      return true;
+      break;
     }
 
     case SQL_DESC_TYPE_NAME:
@@ -245,36 +251,40 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       else
         value.clear();
 
-      return true;
+      break;
     }
 
     case SQL_DESC_PRECISION:
     case SQL_COLUMN_LENGTH:
     case SQL_COLUMN_PRECISION: {
       if (!precision || *precision == -1)
-        return false;
+        retval = false;
+      else 
+        value = common::LexicalCast< std::string >(*precision);
 
-      value = common::LexicalCast< std::string >(*precision);
-
-      return true;
+      break;
     }
 
     case SQL_DESC_SCALE:
     case SQL_COLUMN_SCALE: {
       if (!scale || *scale == -1)
-        return false;
+        retval = false;
+      else
+        value = common::LexicalCast< std::string >(*scale);
 
-      value = common::LexicalCast< std::string >(*scale);
-
-      return true;
+      break;
     }
 
     default:
       return false;
   }
+
+  LOG_DEBUG_MSG("value: " << value);
+  return retval;
 }
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
+  LOG_DEBUG_MSG("GetAttribute is called with fieldId " << fieldId);
   using namespace ignite::odbc::impl::binary;
 
   // value equals -1 by default.

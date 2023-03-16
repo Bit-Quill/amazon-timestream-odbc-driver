@@ -26,9 +26,11 @@ namespace odbc {
 namespace diagnostic {
 void DiagnosableAdapter::AddStatusRecord(SqlState::Type sqlState,
                                          const std::string& message,
+                                         ignite::odbc::LogLevel::Type logLevel,
                                          int32_t rowNum, int32_t columnNum) {
-  LOG_MSG("Adding new record: " << message << ", rowNum: " << rowNum
-                                << ", columnNum: " << columnNum);
+  WRITE_LOG_MSG("Adding new record: " << message << ", rowNum: " << rowNum
+                                      << ", columnNum: " << columnNum,
+                logLevel);
 
   if (connection) {
     diagnosticRecords.AddStatusRecord(
@@ -39,9 +41,10 @@ void DiagnosableAdapter::AddStatusRecord(SqlState::Type sqlState,
   }
 }
 
-void DiagnosableAdapter::AddStatusRecord(SqlState::Type sqlState,
-                                         const std::string& message) {
-  AddStatusRecord(sqlState, message, 0, 0);
+void DiagnosableAdapter::AddStatusRecord(
+    SqlState::Type sqlState, const std::string& message,
+    ignite::odbc::LogLevel::Type logLevel) {
+  AddStatusRecord(sqlState, message, logLevel, 0, 0);
 }
 
 void DiagnosableAdapter::AddStatusRecord(const std::string& message) {
@@ -49,7 +52,8 @@ void DiagnosableAdapter::AddStatusRecord(const std::string& message) {
 }
 
 void DiagnosableAdapter::AddStatusRecord(const OdbcError& err) {
-  AddStatusRecord(err.GetStatus(), err.GetErrorMessage(), 0, 0);
+  AddStatusRecord(err.GetStatus(), err.GetErrorMessage(),
+                  ignite::odbc::LogLevel::Type::ERROR_LEVEL, 0, 0);
 }
 
 void DiagnosableAdapter::AddStatusRecord(const DiagnosticRecord& rec) {

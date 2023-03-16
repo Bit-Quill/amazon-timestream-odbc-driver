@@ -90,12 +90,6 @@ inline void SpaceToUnderscore(std::string& str) {
   std::replace(str.begin(), str.end(), ' ', '_');
 }
 
-/**
- * Strips leading and trailing whitespaces from string.
- *
- * @param str String to be transformed.
- */
-IGNITE_IMPORT_EXPORT void StripSurroundingWhitespaces(std::string& str);
 
 /**
  * Skip leading spaces.
@@ -129,30 +123,6 @@ Iterator SkipTrailingSpaces(Iterator begin, Iterator end) {
     --res;
 
   return res + 1;
-}
-
-/**
- * Remove leading and trailing spaces.
- *
- * @param begin Iterator to the beginning of the character sequence.
- * @param end Iterator to the end of the character sequence.
- * @return String without leading and trailing spaces.
- */
-template < typename Iterator >
-std::string StripSurroundingWhitespaces(Iterator begin, Iterator end) {
-  std::string res;
-
-  if (begin >= end)
-    return res;
-
-  Iterator skipped_leading = SkipLeadingSpaces(begin, end);
-  Iterator skipped_trailing = SkipTrailingSpaces(skipped_leading, end);
-
-  res.reserve(skipped_trailing - skipped_leading);
-
-  std::copy(skipped_leading, skipped_trailing, std::back_inserter(res));
-
-  return res;
 }
 
 /**

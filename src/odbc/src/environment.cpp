@@ -26,7 +26,6 @@ namespace ignite {
 namespace odbc {
 Environment::Environment()
     : connections(), odbcVersion(SQL_OV_ODBC3), odbcNts(SQL_TRUE) {
-  srand(common::GetRandSeed());
 }
 
 Environment::~Environment() {
@@ -46,6 +45,7 @@ void Environment::DeregisterConnection(Connection* conn) {
 }
 
 SqlResult::Type Environment::InternalCreateConnection(Connection*& connection) {
+  LOG_DEBUG_MSG("InternalCreateConnection is called");
   connection = new Connection(this);
 
   if (!connection) {
@@ -115,6 +115,7 @@ void Environment::SetAttribute(int32_t attr, void* value, int32_t len) {
 
 SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
                                                   int32_t len) {
+  LOG_DEBUG_MSG("InternalSetAttribute is called with attr is " << attr);
   IGNITE_UNUSED(len);
 
   EnvironmentAttribute::Type attribute = EnvironmentAttributeToInternal(attr);
@@ -135,9 +136,8 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
            << ") is not supported and the default value(" << odbcVersion
            << ") will be used.";
 
-        LOG_WARNING_MSG(ss.str());
-        AddStatusRecord(
-            SqlState::S01S02_OPTION_VALUE_CHANGED, ss.str().data());
+        AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, ss.str().data(),
+                        ignite::odbc::LogLevel::Type::WARNING_LEVEL);
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }
@@ -150,7 +150,8 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
 
       if (nts != odbcNts) {
         AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
-                        "Only null-termination of strings is supported.");
+                        "Only null-termination of strings is supported.",
+                        ignite::odbc::LogLevel::Type::WARNING_LEVEL);
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }
@@ -176,6 +177,7 @@ void Environment::GetAttribute(int32_t attr,
 
 SqlResult::Type Environment::InternalGetAttribute(
     int32_t attr, app::ApplicationDataBuffer& buffer) {
+  LOG_DEBUG_MSG("InternalGetAttribute is called with attr is " << attr);
   EnvironmentAttribute::Type attribute = EnvironmentAttributeToInternal(attr);
 
   switch (attribute) {

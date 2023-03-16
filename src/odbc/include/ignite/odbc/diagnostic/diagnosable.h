@@ -19,6 +19,7 @@
 #define _IGNITE_ODBC_DIAGNOSTIC_DIAGNOSABLE
 
 #include "ignite/odbc/diagnostic/diagnostic_record_storage.h"
+#include "ignite/odbc/log_level.h"
 
 namespace ignite {
 namespace odbc {
@@ -60,7 +61,9 @@ class Diagnosable {
    * @param columnNum Associated column number.
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
-                               const std::string& message, int32_t rowNum,
+                               const std::string& message,
+                               ignite::odbc::LogLevel::Type logLevel,
+                               int32_t rowNum,
                                int32_t columnNum) = 0;
 
   /**
@@ -70,7 +73,8 @@ class Diagnosable {
    * @param message Message.
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
-                               const std::string& message) = 0;
+                               const std::string& message,
+                               ignite::odbc::LogLevel::Type logLevel = ignite::odbc::LogLevel::Type::ERROR_LEVEL) = 0;
 
   /**
    * Add new status record.

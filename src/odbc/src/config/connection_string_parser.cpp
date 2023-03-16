@@ -60,8 +60,7 @@ const std::string ConnectionStringParser::Key::aadClientSecret =
 const std::string ConnectionStringParser::Key::aadTenant = "aadtenant";
 const std::string ConnectionStringParser::Key::logLevel = "loglevel";
 const std::string ConnectionStringParser::Key::logPath = "logoutput";
-const std::string ConnectionStringParser::Key::maxRowPerPage =
-    "maxrowperpage";
+const std::string ConnectionStringParser::Key::maxRowPerPage = "maxrowperpage";
 
 ConnectionStringParser::ConnectionStringParser(Configuration& cfg) : cfg(cfg) {
   // No-op.
@@ -70,6 +69,8 @@ ConnectionStringParser::ConnectionStringParser(Configuration& cfg) : cfg(cfg) {
 void ConnectionStringParser::ParseConnectionString(
     const char* str, size_t len, char delimiter,
     diagnostic::DiagnosticRecordStorage* diag) {
+  LOG_DEBUG_MSG("ParseConnectionString is called with len is "
+                << len << ", delimiter is " << delimiter);
   std::string connect_str(str, len);
 
   while (connect_str.rbegin() != connect_str.rend()
@@ -96,9 +97,10 @@ void ConnectionStringParser::ParseConnectionString(
       const char* value_begin = connect_str.data() + attr_eq_pos + 1;
       const char* value_end = connect_str.data() + connect_str.size();
 
-      std::string key = common::StripSurroundingWhitespaces(key_begin, key_end);
-      std::string value =
-          common::StripSurroundingWhitespaces(value_begin, value_end);
+      std::string key = ignite::odbc::utility::Trim(
+          connect_str.substr(attr_begin, attr_eq_pos - attr_begin));
+      std::string value = ignite::odbc::utility::Trim(connect_str.substr(
+          attr_eq_pos + 1, connect_str.size() - attr_eq_pos));
 
       if (value[0] == '{' && value[value.size() - 1] == '}')
         value = value.substr(1, value.size() - 2);
@@ -134,7 +136,16 @@ void ConnectionStringParser::ParseConfigAttributes(
 void ConnectionStringParser::HandleAttributePair(
     const std::string& key, const std::string& value,
     diagnostic::DiagnosticRecordStorage* diag) {
+  LOG_DEBUG_MSG("HandleAttributePair is called");
   std::string lKey = common::ToLower(key);
+
+  if (lKey == Key::uid && lKey == Key::accessKeyId || lKey == Key::idPUserName
+      || lKey == Key::pwd || lKey == Key::secretKey || lKey == Key::idPPassword
+      || lKey == Key::aadClientSecret) {
+    LOG_DEBUG_MSG(lKey << " is found");
+  } else {
+    LOG_DEBUG_MSG("key:value is " << lKey << ":" << value);
+  }
 
   if (lKey == Key::dsn) {
     cfg.SetDsn(value);
@@ -253,9 +264,10 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count Client attribute value is empty. Using "
-                             "default value.",
-                             key, value));
+            MakeErrorMessage(
+                "Max Retry Count Client attribute value is empty. Using "
+                "default value.",
+                key, value));
       }
       return;
     }
@@ -276,9 +288,10 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count Client attribute value is too large. "
-                             "Using default value.",
-                             key, value));
+            MakeErrorMessage(
+                "Max Retry Count Client attribute value is too large. "
+                "Using default value.",
+                key, value));
       }
       return;
     }
@@ -293,9 +306,10 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage("Max Retry Count Client attribute value is out of range. "
-                             "Using default value.",
-                             key, value));
+            MakeErrorMessage(
+                "Max Retry Count Client attribute value is out of range. "
+                "Using default value.",
+                key, value));
       }
       return;
     }
@@ -361,8 +375,7 @@ void ConnectionStringParser::HandleAttributePair(
   } else if (lKey == Key::authType) {
     AuthType::Type authType = AuthType::FromString(value);
 
-    std::string val = common::ToLower(value);
-    common::StripSurroundingWhitespaces(val);
+    std::string val = utility::Trim(common::ToLower(value));
     if (val != "aws_profile" && authType == AuthType::Type::AWS_PROFILE) {
       if (diag) {
         diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -383,8 +396,11 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     if (!cfg.GetUid().empty()) {
-      LOG_WARNING_MSG("UID is already set, but IdPUserName is being set too. Only one of {UID, IdPUserName} is needed. UID will take precedence when making a connection.");
-    }    
+      LOG_WARNING_MSG(
+          "UID is already set, but IdPUserName is being set too. Only one of "
+          "{UID, IdPUserName} is needed. UID will take precedence when making "
+          "a connection.");
+    }
 
     cfg.SetIdPUserName(value);
   } else if (lKey == Key::idPPassword) {
@@ -395,7 +411,10 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     if (!cfg.GetPwd().empty()) {
-      LOG_WARNING_MSG("PWD is already set, but IdPPassword is being set too. Only one of {PWD, IdPPassword} is needed. PWD will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "PWD is already set, but IdPPassword is being set too. Only one of "
+          "{PWD, IdPPassword} is needed. PWD will take precedence when making "
+          "a connection.");
     }
 
     cfg.SetIdPPassword(value);
@@ -442,11 +461,17 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     if (!cfg.GetAccessKeyId().empty()) {
-      LOG_WARNING_MSG("AccessKeyId is already set, but UID is being set too. Only one of {UID, AccessKeyId} is needed. UID will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "AccessKeyId is already set, but UID is being set too. Only one of "
+          "{UID, AccessKeyId} is needed. UID will take precedence when making "
+          "a connection.");
     }
 
     if (!cfg.GetIdPUserName().empty()) {
-      LOG_WARNING_MSG("IdPUserName is already set, but UID is being set too. Only one of {UID, IdPUserName} is needed. UID will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "IdPUserName is already set, but UID is being set too. Only one of "
+          "{UID, IdPUserName} is needed. UID will take precedence when making "
+          "a connection.");
     }
 
     cfg.SetUid(value);
@@ -458,11 +483,17 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     if (!cfg.GetSecretKey().empty()) {
-      LOG_WARNING_MSG("SecretKey is already set, but PWD is being set too. Only one of {PWD, SecretKey} is needed. PWD will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "SecretKey is already set, but PWD is being set too. Only one of "
+          "{PWD, SecretKey} is needed. PWD will take precedence when making a "
+          "connection.");
     }
 
     if (!cfg.GetIdPPassword().empty()) {
-      LOG_WARNING_MSG("IdPPassword is already set, but PWD is being set too. Only one of {PWD, IdPPassword} is needed. PWD will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "IdPPassword is already set, but PWD is being set too. Only one of "
+          "{PWD, IdPPassword} is needed. PWD will take precedence when making "
+          "a connection.");
     }
 
     cfg.SetPwd(value);
@@ -474,7 +505,10 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     if (!cfg.GetUid().empty()) {
-      LOG_WARNING_MSG("UID is already set, but AccessKeyId is being set too. Only one of {UID, AccessKeyId} is needed. UID will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "UID is already set, but AccessKeyId is being set too. Only one of "
+          "{UID, AccessKeyId} is needed. UID will take precedence when making "
+          "a connection.");
     }
 
     cfg.SetAccessKeyId(value);
@@ -486,7 +520,10 @@ void ConnectionStringParser::HandleAttributePair(
     }
 
     if (!cfg.GetPwd().empty()) {
-      LOG_WARNING_MSG("PWD is already set, but SecretKey is being set too. Only one of {PWD, SecretKey} is needed. PWD will take precedence when making a connection.");
+      LOG_WARNING_MSG(
+          "PWD is already set, but SecretKey is being set too. Only one of "
+          "{PWD, SecretKey} is needed. PWD will take precedence when making a "
+          "connection.");
     }
 
     cfg.SetSecretKey(value);
@@ -503,10 +540,9 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage(
-                "Max Row Per Page attribute value is empty. Using "
-                "default value.",
-                key, value));
+            MakeErrorMessage("Max Row Per Page attribute value is empty. Using "
+                             "default value.",
+                             key, value));
       }
       return;
     }
@@ -527,10 +563,9 @@ void ConnectionStringParser::HandleAttributePair(
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
-            MakeErrorMessage(
-                "Max Row Per Page attribute value is too large. "
-                "Using default value.",
-                key, value));
+            MakeErrorMessage("Max Row Per Page attribute value is too large. "
+                             "Using default value.",
+                             key, value));
       }
       return;
     }

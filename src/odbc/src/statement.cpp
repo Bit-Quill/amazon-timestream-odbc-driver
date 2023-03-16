@@ -51,7 +51,6 @@ Statement::Statement(Connection& parent)
       rowArraySize(1),
       parameters(),
       timeout(0) {
-  // No-op.
 }
 
 Statement::~Statement() {
@@ -70,6 +69,11 @@ SqlResult::Type Statement::InternalBindColumn(uint16_t columnIdx,
                                               void* targetValue,
                                               SqlLen bufferLength,
                                               SqlLen* strLengthOrIndicator) {
+  LOG_DEBUG_MSG("InternalBindColumn is called with columnIdx "
+                << columnIdx << ", targetType " << targetType
+                << ", targetValue " << targetValue << ", bufferLength "
+                << bufferLength << ", strLengthOrIndicator "
+                << strLengthOrIndicator);
   using namespace type_traits;
   OdbcNativeType::Type driverType = ToDriverType(targetType);
 
@@ -121,13 +125,6 @@ int* Statement::GetColumnBindOffsetPtr() {
 }
 
 int32_t Statement::GetColumnNumber() {
-  // The if statement is for successful connection on PowerBI
-  // After all early returns in odbc.cpp is removed, remove this if statement
-  if (!currentQuery.get()) {
-    LOG_DEBUG_MSG("Current query is not found.");
-    return 0;
-  }
-
   int32_t res;
 
   IGNITE_ODBC_API_CALL(InternalGetColumnNumber(res));
@@ -163,6 +160,12 @@ SqlResult::Type Statement::InternalBindParameter(
     uint16_t paramIdx, int16_t ioType, int16_t bufferType, int16_t paramSqlType,
     SqlUlen columnSize, int16_t decDigits, void* buffer, SqlLen bufferLen,
     SqlLen* resLen) {
+  LOG_DEBUG_MSG("InternalBindParameter is called with paramIdx "
+                << paramIdx << ", ioType " << ioType << ", bufferType "
+                << bufferType << ", paramSqlType " << paramSqlType
+                << ", columnSize " << columnSize << ", decDigits " << decDigits
+                << ", buffer " << buffer << ", bufferLen " << bufferLen
+                << ", resLen " << resLen);
   using namespace type_traits;
   using app::ApplicationDataBuffer;
   using app::Parameter;
@@ -174,7 +177,6 @@ SqlResult::Type Statement::InternalBindParameter(
             << paramIdx << ']';
 
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, builder.str());
-    LOG_ERROR_MSG(builder.str());
     return SqlResult::AI_ERROR;
   }
 
@@ -235,6 +237,7 @@ void Statement::SetAttribute(int attr, void* value, SQLINTEGER valueLen) {
 
 SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
                                                 SQLINTEGER) {
+  LOG_DEBUG_MSG("InternalSetAttribute is called with attr " << attr);
   switch (attr) {
     case SQL_ATTR_ROW_ARRAY_SIZE: {
       SqlUlen val = reinterpret_cast< SqlUlen >(value);
@@ -341,7 +344,8 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
            << ".";
         std::string msg = ss.str();
 
-        AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, msg);
+        AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, msg,
+                        ignite::odbc::LogLevel::Type::INFO_LEVEL);
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }
@@ -369,6 +373,7 @@ void Statement::GetAttribute(int attr, void* buf, SQLINTEGER bufLen,
 
 SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
                                                 SQLINTEGER* valueLen) {
+  LOG_DEBUG_MSG("InternalGetAttribute is called with attr " << attr);
   if (!buf) {
     AddStatusRecord("Data buffer is NULL.");
 
@@ -405,7 +410,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
 
       if (valueLen)
         *valueLen = SQL_IS_INTEGER;
-
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -417,6 +423,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -428,6 +436,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -447,6 +457,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -458,6 +470,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -469,6 +483,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_UINTEGER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -480,6 +496,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -491,6 +509,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
 
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+                               << (valueLen ? *valueLen : 0));
       break;
     }
 
@@ -499,6 +519,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
 
       *uTimeout = static_cast< SqlUlen >(timeout);
 
+      LOG_DEBUG_MSG("*uTimeout is " << *uTimeout);
       break;
     }
 
@@ -518,6 +539,7 @@ void Statement::GetParametersNumber(uint16_t& paramNum) {
 }
 
 SqlResult::Type Statement::InternalGetParametersNumber(uint16_t& paramNum) {
+  LOG_DEBUG_MSG("InternalGetParametersNumber is called");
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not prepared.");
 
@@ -555,10 +577,10 @@ void Statement::GetColumnData(uint16_t columnIdx,
 
 SqlResult::Type Statement::InternalGetColumnData(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
+  LOG_DEBUG_MSG("InternalGetColumnData is called");
   if (!currentQuery.get()) {
     std::string errMsg = "Cursor is not in the open state.";
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
-    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 
@@ -572,6 +594,7 @@ void Statement::PrepareSqlQuery(const std::string& query) {
 }
 
 SqlResult::Type Statement::ProcessInternalCommand(const std::string& query) {
+  LOG_DEBUG_MSG("ProcessInternalCommand is called");
   try {
     SqlParser parser(query);
 
@@ -592,6 +615,7 @@ SqlResult::Type Statement::ProcessInternalCommand(const std::string& query) {
 }
 
 SqlResult::Type Statement::InternalPrepareSqlQuery(const std::string& query) {
+  LOG_DEBUG_MSG("InternalPrepareSqlQuery is called for query " << query);
   if (sql_utils::IsInternalCommand(query))
     return ProcessInternalCommand(query);
 
@@ -612,6 +636,7 @@ void Statement::ExecuteSqlQuery(const std::string& query) {
 }
 
 SqlResult::Type Statement::InternalExecuteSqlQuery(const std::string& query) {
+  LOG_DEBUG_MSG("InternalExecuteSqlQuery is called for query " << query);
   SqlResult::Type result = InternalPrepareSqlQuery(query);
 
   if (result != SqlResult::AI_SUCCESS)
@@ -625,6 +650,7 @@ void Statement::ExecuteSqlQuery() {
 }
 
 SqlResult::Type Statement::InternalExecuteSqlQuery() {
+  LOG_DEBUG_MSG("InternalExecuteSqlQuery is called");
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not prepared.");
 
@@ -633,8 +659,8 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
 
   if (parameters.GetParamSetSize() > 1
       && currentQuery->GetType() == query::QueryType::DATA) {
-    // Notes for future implementation: in DocumentDB, a batch query is the same as a data query.
-    // Therefore it is ok for DocDB to use DataQuery here. 
+    // Notes for future implementation: in DocumentDB, a batch query is the same
+    // as a data query. Therefore it is ok for DocDB to use DataQuery here.
     LOG_DEBUG_MSG("QueryType is DATA. Current query set to BatchQuery.");
 
     query::DataQuery& qry = static_cast< query::DataQuery& >(*currentQuery);
@@ -643,7 +669,7 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
                                              parameters, timeout));
   } else if (parameters.GetParamSetSize() == 1
              && currentQuery->GetType() == query::QueryType::BATCH) {
-    // Notes for future implementation: BatchQuery is not implemented.   
+    // Notes for future implementation: BatchQuery is not implemented.
     LOG_DEBUG_MSG("QueryType is BATCH. Current query set to DataQuery.");
 
     query::BatchQuery& qry = static_cast< query::BatchQuery& >(*currentQuery);
@@ -712,6 +738,7 @@ SqlResult::Type Statement::InternalExecuteGetTablesMetaQuery(
     const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& tableType) {
+  LOG_DEBUG_MSG("InternalExecuteGetTablesMetaQuery is called");
   if (currentQuery.get())
     currentQuery->Close();
 
@@ -801,6 +828,8 @@ void Statement::ExecuteGetTypeInfoQuery(int16_t sqlType) {
 }
 
 SqlResult::Type Statement::InternalExecuteGetTypeInfoQuery(int16_t sqlType) {
+  LOG_DEBUG_MSG("InternalExecuteGetTypeInfoQuery is called with sqlType "
+                << sqlType);
   if (sqlType != SQL_ALL_TYPES && !type_traits::IsSqlTypeSupported(sqlType)) {
     std::stringstream builder;
     builder << "Data type is not supported. [typeId=" << sqlType << ']';
@@ -824,6 +853,7 @@ void Statement::FreeResources(int16_t option) {
 }
 
 SqlResult::Type Statement::InternalFreeResources(int16_t option) {
+  LOG_DEBUG_MSG("InternalFreeResources is called with option " << option);
   switch (option) {
     case SQL_DROP: {
       AddStatusRecord("Deprecated, call SQLFreeHandle instead");
@@ -876,6 +906,8 @@ void Statement::FetchScroll(int16_t orientation, int64_t offset) {
 
 SqlResult::Type Statement::InternalFetchScroll(int16_t orientation,
                                                int64_t offset) {
+  LOG_DEBUG_MSG("InternalFetchScroll is called with orientation "
+                << orientation);
   UNREFERENCED_PARAMETER(offset);
 
   if (orientation != SQL_FETCH_NEXT) {
@@ -893,13 +925,13 @@ void Statement::FetchRow() {
 }
 
 SqlResult::Type Statement::InternalFetchRow() {
+  LOG_DEBUG_MSG("InternalFetchRow is called");
   if (rowsFetched)
     *rowsFetched = 0;
 
   if (!currentQuery.get()) {
     std::string errMsg = "Cursor is not in the open state.";
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
-    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 
@@ -912,6 +944,7 @@ SqlResult::Type Statement::InternalFetchRow() {
   SQLINTEGER fetched = 0;
   SQLINTEGER errors = 0;
 
+  LOG_DEBUG_MSG("rowArraySize is " << rowArraySize);
   for (SqlUlen i = 0; i < rowArraySize; ++i) {
     for (app::ColumnBindingMap::iterator it = columnBindings.begin();
          it != columnBindings.end(); ++it)
@@ -936,10 +969,13 @@ SqlResult::Type Statement::InternalFetchRow() {
     return errors == 0 ? SqlResult::AI_SUCCESS
                        : SqlResult::AI_SUCCESS_WITH_INFO;
 
+  LOG_DEBUG_MSG("rowsFetched is " << rowsFetched << ", fetched is " << fetched
+                                  << ", errors is " << errors);
   return errors == 0 ? SqlResult::AI_NO_DATA : SqlResult::AI_ERROR;
 }
 
 const meta::ColumnMetaVector* Statement::GetMeta() {
+  LOG_DEBUG_MSG("GetMeta is called");
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
 
@@ -958,6 +994,7 @@ void Statement::MoreResults() {
 }
 
 SqlResult::Type Statement::InternalMoreResults() {
+  LOG_DEBUG_MSG("InternalMoreResults is called");
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
 
@@ -977,11 +1014,11 @@ void Statement::GetColumnAttribute(uint16_t colIdx, uint16_t attrId,
 SqlResult::Type Statement::InternalGetColumnAttribute(
     uint16_t colIdx, uint16_t attrId, SQLWCHAR* strbuf, int16_t buflen,
     int16_t* reslen, SqlLen* numbuf) {
+  LOG_DEBUG_MSG("InternalGetColumnAttribute is called with Column ID: "
+                << colIdx << ", Attribute ID: " << attrId << " ("
+                << meta::ColumnMeta::AttrIdToString(attrId)
+                << "), buflen: " << buflen);
   const meta::ColumnMetaVector* meta = GetMeta();
-
-  LOG_INFO_MSG("Column ID: " << colIdx << ", Attribute ID: " << attrId
-                             << " (" << meta::ColumnMeta::AttrIdToString(attrId)
-                             << ")");
 
   if (!meta) {
     LOG_ERROR_MSG(
@@ -992,7 +1029,8 @@ SqlResult::Type Statement::InternalGetColumnAttribute(
 
   if (colIdx > meta->size() || colIdx < 1) {
     AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
-                    "Column index is out of range.", 0, colIdx);
+                    "Column index is out of range.",
+                    ignite::odbc::LogLevel::Type::ERROR_LEVEL, 0, colIdx);
 
     return SqlResult::AI_ERROR;
   }
@@ -1001,12 +1039,12 @@ SqlResult::Type Statement::InternalGetColumnAttribute(
 
   bool found = false;
 
-  LOG_DEBUG_MSG("calling GetAttribute, numbuf: " << numbuf);
+  LOG_DEBUG_MSG("numbuf: " << numbuf);
 
   // NumericAttributePtr field is used.
   if (numbuf) {
     found = columnMeta.GetAttribute(attrId, *numbuf);
-    LOG_DEBUG_MSG("numbuf found: " << numbuf);
+    LOG_DEBUG_MSG("numbuf found: " << numbuf << ", found is " << found);
   }
 
   // NumericAttributePtr field is unused.
@@ -1014,16 +1052,19 @@ SqlResult::Type Statement::InternalGetColumnAttribute(
     std::string out;
 
     found = columnMeta.GetAttribute(attrId, out);
-
+    LOG_DEBUG_MSG("out is " << out << ", found is " << found);
     size_t outSize = out.size();
 
     if (found) {
-      LOG_DEBUG_MSG("out found: " << out);
       bool isTruncated = false;
-      if (strbuf)
+      if (strbuf) {
         // Length is given in bytes
-      outSize =
-          utility::CopyStringToBuffer(out, strbuf, buflen, isTruncated, true);
+        outSize =
+            utility::CopyStringToBuffer(out, strbuf, buflen, isTruncated, true);
+        LOG_DEBUG_MSG("strbuf is " << strbuf << ", out is " << out
+                                   << ", outSize is " << outSize
+                                   << ", isTruncated is " << isTruncated);
+      }
       if (reslen)
         *reslen = static_cast< int16_t >(outSize);
       if (isTruncated)
@@ -1050,6 +1091,7 @@ int64_t Statement::AffectedRows() {
 }
 
 SqlResult::Type Statement::InternalAffectedRows(int64_t& rowCnt) {
+  LOG_DEBUG_MSG("InternalAffectedRows is called");
   if (!currentQuery.get()) {
     AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query is not executed.");
 
@@ -1259,6 +1301,7 @@ SqlResult::Type Statement::UpdateParamsMeta() {
 }
 
 uint16_t Statement::SqlResultToRowResult(SqlResult::Type value) {
+  LOG_DEBUG_MSG("SqlResultToRowResult is called with value " << value);
   switch (value) {
     case SqlResult::AI_NO_DATA:
       return SQL_ROW_NOROW;

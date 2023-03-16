@@ -438,3 +438,4 @@ BOOST_AUTO_TEST_CASE(TestLogSetInvalidLogPath) {
   if (logVarSaved)
     setLoggerVars(logger, origLogPath, origLogLevel);
 }
+

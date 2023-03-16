@@ -17,13 +17,13 @@
 #include "ignite/odbc/authentication/auth_type.h"
 
 #include <ignite/odbc/common/utils.h>
+#include <ignite/odbc/utility.h>
 
 namespace ignite {
 namespace odbc {
 AuthType::Type AuthType::FromString(const std::string& val, Type dflt) {
-  std::string lowerVal = common::ToLower(val);
+  std::string lowerVal = utility::Trim(common::ToLower(val));
 
-  common::StripSurroundingWhitespaces(lowerVal);
 
   if (lowerVal == "aws_profile")
     return AuthType::Type::AWS_PROFILE;

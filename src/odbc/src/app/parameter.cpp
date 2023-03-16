@@ -172,12 +172,6 @@ void Parameter::Write(impl::binary::BinaryWriterImpl& writer, int offset,
       break;
     }
 
-    case SQL_GUID: {
-      writer.WriteGuid(buf.GetGuid());
-
-      break;
-    }
-
     case SQL_DECIMAL: {
       common::Decimal dec;
       buf.GetDecimal(dec);

@@ -82,6 +82,7 @@ const int32_t Configuration::DefaultValue::maxRowPerPage =
     DEFAULT_MAX_ROW_PER_PAGE;
 
 std::string Configuration::ToConnectString() const {
+  LOG_DEBUG_MSG("ToConnectString is called");
   ArgumentMap arguments;
 
   ToMap(arguments);
@@ -103,6 +104,7 @@ std::string Configuration::ToConnectString() const {
       connect_string_buffer << key << "={" << value << "};";
   }
 
+  LOG_DEBUG_MSG("connect_string_buffer is " << connect_string_buffer.str());
   return connect_string_buffer.str();
 }
 
@@ -130,9 +132,11 @@ void Configuration::SetDriver(const std::string& driverName) {
 }
 
 const std::string& Configuration::GetDSNUserName() const {
+  LOG_DEBUG_MSG("GetDSNUserName is called");
   if (!GetUid().empty())
     return GetUid();
 
+  LOG_DEBUG_MSG("AuthType: " << AuthType::ToCBString(GetAuthType()));
   switch (GetAuthType()) {
     case AuthType::Type::IAM:
       return GetAccessKeyId();
@@ -142,17 +146,16 @@ const std::string& Configuration::GetDSNUserName() const {
       return GetIdPUserName();
 
     default:
-      LOG_DEBUG_MSG("AuthType: " << AuthType::ToCBString(GetAuthType())
-                                 << ", \"" << GetUid()
-                                 << "\" is returned as username");
       return GetUid();
   }
 }
 
 const std::string& Configuration::GetDSNPassword() const {
+  LOG_DEBUG_MSG("GetDSNPassword is called");
   if (!GetPwd().empty())
     return GetPwd();
 
+  LOG_DEBUG_MSG("AuthType: " << AuthType::ToCBString(GetAuthType()));
   switch (GetAuthType()) {
     case AuthType::Type::IAM:
       return GetSecretKey();
@@ -162,8 +165,6 @@ const std::string& Configuration::GetDSNPassword() const {
       return GetIdPPassword();
 
     default:
-      LOG_DEBUG_MSG("AuthType: " << AuthType::ToCBString(GetAuthType())
-                                 << ", GetPwd() returned as password");
       return GetPwd();
   }
 }
@@ -506,6 +507,7 @@ void Configuration::ToMap(ArgumentMap& res) const {
 }
 
 void Configuration::Validate() const {
+  LOG_DEBUG_MSG("Validate is called");
   // Validate minimum required properties.
 
   if ((GetAuthType() == ignite::odbc::AuthType::Type::OKTA)

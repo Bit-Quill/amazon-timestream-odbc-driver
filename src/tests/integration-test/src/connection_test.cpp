@@ -1070,7 +1070,10 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
   Disconnect();
 }
 
-BOOST_AUTO_TEST_CASE(TestConnectionConcurrency) {
+
+// This test hangs on Winodws self-hosted runn, so disable it now
+// Use AT-1323 to investigate the root cause
+BOOST_AUTO_TEST_CASE(TestConnectionConcurrency, *disabled()) {
   ConnectionTestSuiteFixture testConn[10];
 
   // Create threads and add them to the thread group

@@ -32,7 +32,6 @@
 #include "ignite/odbc/environment.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/message.h"
-#include "ignite/odbc/ssl_mode.h"
 #include "ignite/odbc/statement.h"
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
@@ -44,15 +43,12 @@
 #include <aws/timestream-query/model/QueryResult.h>
 #include <aws/core/utils/logging/LogLevel.h>
 #include <aws/core/auth/AWSCredentialsProvider.h>
-#include<aws/core/client/DefaultRetryStrategy.h>
+#include <aws/core/client/DefaultRetryStrategy.h>
 
 using namespace ignite::odbc;
 using namespace ignite::odbc::common;
 using namespace ignite::odbc::common::concurrent;
 using ignite::odbc::IgniteError;
-
-// Uncomment for per-byte debug.
-//#define PER_BYTE_DEBUG
 
 namespace {
 #pragma pack(push, 1)
@@ -71,6 +67,7 @@ std::atomic< int > Connection::refCount_(0);
 
 Connection::Connection(Environment* env)
     : env_(env), info_(config_), metadataID_(false) {
+  LOG_DEBUG_MSG("Connection is called");
   // The AWS SDK for C++ must be initialized by calling Aws::InitAPI.
   // It should only be initialized only once during the application running
   // All Connections in different thread must wait before the InitAPI is
@@ -86,6 +83,7 @@ Connection::Connection(Environment* env)
 
       Aws::InitAPI(options_);
       awsSDKReady_ = true;
+      LOG_DEBUG_MSG("AWS SDK is Initialized");
     }
   }
 
@@ -103,6 +101,7 @@ Connection::~Connection() {
   if (0 == --refCount_) {
     Aws::ShutdownAPI(options_);
     awsSDKReady_ = false;
+    LOG_DEBUG_MSG("AWS SDK is shut down");
   }
 }
 
@@ -133,8 +132,8 @@ SqlResult::Type Connection::InternalGetInfo(
     ss << "SQLGetInfo input " << type << " is not implemented.";
 
     std::string s = ss.str();
-    AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                    ss.str());
+    AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, ss.str(),
+                    ignite::odbc::LogLevel::Type::INFO_LEVEL);
   }
 
   return res;
@@ -146,21 +145,24 @@ void Connection::Establish(const std::string& connectStr, void* parentWindow) {
 
 SqlResult::Type Connection::InternalEstablish(const std::string& connectStr,
                                               void* parentWindow) {
+  LOG_DEBUG_MSG("InternalEstablish is called");
   config::ConnectionStringParser parser(config_);
   parser.ParseConnectionString(connectStr, &GetDiagnosticRecords());
 
   if (config_.IsDsnSet()) {
     std::string dsn = config_.GetDsn();
+    LOG_DEBUG_MSG("dsn is " << dsn);
 
     ReadDsnConfiguration(dsn.c_str(), config_, &GetDiagnosticRecords());
   }
 
 #ifdef _WIN32
   if (parentWindow) {
-    LOG_MSG("Parent window is passed. Creating configuration window.");
+    LOG_DEBUG_MSG("Parent window is passed. Creating configuration window.");
     if (!DisplayConnectionWindow(parentWindow, config_)) {
       AddStatusRecord(odbc::SqlState::SHY008_OPERATION_CANCELED,
-                      "Connection canceled by user");
+                      "Connection canceled by user",
+                      ignite::odbc::LogLevel::Type::INFO_LEVEL);
 
       return SqlResult::AI_ERROR;
     }
@@ -176,10 +178,12 @@ void Connection::Establish(const config::Configuration& cfg) {
 
 SqlResult::Type Connection::InternalEstablish(
     const config::Configuration& cfg) {
+  LOG_DEBUG_MSG("InternalEstablish is called");
   config_ = cfg;
 
   if (queryClient_) {
-    AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.");
+    AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.",
+                    ignite::odbc::LogLevel::Type::INFO_LEVEL);
 
     return SqlResult::AI_ERROR;
   }
@@ -204,6 +208,8 @@ SqlResult::Type Connection::InternalEstablish(
 
   bool errors = GetDiagnosticRecords().GetStatusRecordsNumber() > 0;
 
+  LOG_DEBUG_MSG("errors is " << errors);
+
   return errors ? SqlResult::AI_SUCCESS_WITH_INFO : SqlResult::AI_SUCCESS;
 }
 
@@ -221,8 +227,10 @@ Connection::GetQueryClient() const {
 }
 
 SqlResult::Type Connection::InternalRelease() {
+  LOG_DEBUG_MSG("InternalRelease is called");
   if (!queryClient_) {
-    AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.");
+    AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.",
+                    ignite::odbc::LogLevel::Type::WARNING_LEVEL);
 
     Close();
 
@@ -256,6 +264,7 @@ Statement* Connection::CreateStatement() {
 }
 
 SqlResult::Type Connection::InternalCreateStatement(Statement*& statement) {
+  LOG_DEBUG_MSG("InternalCreateStatement is called");
   statement = new Statement(*this);
 
   if (!statement) {
@@ -369,6 +378,7 @@ void Connection::GetAttribute(int attr, void* buf, SQLINTEGER bufLen,
 SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
                                                  SQLINTEGER,
                                                  SQLINTEGER* valueLen) {
+  LOG_DEBUG_MSG("InternalGetAttribute is called, attr is " << attr);
   if (!buf) {
     AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
                     "Data buffer is null.");
@@ -458,7 +468,8 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
 
     default: {
       AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                      "Specified attribute is not supported.");
+                      "Specified attribute is not supported.",
+                      ignite::odbc::LogLevel::Type::INFO_LEVEL);
 
       return SqlResult::AI_ERROR;
     }
@@ -475,6 +486,7 @@ void Connection::SetAttribute(int attr, void* value, SQLINTEGER valueLen) {
 
 SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
                                                  SQLINTEGER) {
+  LOG_DEBUG_MSG("InternalSetAttribute is called, attr is " << attr);
   switch (attr) {
     case SQL_ATTR_CONNECTION_DEAD: {
       AddStatusRecord(SqlState::SHY092_OPTION_TYPE_OUT_OF_RANGE,
@@ -489,7 +501,8 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
 
       if (mode != SQL_AUTOCOMMIT_ON && mode != SQL_AUTOCOMMIT_OFF) {
         AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                        "Specified attribute is not supported.");
+                        "Specified attribute is not supported.",
+                        ignite::odbc::LogLevel::Type::INFO_LEVEL);
 
         return SqlResult::AI_ERROR;
       }
@@ -509,7 +522,7 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
 
         return SqlResult::AI_ERROR;
       }
-
+      LOG_INFO_MSG("SQL_ATTR_METADATA_ID is set to " << id);
       metadataID_ = id;
 
       break;
@@ -532,6 +545,7 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
 
       std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();
       logger->SetLogLevel(type);
+      LOG_INFO_MSG("log level is set to " << static_cast< int >(type));
       break;
     }
     default: {
@@ -543,9 +557,6 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
   }
 
   return SqlResult::AI_SUCCESS;
-}
-
-void Connection::EnsureConnected() {
 }
 
 /**
@@ -566,9 +577,10 @@ std::shared_ptr< Aws::Http::HttpClient > Connection::GetHttpClient() {
   return Aws::Http::CreateHttpClient(Aws::Client::ClientConfiguration());
 }
 
-// TODO: [AT-1256] replace these environment variables with data from config::Configuration
-// https://bitquill.atlassian.net/browse/AT-1256
+// TODO: [AT-1256] replace these environment variables with data from
+// config::Configuration https://bitquill.atlassian.net/browse/AT-1256
 void Connection::SetClientProxy(Aws::Client::ClientConfiguration& clientCfg) {
+  LOG_DEBUG_MSG("SetClientProxy is called");
   // proxy host
   std::string proxyHost = utility::Trim(GetEnv("TS_PROXY_HOST"));
   if (!proxyHost.empty()) {
@@ -591,8 +603,8 @@ void Connection::SetClientProxy(Aws::Client::ClientConfiguration& clientCfg) {
   std::string proxyScheme = utility::Trim(GetEnv("TS_PROXY_SCHEME"));
   if (!proxyScheme.empty()) {
     LOG_DEBUG_MSG("proxy scheme is " << proxyScheme);
-    std::transform(proxyScheme.begin(), proxyScheme.end(),
-                   proxyScheme.begin(), ::toupper);
+    std::transform(proxyScheme.begin(), proxyScheme.end(), proxyScheme.begin(),
+                   ::toupper);
     if (proxyScheme == "HTTPS") {
       clientCfg.proxyScheme = Aws::Http::Scheme::HTTPS;
     } else {
@@ -615,7 +627,8 @@ void Connection::SetClientProxy(Aws::Client::ClientConfiguration& clientCfg) {
   }
 
   // proxy SSL certificate path
-  std::string proxySSLCertPath = utility::Trim(GetEnv("TS_PROXY_SSL_CERT_PATH"));
+  std::string proxySSLCertPath =
+      utility::Trim(GetEnv("TS_PROXY_SSL_CERT_PATH"));
   if (!proxySSLCertPath.empty()) {
     LOG_DEBUG_MSG("proxy SSL certificate path is " << proxySSLCertPath);
     clientCfg.proxySSLCertPath = proxySSLCertPath;
@@ -630,23 +643,22 @@ void Connection::SetClientProxy(Aws::Client::ClientConfiguration& clientCfg) {
   }
 
   // proxy SSL key path
-  std::string proxySSLKeyPath =
-      utility::Trim(GetEnv("TS_PROXY_SSL_KEY_PATH"));
+  std::string proxySSLKeyPath = utility::Trim(GetEnv("TS_PROXY_SSL_KEY_PATH"));
   if (!proxySSLKeyPath.empty()) {
     LOG_DEBUG_MSG("proxy SSL key path is " << proxySSLKeyPath);
     clientCfg.proxySSLKeyPath = proxySSLKeyPath;
   }
 
   // proxy SSL key type
-  std::string proxySSLKeyType =
-      utility::Trim(GetEnv("TS_PROXY_SSL_KEY_TYPE"));
+  std::string proxySSLKeyType = utility::Trim(GetEnv("TS_PROXY_SSL_KEY_TYPE"));
   if (!proxySSLKeyType.empty()) {
     LOG_DEBUG_MSG("proxy SSL key type is " << proxySSLKeyType);
     clientCfg.proxySSLCertType = proxySSLKeyType;
   }
 
   // proxy SSL key password
-  std::string proxySSLKeyPassword = utility::Trim(GetEnv("TS_PROXY_SSL_KEY_PASSWORD"));
+  std::string proxySSLKeyPassword =
+      utility::Trim(GetEnv("TS_PROXY_SSL_KEY_PASSWORD"));
   if (!proxySSLKeyPassword.empty()) {
     LOG_DEBUG_MSG("proxy SSL key password is set");
     clientCfg.proxySSLKeyPassword = proxySSLKeyPassword;
@@ -659,34 +671,39 @@ std::shared_ptr< Aws::STS::STSClient > Connection::GetStsClient() {
 
 bool Connection::TryRestoreConnection(const config::Configuration& cfg,
                                       IgniteError& err) {
+  LOG_DEBUG_MSG("TryRestoreConnection is called");
   Aws::Auth::AWSCredentials credentials;
   std::string errInfo("");
 
-  if (cfg.GetAuthType() == AuthType::Type::OKTA) {
+  AuthType::Type authType = cfg.GetAuthType();
+  LOG_DEBUG_MSG("auth type is " << static_cast< int >(authType));
+  if (authType == AuthType::Type::OKTA) {
     std::shared_ptr< Aws::Http::HttpClient > httpClient = GetHttpClient();
     std::shared_ptr< Aws::STS::STSClient > stsClient = GetStsClient();
     samlCredProvider_ =
         std::make_shared< ignite::odbc::TimestreamOktaCredentialsProvider >(
             cfg, httpClient, stsClient);
     samlCredProvider_->GetAWSCredentials(credentials, errInfo);
-  } else if (cfg.GetAuthType() == AuthType::Type::AAD) {
+  } else if (authType == AuthType::Type::AAD) {
     std::shared_ptr< Aws::Http::HttpClient > httpClient = GetHttpClient();
     std::shared_ptr< Aws::STS::STSClient > stsClient = GetStsClient();
     samlCredProvider_ =
         std::make_shared< ignite::odbc::TimestreamAADCredentialsProvider >(
             cfg, httpClient, stsClient);
     samlCredProvider_->GetAWSCredentials(credentials, errInfo);
-  } else if (cfg.GetAuthType() == AuthType::Type::AWS_PROFILE) {
+  } else if (authType == AuthType::Type::AWS_PROFILE) {
     Aws::Auth::ProfileConfigFileAWSCredentialsProvider credProvider(
         cfg.GetProfileName().data());
     credentials = credProvider.GetAWSCredentials();
-  } else if (cfg.GetAuthType() == AuthType::Type::IAM) {
+    LOG_DEBUG_MSG("profile name is " << cfg.GetProfileName());
+  } else if (authType == AuthType::Type::IAM) {
     credentials.SetAWSAccessKeyId(cfg.GetDSNUserName());
     credentials.SetAWSSecretKey(cfg.GetDSNPassword());
     credentials.SetSessionToken(cfg.GetSessionToken());
   } else {
     std::string errMsg =
-        "AuthType is not AWS_PROFILE, AAD, IAM or OKTA, but TryRestoreConnection is "
+        "AuthType is not AWS_PROFILE, AAD, IAM or OKTA, but "
+        "TryRestoreConnection is "
         "called.";
     LOG_ERROR_MSG(errMsg);
     err = IgniteError(IgniteError::IGNITE_ERR_TS_CONNECT, errMsg.data());
@@ -712,6 +729,11 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   clientCfg.connectTimeoutMs = cfg.GetConnectionTimeout();
   clientCfg.requestTimeoutMs = cfg.GetReqTimeout();
   clientCfg.maxConnections = cfg.GetMaxConnections();
+  LOG_DEBUG_MSG("region is "
+                << cfg.GetProfileName() << ", connection timeout is "
+                << clientCfg.connectTimeoutMs << ", request timeout is "
+                << clientCfg.requestTimeoutMs << ", max connection is "
+                << clientCfg.maxConnections);
 
   SetClientProxy(clientCfg);
 
@@ -723,6 +745,7 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
     clientCfg.retryStrategy =
         std::make_shared< Aws::Client::DefaultRetryStrategy >(
             cfg.GetMaxRetryCountClient());
+    LOG_DEBUG_MSG("max retry count is " << cfg.GetMaxRetryCountClient());
   }
 
   queryClient_ = CreateTSQueryClient(credentials, clientCfg);
@@ -731,6 +754,7 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   // endpoint could not be set to empty string
   if (!endpoint.empty()) {
     queryClient_->OverrideEndpoint(endpoint);
+    LOG_DEBUG_MSG("endpoint is set to " << endpoint);
   }
   // try a simple query with query client
   Aws::TimestreamQuery::Model::QueryRequest queryRequest;

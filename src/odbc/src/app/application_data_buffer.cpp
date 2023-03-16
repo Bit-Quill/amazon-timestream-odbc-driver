@@ -87,10 +87,12 @@ template < typename T >
 ConversionResult::Type ApplicationDataBuffer::PutNum(T value) {
   using namespace type_traits;
 
-  LOG_DEBUG_MSG("value: " << value);
+  LOG_DEBUG_MSG("PutNum is called with value: " << value);
 
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
+
+  LOG_DEBUG_MSG("type: " << type);
 
   switch (type) {
     case OdbcNativeType::AI_SIGNED_TINYINT: {
@@ -157,6 +159,7 @@ ConversionResult::Type ApplicationDataBuffer::PutNum(T value) {
 
         memcpy(out->val, &uval,
                std::min< int >(SQL_MAX_NUMERIC_LEN, sizeof(uval)));
+        LOG_DEBUG_MSG("out->val: " << out->val);
       }
 
       if (resLenPtr)
@@ -200,6 +203,7 @@ ConversionResult::Type ApplicationDataBuffer::PutNum(T value) {
 
 template < typename Tbuf, typename Tin >
 ConversionResult::Type ApplicationDataBuffer::PutNumToNumBuffer(Tin value) {
+  LOG_DEBUG_MSG("PutNumToNumBuffer is called with value " << value);
   void* dataPtr = GetData();
   SqlLen* resLenPtr = GetResLen();
 
@@ -217,6 +221,7 @@ ConversionResult::Type ApplicationDataBuffer::PutNumToNumBuffer(Tin value) {
 template < typename CharT, typename Tin >
 ConversionResult::Type ApplicationDataBuffer::PutValToStrBuffer(
     const Tin& value) {
+  LOG_DEBUG_MSG("PutValToStrBuffer is called with value " << value);
   std::stringstream converter;
   converter << value;
   int32_t written = 0;
@@ -226,6 +231,7 @@ ConversionResult::Type ApplicationDataBuffer::PutValToStrBuffer(
 template < typename CharT >
 ConversionResult::Type ApplicationDataBuffer::PutValToStrBuffer(
     const int8_t& value) {
+  LOG_DEBUG_MSG("PutValToStrBuffer is called with value " << value);
   std::stringstream converter;
   // NOTE: Need to cast to larger integer - or will mistake it for a character.
   converter << static_cast< int32_t >(value);
@@ -236,10 +242,13 @@ ConversionResult::Type ApplicationDataBuffer::PutValToStrBuffer(
 template < typename OutCharT, typename InCharT >
 ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
     const std::basic_string< InCharT >& value, int32_t& written) {
+  LOG_DEBUG_MSG("PutStrToStrBuffer is called with value " << value);
   written = 0;
 
   SqlLen inCharSize = static_cast< SqlLen >(sizeof(InCharT));
   SqlLen outCharSize = static_cast< SqlLen >(sizeof(OutCharT));
+  LOG_DEBUG_MSG("inCharSize is " << inCharSize << ", outCharSize is "
+                                 << outCharSize << ", buflen is " << buflen);
 
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
@@ -273,6 +282,7 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
   }
 
   written = static_cast< int32_t >(lenWrittenOrRequired);
+  LOG_DEBUG_MSG("written is " << written);
   if (resLenPtr) {
     *resLenPtr = static_cast< SqlLen >(written);
   }
@@ -285,6 +295,7 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
 
 ConversionResult::Type ApplicationDataBuffer::PutRawDataToBuffer(
     const void* data, size_t len, int32_t& written) {
+  LOG_DEBUG_MSG("PutRawDataToBuffer is called with len " << len);
   SqlLen iLen = static_cast< SqlLen >(len);
 
   SqlLen* resLenPtr = GetResLen();
@@ -299,6 +310,7 @@ ConversionResult::Type ApplicationDataBuffer::PutRawDataToBuffer(
     memcpy(dataPtr, data, static_cast< size_t >(toCopy));
 
   written = static_cast< int32_t >(toCopy);
+  LOG_DEBUG_MSG("written is " << written);
 
   return toCopy < iLen ? ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED
                        : ConversionResult::Type::AI_SUCCESS;
@@ -306,6 +318,7 @@ ConversionResult::Type ApplicationDataBuffer::PutRawDataToBuffer(
 
 ConversionResult::Type ApplicationDataBuffer::PutInt8(
     boost::optional< int8_t > value) {
+  LOG_DEBUG_MSG("PutInt8 is called");
   if (value)
     return PutInt8(*value);
   else
@@ -318,6 +331,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInt8(int8_t value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutInt16(
     boost::optional< int16_t > value) {
+  LOG_DEBUG_MSG("PutInt16 is called");
   if (value)
     return PutInt16(*value);
   else
@@ -330,6 +344,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInt16(int16_t value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutInt32(
     boost::optional< int32_t > value) {
+  LOG_DEBUG_MSG("PutInt32 is called");
   if (value)
     return PutInt32(*value);
   else
@@ -342,6 +357,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInt32(int32_t value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutInt64(
     boost::optional< int64_t > value) {
+  LOG_DEBUG_MSG("PutInt64 is called");
   if (value)
     return PutInt64(*value);
   else
@@ -354,6 +370,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInt64(int64_t value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutFloat(
     boost::optional< float > value) {
+  LOG_DEBUG_MSG("PutFloat is called");
   if (value)
     return PutFloat(*value);
   else
@@ -366,6 +383,7 @@ ConversionResult::Type ApplicationDataBuffer::PutFloat(float value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutDouble(
     boost::optional< double > value) {
+  LOG_DEBUG_MSG("PutDouble is called");
   if (value)
     return PutDouble(*value);
   else
@@ -378,6 +396,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDouble(double value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutString(
     const boost::optional< std::string >& value) {
+  LOG_DEBUG_MSG("PutString is called");
   if (value)
     return PutString(*value);
   else
@@ -394,8 +413,7 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
 ConversionResult::Type ApplicationDataBuffer::PutString(
     const std::string& value, int32_t& written) {
   using namespace type_traits;
-
-  LOG_DEBUG_MSG("value: " << value);
+  LOG_DEBUG_MSG("PutString is called with value " << value << ", type is " << type);
 
   switch (type) {
     case OdbcNativeType::AI_SIGNED_TINYINT:
@@ -453,94 +471,6 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
   return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
 }
 
-ConversionResult::Type ApplicationDataBuffer::PutGuid(const Guid& value) {
-  using namespace type_traits;
-
-  LOG_DEBUG_MSG("value: " << value);
-
-  SqlLen* resLenPtr = GetResLen();
-
-  switch (type) {
-    case OdbcNativeType::AI_CHAR:
-    case OdbcNativeType::AI_BINARY:
-    case OdbcNativeType::AI_DEFAULT: {
-      return PutValToStrBuffer< char >(value);
-    }
-
-    case OdbcNativeType::AI_WCHAR: {
-      return PutValToStrBuffer< SQLWCHAR >(value);
-    }
-
-    case OdbcNativeType::AI_GUID: {
-      SQLGUID* guid = reinterpret_cast< SQLGUID* >(GetData());
-
-      guid->Data1 =
-          static_cast< uint32_t >(value.GetMostSignificantBits() >> 32);
-      guid->Data2 =
-          static_cast< uint16_t >(value.GetMostSignificantBits() >> 16);
-      guid->Data3 = static_cast< uint16_t >(value.GetMostSignificantBits());
-
-      uint64_t lsb = value.GetLeastSignificantBits();
-      for (size_t i = 0; i < sizeof(guid->Data4); ++i)
-        guid->Data4[i] = (lsb >> (sizeof(guid->Data4) - i - 1) * 8) & 0xFF;
-
-      if (resLenPtr)
-        *resLenPtr = static_cast< SqlLen >(sizeof(SQLGUID));
-
-      return ConversionResult::Type::AI_SUCCESS;
-    }
-
-    default:
-      break;
-  }
-
-  return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
-}
-
-ConversionResult::Type ApplicationDataBuffer::PutBinaryData(const void* data,
-                                                            size_t len,
-                                                            int32_t& written) {
-  using namespace type_traits;
-
-  switch (type) {
-    case OdbcNativeType::AI_BINARY:
-    case OdbcNativeType::AI_DEFAULT: {
-      return PutRawDataToBuffer(data, len, written);
-    }
-
-    case OdbcNativeType::AI_CHAR: {
-      std::stringstream converter;
-
-      auto dataBytes = reinterpret_cast< const uint8_t* >(data);
-
-      for (size_t i = 0; i < len; ++i) {
-        converter << std::hex << std::setfill('0') << std::setw(2)
-                  << static_cast< unsigned >(dataBytes[i]);
-      }
-
-      return PutStrToStrBuffer< char >(converter.str(), written);
-    }
-
-    case OdbcNativeType::AI_WCHAR: {
-      std::stringstream converter;
-
-      auto dataBytes = reinterpret_cast< const uint8_t* >(data);
-
-      for (size_t i = 0; i < len; ++i) {
-        converter << std::hex << std::setfill('0') << std::setw(2)
-                  << static_cast< unsigned >(dataBytes[i]);
-      }
-
-      return PutStrToStrBuffer< SQLWCHAR >(converter.str(), written);
-    }
-
-    default:
-      break;
-  }
-
-  return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
-}
-
 ConversionResult::Type ApplicationDataBuffer::PutNull() {
   LOG_DEBUG_MSG("PutNull is called. No data put into buffer");
 
@@ -556,6 +486,7 @@ ConversionResult::Type ApplicationDataBuffer::PutNull() {
 
 ConversionResult::Type ApplicationDataBuffer::PutDecimal(
     const boost::optional< common::Decimal >& value) {
+  LOG_DEBUG_MSG("PutDecimal is called");
   if (value)
     return PutDecimal(*value);
   else
@@ -564,10 +495,10 @@ ConversionResult::Type ApplicationDataBuffer::PutDecimal(
 
 ConversionResult::Type ApplicationDataBuffer::PutDecimal(
     const common::Decimal& value) {
+  LOG_DEBUG_MSG("PutDecimal is called with type " << type);
   using namespace type_traits;
 
   SqlLen* resLenPtr = GetResLen();
-
   switch (type) {
     case OdbcNativeType::AI_SIGNED_TINYINT:
     case OdbcNativeType::AI_BIT:
@@ -646,6 +577,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDecimal(
 
 ConversionResult::Type ApplicationDataBuffer::PutDate(
     const boost::optional< Date >& value) {
+  LOG_DEBUG_MSG("PutDate is called");
   if (value)
     return PutDate(*value);
   else
@@ -653,11 +585,20 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
+  LOG_DEBUG_MSG("PutDate is called with type " << type);
   using namespace type_traits;
 
   tm tmTime;
 
   common::DateToCTm(value, tmTime);
+  LOG_DEBUG_MSG("tmTime.tm_year "
+                << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
+                << ", tmTime.tm_mday " << tmTime.tm_mday
+                << ", tmTime.tm_hour " << tmTime.tm_hour
+                << ", tmTime.tm_min " << tmTime.tm_min << ", tmTime.tm_sec "
+                << tmTime.tm_sec << ", tmTime.tm_wday " << tmTime.tm_wday
+                << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_isdst " << tmTime.tm_isdst);
 
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
@@ -672,10 +613,13 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
       if (buffer) {
         char tmpStr[32]{};
-        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year+1900, tmTime.tm_mon+1,
-                tmTime.tm_mday);
-        strncpy(buffer, tmpStr, std::min(buflen, static_cast<SqlLen>(valLen+1)));
+        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year + 1900,
+                tmTime.tm_mon + 1, tmTime.tm_mday);
+        strncpy(buffer, tmpStr,
+                std::min(buflen, static_cast< SqlLen >(valLen + 1)));
 
+        LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
+                                   << ", tmpStr is " << tmpStr);
         if (static_cast< SqlLen >(valLen) + 1 > buflen) {
           buffer[buflen - 1] = 0;
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
@@ -694,11 +638,14 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
       if (buffer) {
         char tmpStr[32]{};
-        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year+1900, tmTime.tm_mon+1,
-                tmTime.tm_mday);
+        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year + 1900,
+                tmTime.tm_mon + 1, tmTime.tm_mday);
 
+        LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
+                                   << ", tmpStr is " << tmpStr);
         bool isTruncated = false;
-        utility::CopyStringToBuffer(tmpStr, buffer, GetSize(), isTruncated, true);
+        utility::CopyStringToBuffer(tmpStr, buffer, GetSize(), isTruncated,
+                                    true);
       }
 
       if (static_cast< SqlLen >(valLen) + 1 > GetSize())
@@ -746,28 +693,41 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 }
 
 std::string ApplicationDataBuffer::GetTimestampString(tm& tmTime,
-                                                      int32_t fraction, const char* pattern) {
+                                                      int32_t fraction,
+                                                      const char* pattern) {
+  LOG_DEBUG_MSG("GetTimestampString is called with pattern " << pattern);
   char result[64]{};
   size_t writtenLen = strftime(result, 64, pattern, &tmTime);
 
   sprintf(result + writtenLen, "%09d", fraction);
 
+  LOG_DEBUG_MSG("result is " << result);
   return std::string(result);
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
     const boost::optional< Timestamp >& value) {
+  LOG_DEBUG_MSG("PutTimestamp is called");
   if (value)
     return PutTimestamp(*value);
   else
     return PutNull();
 }
 
-ConversionResult::Type ApplicationDataBuffer::PutTimestamp(const Timestamp& value) {
+ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
+    const Timestamp& value) {
+  LOG_DEBUG_MSG("PutTimestamp is called with type " << type);
   tm tmTime;
   memset(&tmTime, 0, sizeof(tm));
 
   common::TimestampToCTm(value, tmTime);
+  LOG_DEBUG_MSG("tmTime.tm_year "
+                << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
+                << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
+                << tmTime.tm_hour << ", tmTime.tm_min " << tmTime.tm_min
+                << ", tmTime.tm_sec " << tmTime.tm_sec << ", tmTime.tm_wday "
+                << tmTime.tm_wday << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_isdst " << tmTime.tm_isdst);
 
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
@@ -783,14 +743,17 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(const Timestamp& valu
       if (buffer) {
         std::string tmpStr = GetTimestampString(
             tmTime, value.GetSecondFraction(), "%Y-%m-%d %H:%M:%S.");
-        strncpy(buffer, tmpStr.c_str(), std::min(static_cast< SqlLen >(valLen), buflen));
+        strncpy(buffer, tmpStr.c_str(),
+                std::min(static_cast< SqlLen >(valLen), buflen));
 
+        LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
+                                   << ", tmpStr is " << tmpStr);
         if (static_cast< SqlLen >(valLen) > buflen) {
           buffer[buflen - 1] = 0;
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
         }
       }
-      return ConversionResult::Type::AI_SUCCESS;     
+      return ConversionResult::Type::AI_SUCCESS;
     }
 
     case OdbcNativeType::AI_WCHAR: {
@@ -805,8 +768,11 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(const Timestamp& valu
         std::string tmpStr = GetTimestampString(
             tmTime, value.GetSecondFraction(), "%Y-%m-%d %H:%M:%S.");
 
+        LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
+                                   << ", tmpStr is " << tmpStr);
         bool isTruncated = false;
-        utility::CopyStringToBuffer(&tmpStr[0], buffer, buflen, isTruncated, true);
+        utility::CopyStringToBuffer(&tmpStr[0], buffer, buflen, isTruncated,
+                                    true);
 
         if (isTruncated) {
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
@@ -875,6 +841,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(const Timestamp& valu
 
 ConversionResult::Type ApplicationDataBuffer::PutTime(
     const boost::optional< Time >& value) {
+  LOG_DEBUG_MSG("PutTime is called");
   if (value)
     return PutTime(*value);
   else
@@ -882,12 +849,20 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
+  LOG_DEBUG_MSG("PutTime is called with type " << type);
   using namespace type_traits;
 
   tm tmTime;
 
   memset(&tmTime, 0, sizeof(tm));
   common::TimeToCTm(value, tmTime);
+  LOG_DEBUG_MSG("tmTime.tm_year "
+                << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
+                << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
+                << tmTime.tm_hour << ", tmTime.tm_min " << tmTime.tm_min
+                << ", tmTime.tm_sec " << tmTime.tm_sec << ", tmTime.tm_wday "
+                << tmTime.tm_wday << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_isdst " << tmTime.tm_isdst);
 
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
@@ -907,6 +882,8 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
         strncpy(buffer, &tmpStr[0],
                 std::min(static_cast< SqlLen >(valLen), buflen));
 
+        LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
+                                   << ", tmpStr is " << tmpStr);
         if (static_cast< SqlLen >(valLen) > buflen) {
           buffer[buflen - 1] = 0;
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
@@ -925,11 +902,14 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
       SQLWCHAR* buffer = reinterpret_cast< SQLWCHAR* >(dataPtr);
 
       if (buffer) {
-        std::string tmpStr = GetTimestampString(
-            tmTime, value.GetSecondFraction(), "%H:%M:%S.");
+        std::string tmpStr =
+            GetTimestampString(tmTime, value.GetSecondFraction(), "%H:%M:%S.");
 
+        LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
+                                   << ", tmpStr is " << tmpStr);
         bool isTruncated = false;
-        utility::CopyStringToBuffer(&tmpStr[0], buffer, buflen, isTruncated, true);
+        utility::CopyStringToBuffer(&tmpStr[0], buffer, buflen, isTruncated,
+                                    true);
 
         if (isTruncated) {
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
@@ -979,6 +959,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
 
 ConversionResult::Type ApplicationDataBuffer::PutInterval(
     const IntervalYearMonth& value) {
+  LOG_DEBUG_MSG("PutInterval is called with type " << type);
   using namespace type_traits;
 
   SqlLen* resLenPtr = GetResLen();
@@ -988,7 +969,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
     case OdbcNativeType::AI_CHAR: {
       char tmp[32]{};
       sprintf(tmp, "%d-%d", value.GetYear(), value.GetMonth());
-      SqlLen resLen = static_cast<SqlLen>(strlen(tmp));
+      SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 
       if (resLenPtr)
         *resLenPtr = resLen;
@@ -997,6 +978,8 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
       if (buffer) {
         strncpy(buffer, tmp, std::min(resLen + 1, buflen));
 
+        LOG_DEBUG_MSG("resLen is " << resLen << ", buflen is " << buflen
+                                   << ", tmp is " << tmp);
         if (resLen + 1 > buflen) {
           buffer[buflen - 1] = 0;
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
@@ -1019,6 +1002,8 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
         bool isTruncated = false;
         utility::CopyStringToBuffer(tmp, buffer, buflen, isTruncated, true);
 
+        LOG_DEBUG_MSG("resLen is " << resLen << ", buflen is " << buflen
+                                   << ", tmp is " << tmp);
         if (isTruncated)
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
       }
@@ -1048,6 +1033,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
 
 ConversionResult::Type ApplicationDataBuffer::PutInterval(
     const IntervalDaySecond& value) {
+  LOG_DEBUG_MSG("PutInterval is called with type " << type);
   using namespace type_traits;
 
   SqlLen* resLenPtr = GetResLen();
@@ -1067,6 +1053,8 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
       if (buffer) {
         strncpy(buffer, tmp, std::min(resLen + 1, buflen));
 
+        LOG_DEBUG_MSG("resLen is " << resLen << ", buflen is " << buflen
+                                   << ", tmp is " << tmp);
         if (resLen + 1 > buflen) {
           buffer[buflen - 1] = 0;
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
@@ -1090,6 +1078,8 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
         bool isTruncated = false;
         utility::CopyStringToBuffer(tmp, buffer, buflen, isTruncated, true);
 
+        LOG_DEBUG_MSG("resLen is " << resLen << ", buflen is " << buflen
+                                   << ", tmp is " << tmp);
         if (isTruncated)
           return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
       }
@@ -1121,6 +1111,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
 }
 
 std::string ApplicationDataBuffer::GetString(size_t maxLen) const {
+  LOG_DEBUG_MSG("GetString is called with type " << type);
   using namespace type_traits;
   std::string res;
 
@@ -1135,6 +1126,8 @@ std::string ApplicationDataBuffer::GetString(size_t maxLen) const {
           reinterpret_cast< const SQLCHAR* >(GetData()),
           static_cast< int32_t >(paramLen));
 
+      LOG_DEBUG_MSG("res is " << res << ", paramLen is " << paramLen
+                              << ", maxLen is " << maxLen);
       if (res.size() > maxLen)
         res.resize(maxLen);
 
@@ -1151,6 +1144,8 @@ std::string ApplicationDataBuffer::GetString(size_t maxLen) const {
           reinterpret_cast< const SQLWCHAR* >(GetData()),
           static_cast< int32_t >(paramLen), true);
 
+      LOG_DEBUG_MSG("res is " << res << ", paramLen is " << paramLen
+                              << ", maxLen is " << maxLen);
       if (res.size() > maxLen)
         res.resize(maxLen);
 
@@ -1236,74 +1231,6 @@ double ApplicationDataBuffer::GetDouble() const {
   return GetNum< double >();
 }
 
-Guid ApplicationDataBuffer::GetGuid() const {
-  using namespace type_traits;
-
-  Guid res;
-
-  switch (type) {
-    case OdbcNativeType::AI_CHAR: {
-      SqlLen paramLen = GetInputSize();
-
-      if (!paramLen)
-        break;
-
-      std::string str = utility::SqlCharToString(
-          reinterpret_cast< const SQLCHAR* >(GetData()),
-          static_cast< int32_t >(paramLen));
-
-      std::stringstream converter;
-
-      converter << str;
-
-      converter >> res;
-
-      break;
-    }
-
-    case OdbcNativeType::AI_WCHAR: {
-      SqlLen paramLen = GetInputSize();
-
-      if (!paramLen)
-        break;
-
-      std::string str = utility::SqlWcharToString(
-          reinterpret_cast< const SQLWCHAR* >(GetData()),
-          static_cast< int32_t >(paramLen), true);
-
-      std::stringstream converter;
-
-      converter << str;
-
-      converter >> res;
-
-      break;
-    }
-
-    case OdbcNativeType::AI_GUID: {
-      const SQLGUID* guid = reinterpret_cast< const SQLGUID* >(GetData());
-
-      uint64_t msb = static_cast< uint64_t >(guid->Data1) << 32
-                     | static_cast< uint64_t >(guid->Data2) << 16
-                     | static_cast< uint64_t >(guid->Data3);
-
-      uint64_t lsb = 0;
-
-      for (size_t i = 0; i < sizeof(guid->Data4); ++i)
-        lsb = guid->Data4[i] << (sizeof(guid->Data4) - i - 1) * 8;
-
-      res = Guid(msb, lsb);
-
-      break;
-    }
-
-    default:
-      break;
-  }
-
-  return res;
-}
-
 const void* ApplicationDataBuffer::GetData() const {
   return ApplyOffset(buffer, GetElementSize());
 }
@@ -1322,6 +1249,7 @@ SqlLen* ApplicationDataBuffer::GetResLen() {
 
 template < typename T >
 T ApplicationDataBuffer::GetNum() const {
+  LOG_DEBUG_MSG("GetNum is called with type " << type);
   using namespace type_traits;
 
   T res = T();
@@ -1350,7 +1278,6 @@ T ApplicationDataBuffer::GetNum() const {
         res = static_cast< T >(tmp);
       } else
         converter >> res;
-
       break;
     }
 
@@ -1428,10 +1355,12 @@ T ApplicationDataBuffer::GetNum() const {
       break;
   }
 
+  LOG_DEBUG_MSG("res is " << res);
   return res;
 }
 
 Date ApplicationDataBuffer::GetDate() const {
+  LOG_DEBUG_MSG("GetDate is called with type " << type);
   using namespace type_traits;
 
   tm tmTime;
@@ -1519,15 +1448,31 @@ Date ApplicationDataBuffer::GetDate() const {
       break;
   }
 
-  return common::CTmToDate(tmTime);
+  Date retval = common::CTmToDate(tmTime);
+  LOG_DEBUG_MSG("tmTime.tm_year "
+                << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
+                << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
+                << tmTime.tm_hour << ", tmTime.tm_min " << tmTime.tm_min
+                << ", tmTime.tm_sec " << tmTime.tm_sec << ", tmTime.tm_wday "
+                << tmTime.tm_wday << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_isdst " << tmTime.tm_isdst);
+  return retval;
 }
 
 Timestamp ApplicationDataBuffer::GetTimestamp() const {
+  LOG_DEBUG_MSG("GetTimestamp is called with type " << type);
   using namespace type_traits;
 
   tm tmTime;
 
   std::memset(&tmTime, 0, sizeof(tmTime));
+  LOG_DEBUG_MSG("tmTime.tm_year "
+                << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
+                << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
+                << tmTime.tm_hour << ", tmTime.tm_min " << tmTime.tm_min
+                << ", tmTime.tm_sec " << tmTime.tm_sec << ", tmTime.tm_wday "
+                << tmTime.tm_wday << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_isdst " << tmTime.tm_isdst);
 
   int32_t nanos = 0;
 
@@ -1618,6 +1563,7 @@ Timestamp ApplicationDataBuffer::GetTimestamp() const {
 }
 
 Time ApplicationDataBuffer::GetTime() const {
+  LOG_DEBUG_MSG("GetTime is called with type " << type);
   using namespace type_traits;
 
   tm tmTime;
@@ -1687,10 +1633,19 @@ Time ApplicationDataBuffer::GetTime() const {
       break;
   }
 
-  return common::CTmToTime(tmTime);
+  Time retval = common::CTmToTime(tmTime);
+  LOG_DEBUG_MSG("tmTime.tm_year "
+                << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
+                << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
+                << tmTime.tm_hour << ", tmTime.tm_min " << tmTime.tm_min
+                << ", tmTime.tm_sec " << tmTime.tm_sec << ", tmTime.tm_wday "
+                << tmTime.tm_wday << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_isdst " << tmTime.tm_isdst);
+  return retval;
 }
 
 void ApplicationDataBuffer::GetDecimal(common::Decimal& val) const {
+  LOG_DEBUG_MSG("GetDecimal is called with type " << type);
   using namespace type_traits;
 
   switch (type) {
@@ -1757,10 +1712,12 @@ void ApplicationDataBuffer::GetDecimal(common::Decimal& val) const {
       break;
     }
   }
+  LOG_DEBUG_MSG("val is " << val);
 }
 
 template < typename T >
 T* ApplicationDataBuffer::ApplyOffset(T* ptr, size_t elemSize) const {
+  LOG_DEBUG_MSG("ApplyOffset is called");
   if (!ptr)
     return ptr;
 
@@ -1769,6 +1726,7 @@ T* ApplicationDataBuffer::ApplyOffset(T* ptr, size_t elemSize) const {
 }
 
 bool ApplicationDataBuffer::IsDataAtExec() const {
+  LOG_DEBUG_MSG("IsDataAtExec is called");
   const SqlLen* resLenPtr = GetResLen();
 
   if (!resLenPtr)
@@ -1780,6 +1738,7 @@ bool ApplicationDataBuffer::IsDataAtExec() const {
 }
 
 SqlLen ApplicationDataBuffer::GetDataAtExecSize() const {
+  LOG_DEBUG_MSG("GetDataAtExecSize is called with type " << type);
   using namespace type_traits;
 
   switch (type) {
@@ -1801,6 +1760,7 @@ SqlLen ApplicationDataBuffer::GetDataAtExecSize() const {
       if (type == OdbcNativeType::AI_WCHAR)
         ilen *= 2;
 
+      LOG_DEBUG_MSG("ilen is " << ilen);
       return ilen;
     }
 
@@ -1852,6 +1812,7 @@ SqlLen ApplicationDataBuffer::GetDataAtExecSize() const {
 }
 
 SqlLen ApplicationDataBuffer::GetElementSize() const {
+  LOG_DEBUG_MSG("GetElementSize is called with type " << type);
   using namespace type_traits;
 
   switch (type) {
@@ -1916,6 +1877,7 @@ SqlLen ApplicationDataBuffer::GetElementSize() const {
 }
 
 SqlLen ApplicationDataBuffer::GetInputSize() const {
+  LOG_DEBUG_MSG("GetInputSize is called");
   if (!IsDataAtExec()) {
     const SqlLen* len = GetResLen();
 

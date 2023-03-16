@@ -165,72 +165,6 @@ BOOST_AUTO_TEST_CASE(TestPutFloatToWString, *disabled()) {
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-1000.21"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutGuidToString, *disabled()) {
-  char buffer[1024];
-  SqlLen reslen = 0;
-
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, buffer, sizeof(buffer),
-                               &reslen);
-
-  Guid guid(0x1da1ef8f39ff4d62UL, 0x8b72e8e9f3371801UL);
-
-  appBuf.PutGuid(guid);
-
-  BOOST_CHECK(!strcmp(buffer, "1da1ef8f-39ff-4d62-8b72-e8e9f3371801"));
-  BOOST_CHECK(reslen == strlen("1da1ef8f-39ff-4d62-8b72-e8e9f3371801"));
-}
-
-BOOST_AUTO_TEST_CASE(TestPutGuidToWString, *disabled()) {
-  SQLWCHAR buffer[1024];
-  SqlLen reslen = 0;
-
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, buffer, sizeof(buffer),
-                               &reslen);
-
-  Guid guid(0x1da1ef8f39ff4d62UL, 0x8b72e8e9f3371801UL);
-
-  appBuf.PutGuid(guid);
-
-  BOOST_CHECK(utility::SqlWcharToString(buffer) == "1da1ef8f-39ff-4d62-8b72-e8e9f3371801");
-  BOOST_CHECK((reslen / sizeof(SQLWCHAR))
-              == strlen("1da1ef8f-39ff-4d62-8b72-e8e9f3371801"));
-}
-
-BOOST_AUTO_TEST_CASE(TestPutBinaryToString, *disabled()) {
-  char buffer[1024];
-  SqlLen reslen = 0;
-
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, buffer, sizeof(buffer),
-                               &reslen);
-
-  uint8_t binary[] = {0x21, 0x84, 0xF4, 0xDC, 0x01, 0x00, 0xFF, 0xF0};
-
-  int32_t written = 0;
-
-  appBuf.PutBinaryData(binary, sizeof(binary), written);
-
-  BOOST_CHECK(!strcmp(buffer, "2184f4dc0100fff0"));
-  BOOST_CHECK(reslen == strlen("2184f4dc0100fff0"));
-}
-
-BOOST_AUTO_TEST_CASE(TestPutBinaryToWString, *disabled()) {
-  SQLWCHAR buffer[1024];
-  SqlLen reslen = 0;
-
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, buffer, sizeof(buffer),
-                               &reslen);
-
-  uint8_t binary[] = {0x21, 0x84, 0xF4, 0xDC, 0x01, 0x00, 0xFF, 0xF0};
-
-  int32_t written = 0;
-
-  appBuf.PutBinaryData(binary, sizeof(binary), written);
-
-  std::string bufferAsString = utility::SqlWcharToString(buffer);
-  BOOST_CHECK(utility::SqlWcharToString(buffer) == "2184f4dc0100fff0");
-  BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("2184f4dc0100fff0"));
-}
-
 BOOST_AUTO_TEST_CASE(TestPutStringToString, *disabled()) {
   char buffer[1024];
   SqlLen reslen = 0;
@@ -965,31 +899,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("3 10:25:55.12345678"));
-}
-
-BOOST_AUTO_TEST_CASE(TestGetGuidFromString, *disabled()) {
-  char buffer[] = "1da1ef8f-39ff-4d62-8b72-e8e9f3371801";
-  SqlLen reslen = sizeof(buffer) - 1;
-
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, buffer,
-                               sizeof(buffer) - 1, &reslen);
-
-  Guid guid = appBuf.GetGuid();
-
-  BOOST_CHECK_EQUAL(guid, Guid(0x1da1ef8f39ff4d62UL, 0x8b72e8e9f3371801UL));
-}
-
-BOOST_AUTO_TEST_CASE(TestGetGuidFromWString, *disabled()) {
-  std::vector< SQLWCHAR > buffer =
-      utility::ToWCHARVector("1da1ef8f-39ff-4d62-8b72-e8e9f3371801");
-  SqlLen reslen = buffer.size() * sizeof(SQLWCHAR);
-
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, buffer.data(),
-                               buffer.size() * sizeof(SQLWCHAR), &reslen);
-
-  Guid guid = appBuf.GetGuid();
-
-  BOOST_CHECK_EQUAL(guid, Guid(0x1da1ef8f39ff4d62UL, 0x8b72e8e9f3371801UL));
 }
 
 BOOST_AUTO_TEST_CASE(TestGetStringFromLong, *disabled()) {

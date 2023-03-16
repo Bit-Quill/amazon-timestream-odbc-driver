@@ -113,8 +113,6 @@ SqlResult::Type StreamingContext::MakeRequestStreamingBatch(bool last) {
   currentBatch.Clear();
 
   if (rsp.GetStatus() != ResponseStatus::SUCCESS) {
-    LOG_MSG("Error: " << rsp.GetError());
-
     connection->AddStatusRecord(ResponseStatusToSqlState(rsp.GetStatus()),
                                 rsp.GetError());
 
@@ -122,8 +120,6 @@ SqlResult::Type StreamingContext::MakeRequestStreamingBatch(bool last) {
   }
 
   if (rsp.GetErrorCode() != ResponseStatus::SUCCESS) {
-    LOG_MSG("Error: " << rsp.GetErrorMessage());
-
     connection->AddStatusRecord(ResponseStatusToSqlState(rsp.GetErrorCode()),
                                 rsp.GetErrorMessage());
 

@@ -35,6 +35,7 @@ TimestreamCursor::~TimestreamCursor() {
 bool TimestreamCursor::Increment() {
   LOG_DEBUG_MSG("Increment is called");
   bool hasData = HasData();
+  LOG_DEBUG_MSG("hasData is " << hasData);
   if (hasData) {
     if (currentRow_) {
       (*currentRow_).Update(*iterator_);
@@ -43,10 +44,8 @@ bool TimestreamCursor::Increment() {
     }
     ++iterator_;
   } else {
-    LOG_DEBUG_MSG("No data is found");
     currentRow_.reset();
   }
-  LOG_DEBUG_MSG("Increment exiting");
   return hasData;
 }
 

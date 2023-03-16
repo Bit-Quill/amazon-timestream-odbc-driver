@@ -85,7 +85,9 @@ class IGNITE_IMPORT_EXPORT DiagnosableAdapter : public Diagnosable {
    * @param columnNum Associated column number.
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
-                               const std::string& message, int32_t rowNum,
+                               const std::string& message,
+                               ignite::odbc::LogLevel::Type logLevel,
+                               int32_t rowNum,
                                int32_t columnNum);
 
   /**
@@ -93,9 +95,12 @@ class IGNITE_IMPORT_EXPORT DiagnosableAdapter : public Diagnosable {
    *
    * @param sqlState SQL state.
    * @param message Message.
+   * @param logLevel Log level
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
-                               const std::string& message);
+                               const std::string& message,
+                               ignite::odbc::LogLevel::Type logLevel =
+                                   ignite::odbc::LogLevel::Type::ERROR_LEVEL);
 
   /**
    * Add new status record with SqlState::SHY000_GENERAL_ERROR state.

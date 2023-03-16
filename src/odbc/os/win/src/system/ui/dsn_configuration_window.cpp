@@ -971,8 +971,7 @@ void DsnConfigurationWindow::RetrieveBasicParameters(
   endpointEdit->GetText(endpointWStr);
   regionEdit->GetText(regionWStr);
 
-  std::string dsnStr = utility::ToUtf8(dsnWStr);
-  common::StripSurroundingWhitespaces(dsnStr);
+  std::string dsnStr = utility::Trim(utility::ToUtf8(dsnWStr));
   std::string endpointStr = utility::ToUtf8(endpointWStr);
   std::string regionStr = utility::ToUtf8(regionWStr);
 

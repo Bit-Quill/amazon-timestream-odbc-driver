@@ -21,6 +21,7 @@
 #include "ignite/odbc/config/connection_string_parser.h"
 #include <ignite/odbc/authentication/auth_type.h>
 #include <ignite/odbc/log_level.h>
+#include <ignite/odbc/log.h>
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/utility.h"
 
@@ -44,6 +45,7 @@ void GetLastSetupError(IgniteError& error) {
       << utility::SqlWcharToString(msg.GetData(), msg.GetSize())
       << "\", SQLInstallerError Code: " << code;
 
+  LOG_ERROR_MSG(buf.str());
   error = IgniteError(IgniteError::IGNITE_ERR_GENERIC, buf.str().c_str());
 }
 
@@ -55,6 +57,7 @@ void ThrowLastSetupError() {
 
 bool WriteDsnString(const char* dsn, const char* key, const char* value,
                     IgniteError& error) {
+  LOG_DEBUG_MSG("WriteDsnString is called");
   if (!SQLWritePrivateProfileString(
           utility::ToWCHARVector(dsn).data(),
           utility::ToWCHARVector(key).data(),
@@ -69,6 +72,7 @@ bool WriteDsnString(const char* dsn, const char* key, const char* value,
 SettableValue< std::string > ReadDsnString(const char* dsn,
                                            const std::string& key,
                                            const std::string& dflt = "") {
+  LOG_DEBUG_MSG("ReadDsnString is called with dsn is " << dsn << ", key is " << key);
   static const char* unique = "35a920dd-8837-43d2-a846-e01a2e7b5f84";
 
   SettableValue< std::string > val(dflt);
@@ -94,11 +98,14 @@ SettableValue< std::string > ReadDsnString(const char* dsn,
   if (res != unique)
     val.SetValue(res);
 
+  LOG_DEBUG_MSG("val is " << val.GetValue());
   return val;
 }
 
 SettableValue< int32_t > ReadDsnInt(const char* dsn, const std::string& key,
                                     int32_t dflt = 0) {
+  LOG_DEBUG_MSG("ReadDsnInt is called with dsn is " << dsn << ", key is "
+                                                       << key);
   SettableValue< std::string > str = ReadDsnString(dsn, key, "");
 
   SettableValue< int32_t > res(dflt);
@@ -106,11 +113,14 @@ SettableValue< int32_t > ReadDsnInt(const char* dsn, const std::string& key,
   if (str.IsSet())
     res.SetValue(common::LexicalCast< int, std::string >(str.GetValue()));
 
+  LOG_DEBUG_MSG("res is " << res.GetValue());
   return res;
 }
 
 SettableValue< bool > ReadDsnBool(const char* dsn, const std::string& key,
                                   bool dflt = false) {
+  LOG_DEBUG_MSG("ReadDsnBool is called with dsn is " << dsn << ", key is "
+                                                    << key);
   SettableValue< std::string > str = ReadDsnString(dsn, key, "");
 
   SettableValue< bool > res(dflt);
@@ -118,11 +128,13 @@ SettableValue< bool > ReadDsnBool(const char* dsn, const std::string& key,
   if (str.IsSet())
     res.SetValue(str.GetValue() == "true");
 
+  LOG_DEBUG_MSG("res is " << res.GetValue());
   return res;
 }
 
 void ReadDsnConfiguration(const char* dsn, Configuration& config,
                           diagnostic::DiagnosticRecordStorage* diag) {
+  LOG_DEBUG_MSG("ReadDsnConfiguration is called with dsn is " << dsn);
   SettableValue< std::string > uid =
       ReadDsnString(dsn, ConnectionStringParser::Key::uid);
 
@@ -282,6 +294,7 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
 
 bool WriteDsnConfiguration(const config::Configuration& config,
                            IgniteError& error) {
+  LOG_DEBUG_MSG("WriteDsnConfiguration is called");
   if (config.GetDsn("").empty() || config.GetDriver().empty()) {
     return false;
   }
@@ -296,12 +309,14 @@ bool DeleteDsnConfiguration(const std::string dsn, IgniteError& error) {
 
 bool RegisterDsn(const Configuration& config, const LPCSTR driver,
                  IgniteError& error) {
+  LOG_DEBUG_MSG("RegisterDsn is called");
   using namespace ignite::odbc::config;
   using ignite::odbc::common::LexicalCast;
 
   typedef Configuration::ArgumentMap ArgMap;
 
   const char* dsn = config.GetDsn().c_str();
+  LOG_DEBUG_MSG("dsn is " << dsn << ", driver is " << driver);
 
   std::vector< SQLWCHAR > dsn0 = ToWCHARVector(dsn);
   std::vector< SQLWCHAR > driver0 = ToWCHARVector(driver);
@@ -330,6 +345,7 @@ bool RegisterDsn(const Configuration& config, const LPCSTR driver,
 }
 
 bool UnregisterDsn(const std::string& dsn, IgniteError& error) {
+  LOG_DEBUG_MSG("UnregisterDsn is called");
   if (!SQLRemoveDSNFromIni(ToWCHARVector(dsn).data())) {
     GetLastSetupError(error);
     return false;

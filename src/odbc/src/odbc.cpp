@@ -76,31 +76,24 @@ SQLRETURN SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType, SQLPOINTER infoValue,
 
   connection->GetInfo(infoType, infoValue, infoValueMax, length);
 
-  LOG_DEBUG_MSG("SQLGetInfo exiting");
-
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
 SQLRETURN SQLAllocHandle(SQLSMALLINT type, SQLHANDLE parent,
                          SQLHANDLE* result) {
-  LOG_DEBUG_MSG("SQLAllocHandle called");
+  LOG_DEBUG_MSG("SQLAllocHandle called with type " << type);
   switch (type) {
     case SQL_HANDLE_ENV:
-      LOG_DEBUG_MSG("SQLAllocHandle exiting on case SQL_HANDLE_ENV");
       return SQLAllocEnv(result);
 
     case SQL_HANDLE_DBC:
-      LOG_DEBUG_MSG("SQLAllocHandle exiting on case SQL_HANDLE_DBC");
       return SQLAllocConnect(parent, result);
 
     case SQL_HANDLE_STMT:
-      LOG_DEBUG_MSG("SQLAllocHandle exiting on case SQL_HANDLE_STMT");
       return SQLAllocStmt(parent, result);
 
     case SQL_HANDLE_DESC: {
       using odbc::Connection;
-
-      LOG_DEBUG_MSG("SQLAllocHandle on case SQL_HANDLE_DESC");
 
       Connection* connection = reinterpret_cast< Connection* >(parent);
 
@@ -118,7 +111,6 @@ SQLRETURN SQLAllocHandle(SQLSMALLINT type, SQLHANDLE parent,
           "The HandleType argument was SQL_HANDLE_DESC, and "
           "the driver does not support allocating a descriptor handle");
 
-      LOG_ERROR_MSG("SQLAllocHandle exiting with SQL_ERROR");
       return SQL_ERROR;
     }
     default:
@@ -126,8 +118,6 @@ SQLRETURN SQLAllocHandle(SQLSMALLINT type, SQLHANDLE parent,
   }
 
   *result = 0;
-
-  LOG_ERROR_MSG("SQLAllocHandle exiting with SQL_ERROR");
 
   return SQL_ERROR;
 }
@@ -138,8 +128,6 @@ SQLRETURN SQLAllocEnv(SQLHENV* env) {
   LOG_DEBUG_MSG("SQLAllocEnv called");
 
   *env = reinterpret_cast< SQLHENV >(new Environment());
-
-  LOG_DEBUG_MSG("SQLAllocEnv exiting");
 
   return SQL_SUCCESS;
 }
@@ -155,20 +143,18 @@ SQLRETURN SQLAllocConnect(SQLHENV env, SQLHDBC* conn) {
   Environment* environment = reinterpret_cast< Environment* >(env);
 
   if (!environment) {
-    LOG_ERROR_MSG("SQLAllocConnect exiting with SQL_INVALID_HANDLE");
+    LOG_ERROR_MSG("environment is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   Connection* connection = environment->CreateConnection();
 
   if (!connection) {
-    LOG_ERROR_MSG("SQLAllocConnect exiting because connection object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return environment->GetDiagnosticRecords().GetReturnCode();
   }
 
   *conn = reinterpret_cast< SQLHDBC >(connection);
-
-  LOG_DEBUG_MSG("SQLAllocConnect exiting");
 
   return SQL_SUCCESS;
 }
@@ -184,9 +170,7 @@ SQLRETURN SQLAllocStmt(SQLHDBC conn, SQLHSTMT* stmt) {
   auto connection = static_cast< Connection* >(conn);
 
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLAllocStmt exiting with SQL_INVALID_HANDLE because connection "
-        "object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -194,34 +178,26 @@ SQLRETURN SQLAllocStmt(SQLHDBC conn, SQLHSTMT* stmt) {
 
   *stmt = reinterpret_cast< SQLHSTMT >(statement);
 
-  LOG_DEBUG_MSG("SQLAllocStmt exiting");
-
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
 SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle) {
-  LOG_DEBUG_MSG("SQLFreeHandle called");
+  LOG_DEBUG_MSG("SQLFreeHandle called with type " << type);
 
   switch (type) {
     case SQL_HANDLE_ENV:
-      LOG_DEBUG_MSG("SQLFreeHandle exiting on case SQL_HANDLE_ENV");
       return SQLFreeEnv(handle);
 
     case SQL_HANDLE_DBC:
-      LOG_DEBUG_MSG("SQLFreeHandle exiting on case SQL_HANDLE_DBC");
       return SQLFreeConnect(handle);
 
     case SQL_HANDLE_STMT:
-      LOG_DEBUG_MSG("SQLFreeHandle exiting on case SQL_HANDLE_STMT");
       return SQLFreeStmt(handle, SQL_DROP);
 
     case SQL_HANDLE_DESC:
-      LOG_DEBUG_MSG("SQLFreeHandle is on case SQL_HANDLE_DESC");
     default:
       break;
   }
-
-  LOG_ERROR_MSG("SQLFreeHandle exiting with SQL_ERROR");
 
   return SQL_ERROR;
 }
@@ -234,15 +210,11 @@ SQLRETURN SQLFreeEnv(SQLHENV env) {
   Environment* environment = reinterpret_cast< Environment* >(env);
 
   if (!environment) {
-    LOG_ERROR_MSG(
-        "SQLFreeEnv exiting with SQL_INVALID_HANDLE because environment object "
-        "is null");
+    LOG_ERROR_MSG("environment is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   delete environment;
-
-  LOG_DEBUG_MSG("SQLFreeEnv exiting");
 
   return SQL_SUCCESS;
 }
@@ -255,18 +227,13 @@ SQLRETURN SQLFreeConnect(SQLHDBC conn) {
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLFreeConnect exiting with SQL_INVALID_HANDLE because connection "
-        "object "
-        "is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   connection->Deregister();
 
   delete connection;
-
-  LOG_DEBUG_MSG("SQLFreeConnect exiting");
 
   return SQL_SUCCESS;
 }
@@ -279,21 +246,16 @@ SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLFreeStmt exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   if (option == SQL_DROP) {
     delete statement;
-    LOG_DEBUG_MSG("SQLFreeConnect exiting because option is SQL_DROP");
     return SQL_SUCCESS;
   }
 
   statement->FreeResources(option);
-
-  LOG_DEBUG_MSG("SQLFreeStmt exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -306,8 +268,6 @@ SQLRETURN SQLCloseCursor(SQLHSTMT stmt) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   statement->Close();
-
-  LOG_DEBUG_MSG("SQLCloseCursor exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -327,18 +287,10 @@ SQLRETURN SQLDriverConnect(SQLHDBC conn, SQLHWND windowHandle,
 
   LOG_DEBUG_MSG("SQLDriverConnect called");
 
-  // TODO enable logging connection string
-  // https://bitquill.atlassian.net/browse/AT-1031
-
-  // if (inConnectionString)
-  //   LOG_INFO_MSG("Connection String: [" << inConnectionString << "]");
-
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLFreeStmt exiting with SQL_INVALID_HANDLE because connection "
-        "object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
   std::string connectStr =
@@ -355,17 +307,12 @@ SQLRETURN SQLDriverConnect(SQLHDBC conn, SQLHWND windowHandle,
 
   bool isTruncated = false;
 
-  size_t reslen =
-      CopyStringToBuffer(connectStr, outConnectionString,
+  size_t reslen = CopyStringToBuffer(
+      connectStr, outConnectionString,
       static_cast< size_t >(outConnectionStringBufferLen), isTruncated);
 
   if (outConnectionStringLen)
     *outConnectionStringLen = static_cast< SQLSMALLINT >(reslen);
-
-  // if (outConnectionString)
-  //   LOG_INFO_MSG(outConnectionString);
-
-  LOG_DEBUG_MSG("SQLDriverConnect exiting");
 
   return diag.GetReturnCode();
 }
@@ -374,7 +321,6 @@ SQLRETURN SQLConnect(SQLHDBC conn, SQLWCHAR* serverName,
                      SQLSMALLINT serverNameLen, SQLWCHAR* userName,
                      SQLSMALLINT userNameLen, SQLWCHAR* auth,
                      SQLSMALLINT authLen) {
-
   using odbc::Connection;
   using odbc::config::Configuration;
 
@@ -383,9 +329,7 @@ SQLRETURN SQLConnect(SQLHDBC conn, SQLWCHAR* serverName,
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLConnect exiting with SQL_INVALID_HANDLE because connection "
-        "object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -408,8 +352,6 @@ SQLRETURN SQLConnect(SQLHDBC conn, SQLWCHAR* serverName,
 
   connection->Establish(config);
 
-  LOG_DEBUG_MSG("SQLConnect exiting");
-
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
@@ -421,15 +363,11 @@ SQLRETURN SQLDisconnect(SQLHDBC conn) {
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLDisconnect exiting with SQL_INVALID_HANDLE because connection "
-        "object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   connection->Release();
-
-  LOG_DEBUG_MSG("SQLDisconnect exiting");
 
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
@@ -442,9 +380,7 @@ SQLRETURN SQLPrepare(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLPrepare exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -453,8 +389,6 @@ SQLRETURN SQLPrepare(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
   LOG_INFO_MSG("SQL: " << sql);
 
   statement->PrepareSqlQuery(sql);
-
-  LOG_DEBUG_MSG("SQLPrepare exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -467,15 +401,11 @@ SQLRETURN SQLExecute(SQLHSTMT stmt) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLExecute exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->ExecuteSqlQuery();
-
-  LOG_DEBUG_MSG("SQLExecute exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -488,9 +418,7 @@ SQLRETURN SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLExecDirect exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -499,8 +427,6 @@ SQLRETURN SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
   LOG_INFO_MSG("SQL: " << sql);
 
   statement->ExecuteSqlQuery(sql);
-
-  LOG_DEBUG_MSG("SQLExecDirect exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -522,16 +448,12 @@ SQLRETURN SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLBindCol exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->BindColumn(colNum, targetType, targetValue, bufferLength,
                         strLengthOrIndicator);
-
-  LOG_DEBUG_MSG("SQLBindCol exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -544,15 +466,11 @@ SQLRETURN SQLFetch(SQLHSTMT stmt) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLFetch exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->FetchRow();
-
-  LOG_DEBUG_MSG("SQLFetch exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -561,21 +479,17 @@ SQLRETURN SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orientation,
                          SQLLEN offset) {
   using odbc::Statement;
 
-  LOG_DEBUG_MSG("SQLFetchScroll called");
-  LOG_INFO_MSG("Orientation: " << orientation << " Offset: " << offset);
+  LOG_DEBUG_MSG("SQLFetchScroll called with Orientation "
+                << orientation << " Offset " << offset);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLFetchScroll exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->FetchScroll(orientation, offset);
-
-  LOG_DEBUG_MSG("SQLFetchScroll exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -596,7 +510,7 @@ SQLRETURN SQLExtendedFetch(SQLHSTMT stmt, SQLUSMALLINT orientation,
   } else if (res == SQL_NO_DATA && rowCount)
     *rowCount = 0;
 
-  LOG_DEBUG_MSG("SQLExtendedFetch exiting");
+  LOG_DEBUG_MSG("res is " << res << ", *rowCount is " << *rowCount);
 
   return res;
 }
@@ -610,9 +524,7 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLNumResultCols exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -620,10 +532,8 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
 
   if (columnNum) {
     *columnNum = static_cast< SQLSMALLINT >(res);
-    LOG_INFO_MSG("columnNum: " << *columnNum);
+    LOG_DEBUG_MSG("columnNum: " << *columnNum);
   }
-
-  LOG_DEBUG_MSG("SQLNumResultCols exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -640,9 +550,7 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLTables exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -655,14 +563,10 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
   boost::optional< std::string > tableTypeStr =
       SqlWcharToOptString(tableType, tableTypeLen);
 
-  LOG_INFO_MSG("catalog: " << catalog);
-  LOG_INFO_MSG("schema: " << schema);
-  LOG_INFO_MSG("table: " << table);
-  LOG_INFO_MSG("tableType: " << tableTypeStr);
+  LOG_INFO_MSG("catalog: " << catalog << ", schema: " << schema << ", table: "
+                           << table << ", tableType: " << tableTypeStr);
 
   statement->ExecuteGetTablesMetaQuery(catalog, schema, table, tableTypeStr);
-
-  LOG_DEBUG_MSG("SQLTables exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -679,9 +583,7 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLColumns exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -690,10 +592,10 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
   boost::optional< std::string > table = SqlWcharToOptString(tableName, tableNameLen);
   boost::optional< std::string > column = SqlWcharToOptString(columnName, columnNameLen);
 
-  LOG_INFO_MSG("catalog: " << catalog.get_value_or(""));
-  LOG_INFO_MSG("schema: " << schema.get_value_or(""));
-  LOG_INFO_MSG("table: " << table);
-  LOG_INFO_MSG("column: " << column);
+
+  LOG_INFO_MSG("catalog: " << catalog.get_value_or("")
+                           << ", schema: " << schema.get_value_or("")
+                           << ", table: " << table << ", column: " << column);
 
   if (catalog && catalog->empty() && schema && schema->empty()) {
     statement->AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
@@ -702,8 +604,6 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
   }
 
   statement->ExecuteGetColumnsMetaQuery(catalog, schema, table, column);
-
-  LOG_DEBUG_MSG("SQLColumns exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -716,15 +616,11 @@ SQLRETURN SQLMoreResults(SQLHSTMT stmt) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLMoreResults exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->MoreResults();
-
-  LOG_DEBUG_MSG("SQLMoreResults exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -742,16 +638,12 @@ SQLRETURN SQLBindParameter(SQLHSTMT stmt, SQLUSMALLINT paramIdx,
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLBindParameter exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->BindParameter(paramIdx, ioType, bufferType, paramSqlType,
                            columnSize, decDigits, buffer, bufferLen, resLen);
-
-  LOG_DEBUG_MSG("SQLBindParameter exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -765,7 +657,7 @@ SQLRETURN SQLNativeSql(SQLHDBC conn, SQLWCHAR* inQuery, SQLINTEGER inQueryLen,
 
   Connection* connection = reinterpret_cast< Connection* >(conn);
   if (!connection) {
-    LOG_ERROR_MSG("SQLAllocHandle exiting with SQL_INVALID_HANDLE");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -773,10 +665,10 @@ SQLRETURN SQLNativeSql(SQLHDBC conn, SQLWCHAR* inQuery, SQLINTEGER inQueryLen,
   connection->NativeSql(
       inQuery, static_cast< int64_t >(inQueryLen), outQueryBuffer,
       static_cast< int64_t >(outQueryBufferLen), &outQueryLenLocal);
-  if (outQueryLen)
+  if (outQueryLen) {
     *outQueryLen = static_cast< SQLINTEGER >(outQueryLenLocal);
-
-  LOG_DEBUG_MSG("SQLNativeSql exiting");
+    LOG_DEBUG_MSG("*outQueryLen is " << *outQueryLen);
+  }
 
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
@@ -799,9 +691,7 @@ SQLRETURN SQLColAttribute(SQLHSTMT stmt, SQLUSMALLINT columnNum,
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLColAttribute exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -821,8 +711,6 @@ SQLRETURN SQLColAttribute(SQLHSTMT stmt, SQLUSMALLINT columnNum,
                                 reinterpret_cast< SQLWCHAR* >(strAttr),
                                 bufferLen, strAttrLen, numericAttr);
 
-  LOG_DEBUG_MSG("SQLColAttribute exiting");
-
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
@@ -834,14 +722,18 @@ SQLRETURN SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT columnNum,
   using odbc::SqlLen;
   using odbc::Statement;
 
-  LOG_DEBUG_MSG("SQLDescribeCol called");
+  LOG_DEBUG_MSG("SQLDescribeCol called with columnNum "
+                << columnNum << ", columnNameBuf " << columnNameBuf
+                << ", columnNameBufLen" << columnNameBufLen
+                << ", columnNameLen " << columnNameLen << ", dataType "
+                << dataType << ", columnSize " << columnSize
+                << ", decimalDigits " << decimalDigits << ", nullable "
+                << nullable);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLDescribeCol exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -881,16 +773,15 @@ SQLRETURN SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT columnNum,
   // Save status of getting column nullable.
   returnCodes.push_back(statement->GetDiagnosticRecords().GetReturnCode());
 
-  LOG_INFO_MSG("columnNum: " << columnNum);
-  LOG_INFO_MSG("dataTypeRes: " << dataTypeRes);
-  LOG_INFO_MSG("columnSizeRes: " << columnSizeRes);
-  LOG_INFO_MSG("decimalDigitsRes: " << decimalDigitsRes);
-  LOG_INFO_MSG("nullableRes: " << nullableRes);
-  LOG_INFO_MSG(
-      "columnNameBuf: " << (columnNameBuf
-                                ? reinterpret_cast< const char* >(columnNameBuf)
-                                : "<null>"));
-  LOG_INFO_MSG("columnNameLen: " << (columnNameLen ? *columnNameLen : -1));
+  LOG_INFO_MSG("columnNum: "
+               << columnNum << ", dataTypeRes: " << dataTypeRes
+               << ", columnSizeRes: " << columnSizeRes
+               << ", decimalDigitsRes: " << decimalDigitsRes
+               << ", nullableRes: " << nullableRes << ", columnNameBuf: "
+               << (columnNameBuf
+                       ? reinterpret_cast< const char* >(columnNameBuf)
+                       : "<null>")
+               << ", columnNameLen: " << (columnNameLen ? *columnNameLen : -1));
 
   if (dataType)
     *dataType = static_cast< SQLSMALLINT >(dataTypeRes);
@@ -904,17 +795,17 @@ SQLRETURN SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT columnNum,
   if (nullable)
     *nullable = static_cast< SQLSMALLINT >(nullableRes);
 
-  LOG_DEBUG_MSG("SQLDescribeCol exiting");
-
   // Return error code, if any.
   for (auto returnCode : returnCodes) {
     if (!SQL_SUCCEEDED(returnCode)) {
+      LOG_INFO_MSG("returnCode is " << returnCode);
       return returnCode;
     }
   }
   // Return success with info, if any.
   for (auto returnCode : returnCodes) {
     if (returnCode != SQL_SUCCESS) {
+      LOG_DEBUG_MSG("returnCode is " << returnCode);
       return returnCode;
     }
   }
@@ -930,20 +821,16 @@ SQLRETURN SQLRowCount(SQLHSTMT stmt, SQLLEN* rowCnt) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLRowCount exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   int64_t res = statement->AffectedRows();
 
-  LOG_INFO_MSG("Row count: " << res);
+  LOG_DEBUG_MSG("Row count: " << res);
 
   if (rowCnt)
     *rowCnt = static_cast< SQLLEN >((res > 0 ? res : -1));
-
-  LOG_DEBUG_MSG("SQLRowCount exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -993,8 +880,6 @@ SQLRETURN SQLForeignKeys(
                                         primaryTable, foreignCatalog,
                                         foreignSchema, foreignTable);
 
-  LOG_DEBUG_MSG("SQLForeignKeys exiting");
-
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
@@ -1014,15 +899,11 @@ SQLRETURN SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER valueBuf,
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLGetStmtAttr exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->GetAttribute(attr, valueBuf, valueBufLen, valueResLen);
-
-  LOG_DEBUG_MSG("SQLGetStmtAttr exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1030,28 +911,22 @@ SQLRETURN SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER valueBuf,
 SQLRETURN SQLSetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER value,
                          SQLINTEGER valueLen) {
   using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLSetStmtAttr called: " << attr);
 
 #ifdef _DEBUG
-  using odbc::type_traits::StatementAttrIdToString;
-
-  LOG_DEBUG_MSG("Attr: " << StatementAttrIdToString(attr) << " (" << attr
+  LOG_DEBUG_MSG("Attr: " << odbc::type_traits::StatementAttrIdToString(attr)
+                         << " (" << attr
                          << ")");
 #endif  //_DEBUG
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLSetStmtAttr exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->SetAttribute(attr, value, valueLen);
-
-  LOG_DEBUG_MSG("SQLSetStmtAttr exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1112,8 +987,6 @@ SQLRETURN SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt) {
     *paramCnt = static_cast< SQLSMALLINT >(paramNum);
   }
 
-  LOG_DEBUG_MSG("SQLNumParams exiting");
-
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
@@ -1127,7 +1000,9 @@ SQLRETURN SQLGetDiagField(SQLSMALLINT handleType, SQLHANDLE handle,
 
   using odbc::app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLGetDiagField called, recNum: " << recNum);
+  LOG_DEBUG_MSG("SQLGetDiagField called with handleType "
+                << handleType << ", recNum " << recNum << ", diagId "
+                << diagId);
 
   SqlLen outResLen;
   ApplicationDataBuffer outBuffer(OdbcNativeType::AI_DEFAULT, buffer, bufferLen,
@@ -1157,8 +1032,6 @@ SQLRETURN SQLGetDiagField(SQLSMALLINT handleType, SQLHANDLE handle,
   if (resLen && result == SqlResult::AI_SUCCESS)
     *resLen = static_cast< SQLSMALLINT >(outResLen);
 
-  LOG_DEBUG_MSG("SQLGetDiagField exiting");
-
   return SqlResultToReturnCode(result);
 }
 
@@ -1173,7 +1046,11 @@ SQLRETURN SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
 
   using odbc::app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLGetDiagRec called");
+  LOG_DEBUG_MSG("SQLGetDiagRec called with handleType "
+                << handleType << ", handle " << handle << ", recNum " << recNum
+                << ", sqlState " << sqlState << ", nativeError " << nativeError
+                << ", msgBuffer " << msgBuffer << ", msgBufferLen "
+                << msgBufferLen << ", msgLen " << msgLen);
 
   const DiagnosticRecordStorage* records = 0;
   bool isTruncated = false;
@@ -1185,9 +1062,7 @@ SQLRETURN SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
       Diagnosable* diag = reinterpret_cast< Diagnosable* >(handle);
 
       if (!diag) {
-        LOG_ERROR_MSG(
-            "SQLGetDiagRec exiting with SQL_INVALID_HANDLE because diag "
-            "object is null");
+        LOG_ERROR_MSG("diag is null");
         return SQL_INVALID_HANDLE;
       }
 
@@ -1242,22 +1117,18 @@ SQLRETURN SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
     }
 
     // Length is given in characters
-    *msgLen = CopyStringToBuffer(errMsg, msgBuffer,
-                                 static_cast< size_t >(msgBufferLen), isTruncated);
-
-    LOG_DEBUG_MSG("SQLGetDiagRec exiting with SQL_SUCCESS_WITH_INFO");
+    *msgLen = CopyStringToBuffer(
+        errMsg, msgBuffer, static_cast< size_t >(msgBufferLen), isTruncated);
 
     return SQL_SUCCESS_WITH_INFO;
   }
 
   // Length is given in characters
-  size_t msgLen0 = CopyStringToBuffer(errMsg, msgBuffer, 
-                                      static_cast< size_t >(msgBufferLen), isTruncated);
+  size_t msgLen0 = CopyStringToBuffer(
+      errMsg, msgBuffer, static_cast< size_t >(msgBufferLen), isTruncated);
 
   if (msgLen)
     *msgLen = msgLen0;
-
-  LOG_DEBUG_MSG("SQLGetDiagRec exiting with SQL_SUCCESS");
 
   return SQL_SUCCESS;
 }
@@ -1270,15 +1141,11 @@ SQLRETURN SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT type) {
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLGetTypeInfo exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   statement->ExecuteGetTypeInfoQuery(static_cast< int16_t >(type));
-
-  LOG_DEBUG_MSG("SQLGetTypeInfo exiting");
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1287,7 +1154,7 @@ SQLRETURN SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
                      SQLSMALLINT completionType) {
   using namespace odbc;
 
-  LOG_DEBUG_MSG("SQLEndTran called");
+  LOG_DEBUG_MSG("SQLEndTran called with handleType " << handleType);
 
   SQLRETURN result;
 
@@ -1296,10 +1163,7 @@ SQLRETURN SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
       Environment* env = reinterpret_cast< Environment* >(handle);
 
       if (!env) {
-        LOG_ERROR_MSG(
-            "SQLEndTran exiting with SQL_INVALID_HANDLE because env "
-            "object is null.");
-        LOG_DEBUG_MSG("handletype is SQL_HANDLE_ENV");
+        LOG_ERROR_MSG("env is nullptr");
         return SQL_INVALID_HANDLE;
       }
 
@@ -1354,14 +1218,13 @@ SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
   using odbc::Statement;
   using odbc::app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLGetData called");
+  LOG_DEBUG_MSG("SQLGetData called with colNum " << colNum << ", targetType "
+                                                 << targetType);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLGetData exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
+    LOG_ERROR_MSG("statement is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
@@ -1372,8 +1235,6 @@ SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
 
   statement->GetColumnData(colNum, dataBuffer);
 
-  LOG_DEBUG_MSG("SQLGetData exiting");
-
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
@@ -1381,21 +1242,17 @@ SQLRETURN SQLSetEnvAttr(SQLHENV env, SQLINTEGER attr, SQLPOINTER value,
                         SQLINTEGER valueLen) {
   using odbc::Environment;
 
-  LOG_DEBUG_MSG("SQLSetEnvAttr called");
-  LOG_INFO_MSG("Attribute: " << attr << ", Value: " << (size_t)value);
+  LOG_DEBUG_MSG("SQLSetEnvAttr called with Attribute " << attr << ", Value "
+                                                       << (size_t)value);
 
   Environment* environment = reinterpret_cast< Environment* >(env);
 
   if (!environment) {
-    LOG_ERROR_MSG(
-        "SQLSetEnvAttr exiting with SQL_INVALID_HANDLE because environment "
-        "object is null");
+    LOG_ERROR_MSG("environment is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   environment->SetAttribute(attr, value, valueLen);
-
-  LOG_DEBUG_MSG("SQLSetEnvAttr exiting");
 
   return environment->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1407,7 +1264,7 @@ SQLRETURN SQLGetEnvAttr(SQLHENV env, SQLINTEGER attr, SQLPOINTER valueBuf,
 
   using app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLGetEnvAttr called");
+  LOG_DEBUG_MSG("SQLGetEnvAttr called with attr " << attr);
 
   Environment* environment = reinterpret_cast< Environment* >(env);
 
@@ -1423,8 +1280,6 @@ SQLRETURN SQLGetEnvAttr(SQLHENV env, SQLINTEGER attr, SQLPOINTER valueBuf,
 
   if (valueResLen)
     *valueResLen = static_cast< SQLSMALLINT >(outResLen);
-
-  LOG_DEBUG_MSG("SQLGetEnvAttr exiting");
 
   return environment->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1540,7 +1395,10 @@ SQLRETURN SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt, SQLWCHAR* state,
 
   using ignite::odbc::app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLError called");
+  LOG_DEBUG_MSG("SQLError is called with env "
+                << env << ", conn " << conn << ", stmt " << stmt << ", state "
+                << state << ", error " << error << ", msgBuf " << msgBuf
+                << ", msgBufLen " << msgBufLen << " msgResLen " << msgResLen);
 
   SQLHANDLE handle = 0;
 
@@ -1560,6 +1418,7 @@ SQLRETURN SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt, SQLWCHAR* state,
   DiagnosticRecordStorage& records = diag->GetDiagnosticRecords();
 
   int32_t recNum = records.GetLastNonRetrieved();
+  LOG_DEBUG_MSG("recNum is " << recNum);
 
   if (recNum < 1 || recNum > records.GetStatusRecordsNumber()) {
     LOG_ERROR_MSG("SQLError exiting with SQL_NO_DATA");
@@ -1585,8 +1444,6 @@ SQLRETURN SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt, SQLWCHAR* state,
   if (msgResLen)
     *msgResLen = static_cast< SQLSMALLINT >(outResLen);
 
-  LOG_DEBUG_MSG("SQLError exiting");
-
   return SQL_SUCCESS;
 }
 
@@ -1598,20 +1455,16 @@ SQLRETURN SQL_API SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 
   using app::ApplicationDataBuffer;
 
-  LOG_DEBUG_MSG("SQLGetConnectAttr called");
+  LOG_DEBUG_MSG("SQLGetConnectAttr called with attr " << attr);
 
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLGetConnectAttr exiting with SQL_INVALID_HANDLE because connection "
-        "object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   connection->GetAttribute(attr, valueBuf, valueBufLen, valueResLen);
-
-  LOG_DEBUG_MSG("SQLGetConnectAttr exiting");
 
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1624,17 +1477,12 @@ SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
-
   if (!connection) {
-    LOG_ERROR_MSG(
-        "SQLSetConnectAttr exiting with SQL_INVALID_HANDLE because connection "
-        "object is null");
+    LOG_ERROR_MSG("connection is nullptr");
     return SQL_INVALID_HANDLE;
   }
 
   connection->SetAttribute(attr, value, valueLen);
-
-  LOG_DEBUG_MSG("SQLSetConnectAttr exiting");
 
   return connection->GetDiagnosticRecords().GetReturnCode();
 }

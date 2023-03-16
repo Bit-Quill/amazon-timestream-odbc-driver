@@ -22,9 +22,7 @@ namespace ignite {
 namespace odbc {
 TimestreamRow::TimestreamRow(const Row& row,
                              const meta::ColumnMetaVector& columnMetadataVec)
-    : columns_(),
-      row_(row),
-      columnMetadataVec_(columnMetadataVec) {
+    : columns_(), row_(row), columnMetadataVec_(columnMetadataVec) {
 }
 
 void TimestreamRow::Update(const Row& row) {
@@ -33,7 +31,6 @@ void TimestreamRow::Update(const Row& row) {
   for (TimestreamColumn& column : columns_) {
     column.Update(row);
   }
-  LOG_DEBUG_MSG("Update exiting");
 }
 
 app::ConversionResult::Type TimestreamRow::ReadColumnToBuffer(
@@ -46,7 +43,6 @@ app::ConversionResult::Type TimestreamRow::ReadColumnToBuffer(
 
   TimestreamColumn const& column = GetColumn(columnIdx);
 
-  LOG_DEBUG_MSG("ReadColumnToBuffer exiting");
   return column.ReadToBuffer(dataBuf);
 }
 
@@ -54,12 +50,13 @@ bool TimestreamRow::EnsureColumnDiscovered(uint32_t columnIdx) {
   LOG_DEBUG_MSG("EnsureColumnDiscovered is called for column " << columnIdx);
   if (columnIdx > columnMetadataVec_.size() || columnIdx < 1) {
     LOG_ERROR_MSG("columnIdx out of range for index " << columnIdx);
-    LOG_DEBUG_MSG("EnsureColumnDiscovered exiting for column " << columnIdx);
     return false;
   }
 
+  LOG_DEBUG_MSG("columns_ size is " << columns_.size()
+                                    << ", columnMetadataVec_ size is "
+                                    << columnMetadataVec_.size());
   if (columns_.size() == columnMetadataVec_.size()) {
-    LOG_DEBUG_MSG("EnsureColumnDiscovered exiting for column " << columnIdx);
     return true;
   }
 
@@ -71,8 +68,7 @@ bool TimestreamRow::EnsureColumnDiscovered(uint32_t columnIdx) {
     index++;
   }
 
-  LOG_DEBUG_MSG("EnsureColumnDiscovered exiting for column " << columnIdx);
   return true;
 }
 }  // namespace odbc
-}  // namespace timestream
+}  // namespace ignite

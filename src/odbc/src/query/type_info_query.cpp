@@ -120,6 +120,7 @@ TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
       fetched(false),
       types(),
       cursor(types.end()) {
+  LOG_DEBUG_MSG("TypeInfoQuery constructor is called");
   using namespace ignite::odbc::impl::binary;
   using namespace ignite::odbc::type_traits;
 
@@ -210,6 +211,7 @@ TypeInfoQuery::~TypeInfoQuery() {
 }
 
 SqlResult::Type TypeInfoQuery::Execute() {
+  LOG_DEBUG_MSG("Execute is called");
   cursor = types.begin();
 
   executed = true;
@@ -224,6 +226,7 @@ const meta::ColumnMetaVector* TypeInfoQuery::GetMeta() {
 
 SqlResult::Type TypeInfoQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
+  LOG_DEBUG_MSG("FetchNextRow is called with columnBindings size " << columnBindings.size());
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -235,8 +238,10 @@ SqlResult::Type TypeInfoQuery::FetchNextRow(
     fetched = true;
   else if (cursor != types.end())
     ++cursor;
-  if (cursor == types.end())
+  if (cursor == types.end()) {
+    LOG_DEBUG_MSG("cursor reaches the end of types");
     return SqlResult::AI_NO_DATA;
+  }
 
   app::ColumnBindingMap::iterator it;
 
@@ -248,6 +253,7 @@ SqlResult::Type TypeInfoQuery::FetchNextRow(
 
 SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
                                          app::ApplicationDataBuffer& buffer) {
+  LOG_DEBUG_MSG("GetColumn is called with columnIdx " << columnIdx);
   using namespace ignite::odbc::impl::binary;
 
   if (!executed) {
@@ -260,11 +266,11 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
   if (cursor == types.end()) {
     std::string errMsg = "Cursor has reached end of the result set.";
     diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
-    LOG_ERROR_MSG(errMsg);
     return SqlResult::AI_ERROR;
   }
 
   int8_t currentType = *cursor;
+  LOG_DEBUG_MSG("currentType is " << currentType);
 
   switch (columnIdx) {
     case ResultColumn::TYPE_NAME: {

@@ -201,12 +201,6 @@ class TableMetadataQuery : public Query {
                                 std::vector< std::string >& c);
 
   /**
-   * Check if meta object is empty and print logs of it.
-   * @return Operation result
-   */
-  SqlResult::Type checkMeta();
-
-  /**
    * Remove outer matching quotes from a string. They can be either single (')
    * or double (") quotes. They must be the left- and right-most characters in
    * the string.

@@ -70,7 +70,10 @@ using ignite::odbc::common::concurrent::CriticalSection;
       strftime(tStr, 1000, "%T %x ", locTime);                                \
       /* Write the formatted message to the stream */                         \
       *lstream << "TID: " << std::this_thread::get_id() << " " << tStr        \
-               << msg_prefix << __FUNCTION__ << ": " << param;                \
+               << msg_prefix << " " << ignite::odbc::Logger::GetBaseFileName(__FILE__)      \
+               << ":" << __LINE__ << " "                                      \
+               << __FUNCTION__                                                \
+               << ": " << param;                                              \
       /* This will trigger the write to stream */                             \
       lstream = nullptr;                                                      \
       if (logStream != nullptr) {                                             \
@@ -207,6 +210,25 @@ class Logger {
       logger_ = std::shared_ptr< Logger >(new Logger());
 
     return logger_;
+  }
+
+  /**
+   * Get a file base name without path.
+   * @return File base name.
+   */
+  static std::string GetBaseFileName(const std::string& s) {
+#ifdef _WIN32
+    char sep = '\\';
+#else 
+    char sep = '/';
+#endif
+
+    size_t i = s.rfind(sep, s.length());
+    if (i != std::string::npos) {
+      return s.substr(i + 1, s.length() - i);
+    }
+
+    return "";
   }
 
   /**

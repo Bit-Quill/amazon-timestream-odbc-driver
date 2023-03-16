@@ -22,6 +22,7 @@
 #include <ignite/odbc/config/config_tools.h>
 #include <ignite/odbc/config/configuration.h>
 #include <ignite/odbc/utility.h>
+#include <ignite/odbc/log.h>
 
 #include <algorithm>
 #include <cctype>
@@ -31,6 +32,7 @@ namespace ignite {
 namespace odbc {
 namespace config {
 std::string AddressesToString(const std::vector< EndPoint >& addresses) {
+  LOG_DEBUG_MSG("AddressesToString is called");
   std::stringstream stream;
 
   std::vector< EndPoint >::const_iterator it = addresses.begin();
@@ -44,11 +46,13 @@ std::string AddressesToString(const std::vector< EndPoint >& addresses) {
     stream << ',' << it->host << ':' << it->port;
   }
 
+  LOG_DEBUG_MSG("stream is " << stream.str());
   return stream.str();
 }
 
 void ParseAddress(const std::string& value, std::vector< EndPoint >& endPoints,
                   diagnostic::DiagnosticRecordStorage* diag) {
+  LOG_DEBUG_MSG("ParseAddress is called with value " << value);
   size_t addrNum = std::count(value.begin(), value.end(), ',') + 1;
 
   endPoints.reserve(endPoints.size() + addrNum);
@@ -66,7 +70,8 @@ void ParseAddress(const std::string& value, std::vector< EndPoint >& endPoints,
     const char* addrBegin = parsedAddr.data() + addrBeginPos;
     const char* addrEnd = parsedAddr.data() + parsedAddr.size();
 
-    std::string addr = common::StripSurroundingWhitespaces(addrBegin, addrEnd);
+    std::string addr =
+        parsedAddr.substr(addrBeginPos, parsedAddr.size() - addrBeginPos);
 
     if (!addr.empty()) {
       EndPoint endPoint;
@@ -86,6 +91,7 @@ void ParseAddress(const std::string& value, std::vector< EndPoint >& endPoints,
 
 bool ParseSingleAddress(const std::string& value, EndPoint& endPoint,
                         diagnostic::DiagnosticRecordStorage* diag) {
+  LOG_DEBUG_MSG("ParseSingleAddress is called with value " << value);
   int64_t colonNum = std::count(value.begin(), value.end(), ':');
 
   if (colonNum == 0) {
@@ -99,6 +105,7 @@ bool ParseSingleAddress(const std::string& value, EndPoint& endPoint,
 
     stream << "Unexpected number of ':' characters in the following address: '"
            << value << "'. Ignoring address.";
+    LOG_WARNING_MSG(stream.str());
 
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -116,7 +123,8 @@ bool ParseSingleAddress(const std::string& value, EndPoint& endPoint,
 
     stream << "Port is missing in the following address: '" << value
            << "'. Ignoring address.";
-
+    LOG_WARNING_MSG(stream.str());
+    
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
                             stream.str());
@@ -134,6 +142,7 @@ bool ParseSingleAddress(const std::string& value, EndPoint& endPoint,
 
 bool ParsePortRange(const std::string& value, uint16_t& port, uint16_t& range,
                     diagnostic::DiagnosticRecordStorage* diag) {
+  LOG_DEBUG_MSG("ParsePortRange is called with value " << value);
   size_t sepPos = value.find('.');
 
   if (sepPos == value.npos) {
@@ -151,6 +160,7 @@ bool ParsePortRange(const std::string& value, uint16_t& port, uint16_t& range,
 
     stream << "Unexpected number of '.' characters in the following address: '"
            << value << "'. Ignoring address.";
+    LOG_WARNING_MSG(stream.str());
 
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -175,6 +185,7 @@ bool ParsePortRange(const std::string& value, uint16_t& port, uint16_t& range,
     stream << "Port range end is less than port range begin in the following "
               "address: '"
            << value << "'. Ignoring address.";
+    LOG_WARNING_MSG(stream.str());
 
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -191,13 +202,14 @@ bool ParsePortRange(const std::string& value, uint16_t& port, uint16_t& range,
 
 uint16_t ParsePort(const std::string& value,
                    diagnostic::DiagnosticRecordStorage* diag) {
-  std::string port =
-      common::StripSurroundingWhitespaces(value.begin(), value.end());
+  LOG_DEBUG_MSG("ParsePort is called with value " << value);
+  std::string port = utility::Trim(value);
 
   if (!common::AllDigits(port)) {
     std::stringstream stream;
 
     stream << "Unexpected port characters: '" << port << "'. Ignoring address.";
+    LOG_WARNING_MSG(stream.str());
 
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -210,6 +222,7 @@ uint16_t ParsePort(const std::string& value,
     std::stringstream stream;
 
     stream << "Port value is too large: '" << port << "'. Ignoring address.";
+    LOG_WARNING_MSG(stream.str());
 
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -228,6 +241,7 @@ uint16_t ParsePort(const std::string& value,
     std::stringstream stream;
 
     stream << "Port value is out of range: '" << port << "'. Ignoring address.";
+    LOG_WARNING_MSG(stream.str());
 
     if (diag)
       diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,

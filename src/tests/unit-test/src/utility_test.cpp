@@ -33,8 +33,7 @@ BOOST_AUTO_TEST_CASE(TestUtilityRemoveSurroundingSpaces) {
   std::string inStr("   \r \n    \t  some meaningfull data   \n\n   \t  \r  ");
   std::string expectedOutStr("some meaningfull data");
 
-  std::string realOutStr(
-      common::StripSurroundingWhitespaces(inStr.begin(), inStr.end()));
+  std::string realOutStr = utility::Trim(inStr);
 
   BOOST_REQUIRE(expectedOutStr == realOutStr);
 }

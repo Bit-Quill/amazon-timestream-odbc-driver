@@ -55,7 +55,6 @@ ConversionResult::Type TimestreamColumn::ReadToBuffer(ApplicationDataBuffer& dat
   Datum datum = row_.GetData()[columnIdx_];
   ConversionResult::Type retval = ParseDatum(datum, dataBuf);
 
-  LOG_DEBUG_MSG("ReadToBuffer exiting");
   return retval;
 }
 
@@ -80,7 +79,6 @@ ConversionResult::Type TimestreamColumn::ParseDatum(
     LOG_ERROR_MSG("Unsupported data type");
   }
 
-  LOG_DEBUG_MSG("ParseDatum exiting");
   return retval;
 }
 
@@ -90,7 +88,8 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
   LOG_DEBUG_MSG("ParseScalarType is called");
 
   Aws::String value = datum.GetScalarValue();
-  LOG_DEBUG_MSG("value is "<< value);
+  LOG_DEBUG_MSG("value is " << value << ", scalar type is "
+                            << static_cast<int>(columnMeta_.GetScalarType()));
 
   ConversionResult::Type convRes = ConversionResult::Type::AI_SUCCESS;
 
@@ -188,7 +187,7 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
       return ConversionResult::Type::AI_UNSUPPORTED_CONVERSION;
   }
 
-  LOG_DEBUG_MSG("ParseScalarType exiting");
+  LOG_DEBUG_MSG("convRes is " << static_cast< int >(convRes));
   return convRes;
 }
 
@@ -226,7 +225,7 @@ ConversionResult::Type TimestreamColumn::ParseTimeSeriesType(
 
   ConversionResult::Type convRes = dataBuf.PutString(result);
 
-  LOG_DEBUG_MSG("ParseTimeSeriesType exiting");
+  LOG_DEBUG_MSG("convRes is " << static_cast<int>(convRes));
   return convRes;
 }
 
@@ -259,7 +258,7 @@ ConversionResult::Type TimestreamColumn::ParseArrayType(
 
   ConversionResult::Type convRes = dataBuf.PutString(result);
 
-  LOG_DEBUG_MSG("ParseArrayType exiting");
+  LOG_DEBUG_MSG("convRes is " << static_cast< int >(convRes));
   return convRes;
 }
 
@@ -295,7 +294,7 @@ ConversionResult::Type TimestreamColumn::ParseRowType(
 
   ConversionResult::Type convRes = dataBuf.PutString(result);
 
-  LOG_DEBUG_MSG("ParseRowType exiting");
+  LOG_DEBUG_MSG("convRes is " << static_cast< int >(convRes));
   return convRes;
 }
 }  // namespace odbc

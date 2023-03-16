@@ -103,7 +103,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/sql/sql_utils.cpp
         src/streaming/streaming_batch.cpp
         src/streaming/streaming_context.cpp
-        src/ssl_mode.cpp
         src/protocol_version.cpp
         src/result_page.cpp
         src/nested_tx_mode.cpp

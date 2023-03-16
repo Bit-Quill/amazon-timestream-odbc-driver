@@ -28,7 +28,7 @@ bool TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion(
     Aws::STS::Model::AssumeRoleWithSAMLRequest& samlRequest,
     Aws::Auth::AWSCredentials& awsCredentials,
     std::string& errInfo) {
-  LOG_DEBUG_MSG("TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion is called");
+  LOG_DEBUG_MSG("FetchCredentialsWithSAMLAssertion is called");
 
   Aws::STS::Model::AssumeRoleWithSAMLOutcome outcome =
       stsClient_->AssumeRoleWithSAML(samlRequest);
@@ -50,14 +50,13 @@ bool TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion(
     LOG_ERROR_MSG(errInfo);
   }
 
-  LOG_DEBUG_MSG("TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion exiting");
   return retval;
 }
 
 bool TimestreamSAMLCredentialsProvider::GetAWSCredentials(
     Aws::Auth::AWSCredentials& credentials,
     std::string& errInfo) {
-  LOG_DEBUG_MSG("TimestreamSAMLCredentialsProvider::GetAWSCredentials is called");
+  LOG_DEBUG_MSG("GetAWSCredentials is called");
 
   std::string samlAsseration = GetSAMLAssertion(errInfo);
   bool retval = false;
@@ -72,7 +71,6 @@ bool TimestreamSAMLCredentialsProvider::GetAWSCredentials(
     retval = FetchCredentialsWithSAMLAssertion(samlRequest, credentials, errInfo);
   }
 
-  LOG_DEBUG_MSG("TimestreamSAMLCredentialsProvider::GetAWSCredentials exiting");
   return retval;
 }
 

@@ -37,6 +37,7 @@ BatchQuery::BatchQuery(diagnostic::DiagnosableAdapter& diag,
       rowsAffectedIdx(0),
       executed(false),
       timeout(timeout) {
+  LOG_DEBUG_MSG("BatchQuery constructor is called and exiting");
   // No-op.
 }
 
@@ -45,11 +46,14 @@ BatchQuery::~BatchQuery() {
 }
 
 SqlResult::Type BatchQuery::Execute() {
+  LOG_DEBUG_MSG("Execute is called");
   if (executed)
     Close();
 
   int32_t maxPageSize = 2000; // default fetch size
   int32_t rowNum = params.GetParamSetSize();
+  LOG_DEBUG_MSG("rowNum is " << rowNum);
+
   SqlResult::Type res;
 
   int32_t processed = 0;
@@ -71,6 +75,9 @@ SqlResult::Type BatchQuery::Execute() {
 
   params.SetParamsProcessed(static_cast< SqlUlen >(rowsAffected.size()));
 
+  LOG_DEBUG_MSG("processed is " << processed << ", rowsAffected size is "
+                                << rowsAffected.size());
+
   return res;
 }
 
@@ -79,6 +86,7 @@ const meta::ColumnMetaVector* BatchQuery::GetMeta() {
 }
 
 SqlResult::Type BatchQuery::FetchNextRow(app::ColumnBindingMap&) {
+  LOG_DEBUG_MSG("FetchNextRow is called");
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -90,6 +98,7 @@ SqlResult::Type BatchQuery::FetchNextRow(app::ColumnBindingMap&) {
 }
 
 SqlResult::Type BatchQuery::GetColumn(uint16_t, app::ApplicationDataBuffer&) {
+  LOG_DEBUG_MSG("GetColumn is called");
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -99,7 +108,6 @@ SqlResult::Type BatchQuery::GetColumn(uint16_t, app::ApplicationDataBuffer&) {
 
   std::string errMsg = "Cursor has reached end of the result set.";
   diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
-  LOG_ERROR_MSG(errMsg);
   return SqlResult::AI_ERROR;
 }
 
@@ -134,6 +142,7 @@ SqlResult::Type BatchQuery::NextResultSet() {
 
 SqlResult::Type BatchQuery::MakeRequestExecuteBatch(SqlUlen begin, SqlUlen end,
                                                     bool last) {
+  LOG_DEBUG_MSG("MakeRequestExecuteBatch is called");
   const std::string schema("");
 
   QueryExecuteBatchRequest req(schema, sql, params, begin, end, last, timeout,
@@ -163,8 +172,6 @@ SqlResult::Type BatchQuery::MakeRequestExecuteBatch(SqlUlen begin, SqlUlen end,
   }
 
   if (rsp.GetStatus() != ResponseStatus::SUCCESS) {
-    LOG_MSG("Error: " << rsp.GetError());
-
     diag.AddStatusRecord(ResponseStatusToSqlState(rsp.GetStatus()),
                          rsp.GetError());
 
@@ -182,14 +189,12 @@ SqlResult::Type BatchQuery::MakeRequestExecuteBatch(SqlUlen begin, SqlUlen end,
 
   rowsAffected.insert(rowsAffected.end(), rowsLastTime.begin(),
                       rowsLastTime.end());
-  LOG_MSG("Affected rows list size: " << rowsAffected.size());
+  LOG_DEBUG_MSG("Affected rows list size: " << rowsAffected.size());
 
   if (!rsp.GetErrorMessage().empty()) {
-    LOG_MSG("Error: " << rsp.GetErrorMessage());
-    LOG_MSG("Sets Processed: " << rowsAffected.size());
-
     diag.AddStatusRecord(ResponseStatusToSqlState(rsp.GetErrorCode()),
                          rsp.GetErrorMessage(),
+                         ignite::odbc::LogLevel::Type::ERROR_LEVEL,
                          static_cast< int32_t >(rowsAffected.size()), 0);
 
     return SqlResult::AI_SUCCESS_WITH_INFO;

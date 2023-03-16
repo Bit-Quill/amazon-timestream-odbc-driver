@@ -52,6 +52,7 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
   // create HTTP request with DSN configuration
   Aws::String accessTokenEndpoint = "https://login.microsoftonline.com/"
                                     + config_.GetAADTenant() + "/oauth2/token";
+  LOG_DEBUG_MSG("accessTokenEndpoint is " << accessTokenEndpoint);
 
   std::shared_ptr< Aws::Http::HttpRequest > req = Aws::Http::CreateHttpRequest(
       accessTokenEndpoint, Aws::Http::HttpMethod::HTTP_POST,
@@ -86,7 +87,6 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
     }
     LOG_ERROR_MSG(errInfo);
 
-    LOG_DEBUG_MSG("GetAccessToken exiting on empty string");
     return accessToken;
   }
 
@@ -97,7 +97,6 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
     errInfo =
         "Error parsing response body: " + resJson.GetErrorMessage();
     LOG_ERROR_MSG(errInfo);
-    LOG_DEBUG_MSG("GetAccessToken exiting on empty string");
     return accessToken;
   }
 
@@ -111,19 +110,17 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
     LOG_ERROR_MSG(errInfo);
   }
 
-  LOG_DEBUG_MSG("GetAccessToken exiting");
   return accessToken;
 }
 
 std::string TimestreamAADCredentialsProvider::GetSAMLAssertion(std::string& errInfo) {
-  LOG_DEBUG_MSG("GetSAMLAssertion called");
+  LOG_DEBUG_MSG("GetSAMLAssertion is called");
 
   std::string accessToken = GetAccessToken(errInfo);
 
   if (accessToken.empty()) {
     // return empty string to indicate that SAML assertion retrieval has failed
     LOG_ERROR_MSG("Access token is empty");
-    LOG_DEBUG_MSG("GetSAMLAssertion exiting on empty string");
     return accessToken;
   }
 
@@ -163,7 +160,6 @@ std::string TimestreamAADCredentialsProvider::GetSAMLAssertion(std::string& errI
       reinterpret_cast< unsigned char const* >(assertion.c_str()),
       assertion.size());
 
-  LOG_DEBUG_MSG("GetSAMLAssertion exiting");
   return BASE64_URL.Encode(encodeBuffer);
 }
 

@@ -17,12 +17,12 @@
 #include "ignite/odbc/log_level.h"
 
 #include <ignite/odbc/common/utils.h>
+#include <ignite/odbc/utility.h>
 
 namespace ignite {
 namespace odbc {
 LogLevel::Type LogLevel::FromString(const std::string& val, Type dflt) {
-  std::string logLevel = val;
-  common::StripSurroundingWhitespaces(logLevel);
+  std::string logLevel = utility::Trim(val);
 
   if (logLevel == "4")
     return LogLevel::Type::DEBUG_LEVEL;
