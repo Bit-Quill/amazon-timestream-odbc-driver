@@ -29,6 +29,8 @@ To setup and use the Timestream ODBC driver, follow [these directions](docs/mark
 
 See [Azure Active Directory set-up guide](/docs/markdown/setup/aad-saml-setup.md) for setting up Azure AD account and connecting to Timestream. See [Okta set-up guide](/docs/markdown/setup/Okta-setup.md) for setting up Okta account and connecting to Timestream.
 
+See [PowerBI oveview](/docs/markdown/setup/powerbi-connector-setup/powerbi_overview.md) for using PowerBI with Timestream ODBC driver and connector.
+
 ## Connection String Syntax
 
 ```

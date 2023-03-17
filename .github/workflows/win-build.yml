@@ -160,6 +160,21 @@ jobs:
       run: |
         .\build_win_release32.ps1
 
+    - name: Build PowerBI connector
+      run: |
+        cd src/PowerBIConnector
+        .\AmazonTimestreamConnector.ps1
+        cd ${{github.workspace}}
+
+    - name: Upload ODBC connector build at push to main
+      # [AT-1066] uncomment out when GitHub Action is enabled at push to PR
+      # https://bitquill.atlassian.net/browse/AT-1066
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamConnector.mez
+        path: ./src/PowerBIConnector/AmazonTimestreamConnector.mez
+
     - name: register-driver
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll
@@ -327,11 +342,28 @@ jobs:
         .\build_win_release64.ps1
 
     - name: Upload ODBC driver build at push to main
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      # [AT-1066] uncomment out when GitHub Action is enabled at push to PR
+      # https://bitquill.atlassian.net/browse/AT-1066
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: actions/upload-artifact@v3
       with:
         name: timestream-odbc-driver
         path: build/odbc/cmake/Release
+
+    - name: Build PowerBI connector
+      run: |
+        cd src/PowerBIConnector
+        .\AmazonTimestreamConnector.ps1
+        cd ${{github.workspace}}
+
+    - name: Upload ODBC connector build at push to main
+      # [AT-1066] uncomment out when GitHub Action is enabled at push to PR
+      # https://bitquill.atlassian.net/browse/AT-1066
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamConnector.mez
+        path: ./src/PowerBIConnector/AmazonTimestreamConnector.mez
 
     # [TODO] Migrate old driver performance tool into the new repository
     # https://bitquill.atlassian.net/browse/AT-1288
@@ -489,6 +521,12 @@ jobs:
     - name: configure-and-build-driver
       run: |
         .\build_win_debug64.ps1
+
+    - name: Build PowerBI connector
+      run: |
+        cd src/PowerBIConnector
+        .\AmazonTimestreamConnector.ps1
+        cd ${{github.workspace}}
 
     - name: register-driver
       run: |

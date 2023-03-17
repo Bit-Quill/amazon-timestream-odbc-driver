@@ -1,4 +1,7 @@
 # Development Environment
+
+For documentation regarding Power BI connector, please refer to [build Power BI connector](./powerbi-connector-setup/build_powerbi_connector.md).
+
 ## Pre-requisites
 
 ### C/C++ Formatting

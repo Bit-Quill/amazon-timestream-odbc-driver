@@ -15,6 +15,7 @@
 *.ipch
 *.cache
 *.log
+*.mez
 *.xml
 /vcpkg/
 bin32/*
@@ -62,9 +63,12 @@ CTestTestfile.cmake
 /sdk-build64/
 /cmake-build32/
 /cmake-build64/
-/src/PowerBIConnector/DatabaseConnector/bin/Debug/
-/src/PowerBIConnector/DatabaseConnector/obj/
-/src/PowerBIConnector/DatabaseConnector/.vs/
+/src/PowerBIConnector/AmazonTimestreamConnector/bin/Debug/
+/src/PowerBIConnector/AmazonTimestreamConnector/obj/
+/src/PowerBIConnector/AmazonTimestreamConnector/.vs/
+/src/PowerBIConnector/AmazonTimestreamAADConnector/bin/Debug/
+/src/PowerBIConnector/AmazonTimestreamAADConnector/obj/
+/src/PowerBIConnector/AmazonTimestreamAADConnector/.vs/
 src/aws-sdk-cpp/
 default.profraw
 test_output.html

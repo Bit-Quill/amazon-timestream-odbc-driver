@@ -229,6 +229,19 @@ jobs:
         name: timestream-odbc-driver
         path: build/odbc/cmake/Release
 
+    - name: Build PowerBI connector
+      run: |
+        cd src/PowerBIConnector
+        .\AmazonTimestreamConnector.ps1
+        cd ${{github.workspace}}
+
+    - name: Upload ODBC connector build at push to main
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: AmazonTimestreamConnector.mez
+        path: ./src/PowerBIConnector/AmazonTimestreamConnector.mez
+
     # [TODO] Migrate old driver performance tool into the new repository
     # https://bitquill.atlassian.net/browse/AT-1288
     # - name: Upload performance test at push to main
@@ -345,6 +358,12 @@ jobs:
     - name: configure-and-build-driver
       run: |
         .\build_win_debug64.ps1
+
+    - name: Build PowerBI connector
+      run: |
+        cd src/PowerBIConnector
+        .\AmazonTimestreamConnector.ps1
+        cd ${{github.workspace}}
 
     - name: register-driver
       run: |
