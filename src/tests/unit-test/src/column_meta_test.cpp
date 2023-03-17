@@ -23,12 +23,10 @@
 #include <boost/test/unit_test.hpp>
 #include <utility>
 
-#include "ignite/odbc/impl/binary/binary_common.h"
 #include "ignite/odbc/meta/column_meta.h"
 #include "ignite/odbc/type_traits.h"
 #include "odbc_test_suite.h"
 
-using namespace ignite::odbc::impl::binary;
 using ignite::odbc::OdbcTestSuite;
 using ignite::odbc::meta::ColumnMeta;
 using ignite::odbc::meta::Nullability;
@@ -401,7 +399,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable) {
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaNullable(database, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaNullable(database, table, column, ScalarType::UNKNOWN,
                                 Nullability::NULLABLE);
 
   // test SQL_DESC_NULLABLE
@@ -409,7 +407,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_NULLABLE);
 
-  ColumnMeta columnMetaNoNulls(database, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaNoNulls(database, table, column, ScalarType::UNKNOWN,
                                Nullability::NO_NULL);
 
   // test SQL_DESC_NULLABLE
@@ -417,7 +415,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNullable) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_NO_NULLS);
 
-  ColumnMeta columnMetaUnknown(database, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaUnknown(database, table, column, ScalarType::UNKNOWN,
                                Nullability::NULLABILITY_UNKNOWN);
 
   // test SQL_DESC_NULLABLE
@@ -503,7 +501,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed) {
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaUnnamed(database, table, std::string(""), TS_INVALID_TYPE,
+  ColumnMeta columnMetaUnnamed(database, table, std::string(""), ScalarType::UNKNOWN,
                                Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED
@@ -511,7 +509,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed) {
   BOOST_CHECK(found);
   BOOST_CHECK_EQUAL(intVal, SQL_UNNAMED);
 
-  ColumnMeta columnMetaNamed(database, table, column, TS_INVALID_TYPE,
+  ColumnMeta columnMetaNamed(database, table, column, ScalarType::UNKNOWN,
                              Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED

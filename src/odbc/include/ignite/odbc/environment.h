@@ -59,16 +59,6 @@ class IGNITE_IMPORT_EXPORT Environment : public diagnostic::DiagnosableAdapter {
   void DeregisterConnection(Connection* conn);
 
   /**
-   * Perform transaction commit on all the associated connections.
-   */
-  void TransactionCommit();
-
-  /**
-   * Perform transaction rollback on all the associated connections.
-   */
-  void TransactionRollback();
-
-  /**
    * Set attribute.
    *
    * @param attr Attribute to set.
@@ -100,22 +90,6 @@ class IGNITE_IMPORT_EXPORT Environment : public diagnostic::DiagnosableAdapter {
 
  private:
   IGNITE_NO_COPY_ASSIGNMENT(Environment);
-
-  /**
-   * Perform transaction commit on all the associated connections.
-   * Internal call.
-   *
-   * @return Operation result.
-   */
-  SqlResult::Type InternalTransactionCommit();
-
-  /**
-   * Perform transaction rollback on all the associated connections.
-   * Internal call.
-   *
-   * @return Operation result.
-   */
-  SqlResult::Type InternalTransactionRollback();
 
   /**
    * Set attribute.

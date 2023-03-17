@@ -24,23 +24,15 @@
 #include <boost/optional/optional_io.hpp>
 #include <string>
 
-#include <ignite/odbc/common/concurrent.h>
-
-#include "ignite/odbc/impl/binary/binary_reader_impl.h"
 #include "ignite/odbc/common_types.h"
 #include "ignite/odbc/log.h"
-#include "ignite/odbc/result_set.h"
-#include "ignite/odbc/protocol_version.h"
 #include "ignite/odbc/utility.h"
-#include "ignite/odbc/ts_error.h"
 #include "ignite/odbc/app/application_data_buffer.h"
 
 #include <aws/core/utils/memory/stl/AWSVector.h>
 #include <aws/timestream-query/model/ColumnInfo.h>
 #include <aws/timestream-query/model/ScalarType.h>
 
-using ignite::odbc::ResultSet;
-using ignite::odbc::common::concurrent::SharedPointer;
 using Aws::TimestreamQuery::Model::ColumnInfo;
 using Aws::TimestreamQuery::Model::ScalarType;
 

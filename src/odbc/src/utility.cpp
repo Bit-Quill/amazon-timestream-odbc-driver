@@ -17,11 +17,9 @@
 
 #include "ignite/odbc/utility.h"
 
-#include <ignite/odbc/impl/binary/binary_utils.h>
-
-#include <cassert>
 #include <codecvt>
 #include <regex>
+#include <iomanip>
 
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/log.h"
@@ -29,7 +27,6 @@
 namespace ignite {
 namespace odbc {
 namespace utility {
-using namespace odbc::impl::binary;
 using namespace odbc::common;
 
 size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
@@ -209,87 +206,6 @@ size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
   return isLenInBytes ? bytesWritten : bytesWritten / wCharSize;
 }
 
-// To be deleted
-void ReadString(BinaryReaderImpl& reader, std::string& str) {
-  int32_t strLen = reader.ReadString(0, 0);
-
-  if (strLen > 0) {
-    str.resize(strLen);
-
-    reader.ReadString(&str[0], static_cast< int32_t >(str.size()));
-  } else {
-    str.clear();
-
-    if (strLen == 0) {
-      char dummy;
-
-      reader.ReadString(&dummy, sizeof(dummy));
-    }
-  }
-}
-
-void WriteString(BinaryWriterImpl& writer, const std::string& str) {
-  writer.WriteString(str.data(), static_cast< int32_t >(str.size()));
-}
-
-// To be deleted
-void ReadDecimal(BinaryReaderImpl& reader, Decimal& decimal) {
-  int8_t hdr = reader.ReadInt8();
-
-  assert(hdr == IGNITE_TYPE_DECIMAL);
-
-  IGNITE_UNUSED(hdr);
-
-  int32_t scale = reader.ReadInt32();
-
-  int32_t len = reader.ReadInt32();
-
-  std::vector< int8_t > mag;
-
-  mag.resize(len);
-
-  BinaryUtils::ReadInt8Array(reader.GetStream(), mag.data(),
-                             static_cast< int32_t >(mag.size()));
-
-  int32_t sign = 1;
-
-  if (mag[0] < 0) {
-    mag[0] &= 0x7F;
-
-    sign = -1;
-  }
-
-  Decimal res(mag.data(), static_cast< int32_t >(mag.size()), scale, sign);
-
-  decimal.Swap(res);
-}
-
-// To be deleted
-void WriteDecimal(BinaryWriterImpl& writer, const Decimal& decimal) {
-  writer.WriteInt8(IGNITE_TYPE_DECIMAL);
-
-  const BigInteger& unscaled = decimal.GetUnscaledValue();
-
-  writer.WriteInt32(decimal.GetScale());
-
-  FixedSizeArray< int8_t > magnitude;
-
-  unscaled.MagnitudeToBytes(magnitude);
-
-  int8_t addBit = unscaled.GetSign() == -1 ? -0x80 : 0;
-
-  if (magnitude[0] < 0) {
-    writer.WriteInt32(magnitude.GetSize() + 1);
-    writer.WriteInt8(addBit);
-  } else {
-    writer.WriteInt32(magnitude.GetSize());
-    magnitude[0] |= addBit;
-  }
-
-  BinaryUtils::WriteInt8Array(writer.GetStream(), magnitude.GetData(),
-                              magnitude.GetSize());
-}
-
 std::string SqlWcharToString(const SQLWCHAR* sqlStr, int32_t sqlStrLen,
                              bool isLenInBytes) {
   LOG_DEBUG_MSG("SqlWcharToString is called with sqlStrLen is "
@@ -366,18 +282,6 @@ std::wstring FromUtf8(const char* value) {
   static std::wstring_convert< std::codecvt_utf8< wchar_t >, wchar_t >
       converter;
   return converter.from_bytes(value);
-}
-
-// To be deleted
-void ReadByteArray(BinaryReaderImpl& reader, std::vector< int8_t >& res) {
-  int32_t len = reader.ReadInt8Array(0, 0);
-
-  if (len > 0) {
-    res.resize(len);
-
-    reader.ReadInt8Array(&res[0], static_cast< int32_t >(res.size()));
-  } else
-    res.clear();
 }
 
 std::vector< SQLWCHAR > ToWCHARVector(const std::string& value) {

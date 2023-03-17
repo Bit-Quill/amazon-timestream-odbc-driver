@@ -25,7 +25,6 @@
 #include "ignite/odbc/type_traits.h"
 
 using Aws::TimestreamQuery::Model::ScalarType;
-using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {
 namespace odbc {
@@ -492,12 +491,11 @@ SqlResult::Type TableMetadataQuery::getMatchedDatabases(
   std::string sql = "SHOW DATABASES LIKE \'" + databasePattern + "\'";
   LOG_DEBUG_MSG("sql is " << sql);
 
-  app::ParameterSet params;
-  int32_t timeout = 60;
+   int32_t timeout = 60;
 
-  dataQuery_ =
-      std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
-  SqlResult::Type result = dataQuery_->Execute();
+   dataQuery_ =
+       std::make_shared< DataQuery >(diag, connection, sql, timeout);
+   SqlResult::Type result = dataQuery_->Execute();
 
   if (result == SqlResult::AI_NO_DATA) {
     std::string warnMsg =
@@ -536,11 +534,10 @@ SqlResult::Type TableMetadataQuery::getMatchedTables(
       "SHOW TABLES FROM \"" + databaseName + "\" LIKE \'" + tablePattern + "\'";
   LOG_DEBUG_MSG("sql is " << sql);
 
-  app::ParameterSet params;
   int32_t timeout = 60;
 
   dataQuery_ =
-      std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
+      std::make_shared< DataQuery >(diag, connection, sql, timeout);
   SqlResult::Type result = dataQuery_->Execute();
 
   if (result == SqlResult::AI_NO_DATA) {

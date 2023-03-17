@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "ignite/odbc/impl/binary/binary_utils.h"
 #include "ignite/odbc/config/connection_info.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/utility.h"
@@ -35,8 +34,6 @@ using namespace ignite;
 using namespace ignite_test;
 
 using namespace boost::unit_test;
-
-using ignite::odbc::impl::binary::BinaryUtils;
 
 /**
  * Test setup fixture.

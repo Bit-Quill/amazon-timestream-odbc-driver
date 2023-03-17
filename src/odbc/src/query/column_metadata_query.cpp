@@ -19,13 +19,10 @@
 
 #include <vector>
 
-#include "ignite/odbc/common/concurrent.h"
 #include "ignite/odbc/connection.h"
 #include "ignite/odbc/ignite_error.h"
-#include "ignite/odbc/impl/binary/binary_common.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/log.h"
-#include "ignite/odbc/message.h"
 #include "ignite/odbc/odbc_error.h"
 #include "ignite/odbc/type_traits.h"
 
@@ -33,7 +30,6 @@
 // empty string/nullptr inputs https://bitquill.atlassian.net/browse/AT-1270
 
 using ignite::odbc::IgniteError;
-using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace {
 struct ResultColumn {
@@ -116,7 +112,6 @@ ColumnMetadataQuery::ColumnMetadataQuery(
       meta(),
       columnsMeta() {
   LOG_DEBUG_MSG("ColumnMetadataQuery is called");
-  using namespace ignite::odbc::impl::binary;
   using namespace ignite::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -525,11 +520,10 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
   sql += tableName + "\"";
   LOG_DEBUG_MSG("sql is " << sql);
 
-  app::ParameterSet params;
   int32_t timeout = 60;
 
   dataQuery_ =
-      std::make_shared< DataQuery >(diag, connection, sql, params, timeout);
+      std::make_shared< DataQuery >(diag, connection, sql, timeout);
   SqlResult::Type result = dataQuery_->Execute();
   if (result != SqlResult::AI_SUCCESS) {
     LOG_DEBUG_MSG("Sql execution result is " << result);

@@ -19,7 +19,6 @@
 #define _IGNITE_ODBC_QUERY_DATA_QUERY
 
 #include "ignite/odbc/timestream_cursor.h"
-#include "ignite/odbc/app/parameter_set.h"
 #include "ignite/odbc/query/query.h"
 #include "ignite/odbc/connection.h"
 
@@ -75,11 +74,10 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
    * @param diag Diagnostics collector.
    * @param connection Associated connection.
    * @param sql SQL query string.
-   * @param params SQL params.
    * @param timeout Timeout.
    */
   DataQuery(diagnostic::DiagnosableAdapter& diag, Connection& connection,
-            const std::string& sql, const app::ParameterSet& params,
+            const std::string& sql,
             int32_t& timeout);
 
   /**
@@ -250,9 +248,6 @@ class IGNITE_IMPORT_EXPORT DataQuery : public Query {
 
   /** SQL Query. */
   std::string sql_;
-
-  /** Parameter bindings. */
-  const app::ParameterSet& params_;
 
   /** Result set metadata is available */
   bool resultMetaAvailable_;

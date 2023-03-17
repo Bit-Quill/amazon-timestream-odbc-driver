@@ -843,44 +843,8 @@ SQLRETURN SQLForeignKeys(
     SQLSMALLINT foreignCatalogNameLen, SQLWCHAR* foreignSchemaName,
     SQLSMALLINT foreignSchemaNameLen, SQLWCHAR* foreignTableName,
     SQLSMALLINT foreignTableNameLen) {
-  using odbc::Statement;
-
-  LOG_DEBUG_MSG("SQLForeignKeys called");
-
-  Statement* statement = reinterpret_cast< Statement* >(stmt);
-
-  if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLForeignKeys exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
-    return SQL_INVALID_HANDLE;
-  }
-
-  std::string primaryCatalog =
-      SqlWcharToString(primaryCatalogName, primaryCatalogNameLen);
-  std::string primarySchema =
-      SqlWcharToString(primarySchemaName, primarySchemaNameLen);
-  std::string primaryTable =
-      SqlWcharToString(primaryTableName, primaryTableNameLen);
-  const boost::optional< std::string > foreignCatalog =
-      SqlWcharToOptString(foreignCatalogName, foreignCatalogNameLen);
-  const boost::optional< std::string > foreignSchema =
-      SqlWcharToOptString(foreignSchemaName, foreignSchemaNameLen);
-  std::string foreignTable =
-      SqlWcharToString(foreignTableName, foreignTableNameLen);
-
-  LOG_INFO_MSG("primaryCatalog: " << primaryCatalog);
-  LOG_INFO_MSG("primarySchema: " << primarySchema);
-  LOG_INFO_MSG("primaryTable: " << primaryTable);
-  LOG_INFO_MSG("foreignCatalog: " << foreignCatalog.get_value_or(""));
-  LOG_INFO_MSG("foreignSchema: " << foreignSchema.get_value_or(""));
-  LOG_INFO_MSG("foreignTable: " << foreignTable);
-
-  statement->ExecuteGetForeignKeysQuery(primaryCatalog, primarySchema,
-                                        primaryTable, foreignCatalog,
-                                        foreignSchema, foreignTable);
-
-  return statement->GetDiagnosticRecords().GetReturnCode();
+  //TODO: see AT-1235 https://bitquill.atlassian.net/browse/AT-1325
+  return SQL_ERROR;
 }
 
 SQLRETURN SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER valueBuf,
@@ -935,35 +899,8 @@ SQLRETURN SQLPrimaryKeys(SQLHSTMT stmt, SQLWCHAR* catalogName,
                          SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                          SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                          SQLSMALLINT tableNameLen) {
-  using odbc::Statement;
-
-  LOG_DEBUG_MSG("SQLPrimaryKeys called");
-
-  Statement* statement = reinterpret_cast< Statement* >(stmt);
-
-  if (!statement) {
-    LOG_ERROR_MSG(
-        "SQLPrimaryKeys exiting with SQL_INVALID_HANDLE because statement "
-        "object is null");
-    return SQL_INVALID_HANDLE;
-  }
-
-  boost::optional< std::string > catalog =
-      SqlWcharToOptString(catalogName, catalogNameLen);
-  boost::optional< std::string > schema =
-      SqlWcharToOptString(schemaName, schemaNameLen);
-  boost::optional< std::string > table =
-      SqlWcharToOptString(tableName, tableNameLen);
-
-  LOG_INFO_MSG("catalog: " << catalog.get_value_or(""));
-  LOG_INFO_MSG("schema: " << schema.get_value_or(""));
-  LOG_INFO_MSG("table: " << table.get_value_or(""));
-
-  statement->ExecuteGetPrimaryKeysQuery(catalog, schema, table);
-
-  LOG_DEBUG_MSG("SQLPrimaryKeys exiting");
-
-  return statement->GetDiagnosticRecords().GetReturnCode();
+  // TODO: see AT-1235 https://bitquill.atlassian.net/browse/AT-1325
+  return SQL_ERROR;
 }
 
 SQLRETURN SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt) {
@@ -981,10 +918,7 @@ SQLRETURN SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt) {
   }
 
   if (paramCnt) {
-    uint16_t paramNum = 0;
-    statement->GetParametersNumber(paramNum);
-
-    *paramCnt = static_cast< SQLSMALLINT >(paramNum);
+    *paramCnt = 0;
   }
 
   return statement->GetDiagnosticRecords().GetReturnCode();
@@ -1152,62 +1086,8 @@ SQLRETURN SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT type) {
 
 SQLRETURN SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
                      SQLSMALLINT completionType) {
-  using namespace odbc;
-
-  LOG_DEBUG_MSG("SQLEndTran called with handleType " << handleType);
-
-  SQLRETURN result;
-
-  switch (handleType) {
-    case SQL_HANDLE_ENV: {
-      Environment* env = reinterpret_cast< Environment* >(handle);
-
-      if (!env) {
-        LOG_ERROR_MSG("env is nullptr");
-        return SQL_INVALID_HANDLE;
-      }
-
-      if (completionType == SQL_COMMIT)
-        env->TransactionCommit();
-      else
-        env->TransactionRollback();
-
-      result = env->GetDiagnosticRecords().GetReturnCode();
-
-      break;
-    }
-
-    case SQL_HANDLE_DBC: {
-      Connection* conn = reinterpret_cast< Connection* >(handle);
-
-      if (!conn) {
-        LOG_ERROR_MSG(
-            "SQLEndTran exiting with SQL_INVALID_HANDLE because conn "
-            "object is null");
-        LOG_DEBUG_MSG("handletype is SQL_HANDLE_DBC");
-        return SQL_INVALID_HANDLE;
-      }
-
-      if (completionType == SQL_COMMIT)
-        conn->TransactionCommit();
-      else
-        conn->TransactionRollback();
-
-      result = conn->GetDiagnosticRecords().GetReturnCode();
-
-      break;
-    }
-
-    default: {
-      result = SQL_INVALID_HANDLE;
-
-      break;
-    }
-  }
-
-  LOG_DEBUG_MSG("SQLEndTran exiting");
-
-  return result;
+  // TODO: see AT-1235 https://bitquill.atlassian.net/browse/AT-1325
+  return SQL_ERROR;
 }
 
 SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,

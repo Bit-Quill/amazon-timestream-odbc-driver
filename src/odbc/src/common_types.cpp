@@ -17,8 +17,6 @@
 
 #include "ignite/odbc/common_types.h"
 
-#include "ignite/odbc/impl/binary/binary_common.h"
-
 #include "ignite/odbc/system/odbc_constants.h"
 
 namespace ignite {

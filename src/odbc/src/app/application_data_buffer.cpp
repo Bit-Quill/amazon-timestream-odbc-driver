@@ -24,7 +24,6 @@
 #include <vector>
 
 #include <sqltypes.h>
-#include "ignite/odbc/common/bits.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/utility.h"
@@ -32,7 +31,6 @@
 namespace ignite {
 namespace odbc {
 namespace app {
-using impl::binary::BinaryUtils;
 using namespace type_traits;
 
 ApplicationDataBuffer::ApplicationDataBuffer()

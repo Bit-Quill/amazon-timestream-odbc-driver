@@ -28,10 +28,7 @@
 #include <vector>
 #include <chrono>
 
-#include "complex_type.h"
-#include "ignite/odbc/binary/binary_object.h"
 #include "ignite/odbc/common/fixed_size_array.h"
-#include "ignite/odbc/impl/binary/binary_utils.h"
 #include "ignite/odbc/utility.h"
 #include "odbc_test_suite.h"
 #include "test_type.h"
@@ -40,13 +37,8 @@
 using namespace ignite;
 using namespace ignite::odbc::common;
 using namespace ignite_test;
-using namespace ignite::odbc::binary;
-using namespace ignite::odbc::impl::binary;
-using namespace ignite::odbc::impl::interop;
 
 using namespace boost::unit_test;
-
-using ignite::odbc::impl::binary::BinaryUtils;
 
 /**
  * Test setup fixture.

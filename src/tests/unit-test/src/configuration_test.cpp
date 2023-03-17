@@ -20,7 +20,6 @@
 #endif
 
 #include <ignite/odbc/common/utils.h>
-#include <ignite/odbc/config/config_tools.h>
 #include <ignite/odbc/config/configuration.h>
 #include <ignite/odbc/config/connection_string_parser.h>
 #include <ignite/odbc/authentication/auth_type.h>

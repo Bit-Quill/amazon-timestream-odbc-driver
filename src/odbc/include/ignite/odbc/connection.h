@@ -18,7 +18,6 @@
 #ifndef _IGNITE_ODBC_CONNECTION
 #define _IGNITE_ODBC_CONNECTION
 
-#include <ignite/odbc/common/concurrent.h>
 #include <stdint.h>
 
 #include <vector>
@@ -26,19 +25,15 @@
 #include "ignite/odbc/config/configuration.h"
 #include "ignite/odbc/config/connection_info.h"
 #include "ignite/odbc/diagnostic/diagnosable_adapter.h"
-#include "ignite/odbc/end_point.h"
 #include "ignite/odbc/log.h"
+#include "ignite/odbc/ignite_error.h"
 #include "ignite/odbc/odbc_error.h"
-#include "ignite/odbc/parser.h"
-#include "ignite/odbc/streaming/streaming_context.h"
 #include "ignite/odbc/authentication/saml.h"
 
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
 #include <aws/timestream-query/TimestreamQueryClient.h>
 #include "aws/sts/STSClient.h"
-
-using ignite::odbc::common::concurrent::SharedPointer;
 
 namespace ignite {
 namespace odbc {
@@ -172,57 +167,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   static diagnostic::DiagnosticRecord CreateStatusRecord(
       SqlState::Type sqlState, const std::string& message, int32_t rowNum = 0,
       int32_t columnNum = 0);
-
-  /**
-   * Synchronously send request message and receive response.
-   * Uses provided timeout.
-   *
-   * @param req Request message.
-   * @param rsp Response message.
-   * @param timeout Timeout.
-   * @return @c true on success, @c false on timeout.
-   * @throw OdbcError on error.
-   */
-  template < typename ReqT, typename RspT >
-  bool SyncMessage(const ReqT& req, RspT& rsp, int32_t timeout) {
-    // TODO: Remove when unnecessary.
-    return true;
-  }
-
-  /**
-   * Synchronously send request message and receive response.
-   * Uses connection timeout.
-   *
-   * @param req Request message.
-   * @param rsp Response message.
-   * @throw OdbcError on error.
-   */
-  template < typename ReqT, typename RspT >
-  void SyncMessage(const ReqT& req, RspT& rsp) {
-    // TODO: Should be needed for Timestream
-  }
-
-  /**
-   * Send request message.
-   * Uses connection timeout.
-   *
-   * @param req Request message.
-   * @throw OdbcError on error.
-   */
-  template < typename ReqT >
-  void SendRequest(const ReqT& req) {
-    // TODO: Remove when unnecessary.
-  }
-
-  /**
-   * Perform transaction commit.
-   */
-  void TransactionCommit();
-
-  /**
-   * Perform transaction rollback.
-   */
-  void TransactionRollback();
 
   /**
    * Get connection attribute.
@@ -461,21 +405,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
     return SqlResult::AI_SUCCESS;
   }
 
-  /**
-   * Perform transaction commit on all the associated connections.
-   * Internal call.
-   *
-   * @return Operation result.
-   */
-  SqlResult::Type InternalTransactionCommit();
-
-  /**
-   * Perform transaction rollback on all the associated connections.
-   * Internal call.
-   *
-   * @return Operation result.
-   */
-  SqlResult::Type InternalTransactionRollback();
 
   /**
    * Get connection attribute.

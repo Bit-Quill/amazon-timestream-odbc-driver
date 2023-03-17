@@ -19,7 +19,6 @@
 #define _IGNITE_ODBC_APP_APPLICATION_DATA_BUFFER
 
 #include <ignite/odbc/date.h>
-#include <ignite/odbc/guid.h>
 #include <ignite/odbc/common/decimal.h>
 #include <ignite/odbc/time.h>
 #include <ignite/odbc/timestamp.h>

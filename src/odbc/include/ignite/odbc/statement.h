@@ -24,12 +24,10 @@
 #include <memory>
 
 #include "ignite/odbc/app/application_data_buffer.h"
-#include "ignite/odbc/app/parameter_set.h"
 #include "ignite/odbc/common_types.h"
 #include "ignite/odbc/diagnostic/diagnosable_adapter.h"
 #include "ignite/odbc/meta/column_meta.h"
 #include "ignite/odbc/query/query.h"
-#include "sql/sql_set_streaming_command.h"
 
 namespace ignite {
 namespace odbc {
@@ -120,20 +118,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   void GetAttribute(int attr, void* buf, SQLINTEGER bufLen,
                     SQLINTEGER* valueLen);
-
-  /**
-   * Get number parameters required by the prepared statement.
-   *
-   * @param paramNum Number of parameters.
-   */
-  void GetParametersNumber(uint16_t& paramNum);
-
-  /**
-   * Set parameter binding offset pointer.
-   *
-   * @param ptr Parameter binding offset pointer.
-   */
-  void SetParamBindOffsetPtr(int* ptr);
 
   /**
    * Get value of the column in the result set.
@@ -722,9 +706,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
 
   /** Row array size. */
   SqlUlen rowArraySize;
-
-  /** Parameters. */
-  app::ParameterSet parameters;
 
   /** Query timeout in seconds. */
   int32_t timeout;

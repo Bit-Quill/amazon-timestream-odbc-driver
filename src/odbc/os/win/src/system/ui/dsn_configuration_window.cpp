@@ -22,9 +22,9 @@
 #include <Windowsx.h>
 #include <commctrl.h>
 
-#include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/log_level.h"
+#include "ignite/odbc/ignite_error.h"
 #include "ignite/odbc/authentication/auth_type.h"
 
 // TODO Add ComboBox for AWS log level configuration

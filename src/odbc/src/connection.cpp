@@ -24,14 +24,12 @@
 #include <cstring>
 #include <sstream>
 
-#include "ignite/odbc/common/concurrent.h"
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/config/configuration.h"
 #include "ignite/odbc/config/connection_string_parser.h"
 #include "ignite/odbc/dsn_config.h"
 #include "ignite/odbc/environment.h"
 #include "ignite/odbc/log.h"
-#include "ignite/odbc/message.h"
 #include "ignite/odbc/statement.h"
 #include "ignite/odbc/system/system_dsn.h"
 #include "ignite/odbc/utility.h"
@@ -47,7 +45,6 @@
 
 using namespace ignite::odbc;
 using namespace ignite::odbc::common;
-using namespace ignite::odbc::common::concurrent;
 using ignite::odbc::IgniteError;
 
 namespace {
@@ -289,74 +286,6 @@ diagnostic::DiagnosticRecord Connection::CreateStatusRecord(
     int32_t columnNum) {
   return diagnostic::DiagnosticRecord(sqlState, message, "", "", rowNum,
                                       columnNum);
-}
-
-void Connection::TransactionCommit() {
-  IGNITE_ODBC_API_CALL(InternalTransactionCommit());
-}
-
-SqlResult::Type Connection::InternalTransactionCommit() {
-  std::string schema = "";  // TO-DO schema is not used now
-
-  app::ParameterSet empty;
-
-  QueryExecuteRequest req(schema, "COMMIT", empty, timeout_, autoCommit_);
-  QueryExecuteResponse rsp;
-
-  try {
-    bool sent = SyncMessage(req, rsp, timeout_);
-
-    if (!sent) {
-      AddStatusRecord(SqlState::S08S01_LINK_FAILURE,
-                      "Failed to send commit request.");
-
-      return SqlResult::AI_ERROR;
-    }
-  } catch (const OdbcError& err) {
-    AddStatusRecord(err);
-
-    return SqlResult::AI_ERROR;
-  } catch (const IgniteError& err) {
-    AddStatusRecord(err.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-
-  return SqlResult::AI_SUCCESS;
-}
-
-void Connection::TransactionRollback() {
-  IGNITE_ODBC_API_CALL(InternalTransactionRollback());
-}
-
-SqlResult::Type Connection::InternalTransactionRollback() {
-  std::string schema = "";  // TO-DO schema is not used now
-
-  app::ParameterSet empty;
-
-  QueryExecuteRequest req(schema, "ROLLBACK", empty, timeout_, autoCommit_);
-  QueryExecuteResponse rsp;
-
-  try {
-    bool sent = SyncMessage(req, rsp, timeout_);
-
-    if (!sent) {
-      AddStatusRecord(SqlState::S08S01_LINK_FAILURE,
-                      "Failed to send rollback request.");
-
-      return SqlResult::AI_ERROR;
-    }
-  } catch (const OdbcError& err) {
-    AddStatusRecord(err);
-
-    return SqlResult::AI_ERROR;
-  } catch (const IgniteError& err) {
-    AddStatusRecord(err.GetText());
-
-    return SqlResult::AI_ERROR;
-  }
-
-  return SqlResult::AI_SUCCESS;
 }
 
 int32_t Connection::GetEnvODBCVer() {

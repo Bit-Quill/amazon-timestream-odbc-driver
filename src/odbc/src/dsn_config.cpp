@@ -16,8 +16,6 @@
  */
 
 #include "ignite/odbc/dsn_config.h"
-#include <ignite/odbc/common/fixed_size_array.h>
-#include "ignite/odbc/config/config_tools.h"
 #include "ignite/odbc/config/connection_string_parser.h"
 #include <ignite/odbc/authentication/auth_type.h>
 #include <ignite/odbc/log_level.h>

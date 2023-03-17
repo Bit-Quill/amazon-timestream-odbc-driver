@@ -17,6 +17,7 @@
 project(timestream-odbc)
 
 set(TARGET ${PROJECT_NAME})
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 include(InstallRequiredSystemLibraries)
 include(CPackComponent)
@@ -39,18 +40,10 @@ include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${AWSSDK_I
 include_directories(include)
 
 set(SOURCES src/app/application_data_buffer.cpp
-        src/app/parameter.cpp
-        src/app/parameter_set.cpp
         src/authentication/auth_type.cpp
         src/authentication/aad.cpp
         src/authentication/okta.cpp
         src/authentication/saml.cpp
-	src/binary/binary_containers.cpp
-	src/binary/binary_raw_writer.cpp
-	src/binary/binary_writer.cpp
-	src/binary/binary_reader.cpp
-	src/binary/binary_type.cpp
-	src/binary/binary_raw_reader.cpp
         src/common_types.cpp
         src/common/big_integer.cpp
         src/common/bits.cpp
@@ -58,68 +51,34 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/common/decimal.cpp
         src/ignite_error.cpp
         src/common/utils.cpp
-        src/config/config_tools.cpp
         src/config/configuration.cpp
         src/config/connection_info.cpp
         src/config/connection_string_parser.cpp
-	src/impl/binary/binary_type_manager.cpp
-	src/impl/binary/binary_type_impl.cpp
-	src/impl/binary/binary_utils.cpp
-	src/impl/binary/binary_reader_impl.cpp
-	src/impl/binary/binary_type_handler.cpp
-	src/impl/binary/binary_writer_impl.cpp
-	src/impl/binary/binary_schema.cpp
-	src/impl/binary/binary_type_snapshot.cpp
-	src/impl/binary/binary_object_header.cpp
-	src/impl/binary/binary_object_impl.cpp
-	src/impl/binary/binary_field_meta.cpp
-	src/impl/interop/interop_input_stream.cpp
-	src/impl/interop/interop_memory.cpp
-	src/impl/interop/interop_output_stream.cpp
-	src/impl/handle_registry.cpp
         src/connection.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
         src/diagnostic/diagnostic_record_storage.cpp
         src/environment.cpp
         src/meta/column_meta.cpp
-        src/meta/foreign_key_meta.cpp
-        src/meta/primary_key_meta.cpp
         src/meta/table_meta.cpp
         src/odbc.cpp
         src/entry_points.cpp
         src/dsn_config.cpp
         src/query/column_metadata_query.cpp
         src/query/data_query.cpp
-        src/query/batch_query.cpp
-        src/query/foreign_keys_query.cpp
-        src/query/primary_keys_query.cpp
         src/query/table_metadata_query.cpp
         src/query/type_info_query.cpp
-        src/query/special_columns_query.cpp
-        src/sql/sql_parser.cpp
-        src/sql/sql_lexer.cpp
-        src/sql/sql_set_streaming_command.cpp
-        src/sql/sql_utils.cpp
-        src/streaming/streaming_batch.cpp
-        src/streaming/streaming_context.cpp
-        src/protocol_version.cpp
-        src/result_page.cpp
-        src/nested_tx_mode.cpp
-        src/message.cpp
         src/statement.cpp
         src/type_traits.cpp
         src/utility.cpp
         src/log.cpp
         src/log_level.cpp
         src/date.cpp
-        src/guid.cpp
         src/time.cpp
         src/timestamp.cpp
         src/timestream_column.cpp
         src/timestream_cursor.cpp
         src/timestream_row.cpp
-        src/ts_error.cpp
 	src/interval_year_month.cpp
         src/interval_day_second.cpp)
 

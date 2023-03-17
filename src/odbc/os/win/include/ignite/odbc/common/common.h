@@ -23,6 +23,10 @@
 
 #define IGNITE_IMPORT_EXPORT IGNITE_EXPORT
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <iostream>
 
 #define IGNITE_TRACE_ALLOC(addr)                                  \

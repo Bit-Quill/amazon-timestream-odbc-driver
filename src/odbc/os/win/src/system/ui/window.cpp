@@ -16,6 +16,7 @@
  */
 
 #include "ignite/odbc/system/ui/window.h"
+#include "ignite/odbc/ignite_error.h"
 
 #include <windowsx.h>
 #include <CommCtrl.h>

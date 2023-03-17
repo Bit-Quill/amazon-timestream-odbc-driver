@@ -19,7 +19,6 @@
 
 #include "ignite/odbc/common/utils.h"
 #include "ignite/odbc/common_types.h"
-#include "ignite/odbc/impl/binary/binary_common.h"
 #include "ignite/odbc/log.h"
 #include "ignite/odbc/system/odbc_constants.h"
 #include "ignite/odbc/type_traits.h"
@@ -192,7 +191,6 @@ void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
   LOG_DEBUG_MSG("GetAttribute is called with fieldId " << fieldId);
-  using namespace ignite::odbc::impl::binary;
 
   // an empty string is returned if the column does not have the requested field
   value = "";
@@ -285,7 +283,6 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
 
 bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
   LOG_DEBUG_MSG("GetAttribute is called with fieldId " << fieldId);
-  using namespace ignite::odbc::impl::binary;
 
   // value equals -1 by default.
   value = -1;

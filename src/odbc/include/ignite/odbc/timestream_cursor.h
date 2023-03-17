@@ -24,7 +24,6 @@
 #include <memory>
 
 #include "ignite/odbc/common_types.h"
-#include "ignite/odbc/result_page.h"
 #include "ignite/odbc/timestream_row.h"
 #include "ignite/odbc/meta/column_meta.h"
 

@@ -33,8 +33,6 @@
 #include <boost/optional/optional_io.hpp>
 #include <string>
 
-#include "ignite/odbc/impl/binary/binary_reader_impl.h"
-#include "ignite/odbc/impl/binary/binary_writer_impl.h"
 #include <sqltypes.h>
 #include <sql.h>
 
@@ -43,7 +41,6 @@ namespace odbc {
 namespace utility {
 /** Using common version of the util. */
 using common::IntoLower;
-using namespace odbc::impl::binary;
 using namespace odbc::common;
 
 template < typename T >
@@ -110,48 +107,6 @@ IGNITE_IMPORT_EXPORT size_t CopyStringToBuffer(const std::string& str,
                                               SQLWCHAR* buf, size_t buflen,
                                               bool& isTruncated,
                                               bool isLenInBytes = false);
-
-/**
- * Read array from reader.
- * @param reader Reader.
- * @param res Resulting vector.
- */
-IGNITE_IMPORT_EXPORT void ReadByteArray(BinaryReaderImpl& reader,
-                                       std::vector< int8_t >& res);
-
-/**
- * Read string from reader.
- * @param reader Reader.
- * @param str String.
- */
-IGNITE_IMPORT_EXPORT void ReadString(BinaryReaderImpl& reader, std::string& str);
-
-/**
- * Write string using writer.
- * @param writer Writer.
- * @param str String.
- */
-IGNITE_IMPORT_EXPORT void
-WriteString(BinaryWriterImpl& writer,
-                                     const std::string& str);
-
-/**
- * Read decimal value using reader.
- *
- * @param reader Reader.
- * @param decimal Decimal value.
- */
-IGNITE_IMPORT_EXPORT void ReadDecimal(BinaryReaderImpl& reader,
-                                     Decimal& decimal);
-
-/**
- * Write decimal value using writer.
- *
- * @param writer Writer.
- * @param decimal Decimal value.
- */
-IGNITE_IMPORT_EXPORT void WriteDecimal(BinaryWriterImpl& writer,
-                                      const Decimal& decimal);
 
 /**
  * Convert SQLWCHAR string buffer to std::string.

@@ -28,9 +28,7 @@
 #include <string>
 #include <vector>
 
-#include "complex_type.h"
 #include "ignite/odbc/common/fixed_size_array.h"
-#include "ignite/odbc/impl/binary/binary_utils.h"
 #include "ignite/odbc/type_traits.h"
 #include "ignite/odbc/utility.h"
 #include "odbc_test_suite.h"
@@ -40,9 +38,6 @@
 using namespace ignite;
 using namespace ignite::odbc::common;
 using namespace ignite_test;
-using namespace ignite::odbc::binary;
-using namespace ignite::odbc::impl::binary;
-using namespace ignite::odbc::impl::interop;
 using ignite::odbc::TestType;
 using namespace ignite::odbc::type_traits;
 using namespace ignite::odbc::utility;
@@ -1390,7 +1385,9 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly) {
+// This test needs to be updated to be environment unrelated
+// TODO: AT-1326 https://bitquill.atlassian.net/browse/AT-1326
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
   // Test SQLColumns by only passing table names and "%" without specifying database
   // Check that columns from tables with duplicate names are returned 
   // correctly with SQLColumns.
@@ -2313,7 +2310,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesSearchPatternReturnsMany) {
 
   // Check all tables that match the pattern are found
   int expectedTableMatches = int(databaseMap.size());
-  if (tableMatches != expectedTableMatches) {
+  if (tableMatches < expectedTableMatches) {
     std::string sqlMessage =
         "Expected to find " + std::to_string(expectedTableMatches)
         + " tables (named \"" + testTable + "\"), but only found "

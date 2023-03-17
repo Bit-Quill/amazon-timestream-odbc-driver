@@ -16,6 +16,7 @@
  */
 
 #include "ignite/odbc/system/ui/custom_window.h"
+#include "ignite/odbc/ignite_error.h"
 
 #include <commctrl.h>
 #include <Windowsx.h>

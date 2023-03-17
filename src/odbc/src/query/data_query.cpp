@@ -19,9 +19,7 @@
 
 #include "ignite/odbc/connection.h"
 #include "ignite/odbc/log.h"
-#include "ignite/odbc/message.h"
 #include "ignite/odbc/odbc_error.h"
-#include "ignite/odbc/query/batch_query.h"
 
 #include <aws/timestream-query/model/Type.h>
 
@@ -30,11 +28,10 @@ namespace odbc {
 namespace query {
 DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
                      Connection& connection, const std::string& sql,
-                     const app::ParameterSet& params, int32_t& timeout)
+                     int32_t& timeout)
     : Query(diag, QueryType::DATA),
       connection_(connection),
       sql_(sql),
-      params_(params),
       resultMetaAvailable_(false),
       resultMeta_(),
       request_(),

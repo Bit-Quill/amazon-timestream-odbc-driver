@@ -16,7 +16,6 @@
  */
 
 #include <ignite/odbc/common/decimal.h>
-#include <ignite/odbc/guid.h>
 #include <ignite/odbc/app/application_data_buffer.h>
 #include <ignite/odbc/system/odbc_constants.h>
 #include <ignite/odbc/utility.h>
