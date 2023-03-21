@@ -30,6 +30,14 @@
 
 #define ODBCVER 0x0351
 
+#ifndef NAMEDATALEN
+#define NAMEDATALEN 64
+#endif /* NAMEDATALEN */
+
+#ifndef MAX_CURSOR_LEN
+#define MAX_CURSOR_LEN 32
+#endif /* MAX_CURSOR_LEN */
+
 // Internal SQL connection attribute to set log level
 #define SQL_ATTR_TSLOG_DEBUG 65536
 
