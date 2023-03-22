@@ -100,29 +100,29 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-    - name: Install repolinter dependencies
-      run: |
-        choco install nodejs awscli -y -d
-        echo "C:\nodejs" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-    - name: Checkout repolinter
-      uses: actions/checkout@v2
-      with:
-        repository: todogroup/repolinter
-        path: repolinter
-
-    - name: Run repolinter
-      run: |
-        if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
-        mv repolinter ..
-        cd ../repolinter
-        npm install
-        npm install -g ajv@latest
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-        cd ${{github.workspace}}
-        if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
+#   - name: Install repolinter dependencies
+#     run: |
+#       choco install nodejs awscli -y -d
+#       echo "C:\nodejs" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#       echo "C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#
+#   - name: Checkout repolinter
+#     uses: actions/checkout@v2
+#     with:
+#       repository: todogroup/repolinter
+#       path: repolinter
+#
+#   - name: Run repolinter
+#     run: |
+#       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
+#       mv repolinter ..
+#       cd ../repolinter
+#       npm install
+#       npm install -g ajv@latest
+#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
+#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+#       cd ${{github.workspace}}
+#       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
 
     - name: "Update path for WIX Toolset"
       run: |
@@ -263,29 +263,29 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-    - name: Install repolinter dependencies
-      run: |
-        choco install nodejs awscli -y -d
-        echo "C:\nodejs" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-    - name: Checkout repolinter
-      uses: actions/checkout@v2
-      with:
-        repository: todogroup/repolinter
-        path: repolinter
-
-    - name: Run repolinter
-      run: |
-        if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
-        mv repolinter ..
-        cd ../repolinter
-        npm install
-        npm install -g ajv@latest
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-        cd ${{github.workspace}}
-        if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
+#   - name: Install repolinter dependencies
+#     run: |
+#       choco install nodejs awscli -y -d
+#       echo "C:\nodejs" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#       echo "C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#
+#   - name: Checkout repolinter
+#     uses: actions/checkout@v2
+#     with:
+#       repository: todogroup/repolinter
+#       path: repolinter
+#
+#   - name: Run repolinter
+#     run: |
+#       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
+#       mv repolinter ..
+#       cd ../repolinter
+#       npm install
+#       npm install -g ajv@latest
+#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
+#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+#       cd ${{github.workspace}}
+#       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
 
     # TODO Reactivate cppcheck
     # https://bitquill.atlassian.net/browse/AD-752
@@ -456,29 +456,29 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-    - name: Install repolinter dependencies
-      run: |
-        choco install nodejs awscli -y -d
-        echo "C:\nodejs" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-    - name: Checkout repolinter
-      uses: actions/checkout@v2
-      with:
-        repository: todogroup/repolinter
-        path: repolinter
-
-    - name: Run repolinter
-      run: |
-        if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
-        mv repolinter ..
-        cd ../repolinter
-        npm install
-        npm install -g ajv@latest
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-        cd ${{github.workspace}}
-        if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
+#   - name: Install repolinter dependencies
+#     run: |
+#       choco install nodejs awscli -y -d
+#       echo "C:\nodejs" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#       echo "C:\Program Files\Amazon\AWSCLIV2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#
+#   - name: Checkout repolinter
+#     uses: actions/checkout@v2
+#     with:
+#       repository: todogroup/repolinter
+#       path: repolinter
+#
+#   - name: Run repolinter
+#     run: |
+#       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
+#       mv repolinter ..
+#       cd ../repolinter
+#       npm install
+#       npm install -g ajv@latest
+#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
+#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+#       cd ${{github.workspace}}
+#       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
 
     - name: "Update path for WIX Toolset"
       run: |

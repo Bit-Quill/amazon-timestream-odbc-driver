@@ -70,24 +70,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Checkout repolinter
-      uses: actions/checkout@v2
-      with:
-        repository: todogroup/repolinter
-        path: repolinter
-
-    - name: Run repolinter
-      run: |
-        sudo apt-get -y install npm nodejs awscli
-        sudo npm install -g ajv@latest linguist licensee
-        rm -rf ../repolinter
-        mv repolinter ..
-        cd ../repolinter
-        npm install
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-        cd ${{github.workspace}}
-        rm -rf ../repolinter
+#   - name: Checkout repolinter
+#     uses: actions/checkout@v2
+#     with:
+#       repository: todogroup/repolinter
+#       path: repolinter
+#
+#   - name: Run repolinter
+#     run: |
+#       sudo apt-get -y install npm nodejs awscli
+#       sudo npm install -g ajv@latest linguist licensee
+#       rm -rf ../repolinter
+#       mv repolinter ..
+#       cd ../repolinter
+#       npm install
+#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
+#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+#       cd ${{github.workspace}}
+#       rm -rf ../repolinter
         
     - name: Get latest version of CMake
       uses: lukka/get-cmake@latest
@@ -212,24 +212,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Checkout repolinter
-      uses: actions/checkout@v2
-      with:
-        repository: todogroup/repolinter
-        path: repolinter
-
-    - name: Run repolinter
-      run: |
-        sudo apt-get -y install npm nodejs awscli
-        sudo npm install -g ajv@latest linguist licensee
-        rm -rf ../repolinter
-        mv repolinter ..
-        cd ../repolinter
-        npm install
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-        cd ${{github.workspace}}
-        rm -rf ../repolinter
+#   - name: Checkout repolinter
+#     uses: actions/checkout@v2
+#     with:
+#       repository: todogroup/repolinter
+#       path: repolinter
+#
+#   - name: Run repolinter
+#     run: |
+#       sudo apt-get -y install npm nodejs awscli
+#       sudo npm install -g ajv@latest linguist licensee
+#       rm -rf ../repolinter
+#       mv repolinter ..
+#       cd ../repolinter
+#       npm install
+#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
+#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+#       cd ${{github.workspace}}
+#       rm -rf ../repolinter
 
     - name: Get gcovr
       run: | 

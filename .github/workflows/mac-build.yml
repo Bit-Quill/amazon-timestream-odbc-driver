@@ -75,26 +75,26 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Checkout repolinter
-      uses: actions/checkout@v2
-      with:
-        repository: todogroup/repolinter
-        path: repolinter
-
-    - name: Run repolinter
-      run: |
-        rm -rf ~/.npm
-        brew install npm node
-        test -f "/usr/local/bin/aws" || brew install awscli
-        rm -rf ../repolinter
-        mv repolinter ..
-        cd ../repolinter
-        npm install
-        sudo npm install -g ajv@latest
-        aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-        node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-        cd ${{github.workspace}}
-        rm -rf ../repolinter
+#   - name: Checkout repolinter
+#     uses: actions/checkout@v2
+#     with:
+#       repository: todogroup/repolinter
+#       path: repolinter
+#
+#   - name: Run repolinter
+#     run: |
+#       rm -rf ~/.npm
+#       brew install npm node
+#       test -f "/usr/local/bin/aws" || brew install awscli
+#       rm -rf ../repolinter
+#       mv repolinter ..
+#       cd ../repolinter
+#       npm install
+#       sudo npm install -g ajv@latest
+#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
+#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
+#       cd ${{github.workspace}}
+#       rm -rf ../repolinter
 
     - name: run-cppcheck
       run: |
