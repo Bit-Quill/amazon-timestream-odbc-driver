@@ -1749,6 +1749,23 @@ BOOST_AUTO_TEST_CASE(TestParamsNum, *disabled()) {
   CheckParamsNum("SELECT * FROM TestType WHERE _key=? AND _val=?", 2);
 }
 
+BOOST_AUTO_TEST_CASE(TestSQLMoreResults) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select * from data_queries_test_db.TestScalarTypes limit 4");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  ret = SQLMoreResults(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+}
+
 BOOST_AUTO_TEST_CASE(TestExecuteAfterCursorClose, *disabled()) {
   connectToLocalServer("odbc-test");
 
@@ -1961,31 +1978,6 @@ BOOST_AUTO_TEST_CASE(TestManyCursorsTwoSelects1, *disabled()) {
         "SELECT * FROM queries_test_005; SELECT * FROM queries_test_004");
 
     SQLRETURN ret = SQLExecDirect(stmt, req.data(), SQL_NTS);
-
-    if (!SQL_SUCCEEDED(ret))
-      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-    ret = SQLFreeStmt(stmt, SQL_CLOSE);
-
-    if (!SQL_SUCCEEDED(ret))
-      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  }
-}
-
-// Needed for TS?
-BOOST_AUTO_TEST_CASE(TestManyCursorsTwoSelects2, *disabled()) {
-  connectToLocalServer("odbc-test");
-
-  for (int32_t i = 0; i < 1000; ++i) {
-    std::vector< SQLWCHAR > req = MakeSqlBuffer(
-        "SELECT * FROM queries_test_005; SELECT * FROM queries_test_004");
-
-    SQLRETURN ret = SQLExecDirect(stmt, req.data(), SQL_NTS);
-
-    if (!SQL_SUCCEEDED(ret))
-      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-    ret = SQLMoreResults(stmt);
 
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
