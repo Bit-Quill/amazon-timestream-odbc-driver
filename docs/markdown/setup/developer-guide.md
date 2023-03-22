@@ -128,13 +128,6 @@ have all been set correctly:
 
 ### Known issues
 
-### 'odbcinst.h' file not found
-When [iODBC Administrator](https://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/Downloads) is installed on the local machine, performance test executable is unable to build with the error 'odbcinst.h' file not found. The workaround is to copy `/Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h` to `/Library/Frameworks/iODBC.framework/Headers/odbcinst.h`, then the build should succeed.
-```
-# example command
-sudo cp /Library/Frameworks/iODBCinst.framework/Headers/odbcinst.h /Library/Frameworks/iODBC.framework/Headers
-```
-
 ### Cannot build with macOS SDK 13
 Currently, the AWS SDK CPP is incompatible with SDK 13. The workaround is to set the SDK folder to a compatible SDK (e.g., SDK 12.3) that is before SDK 13, and upgrade the sdk version.
 
