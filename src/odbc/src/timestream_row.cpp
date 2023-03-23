@@ -14,10 +14,10 @@
  *
  */
 
-#include "ignite/odbc/timestream_row.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/timestream_row.h"
+#include "timestream/odbc/utility.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 TimestreamRow::TimestreamRow(const Row& row,
                              const meta::ColumnMetaVector& columnMetadataVec)
@@ -70,4 +70,4 @@ bool TimestreamRow::EnsureColumnDiscovered(uint32_t columnIdx) {
   return true;
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

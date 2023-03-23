@@ -17,10 +17,10 @@
 #ifndef _IGNITE_ODBC_MOCK_CONNECTION
 #define _IGNITE_ODBC_MOCK_CONNECTION
 
-#include "ignite/odbc/connection.h"
+#include "timestream/odbc/connection.h"
 #include "mock/mock_statement.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Mock Connection so function level test could be done against Connection.
@@ -76,6 +76,6 @@ class MockConnection : public Connection {
   virtual std::shared_ptr< Aws::STS::STSClient > GetStsClient();
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_MOCK_CONNECTION

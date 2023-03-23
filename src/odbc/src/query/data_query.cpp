@@ -14,21 +14,21 @@
  *
  */
 
-#include "ignite/odbc/query/data_query.h"
+#include "timestream/odbc/query/data_query.h"
 
-#include "ignite/odbc/connection.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/connection.h"
+#include "timestream/odbc/log.h"
 #include "ignite/odbc/odbc_error.h"
 
 #include <aws/timestream-query/model/Type.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace query {
 DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
                      Connection& connection, const std::string& sql,
                      int32_t& timeout)
-    : Query(diag, QueryType::DATA),
+    : Query(diag, ignite::odbc::query::QueryType::DATA),
       connection_(connection),
       sql_(sql),
       resultMetaAvailable_(false),
@@ -171,7 +171,7 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.",
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_NO_DATA;
   }
 
@@ -181,7 +181,7 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
       if (result != SqlResult::AI_SUCCESS) {
         diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
                              "Invalid cursor state.",
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
         return result;
       }
     } else {
@@ -228,7 +228,7 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
   if (!cursor_.get()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.",
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
     return SqlResult::AI_NO_DATA;
   }
@@ -416,7 +416,7 @@ void DataQuery::ReadColumnMetadataVector(
     const Aws::Vector< ColumnInfo >& tsVector) {
   LOG_DEBUG_MSG("ReadColumnMetadataVector is called");
 
-  using ignite::odbc::meta::ColumnMeta;
+  using timestream::odbc::meta::ColumnMeta;
   resultMeta_.clear();
 
   if (tsVector.empty()) {
@@ -452,7 +452,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S01004_DATA_TRUNCATED,
           "Buffer is too small for the column data. Truncated from the right.",
-          ignite::odbc::LogLevel::Type::WARNING_LEVEL,
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL,
           rowIdx, columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
@@ -462,7 +462,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S01S07_FRACTIONAL_TRUNCATION,
           "Buffer is too small for the column data. Fraction truncated.",
-          ignite::odbc::LogLevel::Type::WARNING_LEVEL,
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL,
           rowIdx, columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
@@ -472,7 +472,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S22002_INDICATOR_NEEDED,
           "Indicator is needed but not suplied for the column buffer.", 
-          ignite::odbc::LogLevel::Type::WARNING_LEVEL, 
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL, 
           rowIdx,
           columnIdx);
 
@@ -482,7 +482,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
     case app::ConversionResult::Type::AI_UNSUPPORTED_CONVERSION: {
       diag.AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
                            "Data conversion is not supported.",
-                           ignite::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx,
+                           timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx,
                            columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
@@ -492,7 +492,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       LOG_DEBUG_MSG("parameter: convRes: AI_FAILURE");
     default: {
       diag.AddStatusRecord(SqlState::S01S01_ERROR_IN_ROW, "Can not retrieve row column.",
-          ignite::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
       break;
     }
   }
@@ -532,4 +532,4 @@ void DataQuery::SetResultsetMeta(const meta::ColumnMetaVector& value) {
 }
 }  // namespace query
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

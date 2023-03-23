@@ -18,8 +18,12 @@
 #ifndef _IGNITE_ODBC_DIAGNOSTIC_DIAGNOSABLE
 #define _IGNITE_ODBC_DIAGNOSTIC_DIAGNOSABLE
 
-#include "ignite/odbc/diagnostic/diagnostic_record_storage.h"
-#include "ignite/odbc/log_level.h"
+#include "timestream/odbc/diagnostic/diagnostic_record_storage.h"
+#include "timestream/odbc/log_level.h"
+
+using timestream::odbc::diagnostic::DiagnosticRecordStorage;
+using timestream::odbc::SqlState;
+using timestream::odbc::LogLevel;
 
 namespace ignite {
 namespace odbc {
@@ -62,7 +66,7 @@ class Diagnosable {
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
                                const std::string& message,
-                               ignite::odbc::LogLevel::Type logLevel,
+                               LogLevel::Type logLevel,
                                int32_t rowNum,
                                int32_t columnNum) = 0;
 
@@ -74,7 +78,7 @@ class Diagnosable {
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
                                const std::string& message,
-                               ignite::odbc::LogLevel::Type logLevel = ignite::odbc::LogLevel::Type::ERROR_LEVEL) = 0;
+                               LogLevel::Type logLevel = LogLevel::Type::ERROR_LEVEL) = 0;
 
   /**
    * Add new status record.
@@ -88,7 +92,8 @@ class Diagnosable {
    *
    * @param rec Record.
    */
-  virtual void AddStatusRecord(const DiagnosticRecord& rec) = 0;
+  virtual void AddStatusRecord(
+      const timestream::odbc::diagnostic::DiagnosticRecord& rec) = 0;
 
  protected:
   /**

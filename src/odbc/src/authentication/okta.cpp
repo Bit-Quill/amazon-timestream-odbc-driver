@@ -15,9 +15,9 @@
  *
  */
 
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/authentication/okta.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/authentication/okta.h"
+#include "timestream/odbc/utility.h"
 
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
@@ -26,7 +26,7 @@
 
 #include <regex>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 const size_t TimestreamOktaCredentialsProvider::SINGLE_NUM_CHAR_REF_LENGTH = 6;
@@ -186,4 +186,4 @@ std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(std::string& err
 }
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

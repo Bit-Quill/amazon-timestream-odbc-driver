@@ -14,11 +14,11 @@
  *
  */
 
-#include "ignite/odbc/type_traits.h"
+#include "timestream/odbc/type_traits.h"
 
-#include "ignite/odbc/system/odbc_constants.h"
+#include "timestream/odbc/system/odbc_constants.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace type_traits {
 const std::string SqlTypeName::INTEGER("INTEGER");
@@ -679,4 +679,4 @@ bool BinaryTypeUnsigned(boost::optional< int16_t > type) {
 }
 }  // namespace type_traits
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

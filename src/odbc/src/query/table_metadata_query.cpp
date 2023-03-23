@@ -13,22 +13,22 @@
  * permissions and limitations under the License.
  *
  */
-#include "ignite/odbc/query/table_metadata_query.h"
+#include "timestream/odbc/query/table_metadata_query.h"
 
 #include <aws/timestream-query/model/ScalarType.h>
 
 #include <vector>
 
-#include "ignite/odbc/connection.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/type_traits.h"
+#include "timestream/odbc/connection.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/type_traits.h"
 
 using Aws::TimestreamQuery::Model::ScalarType;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace query {
-using ignite::odbc::type_traits::OdbcNativeType;
+using timestream::odbc::type_traits::OdbcNativeType;
 
 TableMetadataQuery::TableMetadataQuery(
     diagnostic::DiagnosableAdapter& diag, Connection& connection,
@@ -36,7 +36,7 @@ TableMetadataQuery::TableMetadataQuery(
     const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& tableType)
-    : Query(diag, QueryType::TABLE_METADATA),
+    : Query(diag, ignite::odbc::query::QueryType::TABLE_METADATA),
       connection(connection),
       catalog(catalog),
       schema(schema),
@@ -340,7 +340,7 @@ SqlResult::Type TableMetadataQuery::MakeRequestGetTablesMeta() {
           "Empty result set is returned as tableType is set to \"" + *tableType
           + "\" and Timestream only supports \"TABLE\" table type";
       diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                           ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                           timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -386,7 +386,7 @@ SqlResult::Type TableMetadataQuery::getTables() {
             + "\" and Timestream does not have catalogs";
 
         diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
         retval = SqlResult::AI_SUCCESS_WITH_INFO;
       } else if (all_catalogs) {
@@ -394,14 +394,14 @@ SqlResult::Type TableMetadataQuery::getTables() {
             "Empty result set is returned for a list of catalogs "
             "because Timestream does not have catalogs";
         diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
         retval = SqlResult::AI_SUCCESS_WITH_INFO;
       } else if ((schema && schema->empty()) || (table && table->empty())) {
         // empty schema or empty table should match nothing
         std::string warnMsg = "Schema and table name should not be empty";
         diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
         retval = SqlResult::AI_SUCCESS_WITH_INFO;
       } else {
         // Timestream does not support catalogs, so catalog name field would be
@@ -447,7 +447,7 @@ SqlResult::Type TableMetadataQuery::getTables() {
             + "\" and Timestream does not have schemas";
 
         diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
         retval = SqlResult::AI_SUCCESS_WITH_INFO;
       } else if (all_schemas) {
@@ -455,14 +455,14 @@ SqlResult::Type TableMetadataQuery::getTables() {
             "Empty result set is returned for a list of schemas "
             "because Timestream does not have schemas";
         diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
         retval = SqlResult::AI_SUCCESS_WITH_INFO;
       } else if ((catalog && catalog->empty()) || (table && table->empty())) {
         // empty catalog or empty table should match nothing
         std::string warnMsg = "Catalog and table name should not be empty";
         diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                             ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                             timestream::odbc::LogLevel::Type::WARNING_LEVEL);
         retval = SqlResult::AI_SUCCESS_WITH_INFO;
       } else {
         // Timestream does not support schemas, so schema name field would be
@@ -500,7 +500,7 @@ SqlResult::Type TableMetadataQuery::getMatchedDatabases(
     std::string warnMsg =
         "No database is found with pattern \'" + databasePattern + "\'";
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_SUCCESS_WITH_INFO;
   } else if (result != SqlResult::AI_SUCCESS) {
     LOG_ERROR_MSG("Failed to execute sql:" << sql);
@@ -543,7 +543,7 @@ SqlResult::Type TableMetadataQuery::getMatchedTables(
     std::string warnMsg = "No table is found with pattern \'" + tablePattern
                           + "\' from database (" + databaseName + ")";
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_SUCCESS_WITH_INFO;
     // DataQuery::Execute() does not return SUCCESS_WITH_INFO
   } else if (result != SqlResult::AI_SUCCESS) {
@@ -639,7 +639,7 @@ SqlResult::Type TableMetadataQuery::getTablesWithIdentifier(
   if (!match) {
     std::string warnMsg = "No matched database for " + databaseIdentifier;
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
@@ -691,7 +691,7 @@ SqlResult::Type TableMetadataQuery::getTablesWithIdentifier(
         "Empty result set is returned as we could not find tables with "
         + databaseName + "." + table.get();
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
@@ -760,7 +760,7 @@ SqlResult::Type TableMetadataQuery::getTablesWithSearchPattern(
         "pattern "
         + databasePattern.get_value_or("%");
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, warnMsg,
-                         ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
     return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
@@ -777,4 +777,4 @@ std::string TableMetadataQuery::dequote(const std::string& s) {
 }
 }  // namespace query
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

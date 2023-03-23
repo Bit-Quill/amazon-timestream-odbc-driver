@@ -14,9 +14,9 @@
  *
  */
 
-#include "ignite/odbc/timestream_cursor.h"
+#include "timestream/odbc/timestream_cursor.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 TimestreamCursor::TimestreamCursor(const Aws::Vector< Row > rowVec,
                                    const meta::ColumnMetaVector& columnMetadataVec)

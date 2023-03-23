@@ -17,9 +17,9 @@
 #ifndef _IGNITE_ODBC_MOCK_STATEMENT
 #define _IGNITE_ODBC_MOCK_STATEMENT
 
-#include "ignite/odbc/statement.h"
+#include "timestream/odbc/statement.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Mock Statement so function level test could be done against Statement.
@@ -39,6 +39,6 @@ class MockStatement : public Statement {
   ~MockStatement();
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_MOCK_STATEMENT

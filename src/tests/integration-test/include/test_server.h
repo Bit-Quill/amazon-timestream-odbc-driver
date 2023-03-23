@@ -29,7 +29,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
-namespace ignite {
+namespace timestream {
 
 /**
  * Test Server Session.
@@ -193,6 +193,6 @@ class TestServer {
   boost::shared_ptr< boost::thread > serverThread;
 };
 
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_TEST_TEST_SERVER

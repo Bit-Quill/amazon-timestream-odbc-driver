@@ -27,7 +27,7 @@ using Aws::TimestreamWrite::Model::Dimension;
 using Aws::TimestreamWrite::Model::MeasureValue;
 using Aws::TimestreamWrite::Model::Record;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 class MeasureMetadataCreater {
@@ -50,6 +50,6 @@ class MeasureMetadataCreater {
   virtual MeasureValueAssignFunPtr GetMeasureValueAssignFunPtr() = 0;
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_MULTI_MEASURE_METADATA_CREATER

@@ -17,7 +17,7 @@
 #include <mock/mock_environment.h>
 #include <mock/mock_connection.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 MockEnvironment::MockEnvironment()
     : Environment() {
@@ -41,4 +41,4 @@ SqlResult::Type MockEnvironment::InternalCreateConnection(Connection*& connectio
   return SqlResult::AI_SUCCESS;
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

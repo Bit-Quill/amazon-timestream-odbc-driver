@@ -14,21 +14,21 @@
  *
  */
 
-#include "ignite/odbc/query/column_metadata_query.h"
+#include "timestream/odbc/query/column_metadata_query.h"
 
 #include <vector>
 
-#include "ignite/odbc/connection.h"
-#include "ignite/odbc/ignite_error.h"
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/connection.h"
+#include "timestream/odbc/ignite_error.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/log.h"
 #include "ignite/odbc/odbc_error.h"
-#include "ignite/odbc/type_traits.h"
+#include "timestream/odbc/type_traits.h"
 
 // TODO [AT-1270] fix SQLColumns implementation to have correct handling of
 // empty string/nullptr inputs https://bitquill.atlassian.net/browse/AT-1270
 
-using ignite::odbc::IgniteError;
+using timestream::odbc::IgniteError;
 
 namespace {
 struct ResultColumn {
@@ -91,7 +91,7 @@ struct ResultColumn {
   };
 };
 }  // namespace
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace query {
 ColumnMetadataQuery::ColumnMetadataQuery(
@@ -100,7 +100,7 @@ ColumnMetadataQuery::ColumnMetadataQuery(
     const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& column)
-    : Query(diag, QueryType::COLUMN_METADATA),
+    : Query(diag, ignite::odbc::query::QueryType::COLUMN_METADATA),
       connection(connection),
       catalog(catalog),
       schema(schema),
@@ -111,7 +111,7 @@ ColumnMetadataQuery::ColumnMetadataQuery(
       meta(),
       columnsMeta() {
   LOG_DEBUG_MSG("ColumnMetadataQuery is called");
-  using namespace ignite::odbc::type_traits;
+  using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
   using meta::Nullability;
@@ -461,7 +461,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     // not be a unicode string.
     char databaseName[STRING_BUFFER_SIZE]{};
     ApplicationDataBuffer buf1(
-        ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, databaseName,
+        timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, databaseName,
         buflen, nullptr);
     columnBindings[databaseType] = buf1;
 
@@ -470,7 +470,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     // not be a unicode string.
     char tableName[STRING_BUFFER_SIZE]{};
     ApplicationDataBuffer buf2(
-        ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &tableName,
+        timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &tableName,
         buflen, nullptr);
     columnBindings[TableMetadataQuery::ResultColumn::TABLE_NAME] = buf2;
 
@@ -534,19 +534,19 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
   // column name could be a unicode string
   SQLWCHAR columnName[STRING_BUFFER_SIZE];
   ApplicationDataBuffer buf1(
-      ignite::odbc::type_traits::OdbcNativeType::Type::AI_WCHAR, columnName, buflen,
+      timestream::odbc::type_traits::OdbcNativeType::Type::AI_WCHAR, columnName, buflen,
       nullptr);
   columnBindings[1] = buf1;
 
   char dataType[64];
   ApplicationDataBuffer buf2(
-      ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &dataType,
+      timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &dataType,
       buflen, nullptr);
   columnBindings[2] = buf2;
 
   char remarks[64];
   ApplicationDataBuffer buf3(
-      ignite::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &remarks,
+      timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &remarks,
       buflen, nullptr);
   columnBindings[3] = buf3;
 
@@ -574,4 +574,4 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
 }
 }  // namespace query
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

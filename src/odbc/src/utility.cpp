@@ -14,19 +14,19 @@
  *
  */
 
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/utility.h"
 
 #include <codecvt>
 #include <regex>
 #include <iomanip>
 
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/log.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace utility {
-using namespace odbc::common;
+using namespace ignite::odbc::common;
 
 size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
                                      size_t outBufferLenBytes,
@@ -415,7 +415,7 @@ long StringToLong(const std::string& s, size_t* idx, int base) {
 }
 
 bool CheckEnvVarSetToTrue(const std::string& envVar) {
-  std::string envVarVal = common::GetEnv(envVar);
+  std::string envVarVal = ignite::odbc::common::GetEnv(envVar);
   std::transform(envVarVal.begin(), envVarVal.end(), envVarVal.begin(),
                  ::toupper);
   LOG_DEBUG_MSG(envVar << " is set to \"" << envVarVal << "\"");
@@ -424,4 +424,4 @@ bool CheckEnvVarSetToTrue(const std::string& envVar) {
 
 }  // namespace utility
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

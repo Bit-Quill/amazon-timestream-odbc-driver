@@ -43,6 +43,8 @@ if (WIN32)
     # copy AWS DLL to ${CMAKE_BUILD_DIR} as they are needed for Windows building and test running
     configure_file(${AWS_DLL_DIR}/aws-cpp-sdk-core.dll ${CMAKE_BUILD_DIR}/aws-cpp-sdk-core.dll COPYONLY)
     configure_file(${AWS_DLL_DIR}/aws-cpp-sdk-timestream-query.dll ${CMAKE_BUILD_DIR}/aws-cpp-sdk-timestream-query.dll COPYONLY)
+    # Timestream-write dll is needed for data writer tool
+    configure_file(${AWS_DLL_DIR}/aws-cpp-sdk-timestream-write.dll ${CMAKE_BUILD_DIR}/aws-cpp-sdk-timestream-write.dll COPYONLY)
     configure_file(${AWS_DLL_DIR}/aws-cpp-sdk-sts.dll ${CMAKE_BUILD_DIR}/aws-cpp-sdk-sts.dll COPYONLY)
     configure_file(${AWS_DLL_DIR}/aws-c-auth.dll ${CMAKE_BUILD_DIR}/aws-c-auth.dll COPYONLY)
     configure_file(${AWS_DLL_DIR}/aws-c-cal.dll ${CMAKE_BUILD_DIR}/aws-c-cal.dll COPYONLY)

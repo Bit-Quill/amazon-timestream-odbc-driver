@@ -14,11 +14,11 @@
  *
  */
 
-#include "ignite/odbc/common_types.h"
+#include "timestream/odbc/common_types.h"
 
-#include "ignite/odbc/system/odbc_constants.h"
+#include "timestream/odbc/system/odbc_constants.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 int SqlResultToReturnCode(SqlResult::Type result) {
   switch (result) {
@@ -183,4 +183,4 @@ SqlState::Type ResponseStatusToSqlState(int32_t status) {
   }
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

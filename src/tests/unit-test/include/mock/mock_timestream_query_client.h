@@ -22,7 +22,7 @@
 #include <aws/timestream-query/TimestreamQueryClient.h>
 #include <aws/timestream-query/model/QueryRequest.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Mock TimestreamQueryClient so its behavior could be controlled by us.
@@ -62,6 +62,6 @@ class MockTimestreamQueryClient
   Aws::Client::ClientConfiguration clientConfiguration_;
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif

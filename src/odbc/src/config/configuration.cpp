@@ -13,21 +13,21 @@
  * permissions and limitations under the License.
  *
  */
-#include "ignite/odbc/config/configuration.h"
+#include "timestream/odbc/config/configuration.h"
 
 #include <iterator>
 #include <sstream>
 #include <string>
 
-#include "ignite/odbc/common/utils.h"
-#include "ignite/odbc/config/connection_string_parser.h"
-#include "ignite/odbc/authentication/auth_type.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/utils.h"
+#include "timestream/odbc/config/connection_string_parser.h"
+#include "timestream/odbc/authentication/auth_type.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/utility.h"
 
 using ignite::odbc::common::EncodeURIComponent;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace config {
 // Connection (Basic Authentication) Settings
@@ -415,7 +415,7 @@ const std::string& Configuration::GetLogPath() const {
 }
 
 void Configuration::SetLogPath(const std::string& path) {
-  if (common::IsValidDirectory(path)) {
+  if (ignite::odbc::common::IsValidDirectory(path)) {
     this->logPath.SetValue(path);
     Logger::GetLoggerInstance()->SetLogPath(path);
   }
@@ -508,32 +508,34 @@ void Configuration::Validate() const {
   LOG_DEBUG_MSG("Validate is called");
   // Validate minimum required properties.
 
-  if ((GetAuthType() == ignite::odbc::AuthType::Type::OKTA)
+  if ((GetAuthType() == timestream::odbc::AuthType::Type::OKTA)
       && (GetIdPHost().empty() || GetDSNUserName().empty()
           || GetDSNPassword().empty() || GetIdPArn().empty()
           || GetRoleArn().empty() || GetOktaAppId().empty())) {
-    throw OdbcError(
+    throw ignite::odbc::OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
         "The following is required to connect:\n"
         "AUTH is \"OKTA\" and "
         "IdpHost, UID or IdpUserName, PWD or IdpPassword, OktaAppId, RoleArn and IdpArn");
   }
 
-  if ((GetAuthType() == ignite::odbc::AuthType::Type::AAD)
+  if ((GetAuthType() == timestream::odbc::AuthType::Type::AAD)
       && (GetDSNUserName().empty() || GetDSNPassword().empty()
           || GetIdPArn().empty() || GetRoleArn().empty()
           || GetAADAppId().empty() || GetAADTenant().empty()
           || GetAADClientSecret().empty())) {
-    throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
+    throw ignite::odbc::OdbcError(
+        SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
                     "The following is required to connect:\n"
                     "AUTH is \"AAD\" and "
                     "UID or IdpUserName, PWD or IdpPassword, and "
                     "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
   }
 
-  if ((GetAuthType() == ignite::odbc::AuthType::Type::IAM)
+  if ((GetAuthType() == timestream::odbc::AuthType::Type::IAM)
       && (GetDSNUserName().empty() || GetDSNPassword().empty())) {
-    throw OdbcError(SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
+    throw ignite::odbc::OdbcError(
+        SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
                     "The following is required to connect:\n"
                     "AUTH is \"IAM\" and "
                     "UID and PWD or "
@@ -545,14 +547,16 @@ template <>
 void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
                              const SettableValue< uint16_t >& value) {
   if (value.IsSet())
-    map[key] = common::LexicalCast< std::string >(value.GetValue());
+    map[key] =
+        ignite::odbc::common::LexicalCast< std::string >(value.GetValue());
 }
 
 template <>
 void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
                              const SettableValue< int32_t >& value) {
   if (value.IsSet())
-    map[key] = common::LexicalCast< std::string >(value.GetValue());
+    map[key] =
+        ignite::odbc::common::LexicalCast< std::string >(value.GetValue());
 }
 
 template <>
@@ -584,4 +588,4 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
 }
 }  // namespace config
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

@@ -14,25 +14,26 @@
  *
  */
 
-#include "ignite/odbc.h"
+#include "timestream/odbc.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-#include "ignite/odbc/config/configuration.h"
-#include "ignite/odbc/config/connection_string_parser.h"
-#include "ignite/odbc/connection.h"
-#include "ignite/odbc/dsn_config.h"
-#include "ignite/odbc/environment.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/statement.h"
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/system/system_dsn.h"
-#include "ignite/odbc/type_traits.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/config/configuration.h"
+#include "timestream/odbc/config/connection_string_parser.h"
+#include "timestream/odbc/connection.h"
+#include "timestream/odbc/dsn_config.h"
+#include "timestream/odbc/environment.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/statement.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/system/system_dsn.h"
+#include "timestream/odbc/type_traits.h"
+#include "timestream/odbc/utility.h"
 
+using ignite::odbc::diagnostic::Diagnosable;
 /**
  * Handle window handle.
  * @param windowHandle Window handle.
@@ -40,7 +41,7 @@
  * @return @c true on success and @c false otherwise.
  */
 bool HandleParentWindow(SQLHWND windowHandle,
-                        ignite::odbc::config::Configuration& config) {
+                        timestream::odbc::config::Configuration& config) {
 #ifdef _WIN32
   if (windowHandle) {
     LOG_INFO_MSG("Parent window is passed. Creating configuration window.");
@@ -53,9 +54,9 @@ bool HandleParentWindow(SQLHWND windowHandle,
   return true;
 }
 
-using namespace ignite::odbc::utility;
+using namespace timestream::odbc::utility;
 
-namespace ignite {
+namespace timestream {
 SQLRETURN SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType, SQLPOINTER infoValue,
                      SQLSMALLINT infoValueMax, SQLSMALLINT* length) {
   using odbc::Connection;
@@ -1198,7 +1199,7 @@ SQLRETURN SQLSpecialColumns(SQLHSTMT stmt, SQLSMALLINT idType,
 }
 
 SQLRETURN SQLParamData(SQLHSTMT stmt, SQLPOINTER* value) {
-  using namespace ignite::odbc;
+  using namespace timestream::odbc;
 
   LOG_DEBUG_MSG("SQLParamData called");
 
@@ -1220,7 +1221,7 @@ SQLRETURN SQLParamData(SQLHSTMT stmt, SQLPOINTER* value) {
 
 SQLRETURN SQLPutData(SQLHSTMT stmt, SQLPOINTER data,
                      SQLLEN strLengthOrIndicator) {
-  using namespace ignite::odbc;
+  using namespace timestream::odbc;
 
   LOG_DEBUG_MSG("SQLPutData called");
 
@@ -1243,7 +1244,7 @@ SQLRETURN SQLPutData(SQLHSTMT stmt, SQLPOINTER data,
 SQLRETURN SQLDescribeParam(SQLHSTMT stmt, SQLUSMALLINT paramNum,
                            SQLSMALLINT* dataType, SQLULEN* paramSize,
                            SQLSMALLINT* decimalDigits, SQLSMALLINT* nullable) {
-  using namespace ignite::odbc;
+  using namespace timestream::odbc;
 
   LOG_DEBUG_MSG("SQLDescribeParam called");
 
@@ -1267,12 +1268,12 @@ SQLRETURN SQLDescribeParam(SQLHSTMT stmt, SQLUSMALLINT paramNum,
 SQLRETURN SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt, SQLWCHAR* state,
                    SQLINTEGER* error, SQLWCHAR* msgBuf, SQLSMALLINT msgBufLen,
                    SQLSMALLINT* msgResLen) {
-  using namespace ignite::odbc::utility;
-  using namespace ignite::odbc;
-  using namespace ignite::odbc::diagnostic;
-  using namespace ignite::odbc::type_traits;
+  using namespace timestream::odbc::utility;
+  using namespace timestream::odbc;
+  using namespace timestream::odbc::diagnostic;
+  using namespace timestream::odbc::type_traits;
 
-  using ignite::odbc::app::ApplicationDataBuffer;
+  using timestream::odbc::app::ApplicationDataBuffer;
 
   LOG_DEBUG_MSG("SQLError is called with env "
                 << env << ", conn " << conn << ", stmt " << stmt << ", state "
@@ -1366,4 +1367,4 @@ SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
-}  // namespace ignite
+}  // namespace timestream

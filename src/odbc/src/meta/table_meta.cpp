@@ -14,9 +14,9 @@
  *
  */
 
-#include "ignite/odbc/meta/table_meta.h"
+#include "timestream/odbc/meta/table_meta.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace meta {
 void TableMeta::Read(std::string& tbType) {
@@ -24,4 +24,4 @@ void TableMeta::Read(std::string& tbType) {
 }
 }  // namespace meta
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

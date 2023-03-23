@@ -14,22 +14,22 @@
  *
  */
 
-#include "ignite/odbc/statement.h"
+#include "timestream/odbc/statement.h"
 
 #include <boost/optional.hpp>
 #include <limits>
 
-#include "ignite/odbc/connection.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/connection.h"
+#include "timestream/odbc/log.h"
 #include "ignite/odbc/odbc_error.h"
-#include "ignite/odbc/query/column_metadata_query.h"
-#include "ignite/odbc/query/data_query.h"
-#include "ignite/odbc/query/table_metadata_query.h"
-#include "ignite/odbc/query/type_info_query.h"
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/query/column_metadata_query.h"
+#include "timestream/odbc/query/data_query.h"
+#include "timestream/odbc/query/table_metadata_query.h"
+#include "timestream/odbc/query/type_info_query.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/utility.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 Statement::Statement(Connection& parent)
     : connection(parent),
@@ -244,7 +244,7 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
         std::string msg = ss.str();
 
         AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, msg,
-                        ignite::odbc::LogLevel::Type::INFO_LEVEL);
+                        timestream::odbc::LogLevel::Type::INFO_LEVEL);
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }
@@ -749,7 +749,7 @@ SqlResult::Type Statement::InternalGetColumnAttribute(
   if (colIdx > meta->size() || colIdx < 1) {
     AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
                     "Column index is out of range.",
-                    ignite::odbc::LogLevel::Type::ERROR_LEVEL, 0, colIdx);
+                    timestream::odbc::LogLevel::Type::ERROR_LEVEL, 0, colIdx);
 
     return SqlResult::AI_ERROR;
   }
@@ -894,4 +894,4 @@ uint16_t Statement::SqlResultToRowResult(SqlResult::Type value) {
   }
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

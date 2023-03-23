@@ -14,7 +14,7 @@
  *
  */
 
-#include "ignite/odbc/app/application_data_buffer.h"
+#include "timestream/odbc/app/application_data_buffer.h"
 
 #include <algorithm>
 #include <codecvt>
@@ -23,11 +23,11 @@
 #include <vector>
 
 #include <sqltypes.h>
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/utility.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace app {
 using namespace type_traits;
@@ -148,7 +148,7 @@ ConversionResult::Type ApplicationDataBuffer::PutNum(T value) {
 
         uint64_t uval = static_cast< uint64_t >(value < 0 ? -value : value);
 
-        out->precision = common::bits::DigitLength(uval);
+        out->precision = ignite::odbc::common::bits::DigitLength(uval);
         out->scale = 0;
         out->sign = value < 0 ? 0 : 1;
 
@@ -482,7 +482,7 @@ ConversionResult::Type ApplicationDataBuffer::PutNull() {
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutDecimal(
-    const boost::optional< common::Decimal >& value) {
+    const boost::optional< ignite::odbc::common::Decimal >& value) {
   LOG_DEBUG_MSG("PutDecimal is called");
   if (value)
     return PutDecimal(*value);
@@ -491,7 +491,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDecimal(
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutDecimal(
-    const common::Decimal& value) {
+    const ignite::odbc::common::Decimal& value) {
   LOG_DEBUG_MSG("PutDecimal is called with type " << type);
   using namespace type_traits;
 
@@ -533,12 +533,12 @@ ConversionResult::Type ApplicationDataBuffer::PutDecimal(
       SQL_NUMERIC_STRUCT* numeric =
           reinterpret_cast< SQL_NUMERIC_STRUCT* >(GetData());
 
-      common::Decimal zeroScaled;
+      ignite::odbc::common::Decimal zeroScaled;
       value.SetScale(0, zeroScaled);
 
-      common::FixedSizeArray< int8_t > bytesBuffer;
+      ignite::odbc::common::FixedSizeArray< int8_t > bytesBuffer;
 
-      const common::BigInteger& unscaled = zeroScaled.GetUnscaledValue();
+      const ignite::odbc::common::BigInteger& unscaled = zeroScaled.GetUnscaledValue();
 
       unscaled.MagnitudeToBytes(bytesBuffer);
 
@@ -587,7 +587,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
   tm tmTime;
 
-  common::DateToCTm(value, tmTime);
+  ignite::odbc::common::DateToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday
@@ -717,7 +717,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
   tm tmTime;
   memset(&tmTime, 0, sizeof(tm));
 
-  common::TimestampToCTm(value, tmTime);
+  ignite::odbc::common::TimestampToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -852,7 +852,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
   tm tmTime;
 
   memset(&tmTime, 0, sizeof(tm));
-  common::TimeToCTm(value, tmTime);
+  ignite::odbc::common::TimeToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -1339,7 +1339,7 @@ T ApplicationDataBuffer::GetNum() const {
       const SQL_NUMERIC_STRUCT* numeric =
           reinterpret_cast< const SQL_NUMERIC_STRUCT* >(GetData());
 
-      common::Decimal dec(reinterpret_cast< const int8_t* >(numeric->val),
+      ignite::odbc::common::Decimal dec(reinterpret_cast< const int8_t* >(numeric->val),
                           SQL_MAX_NUMERIC_LEN, numeric->scale,
                           numeric->sign ? 1 : -1, false);
 
@@ -1445,7 +1445,7 @@ Date ApplicationDataBuffer::GetDate() const {
       break;
   }
 
-  Date retval = common::CTmToDate(tmTime);
+  Date retval = ignite::odbc::common::CTmToDate(tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -1556,7 +1556,7 @@ Timestamp ApplicationDataBuffer::GetTimestamp() const {
       break;
   }
 
-  return common::CTmToTimestamp(tmTime, nanos);
+  return ignite::odbc::common::CTmToTimestamp(tmTime, nanos);
 }
 
 Time ApplicationDataBuffer::GetTime() const {
@@ -1630,7 +1630,7 @@ Time ApplicationDataBuffer::GetTime() const {
       break;
   }
 
-  Time retval = common::CTmToTime(tmTime);
+  Time retval = ignite::odbc::common::CTmToTime(tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -1641,7 +1641,7 @@ Time ApplicationDataBuffer::GetTime() const {
   return retval;
 }
 
-void ApplicationDataBuffer::GetDecimal(common::Decimal& val) const {
+void ApplicationDataBuffer::GetDecimal(ignite::odbc::common::Decimal& val) const {
   LOG_DEBUG_MSG("GetDecimal is called with type " << type);
   using namespace type_traits;
 
@@ -1694,7 +1694,7 @@ void ApplicationDataBuffer::GetDecimal(common::Decimal& val) const {
       const SQL_NUMERIC_STRUCT* numeric =
           reinterpret_cast< const SQL_NUMERIC_STRUCT* >(GetData());
 
-      common::Decimal dec(reinterpret_cast< const int8_t* >(numeric->val),
+      ignite::odbc::common::Decimal dec(reinterpret_cast< const int8_t* >(numeric->val),
                           SQL_MAX_NUMERIC_LEN, numeric->scale,
                           numeric->sign ? 1 : -1, false);
 
@@ -1885,4 +1885,4 @@ SqlLen ApplicationDataBuffer::GetInputSize() const {
 }
 }  // namespace app
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

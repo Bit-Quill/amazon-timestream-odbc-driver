@@ -22,7 +22,7 @@
 
 using namespace Aws::Http;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Mock HttpClient so we could control the HttpResponse
@@ -86,6 +86,6 @@ class MockHttpClient : public HttpClient {
                            std::shared_ptr< HttpResponse >& response) const;
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_MOCK_HTTPCLIENT

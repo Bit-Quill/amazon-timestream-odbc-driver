@@ -17,12 +17,12 @@
 #include <string>
 
 #include <odbc_unit_test_suite.h>
-#include <ignite/odbc/authentication/auth_type.h>
-#include <ignite/odbc/config/connection_string_parser.h>
+#include <timestream/odbc/authentication/auth_type.h>
+#include <timestream/odbc/config/connection_string_parser.h>
 
-using namespace ignite::odbc;
-using namespace ignite::odbc::config;
-using ignite::odbc::OdbcUnitTestSuite;
+using namespace timestream::odbc;
+using namespace timestream::odbc::config;
+using timestream::odbc::OdbcUnitTestSuite;
 using namespace boost::unit_test;
 
 /**
@@ -46,7 +46,7 @@ BOOST_FIXTURE_TEST_SUITE(ConnectionStringParserTestSuite,
                          ConnectionStringParserUnitTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestParsingCredentials) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(TestParsingCredentials) {
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
 // TODO modify & enable this test as part of AT-1048
 // https://bitquill.atlassian.net/browse/AT-1048
 BOOST_AUTO_TEST_CASE(TestParsingNoCredentials, *disabled()) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(TestParsingNoCredentials, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingRequestTimeout) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(TestParsingRequestTimeout) {
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingConnectionTimeout) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(TestParsingConnectionTimeout) {
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingMaxRetryCountClient) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(TestParsingMaxRetryCountClient) {
 }
 
 BOOST_AUTO_TEST_CASE(TestParsingMaxConnections) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
 
   ConnectionStringParser parser(cfg);
 

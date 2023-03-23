@@ -14,14 +14,14 @@
  *
  */
 
-#include "ignite/odbc/config/connection_info.h"
+#include "timestream/odbc/config/connection_info.h"
 
 #include <algorithm>
 #include <cstring>
 
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/utility.h"
 
 // Temporary workaround.
 #ifndef SQL_ASYNC_NOTIFICATION
@@ -36,7 +36,7 @@
 #define SQL_ASYNC_NOTIFICATION_CAPABLE 0x00000001L
 #endif
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace config {
 
@@ -2842,4 +2842,4 @@ SqlResult::Type ConnectionInfo::SetInfo(InfoType type, std::string value) {
 
 }  // namespace config
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

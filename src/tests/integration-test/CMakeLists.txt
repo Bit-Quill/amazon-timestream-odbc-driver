@@ -32,10 +32,10 @@ find_package(Threads REQUIRED)
 include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${AWSSDK_INCLUDE_DIRS})
 include_directories(include ../../odbc/include)
 if (WIN32)
-    include_directories(../../odbc/os/win/include)
+     include_directories(../../odbc/os/ignite/common/os/win/include ../../odbc/os/timestream/win/include)
 else ()
     # TODO: Ensure MacOS is portable. https://bitquill.atlassian.net/browse/AD-525
-    include_directories(../../odbc/os/linux/include)
+    include_directories(../../odbc/os/ignite/common/os/linux/include ../../odbc/os/timestream/linux/include)
 endif()
 
 set(SOURCES 
@@ -52,20 +52,20 @@ set(SOURCES
 
 if (WIN32)
     list(APPEND SOURCES
-        ../../odbc/os/win/src/common/concurrent_os.cpp
-        ../../odbc/os/win/src/common/platform_utils.cpp
-        ../../odbc/os/win/src/system_dsn.cpp
-        ../../odbc/os/win/src/system/ui/custom_window.cpp
-        ../../odbc/os/win/src/system/ui/dsn_configuration_window.cpp
-        ../../odbc/os/win/src/system/ui/window.cpp
-        ../../odbc/os/win/src/common/dynamic_load_os.cpp
+        ../../odbc/os/ignite/common/os/win/src/common/concurrent_os.cpp
+        ../../odbc/os/ignite/common/os/win/src/common/platform_utils.cpp
+        ../../odbc/os/ignite/common/os/win/src/common/dynamic_load_os.cpp
+        ../../odbc/os/timestream/win/src/system_dsn.cpp
+        ../../odbc/os/timestream/win/src/system/ui/custom_window.cpp
+        ../../odbc/os/timestream/win/src/system/ui/dsn_configuration_window.cpp
+        ../../odbc/os/timestream/win/src/system/ui/window.cpp
     )
 else()
     # TODO: Ensure MacOS is portable. https://bitquill.atlassian.net/browse/AD-525
     list(APPEND SOURCES
-        ../../odbc/os/linux/src/common/concurrent_os.cpp
-        ../../odbc/os/linux/src/common/platform_utils.cpp
-	../../odbc/os/linux/src/common/dynamic_load_os.cpp
+        ../../odbc/os/ignite/common/os/linux/src/common/concurrent_os.cpp
+        ../../odbc/os/ignite/common/os/linux/src/common/platform_utils.cpp
+	../../odbc/os/ignite/common/os/linux/src/common/dynamic_load_os.cpp
     )
 endif()
 

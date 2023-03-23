@@ -15,9 +15,9 @@
  *
  */
 
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/authentication/aad.h"
-#include "ignite/odbc/diagnostic/diagnosable_adapter.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/authentication/aad.h"
+#include "timestream/odbc/diagnostic/diagnosable_adapter.h"
 
 #include <aws/core/client/ClientConfiguration.h>
 #include <aws/core/utils/base64/Base64.h>
@@ -27,7 +27,7 @@
 #include <aws/core/http/standard/StandardHttpResponse.h>
 #include <aws/core/utils/Array.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 // Base64URL encoding table
@@ -163,4 +163,4 @@ std::string TimestreamAADCredentialsProvider::GetSAMLAssertion(std::string& errI
 }
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

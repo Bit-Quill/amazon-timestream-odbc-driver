@@ -14,10 +14,10 @@
  *
  */
 
-#include "ignite/odbc/query/type_info_query.h"
+#include "timestream/odbc/query/type_info_query.h"
 
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/type_traits.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/type_traits.h"
 
 namespace {
 struct ResultColumn {
@@ -105,12 +105,12 @@ struct ResultColumn {
 };
 }  // namespace
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace query {
 TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
                              int16_t sqlType)
-    : Query(diag, QueryType::TYPE_INFO),
+    : ignite::odbc::query::Query(diag, ignite::odbc::query::QueryType::TYPE_INFO),
       columnsMeta(),
       executed(false),
       fetched(false),
@@ -118,7 +118,7 @@ TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
       cursor(types.end()) {
   LOG_DEBUG_MSG("TypeInfoQuery constructor is called");
 
-  using namespace ignite::odbc::type_traits;
+  using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
   using meta::Nullability;
@@ -401,4 +401,4 @@ SqlResult::Type TypeInfoQuery::NextResultSet() {
 }
 }  // namespace query
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

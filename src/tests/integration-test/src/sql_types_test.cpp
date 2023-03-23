@@ -20,12 +20,12 @@
 #include "sql_test_suite_fixture.h"
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 
-BOOST_FIXTURE_TEST_SUITE(SqlTypesTestSuite, ignite::SqlTestSuiteFixture)
+BOOST_FIXTURE_TEST_SUITE(SqlTypesTestSuite, timestream::SqlTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestGuidTrivial, *disabled()) {
   CheckSingleResult< std::string >(
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE(TestTimestampInsert, *disabled()) {
   data.second = 1;
   data.fraction = 987654321;
 
-  using ignite::impl::binary::BinaryUtils;
+  using timestream::impl::binary::BinaryUtils;
   Timestamp expected =
       common::MakeTimestampGmt(data.year, data.month, data.day, data.hour,
                                data.minute, data.second, data.fraction);
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(TestTimeInsert, *disabled()) {
   data.minute = 54;
   data.second = 1;
 
-  using ignite::impl::binary::BinaryUtils;
+  using timestream::impl::binary::BinaryUtils;
   Time expected = common::MakeTimeGmt(data.hour, data.minute, data.second);
 
   SQLLEN lenInd = sizeof(data);

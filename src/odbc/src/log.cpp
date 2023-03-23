@@ -25,18 +25,18 @@
 
 #include <cstdlib>
 
-#include "ignite/odbc/config/configuration.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/log_level.h"
+#include "timestream/odbc/config/configuration.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/log_level.h"
 
-using ignite::odbc::Logger;
+using timestream::odbc::Logger;
 using ignite::odbc::common::concurrent::CsLockGuard;
-using ignite::odbc::config::Configuration;
+using timestream::odbc::config::Configuration;
 
 // logger_ pointer will  initialized in first call to GetLoggerInstance
 std::shared_ptr< Logger > Logger::logger_;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 LogStream::LogStream(Logger* parent)
     : std::basic_ostream< char >(0), strbuf(), logger(parent) {
@@ -57,17 +57,17 @@ std::string Logger::GetDefaultLogPath() {
   std::string defPath;
 #if defined(PREDEF_PLATFORM_UNIX_OR_APPLE)
   // try the $HOME environment variable (note: $HOME is not defined in OS X)
-  defPath = common::GetEnv("HOME");
+  defPath = ignite::odbc::common::GetEnv("HOME");
   if (defPath.empty()) {
     struct passwd* pwd = getpwuid(getuid());
     if (pwd)
       defPath = pwd->pw_dir;
   }
 #elif defined(_WIN32)
-  defPath = common::GetEnv("USERPROFILE");
+  defPath = ignite::odbc::common::GetEnv("USERPROFILE");
   if (defPath.empty()) {
-    const std::string homeDirectory = common::GetEnv("HOMEDRIVE");
-    const std::string homepath = common::GetEnv("HOMEPATH");
+    const std::string homeDirectory = ignite::odbc::common::GetEnv("HOMEDRIVE");
+    const std::string homepath = ignite::odbc::common::GetEnv("HOMEPATH");
     defPath = homeDirectory + homepath;
   }
 #endif
@@ -101,7 +101,7 @@ void Logger::SetLogPath(const std::string& path) {
         "from testing.");
     return;
   }
-  if (!common::IsValidDirectory(path)) {
+  if (!ignite::odbc::common::IsValidDirectory(path)) {
     // if path is not a valid directory, ignore passed path.
     std::cerr << "Error during setting log path: \"" << path
               << "\" is not a valid directory. Log path is not updated" << '\n';
@@ -152,7 +152,7 @@ bool Logger::EnableLog() {
       std::stringstream tmpStream;
       tmpStream << logPath << ignite::odbc::common::Fs << logFileName;
       logFilePath = tmpStream.str();
-      if (common::FileExists(logFilePath)) {
+      if (ignite::odbc::common::FileExists(logFilePath)) {
         std::cout << "log file at \"" << logFilePath
                   << "\" already exists. Appending logs to the log file."
                   << '\n';
@@ -179,4 +179,4 @@ std::string& Logger::GetLogPath() {
   return logPath;
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

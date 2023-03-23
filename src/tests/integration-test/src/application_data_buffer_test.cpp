@@ -14,20 +14,21 @@
  *
  */
 
-#include <ignite/odbc/common/decimal.h>
-#include <ignite/odbc/app/application_data_buffer.h>
-#include <ignite/odbc/system/odbc_constants.h>
-#include <ignite/odbc/utility.h>
+#include <ignite/common/include/common/decimal.h>
+#include <timestream/odbc/app/application_data_buffer.h>
+#include <timestream/odbc/system/odbc_constants.h>
+#include <timestream/odbc/utility.h>
 
 #include <boost/test/unit_test.hpp>
 
 #define FLOAT_PRECISION 0.0000001f
 
 using namespace boost::unit_test;
-using namespace ignite;
 using namespace ignite::odbc;
-using namespace ignite::odbc::app;
-using namespace ignite::odbc::type_traits;
+using namespace timestream;
+using namespace timestream::odbc;
+using namespace timestream::odbc::app;
+using namespace timestream::odbc::type_traits;
 
 BOOST_AUTO_TEST_SUITE(ApplicationDataBufferTestSuite)
 

@@ -14,15 +14,15 @@
  *
  */
 
-#include <ignite/odbc/common/utils.h>
-#include <ignite/odbc/utility.h>
+#include <timestream/odbc/utils.h>
+#include <timestream/odbc/utility.h>
 
 #include <boost/test/unit_test.hpp>
 #include <chrono>
 #include <stdio.h>
 
-using namespace ignite::odbc;
-using namespace ignite::odbc::utility;
+using namespace timestream::odbc;
+using namespace timestream::odbc::utility;
 using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_SUITE(UtilityTestSuite)

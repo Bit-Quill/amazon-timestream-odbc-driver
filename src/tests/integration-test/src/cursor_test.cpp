@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-#include <ignite/odbc/impl/binary/binary_writer_impl.h>
-#include <ignite/odbc/cursor.h>
-#include <ignite/odbc/system/odbc_constants.h>
+#include <timestream/odbc/impl/binary/binary_writer_impl.h>
+#include <timestream/odbc/cursor.h>
+#include <timestream/odbc/system/odbc_constants.h>
 
 #include <boost/test/unit_test.hpp>
 
-using namespace ignite::odbc;
+using namespace timestream::odbc;
 
 const int64_t testQueryId = 42;
 
 std::shared_ptr< ResultPage > CreateTestPage(bool last, int32_t size) {
-  using namespace ignite::impl::binary;
-  using namespace ignite::impl::interop;
+  using namespace timestream::impl::binary;
+  using namespace timestream::impl::interop;
 
   InteropUnpooledMemory mem(1024);
   InteropOutputStream outStream(&mem);

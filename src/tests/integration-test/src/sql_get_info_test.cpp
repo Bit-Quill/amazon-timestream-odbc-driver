@@ -22,15 +22,15 @@
 #include <string>
 #include <vector>
 
-#include "ignite/odbc/config/connection_info.h"
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/config/connection_info.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
 #include "test_type.h"
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   CheckStrInfo(SQL_SEARCH_PATTERN_ESCAPE, "");
   CheckStrInfo(SQL_SERVER_NAME, "AWS Timestream");
   std::string expectedUserName =
-      common::GetEnv("AWS_ACCESS_KEY_ID");
+      ignite::odbc::common::GetEnv("AWS_ACCESS_KEY_ID");
   CheckStrInfo(SQL_USER_NAME, expectedUserName);
 
   CheckIntInfo(SQL_ASYNC_MODE, SQL_AM_NONE);

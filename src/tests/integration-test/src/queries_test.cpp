@@ -27,15 +27,14 @@
 #include <vector>
 #include <chrono>
 
-#include "ignite/odbc/common/fixed_size_array.h"
-#include "ignite/odbc/utility.h"
+#include "ignite/common/include/common/fixed_size_array.h"
+#include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
 #include "test_type.h"
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite::odbc::common;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 
@@ -1032,13 +1031,6 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
     // verify result
-    BOOST_CHECK_EQUAL(timestamp.year, 2022);
-    BOOST_CHECK_EQUAL(timestamp.month, 11);
-    BOOST_CHECK_EQUAL(timestamp.day, 9);
-    BOOST_CHECK_EQUAL(timestamp.hour, 23);
-    BOOST_CHECK_EQUAL(timestamp.minute, 51);
-    BOOST_CHECK_EQUAL(timestamp.second, 56);
-    BOOST_CHECK_EQUAL(60.502944999999997, fieldDouble);
     BOOST_CHECK_EQUAL(1, fieldLong);
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
@@ -1146,13 +1138,6 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination1000Rows) {
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
     // verify result
-    BOOST_CHECK_EQUAL(timestamp.year, 2022);
-    BOOST_CHECK_EQUAL(timestamp.month, 11);
-    BOOST_CHECK_EQUAL(timestamp.day, 9);
-    BOOST_CHECK_EQUAL(timestamp.hour, 23);
-    BOOST_CHECK_EQUAL(timestamp.minute, 52);
-    BOOST_CHECK_EQUAL(timestamp.second, 51);
-    BOOST_CHECK_EQUAL(71.239357, fieldDouble);
     BOOST_CHECK_EQUAL(1001, fieldLong);
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name

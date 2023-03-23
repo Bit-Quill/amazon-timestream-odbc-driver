@@ -22,20 +22,20 @@
 #include <boost/test/unit_test.hpp>
 #include <utility>
 
-#include "ignite/odbc/meta/column_meta.h"
-#include "ignite/odbc/type_traits.h"
+#include "timestream/odbc/meta/column_meta.h"
+#include "timestream/odbc/type_traits.h"
 #include "odbc_test_suite.h"
 
-using ignite::odbc::OdbcTestSuite;
-using ignite::odbc::meta::ColumnMeta;
-using ignite::odbc::meta::Nullability;
+using timestream::odbc::OdbcTestSuite;
+using timestream::odbc::meta::ColumnMeta;
+using timestream::odbc::meta::Nullability;
 using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // Only SQL_DESC_* fields are tested in this test.
   // This is because those are the fields that would be passed to
   // SQLColAttribute function.
-  using namespace ignite::odbc::type_traits;
+  using namespace timestream::odbc::type_traits;
 
   std::string database("database");
   std::string table("table");
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralSuffix) {
 }
 
 BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName) {
-  using namespace ignite::odbc::type_traits;
+  using namespace timestream::odbc::type_traits;
 
   std::string database("database");
   std::string table("table");

@@ -14,15 +14,15 @@
  *
  */
 
-#include "ignite/odbc/authentication/auth_type.h"
+#include "timestream/odbc/authentication/auth_type.h"
 
-#include <ignite/odbc/common/utils.h>
-#include <ignite/odbc/utility.h>
+#include <timestream/odbc/utils.h>
+#include <timestream/odbc/utility.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 AuthType::Type AuthType::FromString(const std::string& val, Type dflt) {
-  std::string lowerVal = utility::Trim(common::ToLower(val));
+  std::string lowerVal = utility::Trim(ignite::odbc::common::ToLower(val));
 
 
   if (lowerVal == "aws_profile")
@@ -78,4 +78,4 @@ std::wstring AuthType::ToCBString(Type val) {
   }
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

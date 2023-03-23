@@ -14,12 +14,12 @@
  *
  */
 
-#include "ignite/odbc/log_level.h"
+#include "timestream/odbc/log_level.h"
 
-#include <ignite/odbc/common/utils.h>
-#include <ignite/odbc/utility.h>
+#include <timestream/odbc/utils.h>
+#include <timestream/odbc/utility.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 LogLevel::Type LogLevel::FromString(const std::string& val, Type dflt) {
   std::string logLevel = utility::Trim(val);
@@ -87,4 +87,4 @@ std::wstring LogLevel::ToCBString(Type val) {
   }
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

@@ -14,9 +14,9 @@
  *
  */
 
-#include "ignite/odbc/time.h"
+#include "timestream/odbc/time.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 Time::Time() : seconds(0), fractionNs(0) {
   // No-op.
@@ -84,4 +84,4 @@ bool operator>=(const Time& val1, const Time& val2) {
              && val1.fractionNs >= val2.fractionNs);
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

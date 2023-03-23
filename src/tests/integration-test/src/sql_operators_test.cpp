@@ -19,7 +19,7 @@
 #include <windows.h>
 #endif
 
-#include <ignite/odbc/common/decimal.h>
+#include <timestream/odbc/common/decimal.h>
 
 #include <boost/test/unit_test.hpp>
 #include <string>
@@ -28,9 +28,9 @@
 #include "sql_test_suite_fixture.h"
 #include "test_type.h"
 
-using namespace ignite;
+using namespace timestream;
 
-BOOST_FIXTURE_TEST_SUITE(SqlOperatorTestSuite, ignite::SqlTestSuiteFixture)
+BOOST_FIXTURE_TEST_SUITE(SqlOperatorTestSuite, timestream::SqlTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestOperatorAddInt, *disabled()) {
   CheckSingleResult< SQLINTEGER >("SELECT 123 + 51", 123 + 51);

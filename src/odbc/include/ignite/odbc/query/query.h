@@ -22,9 +22,11 @@
 
 #include <map>
 
-#include "ignite/odbc/common_types.h"
-#include "ignite/odbc/diagnostic/diagnosable_adapter.h"
-#include "ignite/odbc/meta/column_meta.h"
+#include "timestream/odbc/common_types.h"
+#include "timestream/odbc/diagnostic/diagnosable_adapter.h"
+#include "timestream/odbc/meta/column_meta.h"
+
+using timestream::odbc::SqlResult;
 
 namespace ignite {
 namespace odbc {
@@ -89,7 +91,7 @@ class Query {
    * @param columnBindings Application buffers to put data to.
    * @return Operation result.
    */
-  virtual SqlResult::Type FetchNextRow(app::ColumnBindingMap& columnBindings) = 0;
+  virtual SqlResult::Type FetchNextRow(timestream::odbc::app::ColumnBindingMap& columnBindings) = 0;
 
   /**
    * Get data of the specified column in the result set.
@@ -99,7 +101,7 @@ class Query {
    * @return Operation result.
    */
   virtual SqlResult::Type GetColumn(uint16_t columnIdx,
-                                    app::ApplicationDataBuffer& buffer) = 0;
+                                    timestream::odbc::app::ApplicationDataBuffer& buffer) = 0;
 
   /**
    * Close query.
@@ -113,7 +115,7 @@ class Query {
    *
    * @return Column metadata.
    */
-  virtual const meta::ColumnMetaVector* GetMeta() = 0;
+  virtual const timestream::odbc::meta::ColumnMetaVector* GetMeta() = 0;
 
   /**
    * Check if data is available.
@@ -149,13 +151,13 @@ class Query {
   /**
    * Constructor.
    */
-  Query(diagnostic::DiagnosableAdapter& diag, QueryType::Type type)
+  Query(timestream::odbc::diagnostic::DiagnosableAdapter& diag, QueryType::Type type)
       : diag(diag), type(type) {
     // No-op.
   }
 
   /** Diagnostics collector. */
-  diagnostic::DiagnosableAdapter& diag;
+  timestream::odbc::diagnostic::DiagnosableAdapter& diag;
 
   /** Query type. */
   QueryType::Type type;

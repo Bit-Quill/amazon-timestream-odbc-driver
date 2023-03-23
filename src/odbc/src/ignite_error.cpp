@@ -13,14 +13,14 @@
  * permissions and limitations under the License.
  *
  */
-#include <ignite/odbc/common/utils.h>
-#include <ignite/odbc/ignite_error.h>
+#include <timestream/odbc/utils.h>
+#include <timestream/odbc/ignite_error.h>
 
 #include <utility>
 
 using namespace ignite::odbc::common;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 void IgniteError::ThrowIfNeeded(const IgniteError& err) {
   if (err.code != IGNITE_SUCCESS)
@@ -76,4 +76,4 @@ const char* IgniteError::what() const IGNITE_NO_THROW {
   return GetText();
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

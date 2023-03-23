@@ -19,11 +19,11 @@
 #define _IGNITE_ODBC_TEST_TEST_TYPE
 
 #include <string>
-#include <ignite/odbc/date.h>
+#include <ignite/common/include/date.h>
 
-using namespace ignite::odbc;
+using namespace timestream::odbc;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 struct TestType {
   TestType()
@@ -88,6 +88,6 @@ struct TestType {
 };
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  // _IGNITE_ODBC_TEST_TEST_TYPE

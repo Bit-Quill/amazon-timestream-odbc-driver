@@ -25,12 +25,12 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include "ignite/ignition.h"
+#include "timestream/ignition.h"
 #include "odbc_test_suite.h"
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 

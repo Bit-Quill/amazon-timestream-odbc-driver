@@ -18,23 +18,23 @@
 #include <windows.h>
 #endif
 
-#include <ignite/odbc/common/fixed_size_array.h>
-#include "ignite/odbc/log.h"
+#include <ignite/common/include/common/fixed_size_array.h>
+#include "timestream/odbc/log.h"
 #include <sql.h>
 #include <sqlext.h>
 #include <fstream>
 
 #include <boost/test/unit_test.hpp>
 
-#include <ignite/odbc/utility.h>
-#include <ignite/odbc/dsn_config.h>
-#include <ignite/odbc/config/configuration.h>
+#include <timestream/odbc/utility.h>
+#include <timestream/odbc/dsn_config.h>
+#include <timestream/odbc/config/configuration.h>
 #include "odbc_test_suite.h"
 #include "test_utils.h"
 
-using namespace ignite_test;
+using namespace timestream_test;
 using namespace boost::unit_test;
-using namespace ignite::odbc::config;
+using namespace timestream::odbc::config;
 
 /**
  * Test setup config for test results
@@ -53,7 +53,7 @@ struct OdbcConfig {
 
 BOOST_GLOBAL_FIXTURE(OdbcConfig);
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 void OdbcTestSuite::Prepare(int32_t odbcVer) {
   // Allocate an environment handle
@@ -468,7 +468,7 @@ void OdbcTestSuite::GetTestI8ArrayField(int64_t idx, int8_t* val,
 void OdbcTestSuite::CheckTestI8ArrayValue(int idx, const int8_t* val,
                                           size_t valLen) {
   BOOST_TEST_CONTEXT("Test index: " << idx) {
-    odbc::common::FixedSizeArray< int8_t > expected(
+    ignite::odbc::common::FixedSizeArray< int8_t > expected(
         static_cast< int32_t >(valLen));
     GetTestI8ArrayField(idx, expected.GetData(), expected.GetSize());
 
@@ -592,7 +592,7 @@ void OdbcTestSuite::InsertTestStrings(int recordsNum, bool merge) {
 
 int OdbcTestSuite::InsertTestBatch(int from, int to, int expectedToAffect,
                                    bool merge) {
-  using common::FixedSizeArray;
+  using ignite::odbc::common::FixedSizeArray;
 
   std::vector< SQLWCHAR > insertReq = MakeSqlBuffer(
       "INSERT "
@@ -1127,4 +1127,4 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     connectionString.append(miscOptions);
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

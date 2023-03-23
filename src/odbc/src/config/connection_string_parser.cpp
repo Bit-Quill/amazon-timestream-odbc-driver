@@ -14,18 +14,18 @@
  *
  */
 
-#include "ignite/odbc/config/connection_string_parser.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/config/connection_string_parser.h"
+#include "timestream/odbc/log.h"
 
 #include <vector>
 #include <fstream>
 
-#include "ignite/odbc/common/utils.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/utils.h"
+#include "timestream/odbc/utility.h"
 
-using namespace ignite::odbc;
+using namespace timestream::odbc;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace config {
 const std::string ConnectionStringParser::Key::dsn = "dsn";
@@ -95,9 +95,9 @@ void ConnectionStringParser::ParseConnectionString(
       const char* value_begin = connect_str.data() + attr_eq_pos + 1;
       const char* value_end = connect_str.data() + connect_str.size();
 
-      std::string key = ignite::odbc::utility::Trim(
+      std::string key = timestream::odbc::utility::Trim(
           connect_str.substr(attr_begin, attr_eq_pos - attr_begin));
-      std::string value = ignite::odbc::utility::Trim(connect_str.substr(
+      std::string value = timestream::odbc::utility::Trim(connect_str.substr(
           attr_eq_pos + 1, connect_str.size() - attr_eq_pos));
 
       if (value[0] == '{' && value[value.size() - 1] == '}')
@@ -135,7 +135,7 @@ void ConnectionStringParser::HandleAttributePair(
     const std::string& key, const std::string& value,
     diagnostic::DiagnosticRecordStorage* diag) {
   LOG_DEBUG_MSG("HandleAttributePair is called");
-  std::string lKey = common::ToLower(key);
+  std::string lKey = ignite::odbc::common::ToLower(key);
 
   if (lKey == Key::uid && lKey == Key::accessKeyId || lKey == Key::idPUserName
       || lKey == Key::pwd || lKey == Key::secretKey || lKey == Key::idPPassword
@@ -161,7 +161,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!common::AllDigits(value)) {
+    if (!ignite::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -215,7 +215,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!common::AllDigits(value)) {
+    if (!ignite::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -270,7 +270,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!common::AllDigits(value)) {
+    if (!ignite::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -325,7 +325,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!common::AllDigits(value)) {
+    if (!ignite::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -373,7 +373,7 @@ void ConnectionStringParser::HandleAttributePair(
   } else if (lKey == Key::authType) {
     AuthType::Type authType = AuthType::FromString(value);
 
-    std::string val = utility::Trim(common::ToLower(value));
+    std::string val = utility::Trim(ignite::odbc::common::ToLower(value));
     if (val != "aws_profile" && authType == AuthType::Type::AWS_PROFILE) {
       if (diag) {
         diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -545,7 +545,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!common::AllDigits(value)) {
+    if (!ignite::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -598,7 +598,7 @@ void ConnectionStringParser::HandleAttributePair(
 
 ConnectionStringParser::BoolParseResult::Type
 ConnectionStringParser::StringToBool(const std::string& value) {
-  std::string lower = common::ToLower(value);
+  std::string lower = ignite::odbc::common::ToLower(value);
 
   if (lower == "true")
     return BoolParseResult::Type::AI_TRUE;
@@ -620,4 +620,4 @@ std::string ConnectionStringParser::MakeErrorMessage(const std::string& msg,
 }
 }  // namespace config
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

@@ -28,17 +28,17 @@
 
 #include "odbc_test_suite.h"
 #include "test_utils.h"
-#include <ignite/odbc/common/platform_utils.h>
+#include <ignite/common/include/common/platform_utils.h>
 
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 #include <boost/bind.hpp>
 
 using boost::unit_test::precondition;
-using ignite::odbc::AuthType;
-using ignite::odbc::OdbcTestSuite;
+using timestream::odbc::AuthType;
+using timestream::odbc::OdbcTestSuite;
 using ignite::odbc::common::GetEnv;
-using ignite_test::GetOdbcErrorMessage;
+using timestream_test::GetOdbcErrorMessage;
 using namespace boost::unit_test;
 
 /**

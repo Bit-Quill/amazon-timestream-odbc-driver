@@ -22,7 +22,7 @@
 #include <aws/timestream-query/TimestreamQueryClient.h>
 #include <aws/timestream-query/model/QueryRequest.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Mock Timestream service for unit test
@@ -107,6 +107,6 @@ class MockTimestreamService {
   static int errorToken;
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif

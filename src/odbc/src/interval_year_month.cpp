@@ -14,9 +14,9 @@
  *
  */
 
-#include "ignite/odbc/interval_year_month.h"
+#include "timestream/odbc/interval_year_month.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 IntervalYearMonth::IntervalYearMonth(const IntervalYearMonth& another)
     : year_(another.year_), month_(another.month_) {
@@ -59,4 +59,4 @@ bool operator>=(const IntervalYearMonth& val1, const IntervalYearMonth& val2) {
   return !(val1 < val2);
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

@@ -15,12 +15,12 @@
  *
  */
 
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/authentication/saml.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/authentication/saml.h"
 
 #include <aws/sts/model/Credentials.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 bool TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion(
@@ -74,4 +74,4 @@ bool TimestreamSAMLCredentialsProvider::GetAWSCredentials(
 }
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

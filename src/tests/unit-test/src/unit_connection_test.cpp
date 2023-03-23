@@ -18,19 +18,19 @@
 #include <string>
 
 #include <odbc_unit_test_suite.h>
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/log_level.h"
-#include <ignite/odbc/common/platform_utils.h>
-#include <ignite/odbc/authentication/auth_type.h>
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/log_level.h"
+#include <ignite/common/include/common/platform_utils.h>
+#include <timestream/odbc/authentication/auth_type.h>
 #include "mock/mock_timestream_service.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/log.h"
 #include <regex>
 
-using ignite::odbc::AuthType;
-using ignite::odbc::MockConnection;
-using ignite::odbc::MockTimestreamService;
-using ignite::odbc::OdbcUnitTestSuite;
-using ignite::odbc::config::Configuration;
+using timestream::odbc::AuthType;
+using timestream::odbc::MockConnection;
+using timestream::odbc::MockTimestreamService;
+using timestream::odbc::OdbcUnitTestSuite;
+using timestream::odbc::config::Configuration;
 using namespace boost::unit_test;
 
 /**
@@ -47,7 +47,7 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
   }
 
   void getLogOptions(Configuration& config) const {
-    using ignite::odbc::LogLevel;
+    using timestream::odbc::LogLevel;
     using ignite::odbc::common::GetEnv;
 
     std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
@@ -85,13 +85,13 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
   void CheckConnectError(Configuration& cfg, const std::string& expectedMsg) {
     std::ostringstream ss;
     std::ostream* original =
-        ignite::odbc::Logger::GetLoggerInstance()->GetLogStream();
-    ignite::odbc::Logger::GetLoggerInstance()->SetLogStream(
+        timestream::odbc::Logger::GetLoggerInstance()->GetLogStream();
+    timestream::odbc::Logger::GetLoggerInstance()->SetLogStream(
         static_cast< std::ostream* >(&ss));
 
     dbc->Establish(cfg);
 
-    ignite::odbc::Logger::GetLoggerInstance()->SetLogStream(original);
+    timestream::odbc::Logger::GetLoggerInstance()->SetLogStream(original);
     std::string logMsg = ss.str();
     std::smatch matches;
     BOOST_REQUIRE_EQUAL(
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingKey) {
 }
 
 BOOST_AUTO_TEST_CASE(TestEstablishAuthTypeNotSpecified) {
-  ignite::odbc::config::Configuration cfg;
+  timestream::odbc::config::Configuration cfg;
   cfg.SetAccessKeyId("AwsTSUnitTestKeyId");
   cfg.SetSecretKey("AwsTSUnitTestSecretKey");
 
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingAAD) {
   short reslen;
   dbc->GetInfo().GetInfo(SQL_USER_NAME, userName, buflen, &reslen);
 
-  BOOST_CHECK(ignite::odbc::utility::SqlWcharToString(userName)
+  BOOST_CHECK(timestream::odbc::utility::SqlWcharToString(userName)
               == "aad_valid_user");
   BOOST_CHECK(IsSuccessful());
 }
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingOkta) {
   short reslen;
   dbc->GetInfo().GetInfo(SQL_USER_NAME, userName, buflen, &reslen);
   
-  BOOST_CHECK(ignite::odbc::utility::SqlWcharToString(userName) == "okta_valid_user");
+  BOOST_CHECK(timestream::odbc::utility::SqlWcharToString(userName) == "okta_valid_user");
   BOOST_CHECK(IsSuccessful());
 }
 

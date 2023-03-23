@@ -28,12 +28,12 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include "ignite/odbc/common/decimal.h"
-#include "ignite/ignite.h"
-#include "ignite/ignition.h"
+#include "timestream/odbc/common/decimal.h"
+#include "timestream/timestream.h"
+#include "timestream/ignition.h"
 #include "test_type.h"
 
-namespace ignite {
+namespace timestream {
 /**
  * Test setup fixture.
  */
@@ -160,8 +160,8 @@ void SqlTestSuiteFixture::CheckSingleResult< bool >(const char* request,
                                                     const bool& expected);
 
 template <>
-void SqlTestSuiteFixture::CheckSingleResult< ignite::Guid >(
-    const char* request, const ignite::Guid& expected);
+void SqlTestSuiteFixture::CheckSingleResult< timestream::Guid >(
+    const char* request, const timestream::Guid& expected);
 
 template <>
 void SqlTestSuiteFixture::CheckSingleResult< std::string >(const char* request);
@@ -198,8 +198,8 @@ void SqlTestSuiteFixture::CheckSingleResult< std::vector< int8_t > >(
     const char* request, const std::vector< int8_t >& expected);
 
 template <>
-void SqlTestSuiteFixture::CheckSingleResult< ignite::common::Decimal >(
-    const char* request, const ignite::common::Decimal& expected);
+void SqlTestSuiteFixture::CheckSingleResult< timestream::common::Decimal >(
+    const char* request, const timestream::common::Decimal& expected);
 
 template <>
 void SqlTestSuiteFixture::CheckSingleResult< Date >(const char* request,
@@ -212,6 +212,6 @@ void SqlTestSuiteFixture::CheckSingleResult< Timestamp >(
 template <>
 void SqlTestSuiteFixture::CheckSingleResult< Time >(const char* request,
                                                     const Time& expected);
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_TEST_SQL_TEST_SUIT_FIXTURE

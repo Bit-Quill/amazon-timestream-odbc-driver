@@ -14,19 +14,19 @@
  *
  */
 
-#include "ignite/odbc/column.h"
+#include "timestream/odbc/column.h"
 
-#include "ignite/odbc/impl/binary/binary_common.h"
-#include "ignite/odbc/impl/binary/binary_writer_impl.h"
+#include "timestream/odbc/impl/binary/binary_common.h"
+#include "timestream/odbc/impl/binary/binary_writer_impl.h"
 
 #include <boost/test/unit_test.hpp>
 
-#include "ignite/odbc/system/odbc_constants.h"
+#include "timestream/odbc/system/odbc_constants.h"
 
-using namespace ignite::odbc::impl::binary;
-using namespace ignite::odbc::impl::interop;
-using namespace ignite::odbc::app;
-using namespace ignite::odbc;
+using namespace timestream::odbc::impl::binary;
+using namespace timestream::odbc::impl::interop;
+using namespace timestream::odbc::app;
+using namespace timestream::odbc;
 
 BOOST_AUTO_TEST_SUITE(ColumnTestSuite)
 

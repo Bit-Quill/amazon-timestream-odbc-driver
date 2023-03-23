@@ -36,18 +36,19 @@ include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${AWSSDK_I
 
 include_directories(include)
 
-set(SOURCES src/app/application_data_buffer.cpp
+set(SOURCES src/ignite/common/src/common/big_integer.cpp
+        src/ignite/common/src/common/bits.cpp
+        src/ignite/common/src/common/concurrent.cpp
+        src/ignite/common/src/common/decimal.cpp
+        src/ignite/common/src/common/utils.cpp
+        src/ignite/common/src/date.cpp
+        src/app/application_data_buffer.cpp
         src/authentication/auth_type.cpp
         src/authentication/aad.cpp
         src/authentication/okta.cpp
         src/authentication/saml.cpp
         src/common_types.cpp
-        src/common/big_integer.cpp
-        src/common/bits.cpp
-        src/common/concurrent.cpp
-        src/common/decimal.cpp
         src/ignite_error.cpp
-        src/common/utils.cpp
         src/config/configuration.cpp
         src/config/connection_info.cpp
         src/config/connection_string_parser.cpp
@@ -70,7 +71,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/utility.cpp
         src/log.cpp
         src/log_level.cpp
-        src/date.cpp
         src/time.cpp
         src/timestamp.cpp
         src/timestream_column.cpp
@@ -80,25 +80,25 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/interval_day_second.cpp)
 
 if (WIN32)
-    set(OS_INCLUDE os/win/include)
+    set(OS_INCLUDE os/ignite/common/os/win/include os/timestream/win/include)
 
     list(APPEND SOURCES 
-            os/win/src/system_dsn.cpp
-            os/win/src/system/ui/custom_window.cpp
-            os/win/src/system/ui/dsn_configuration_window.cpp
-            os/win/src/system/ui/window.cpp
-            os/win/src/common/concurrent_os.cpp
-            os/win/src/common/platform_utils.cpp
-            os/win/src/common/dynamic_load_os.cpp
+            os/timestream/win/src/system_dsn.cpp
+            os/timestream/win/src/system/ui/custom_window.cpp
+            os/timestream/win/src/system/ui/dsn_configuration_window.cpp
+            os/timestream/win/src/system/ui/window.cpp
             module.def
+            os/ignite/common/os/win/src/common/concurrent_os.cpp
+            os/ignite/common/os/win/src/common/platform_utils.cpp
+            os/ignite/common/os/win/src/common/dynamic_load_os.cpp
     )
 else()
-    set(OS_INCLUDE os/linux/include)
+    set(OS_INCLUDE os/ignite/common/os/linux/include)
 
     list(APPEND SOURCES 
-            os/linux/src/common/concurrent_os.cpp
-            os/linux/src/common/platform_utils.cpp
-            os/linux/src/common/dynamic_load_os.cpp
+            os/ignite/common/os/linux/src/common/concurrent_os.cpp
+            os/ignite/common/os/linux/src/common/platform_utils.cpp
+            os/ignite/common/os/linux/src/common/dynamic_load_os.cpp
     )
 endif ()
 

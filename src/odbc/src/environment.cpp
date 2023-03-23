@@ -14,14 +14,14 @@
  *
  */
 
-#include "ignite/odbc/environment.h"
+#include "timestream/odbc/environment.h"
 
 #include <cstdlib>
 
-#include "ignite/odbc/connection.h"
-#include "ignite/odbc/system/odbc_constants.h"
+#include "timestream/odbc/connection.h"
+#include "timestream/odbc/system/odbc_constants.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 Environment::Environment()
     : connections(), odbcVersion(SQL_OV_ODBC3), odbcNts(SQL_TRUE) {
@@ -86,7 +86,7 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
            << ") will be used.";
 
         AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, ss.str().data(),
-                        ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                        timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }
@@ -100,7 +100,7 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
       if (nts != odbcNts) {
         AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
                         "Only null-termination of strings is supported.",
-                        ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                        timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
         return SqlResult::AI_SUCCESS_WITH_INFO;
       }
@@ -153,4 +153,4 @@ SqlResult::Type Environment::InternalGetAttribute(
   return SqlResult::AI_ERROR;
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

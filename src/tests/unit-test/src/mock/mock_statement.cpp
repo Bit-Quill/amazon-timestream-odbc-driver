@@ -16,7 +16,7 @@
 
 #include <mock/mock_statement.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 MockStatement::MockStatement(Connection& parent)
     : Statement(parent) {
@@ -27,4 +27,4 @@ MockStatement::~MockStatement() {
   // No-op.
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

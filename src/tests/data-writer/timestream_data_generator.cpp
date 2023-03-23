@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
   clientCfg.region = "us-west-2";  // default client region for us
   clientCfg.enableEndpointDiscovery = true;
 
-  ignite::odbc::TimestreamWriter writer(credentials, clientCfg);
+  timestream::odbc::TimestreamWriter writer(credentials, clientCfg);
 
   // initialize random seed
   srand(time(NULL));

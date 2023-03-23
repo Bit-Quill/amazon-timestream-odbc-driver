@@ -22,7 +22,7 @@
 
 using namespace Aws::Http::Standard;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 std::shared_ptr< HttpResponse > MockHttpClient::MakeRequest(
@@ -177,4 +177,4 @@ void MockHttpClient::HandleSAMLAssertion(
   }
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

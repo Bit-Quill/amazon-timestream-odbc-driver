@@ -24,7 +24,7 @@
 
 #include <mock/mock_timestream_service.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 std::mutex MockTimestreamService::mutex_;
@@ -168,4 +168,4 @@ Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamService::HandleQueryReq(
   }
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

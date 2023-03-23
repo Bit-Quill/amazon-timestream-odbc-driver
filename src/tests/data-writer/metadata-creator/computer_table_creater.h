@@ -22,7 +22,7 @@
 
 using Aws::TimestreamWrite::Model::MeasureValueType;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 class ComputerTableCreater : public MeasureMetadataCreater {
@@ -112,6 +112,6 @@ class ComputerTableCreater : public MeasureMetadataCreater {
   }
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_COMPUTER_TABLE_CREATER

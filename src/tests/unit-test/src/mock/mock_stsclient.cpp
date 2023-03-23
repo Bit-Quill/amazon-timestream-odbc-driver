@@ -18,7 +18,7 @@
 #include <mock/mock_timestream_service.h>
 #include<aws/sts/model/AssumeRoleWithSAMLRequest.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 Model::AssumeRoleWithSAMLOutcome MockSTSClient::AssumeRoleWithSAML(
@@ -54,4 +54,4 @@ Model::AssumeRoleWithSAMLOutcome MockSTSClient::AssumeRoleWithSAML(
 }
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

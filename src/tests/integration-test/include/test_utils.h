@@ -27,21 +27,21 @@
 #include <string>
 #include <vector>
 
-#include "ignite/odbc/common/utils.h"
+#include "timestream/odbc/utils.h"
 
 #define ODBC_THROW_ON_ERROR(ret, type, handle)     \
   if (!SQL_SUCCEEDED(ret)) {                       \
-    throw ignite_test::GetOdbcError(type, handle); \
+    throw timestream_test::GetOdbcError(type, handle); \
   }
 
 #define ODBC_FAIL_ON_ERROR(ret, type, handle)                   \
   if (!SQL_SUCCEEDED(ret)) {                                    \
-    BOOST_FAIL(ignite_test::GetOdbcErrorMessage(type, handle)); \
+    BOOST_FAIL(timestream_test::GetOdbcErrorMessage(type, handle)); \
   }
 
 #define ODBC_FAIL_ON_ERROR1(ret, type, handle, msg)           \
   if (!SQL_SUCCEEDED(ret)) {                                  \
-    BOOST_FAIL(ignite_test::GetOdbcErrorMessage(type, handle) \
+    BOOST_FAIL(timestream_test::GetOdbcErrorMessage(type, handle) \
                + ", msg = " + msg);                           \
   }
 
@@ -112,7 +112,7 @@ class OdbcClientError : public std::exception {
   std::string message;
 };
 
-namespace ignite_test {
+namespace timestream_test {
 /** Read buffer size. */
 enum { ODBC_BUFFER_SIZE = 1024 };
 
@@ -146,6 +146,6 @@ std::string GetOdbcErrorState(SQLSMALLINT handleType, SQLHANDLE handle,
  */
 std::string GetOdbcErrorMessage(SQLSMALLINT handleType, SQLHANDLE handle,
                                 int idx = 1);
-}  // namespace ignite_test
+}  // namespace timestream_test
 
 #endif  // _IGNITE_ODBC_TEST_TEST_UTILS

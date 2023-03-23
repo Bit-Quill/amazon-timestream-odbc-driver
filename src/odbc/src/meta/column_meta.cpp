@@ -14,17 +14,17 @@
  *
  */
 
-#include "ignite/odbc/meta/column_meta.h"
+#include "timestream/odbc/meta/column_meta.h"
 
-#include "ignite/odbc/common/utils.h"
-#include "ignite/odbc/common_types.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/type_traits.h"
+#include "timestream/odbc/utils.h"
+#include "timestream/odbc/common_types.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/type_traits.h"
 
 #include <aws/timestream-query/model/Type.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace meta {
 
@@ -257,7 +257,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       if (!precision || *precision == -1)
         retval = false;
       else 
-        value = common::LexicalCast< std::string >(*precision);
+        value = ignite::odbc::common::LexicalCast< std::string >(*precision);
 
       break;
     }
@@ -267,7 +267,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       if (!scale || *scale == -1)
         retval = false;
       else
-        value = common::LexicalCast< std::string >(*scale);
+        value = ignite::odbc::common::LexicalCast< std::string >(*scale);
 
       break;
     }
@@ -425,4 +425,4 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, SqlLen& value) const {
 }
 }  // namespace meta
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

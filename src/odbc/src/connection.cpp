@@ -14,27 +14,27 @@
  *
  */
 
-#include "ignite/odbc/connection.h"
+#include "timestream/odbc/connection.h"
 
-#include <ignite/odbc/ignite_error.h>
+#include <timestream/odbc/ignite_error.h>
 
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <sstream>
 
-#include "ignite/odbc/common/utils.h"
-#include "ignite/odbc/config/configuration.h"
-#include "ignite/odbc/config/connection_string_parser.h"
-#include "ignite/odbc/dsn_config.h"
-#include "ignite/odbc/environment.h"
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/statement.h"
-#include "ignite/odbc/system/system_dsn.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/utils.h"
+#include "timestream/odbc/config/configuration.h"
+#include "timestream/odbc/config/connection_string_parser.h"
+#include "timestream/odbc/dsn_config.h"
+#include "timestream/odbc/environment.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/statement.h"
+#include "timestream/odbc/system/system_dsn.h"
+#include "timestream/odbc/utility.h"
 
-#include "ignite/odbc/authentication/aad.h"
-#include "ignite/odbc/authentication/okta.h"
+#include "timestream/odbc/authentication/aad.h"
+#include "timestream/odbc/authentication/okta.h"
 
 #include <aws/timestream-query/model/QueryRequest.h>
 #include <aws/timestream-query/model/QueryResult.h>
@@ -42,9 +42,9 @@
 #include <aws/core/auth/AWSCredentialsProvider.h>
 #include <aws/core/client/DefaultRetryStrategy.h>
 
-using namespace ignite::odbc;
+using namespace timestream::odbc;
 using namespace ignite::odbc::common;
-using ignite::odbc::IgniteError;
+using timestream::odbc::IgniteError;
 
 namespace {
 #pragma pack(push, 1)
@@ -54,7 +54,7 @@ struct OdbcProtocolHeader {
 #pragma pack(pop)
 }  // namespace
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 std::mutex Connection::mutex_;
@@ -129,7 +129,7 @@ SqlResult::Type Connection::InternalGetInfo(
 
     std::string s = ss.str();
     AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, ss.str(),
-                    ignite::odbc::LogLevel::Type::INFO_LEVEL);
+                    timestream::odbc::LogLevel::Type::INFO_LEVEL);
   }
 
   return res;
@@ -158,7 +158,7 @@ SqlResult::Type Connection::InternalEstablish(const std::string& connectStr,
     if (!DisplayConnectionWindow(parentWindow, config_)) {
       AddStatusRecord(odbc::SqlState::SHY008_OPERATION_CANCELED,
                       "Connection canceled by user",
-                      ignite::odbc::LogLevel::Type::INFO_LEVEL);
+                      timestream::odbc::LogLevel::Type::INFO_LEVEL);
 
       return SqlResult::AI_ERROR;
     }
@@ -179,14 +179,14 @@ SqlResult::Type Connection::InternalEstablish(
 
   if (queryClient_) {
     AddStatusRecord(SqlState::S08002_ALREADY_CONNECTED, "Already connected.",
-                    ignite::odbc::LogLevel::Type::INFO_LEVEL);
+                    timestream::odbc::LogLevel::Type::INFO_LEVEL);
 
     return SqlResult::AI_ERROR;
   }
 
   try {
     config_.Validate();
-  } catch (const OdbcError& err) {
+  } catch (const ignite::odbc::OdbcError& err) {
     AddStatusRecord(err);
     return SqlResult::AI_ERROR;
   }
@@ -226,7 +226,7 @@ SqlResult::Type Connection::InternalRelease() {
   LOG_DEBUG_MSG("InternalRelease is called");
   if (!queryClient_) {
     AddStatusRecord(SqlState::S08003_NOT_CONNECTED, "Connection is not open.",
-                    ignite::odbc::LogLevel::Type::WARNING_LEVEL);
+                    timestream::odbc::LogLevel::Type::WARNING_LEVEL);
 
     Close();
 
@@ -397,7 +397,7 @@ SqlResult::Type Connection::InternalGetAttribute(int attr, void* buf,
     default: {
       AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
                       "Specified attribute is not supported.",
-                      ignite::odbc::LogLevel::Type::INFO_LEVEL);
+                      timestream::odbc::LogLevel::Type::INFO_LEVEL);
 
       return SqlResult::AI_ERROR;
     }
@@ -430,7 +430,7 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
       if (mode != SQL_AUTOCOMMIT_ON && mode != SQL_AUTOCOMMIT_OFF) {
         AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
                         "Specified attribute is not supported.",
-                        ignite::odbc::LogLevel::Type::INFO_LEVEL);
+                        timestream::odbc::LogLevel::Type::INFO_LEVEL);
 
         return SqlResult::AI_ERROR;
       }
@@ -609,14 +609,14 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
     std::shared_ptr< Aws::Http::HttpClient > httpClient = GetHttpClient();
     std::shared_ptr< Aws::STS::STSClient > stsClient = GetStsClient();
     samlCredProvider_ =
-        std::make_shared< ignite::odbc::TimestreamOktaCredentialsProvider >(
+        std::make_shared< timestream::odbc::TimestreamOktaCredentialsProvider >(
             cfg, httpClient, stsClient);
     samlCredProvider_->GetAWSCredentials(credentials, errInfo);
   } else if (authType == AuthType::Type::AAD) {
     std::shared_ptr< Aws::Http::HttpClient > httpClient = GetHttpClient();
     std::shared_ptr< Aws::STS::STSClient > stsClient = GetStsClient();
     samlCredProvider_ =
-        std::make_shared< ignite::odbc::TimestreamAADCredentialsProvider >(
+        std::make_shared< timestream::odbc::TimestreamAADCredentialsProvider >(
             cfg, httpClient, stsClient);
     samlCredProvider_->GetAWSCredentials(credentials, errInfo);
   } else if (authType == AuthType::Type::AWS_PROFILE) {
@@ -718,4 +718,4 @@ Connection::CreateTSQueryClient(
       credentials, clientCfg);
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

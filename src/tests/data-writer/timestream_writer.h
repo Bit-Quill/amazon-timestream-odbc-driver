@@ -23,7 +23,7 @@
 
 #include "metadata-creator/measure_metadata_creater.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 class TimestreamWriter {
@@ -50,6 +50,6 @@ class TimestreamWriter {
   std::shared_ptr< Aws::TimestreamWrite::TimestreamWriteClient > client_;
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_TIMESTREAM_WRITER

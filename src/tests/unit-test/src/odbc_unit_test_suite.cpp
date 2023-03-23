@@ -38,7 +38,7 @@ struct OdbcUnitTestConfig {
 
 BOOST_GLOBAL_FIXTURE(OdbcUnitTestConfig);
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 OdbcUnitTestSuite::OdbcUnitTestSuite() : env(new MockEnvironment()), dbc(nullptr), stmt(nullptr) {
   dbc = static_cast< MockConnection* >(env->CreateConnection());
@@ -76,4 +76,4 @@ OdbcUnitTestSuite::~OdbcUnitTestSuite() {
 }
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

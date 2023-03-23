@@ -32,7 +32,7 @@
 #define BOOST_TEST_INFO(...)
 #endif
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Test setup fixture.
@@ -58,6 +58,6 @@ struct OdbcUnitTestSuite {
   MockStatement* stmt;
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  // ODBC_TEST_ODBC_UNIT_TEST_SUITE

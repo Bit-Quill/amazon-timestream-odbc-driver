@@ -17,9 +17,9 @@
 #ifndef _IGNITE_ODBC_MOCK_ENVIRONMENT
 #define _IGNITE_ODBC_MOCK_ENVIRONMENT
 
-#include "ignite/odbc/environment.h"
+#include "timestream/odbc/environment.h"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Mock Environment so function level test could be done against Environment.
@@ -54,6 +54,6 @@ class MockEnvironment : public Environment {
   virtual SqlResult::Type InternalCreateConnection(Connection*& connection);
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  //_IGNITE_ODBC_MOCK_ENVIRONMENT

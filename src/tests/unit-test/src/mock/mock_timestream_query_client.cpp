@@ -24,7 +24,7 @@
 #include <mock/mock_timestream_query_client.h>
 #include <mock/mock_timestream_service.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 // All the working logic is done by the singleton MockTimestreamService object.
 Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamQueryClient::Query(
@@ -43,4 +43,4 @@ Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamQueryClient::Query(
 }
 
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

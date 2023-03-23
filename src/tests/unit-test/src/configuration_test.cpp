@@ -15,25 +15,25 @@
  */
 
 #ifdef _WIN32
-#include "ignite/odbc/system/ui/dsn_configuration_window.h"
+#include "timestream/odbc/system/ui/dsn_configuration_window.h"
 #endif
 
-#include <ignite/odbc/common/utils.h>
-#include <ignite/odbc/config/configuration.h>
-#include <ignite/odbc/config/connection_string_parser.h>
-#include <ignite/odbc/authentication/auth_type.h>
-#include <ignite/odbc/log.h>
-#include <ignite/odbc/log_level.h>
+#include <timestream/odbc/utils.h>
+#include <timestream/odbc/config/configuration.h>
+#include <timestream/odbc/config/connection_string_parser.h>
+#include <timestream/odbc/authentication/auth_type.h>
+#include <timestream/odbc/log.h>
+#include <timestream/odbc/log_level.h>
 #include <ignite/odbc/odbc_error.h>
 
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <set>
 
-#include "ignite/odbc/diagnostic/diagnostic_record_storage.h"
+#include "timestream/odbc/diagnostic/diagnostic_record_storage.h"
 
-using namespace ignite::odbc;
-using namespace ignite::odbc::config;
+using namespace timestream::odbc;
+using namespace timestream::odbc::config;
 using ignite::odbc::common::EncodeURIComponent;
 using namespace boost::unit_test;
 
@@ -572,7 +572,7 @@ BOOST_AUTO_TEST_CASE(TestDsnStringWhitespaces) {
 
 #ifdef _WIN32
 BOOST_AUTO_TEST_CASE(TestParseDriverVersion) {
-  using ignite::odbc::system::ui::DsnConfigurationWindow;
+  using timestream::odbc::system::ui::DsnConfigurationWindow;
 
   BOOST_CHECK_EQUAL(
       DsnConfigurationWindow::GetParsedDriverVersion("02.00.0000"), L"V.2.0.0");

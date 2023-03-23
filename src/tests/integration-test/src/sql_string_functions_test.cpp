@@ -26,25 +26,25 @@
 #include <string>
 #include <vector>
 
-#include "ignite/ignite.h"
-#include "ignite/ignition.h"
-#include "ignite/odbc/impl/binary/binary_utils.h"
+#include "timestream/timestream.h"
+#include "timestream/ignition.h"
+#include "timestream/odbc/impl/binary/binary_utils.h"
 #include "sql_test_suite_fixture.h"
 #include "test_type.h"
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite::cache;
-using namespace ignite::cache::query;
-using namespace ignite::common;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream::cache;
+using namespace timestream::cache::query;
+using namespace timestream::common;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 
-using ignite::impl::binary::BinaryUtils;
+using timestream::impl::binary::BinaryUtils;
 
 BOOST_FIXTURE_TEST_SUITE(SqlStringFunctionTestSuite,
-                         ignite::SqlTestSuiteFixture)
+                         timestream::SqlTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestStringFunctionAscii, *disabled()) {
   TestType in;

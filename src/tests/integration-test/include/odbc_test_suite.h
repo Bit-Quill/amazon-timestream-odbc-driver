@@ -26,10 +26,10 @@
 #include <string>
 #include <boost/test/unit_test.hpp>
 
-#include <ignite/odbc/common/platform_utils.h>
-#include <ignite/odbc/config/configuration.h>
-#include <ignite/odbc/config/connection_string_parser.h>
-#include <ignite/odbc/authentication/auth_type.h>
+#include <ignite/common/include/common/platform_utils.h>
+#include <timestream/odbc/config/configuration.h>
+#include <timestream/odbc/config/connection_string_parser.h>
+#include <timestream/odbc/authentication/auth_type.h>
 
 #ifndef BOOST_TEST_CONTEXT
 #define BOOST_TEST_CONTEXT(...)
@@ -41,9 +41,9 @@
 
 using boost::unit_test::test_unit_id;
 using ignite::odbc::common::GetEnv;
-using namespace ignite::odbc::config;
+using namespace timestream::odbc::config;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 /**
  * Test setup fixture.
@@ -528,6 +528,6 @@ struct if_integration {
   }
 };
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
 #endif  // ODBC_TEST_ODBC_TEST_SUITE

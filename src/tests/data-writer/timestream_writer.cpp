@@ -44,7 +44,7 @@ using Aws::TimestreamWrite::Model::WriteRecordsRequest;
 #undef GetMessage
 #endif
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 
 #if defined(_WIN32)

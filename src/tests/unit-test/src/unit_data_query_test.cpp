@@ -17,19 +17,19 @@
 #include <string>
 
 #include <odbc_unit_test_suite.h>
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/log_level.h"
-#include <ignite/odbc/common/platform_utils.h>
-#include <ignite/odbc/authentication/auth_type.h>
-#include "ignite/odbc/statement.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/log_level.h"
+#include <ignite/common/include/common/platform_utils.h>
+#include <timestream/odbc/authentication/auth_type.h>
+#include "timestream/odbc/statement.h"
+#include "timestream/odbc/utility.h"
 
-using ignite::odbc::AuthType;
-using ignite::odbc::OdbcUnitTestSuite;
-using ignite::odbc::MockConnection;
-using ignite::odbc::MockTimestreamService;
-using ignite::odbc::config::Configuration;
-using ignite::odbc::Statement;
+using timestream::odbc::AuthType;
+using timestream::odbc::OdbcUnitTestSuite;
+using timestream::odbc::MockConnection;
+using timestream::odbc::MockTimestreamService;
+using timestream::odbc::config::Configuration;
+using timestream::odbc::Statement;
 using namespace boost::unit_test;
 
 /**
@@ -47,7 +47,7 @@ struct DataQueryUnitTestSuiteFixture : OdbcUnitTestSuite {
 
   void getLogOptions(Configuration& config) const {
     using ignite::odbc::common::GetEnv;
-    using ignite::odbc::LogLevel;
+    using timestream::odbc::LogLevel;
 
     std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
     std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(TestDataQuery) {
   stmt->FetchRow();
   BOOST_CHECK(IsSuccessful());
 
-  BOOST_CHECK_EQUAL("cpu_usage", ignite::odbc::utility::SqlWcharToString(measure, measure_len, true));
+  BOOST_CHECK_EQUAL("cpu_usage", timestream::odbc::utility::SqlWcharToString(measure, measure_len, true));
   BOOST_CHECK_EQUAL(timestamp.year, 2022);
   BOOST_CHECK_EQUAL(timestamp.month, 11);
   BOOST_CHECK_EQUAL(timestamp.day, 9);

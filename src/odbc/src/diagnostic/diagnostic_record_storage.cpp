@@ -14,13 +14,13 @@
  *
  */
 
-#include "ignite/odbc/diagnostic/diagnostic_record_storage.h"
-#include "ignite/odbc/log.h"
+#include "timestream/odbc/diagnostic/diagnostic_record_storage.h"
+#include "timestream/odbc/log.h"
 
 #include <set>
 #include <string>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace diagnostic {
 DiagnosticRecordStorage::DiagnosticRecordStorage()
@@ -233,4 +233,4 @@ SqlResult::Type DiagnosticRecordStorage::GetField(
 
 }  // namespace diagnostic
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

@@ -14,25 +14,25 @@
  *
  */
 
-#include "ignite/odbc/dsn_config.h"
-#include "ignite/odbc/config/connection_string_parser.h"
-#include <ignite/odbc/authentication/auth_type.h>
-#include <ignite/odbc/log_level.h>
-#include <ignite/odbc/log.h>
-#include "ignite/odbc/system/odbc_constants.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/dsn_config.h"
+#include "timestream/odbc/config/connection_string_parser.h"
+#include <timestream/odbc/authentication/auth_type.h>
+#include <timestream/odbc/log_level.h>
+#include <timestream/odbc/log.h>
+#include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/utility.h"
 
-using namespace ignite::odbc::config;
-using namespace ignite::odbc::utility;
+using namespace timestream::odbc::config;
+using namespace timestream::odbc::utility;
 
 #define BUFFER_SIZE (1024 * 1024)
 #define CONFIG_FILE u8"ODBC.INI"
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 void GetLastSetupError(IgniteError& error) {
   DWORD code;
-  common::FixedSizeArray< SQLWCHAR > msg(BUFFER_SIZE);
+  ignite::odbc::common::FixedSizeArray< SQLWCHAR > msg(BUFFER_SIZE);
 
   SQLInstallerError(1, &code, msg.GetData(), msg.GetSize(), NULL);
 
@@ -74,7 +74,7 @@ SettableValue< std::string > ReadDsnString(const char* dsn,
 
   SettableValue< std::string > val(dflt);
 
-  common::FixedSizeArray< SQLWCHAR > buf(BUFFER_SIZE);
+  ignite::odbc::common::FixedSizeArray< SQLWCHAR > buf(BUFFER_SIZE);
 
   int ret = SQLGetPrivateProfileString(
       utility::ToWCHARVector(dsn).data(), utility::ToWCHARVector(key).data(),
@@ -108,7 +108,8 @@ SettableValue< int32_t > ReadDsnInt(const char* dsn, const std::string& key,
   SettableValue< int32_t > res(dflt);
 
   if (str.IsSet())
-    res.SetValue(common::LexicalCast< int, std::string >(str.GetValue()));
+    res.SetValue(
+        ignite::odbc::common::LexicalCast< int, std::string >(str.GetValue()));
 
   LOG_DEBUG_MSG("res is " << res.GetValue());
   return res;
@@ -307,7 +308,7 @@ bool DeleteDsnConfiguration(const std::string dsn, IgniteError& error) {
 bool RegisterDsn(const Configuration& config, const LPCSTR driver,
                  IgniteError& error) {
   LOG_DEBUG_MSG("RegisterDsn is called");
-  using namespace ignite::odbc::config;
+  using namespace timestream::odbc::config;
   using ignite::odbc::common::LexicalCast;
 
   typedef Configuration::ArgumentMap ArgMap;
@@ -350,4 +351,4 @@ bool UnregisterDsn(const std::string& dsn, IgniteError& error) {
   return true;
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

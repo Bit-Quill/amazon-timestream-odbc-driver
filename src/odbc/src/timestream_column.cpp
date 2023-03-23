@@ -17,16 +17,16 @@
 #include <chrono>
 #include <ctime>
 #include <time.h>
-#include "ignite/odbc/timestream_column.h"
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/timestream_column.h"
+#include "timestream/odbc/utility.h"
 #include <aws/timestream-query/model/ColumnInfo.h>
 #include <aws/timestream-query/model/TimeSeriesDataPoint.h>
 
 using Aws::TimestreamQuery::Model::TimeSeriesDataPoint;
 using Aws::TimestreamQuery::Model::ScalarType;
-using ignite::odbc::type_traits::OdbcNativeType;
+using timestream::odbc::type_traits::OdbcNativeType;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 #define BUFFER_SIZE 1024
 
@@ -297,4 +297,4 @@ ConversionResult::Type TimestreamColumn::ParseRowType(
   return convRes;
 }
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream

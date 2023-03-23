@@ -20,7 +20,7 @@
 
 #include <sql.h>
 #include <sqltypes.h>
-#include "ignite/odbc/utility.h"
+#include "timestream/odbc/utility.h"
 #include <sqlext.h>
 
 #include <boost/test/unit_test.hpp>
@@ -32,20 +32,19 @@
 #include "test_type.h"
 #include "test_utils.h"
 
-#include "ignite/odbc/log.h"
-#include "ignite/odbc/config/configuration.h"
-#include "ignite/odbc/config/connection_string_parser.h"
+#include "timestream/odbc/log.h"
+#include "timestream/odbc/config/configuration.h"
+#include "timestream/odbc/config/connection_string_parser.h"
 
-using namespace ignite;
-using namespace ignite::odbc::common;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 
 /**
  * Test setup fixture.
  */
-struct ApiRobustnessTestSuiteFixture : public odbc::OdbcTestSuite {
+struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
   /**
    * Constructor.
    */

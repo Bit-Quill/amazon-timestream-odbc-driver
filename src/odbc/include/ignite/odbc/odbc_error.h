@@ -18,10 +18,12 @@
 #ifndef _IGNITE_ODBC_ODBC_ERROR
 #define _IGNITE_ODBC_ODBC_ERROR
 
-#include <ignite/odbc/common/expected.h>
-#include <ignite/odbc/common_types.h>
+#include <ignite/common/include/common/expected.h>
+#include <timestream/odbc/common_types.h>
 
 #include <string>
+
+using timestream::odbc::SqlState;
 
 namespace ignite {
 namespace odbc {

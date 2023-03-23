@@ -27,19 +27,18 @@
 #include <string>
 #include <vector>
 
-#include "ignite/odbc/common/fixed_size_array.h"
-#include "ignite/odbc/type_traits.h"
-#include "ignite/odbc/utility.h"
+#include "ignite/common/include/common/fixed_size_array.h"
+#include "timestream/odbc/type_traits.h"
+#include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
 #include "test_type.h"
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite::odbc::common;
-using namespace ignite_test;
-using ignite::odbc::TestType;
-using namespace ignite::odbc::type_traits;
-using namespace ignite::odbc::utility;
+using namespace timestream;
+using namespace timestream_test;
+using timestream::odbc::TestType;
+using namespace timestream::odbc::type_traits;
+using namespace timestream::odbc::utility;
 
 using namespace boost::unit_test;
 

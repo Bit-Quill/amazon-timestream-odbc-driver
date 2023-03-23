@@ -13,8 +13,8 @@
  * permissions and limitations under the License.
  *
  */
-#include <ignite/odbc/log.h>
-#include <ignite/odbc/log_level.h>
+#include <timestream/odbc/log.h>
+#include <timestream/odbc/log_level.h>
 
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
@@ -23,13 +23,12 @@
 
 #include "odbc_test_suite.h"
 
-using namespace ignite::odbc::common;
 using namespace boost::unit_test;
 
 using boost::unit_test::precondition;
-using ignite::odbc::Logger;
-using ignite::odbc::LogLevel;
-using ignite::odbc::OdbcTestSuite;
+using timestream::odbc::Logger;
+using timestream::odbc::LogLevel;
+using timestream::odbc::OdbcTestSuite;
 
 bool SaveLoggerVars(std::shared_ptr< Logger > logger,
                     boost::optional< std::string >& origLogPath,

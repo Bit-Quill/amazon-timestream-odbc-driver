@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-#include <ignite/ignite.h>
-#include <ignite/ignition.h>
+#include <timestream/timestream.h>
+#include <timestream/ignition.h>
 #include <ignite/odbc/odbc_error.h>
-#include <ignite/odbc/sql/sql_lexer.h>
-#include <ignite/odbc/sql/sql_parser.h>
-#include <ignite/odbc/sql/sql_set_streaming_command.h>
-#include <ignite/odbc/sql/sql_utils.h>
+#include <timestream/odbc/sql/sql_lexer.h>
+#include <timestream/odbc/sql/sql_parser.h>
+#include <timestream/odbc/sql/sql_set_streaming_command.h>
+#include <timestream/odbc/sql/sql_utils.h>
 
 #include <boost/test/unit_test.hpp>
 #include <string>
 
 #include "test_utils.h"
 
-using namespace ignite;
-using namespace ignite_test;
+using namespace timestream;
+using namespace timestream_test;
 
 using namespace boost::unit_test;
 

@@ -14,15 +14,15 @@
  *
  */
 
-#include "ignite/odbc/config/connection_info.h"
+#include "timestream/odbc/config/connection_info.h"
 
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
-#include "ignite/odbc/system/odbc_constants.h"
+#include "timestream/odbc/system/odbc_constants.h"
 
-using namespace ignite::odbc;
-using namespace ignite::odbc::config;
+using namespace timestream::odbc;
+using namespace timestream::odbc::config;
 
 BOOST_AUTO_TEST_SUITE(ConnectionInfoTestSuite)
 
