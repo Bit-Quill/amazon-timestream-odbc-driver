@@ -62,7 +62,7 @@ std::string GetOdbcErrorMessage(SQLSMALLINT handleType, SQLHANDLE handle,
   SQLWCHAR sqlstate[7] = {};
   SQLINTEGER nativeCode;
 
-  SQLWCHAR message[ODBC_BUFFER_SIZE];
+  SQLWCHAR message[ODBC_BUFFER_SIZE] = {};
   SQLSMALLINT reallen = 0;
 
   // On Windows, reallen is in bytes, on Linux reallen is in chars.
@@ -72,10 +72,10 @@ std::string GetOdbcErrorMessage(SQLSMALLINT handleType, SQLHANDLE handle,
 
   std::string res = utility::SqlWcharToString(sqlstate);
 
-  if (!res.empty()) {
-    res.append(": ").append(utility::SqlWcharToString(message));
-  } else {
+  if (res.empty() || !message[0]) {
     res = "Cannot find ODBC error message";
+  } else {
+    res.append(": ").append(utility::SqlWcharToString(message));
   }
 
   return res;

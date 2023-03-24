@@ -1466,7 +1466,6 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
   BOOST_CHECK_EQUAL(SQL_NO_NULLS, nullable);                 // TYPE_NAME
 }
 
-
 BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsNull) {
   ConnectToTS();
 
@@ -2102,10 +2101,15 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsIdentifier) {
     BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
   }
 
-#ifndef __linux__
-  // Linux unixODBC DM could clear the diagnostic error message when 
-  // function return value is not SQL_ERROR
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
+#ifdef __linux__
+  // Linux unixODBC DM can clear the diagnostic error message when 
+  // function return value is not SQL_ERROR
+  std::string pattern = "Cannot find ODBC error message";
+
+  if (error.find(pattern) == std::string::npos)
+    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
+#else
   std::string pattern = "Failed to execute query \"describe \"%\".\"%\"";
 
   if (error.find(pattern) == std::string::npos)

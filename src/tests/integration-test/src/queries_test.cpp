@@ -283,6 +283,25 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 }
 
+BOOST_AUTO_TEST_CASE(TestNoDataErrorMessage) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select * from data_queries_test_db.TestScalarTypes limit 1");
+
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  ret = SQLMoreResults(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
+  BOOST_REQUIRE_EQUAL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt),
+      "Cannot find ODBC error message");
+}
+
 BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
   std::string dsnConnectionString;
   CreateDsnConnectionStringForAWS(dsnConnectionString);
