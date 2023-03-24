@@ -42,6 +42,9 @@ C/C++ usage and formatting.
 
   This ODBC driver uses AWS logs beside its own logging. Please see how AWS Logs work in their [official document](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/logging.html). The logs will be stored inthe executable directory following the default naming pattern of `aws_sdk_<date>.log`.
 
+### Test Data
+Test data are needed for tests to run successfully and they only need to be loaded once for each AWS account. Check [here](#data-population-for-testing) for instructions on loading the test data.
+
 ## Windows
 
 1. Microsoft Visual Studio (Community 2019 Verified)
@@ -382,7 +385,150 @@ Driver will report databases as schemas when the user exports environment variab
 
 
 ## Data Population for Testing
-[Data Population Guide](data-population-guide.md)
+For the tests to run successfully, test data needs to be loaded. **Note that all test data must be loaded in region `us-west-2`.**
+
+1. Follow below instructions to load sample data from Timestream.
+   
+   i. To load `SampleDB.IoTMulti`: Go to **Timestream** → **Databases**. Click `Create database` and you’ll see the below page. Select `Sample database` and enter `SampleDB` as database name. Check `IoT` and select `Multi-measure records`. Finished page should look like below.
+
+   ![](../images/sampleDB-create.png)
+   
+   Then clicking on "Create Database" will create the desired database.
+
+   ii. To load `meta_queries_test_db.IoTMulti` and `meta_queries_test_db.DevOpsMulti`: Go to **Timestream** → **Databases**. Click `Create database` and you’ll see the below page. Select `Sample database` and enter `meta_queries_test_db` as database name. Check `IoT` and `DevOps` and select `Multi-measure records`. 
+
+   ![](../images/meta_queries_test_db-create.png)
+    
+   Then clicking on "Create Database" will create the desired database.
+
+2. Run below commands to load the test data. The commands provided work on Linux and Windows Command Prompt, please modify the command to work with your desired platform. For help around using quotation marks in different platforms, please visit [AWS official guide for using quotation marks](https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-parameters-quoting-strings.html). For general help with AWS CLI commands, please visit [Amazon Timestream official CLI guide](https://docs.aws.amazon.com/timestream/latest/developerguide/Tools.CLI.html) and [AWS CLI general guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-using.html).
+
+```
+# Run following AWS CLI command to create table meta_queries_test_db.TestColumnsMetadata1 and enable magnetic storage writes
+aws timestream-write create-table --database-name meta_queries_test_db  --table-name TestColumnsMetadata1 --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": true}"
+
+# Run the following AWS CLI command to fill data for meta_queries_test_db.TestColumnsMetadata1 
+aws timestream-write write-records --database-name meta_queries_test_db  --table-name TestColumnsMetadata1 --common-attributes "{\"Dimensions\":[{\"Name\":\"device_id\",  \"Value\":\"00000001\"}, {\"Name\":\"地区\", \"Value\":\"us-west-1\"} ], \"Time\":\"1666292462000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"video_metrics\", \"MeasureValueType\":\"MULTI\", \"MeasureValues\": [{\"Name\":\"video_startup_time\",\"Value\":\"1\",\"Type\":\"BIGINT\"}, {\"Name\":\"rebuffering_ratio\",\"Value\":\"0.1\",\"Type\":\"DOUBLE\"}, {\"Name\":\"flag\",\"Value\":\"true\",\"Type\":\"BOOLEAN\"}]}]"
+
+# Run following AWS CLI command to disable magnetic storage writes for table meta_queries_test_db.TestColumnsMetadata1
+aws timestream-write update-table --database-name meta_queries_test_db  --table-name TestColumnsMetadata1 --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": false}"
+
+
+# Run following AWS CLI command to create table meta_queries_test_db.TestColumnsMetadata2 and enable magnetic storage writes
+aws timestream-write create-table --database-name meta_queries_test_db  --table-name TestColumnsMetadata2 --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": true}"
+
+# Run the following AWS CLI command to fill data for meta_queries_test_db.TestColumnsMetadata2
+aws timestream-write write-records --database-name meta_queries_test_db  --table-name TestColumnsMetadata2 --common-attributes "{\"Dimensions\":[{\"Name\":\"device_id\",  \"Value\":\"00000001\"}, {\"Name\":\"地区\", \"Value\":\"us-west-1\"} ], \"Time\":\"1666292462000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"video_metrics\", \"MeasureValueType\":\"MULTI\", \"MeasureValues\": [{\"Name\":\"video_startup_time\",\"Value\":\"1\",\"Type\":\"BIGINT\"}, {\"Name\":\"rebuffering_ratio\",\"Value\":\"0.1\",\"Type\":\"DOUBLE\"}, {\"Name\":\"flag\",\"Value\":\"true\",\"Type\":\"BOOLEAN\"}]}]"
+
+# Run following AWS CLI command to disable magnetic storage writes for table meta_queries_test_db.TestColumnsMetadata2
+aws timestream-write update-table --database-name meta_queries_test_db  --table-name TestColumnsMetadata2 --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": false}"
+
+# Run below command to create database data_queries_test_db
+aws timestream-write create-database --database-name data_queries_test_db
+
+# Run below command to create table meta_queries_test_db.testTableMeta. It is kept as empty table
+aws timestream-write create-table --database-name meta_queries_test_db --table-name  testTableMeta
+
+# Run below command to create table data_queries_test_db.TestScalarTypes and enable magnetic storage writes
+aws timestream-write create-table --database-name data_queries_test_db --table-name TestScalarTypes --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": true}"
+
+# Run the following AWS CLI commands to fill data for meta_queries_test_db.TestScalarTypes
+aws timestream-write write-records --database-name data_queries_test_db  --table-name TestScalarTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"device_id\",  \"Value\":\"00000001\"}, {\"Name\":\"device_type\", \"Value\":\"iPhone1\"}, {\"Name\":\"os_version\", \"Value\":\"1.0\"}, {\"Name\":\"region\", \"Value\":\"us-west-1\"} ], \"Time\":\"1666292462000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"video_metrics\", \"MeasureValueType\":\"MULTI\", \"MeasureValues\": [{\"Name\":\"video_startup_time\",\"Value\":\"1\",\"Type\":\"BIGINT\"}, {\"Name\":\"rebuffering_ratio\",\"Value\":\"0.1\",\"Type\":\"DOUBLE\"}, {\"Name\":\"flag\",\"Value\":\"TRUE\",\"Type\":\"BOOLEAN\"}]}]"
+
+aws timestream-write write-records --database-name data_queries_test_db  --table-name TestScalarTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"device_id\",  \"Value\":\"00000002\"}, {\"Name\":\"device_type\", \"Value\":\"iPhone2\"}, {\"Name\":\"os_version\", \"Value\":\"2.0\"}, {\"Name\":\"region\", \"Value\":\"us-west-2\"} ], \"Time\":\"1666378862000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"video_metrics\", \"MeasureValueType\":\"MULTI\", \"MeasureValues\": [{\"Name\":\"video_startup_time\",\"Value\":\"2\",\"Type\":\"BIGINT\"}, {\"Name\":\"rebuffering_ratio\",\"Value\":\"0.2\",\"Type\":\"DOUBLE\"}, {\"Name\":\"flag\",\"Value\":\"false\",\"Type\":\"BOOLEAN\"}]}]"
+
+aws timestream-write write-records --database-name data_queries_test_db  --table-name TestScalarTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"device_id\",  \"Value\":\"00000003\"}, {\"Name\":\"device_type\", \"Value\":\"iPhone3\"}, {\"Name\":\"os_version\", \"Value\":\"3.0\"}, {\"Name\":\"region\", \"Value\":\"us-west-3\"} ], \"Time\":\"1666465262000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"video_metrics\", \"MeasureValueType\":\"MULTI\", \"MeasureValues\": [{\"Name\":\"video_startup_time\",\"Value\":\"3\",\"Type\":\"BIGINT\"}, {\"Name\":\"rebuffering_ratio\",\"Value\":\"0.3\",\"Type\":\"DOUBLE\"}, {\"Name\":\"flag\",\"Value\":\"TRUE\",\"Type\":\"BOOLEAN\"}]}]"
+
+aws timestream-write write-records --database-name data_queries_test_db  --table-name TestScalarTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"device_id\",  \"Value\":\"00000004\"}, {\"Name\":\"device_type\", \"Value\":\"iPhone4\"}, {\"Name\":\"os_version\", \"Value\":\"4.0\"}, {\"Name\":\"region\", \"Value\":\"us-west-4\"} ], \"Time\":\"1666551662000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"video_metrics\", \"MeasureValueType\":\"MULTI\", \"MeasureValues\": [{\"Name\":\"video_startup_time\",\"Value\":\"4\",\"Type\":\"BIGINT\"}, {\"Name\":\"rebuffering_ratio\",\"Value\":\"0.4\",\"Type\":\"DOUBLE\"}, {\"Name\":\"flag\",\"Value\":\"False\",\"Type\":\"BOOLEAN\"}]}]"
+
+# Run following AWS CLI command to disable magnetic storage writes for table data_queries_test_db.TestScalarTypes
+aws timestream-write update-table --database-name data_queries_test_db --table-name TestScalarTypes --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": false}"
+
+# Run below command to create table data_queries_test_db.TestComplexTypes and enable magnetic storage writes
+aws timestream-write create-table --database-name data_queries_test_db --table-name  TestComplexTypes --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": true}"
+
+# Run the following AWS CLI commands to fill data for data_queries_test_db.TestComplexTypes
+aws timestream-write write-records --database-name data_queries_test_db --table-name TestComplexTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"region\", \"Value\":\"us-east-1\"}, {\"Name\":\"az\", \"Value\":\"us-east-1d\"}, {\"Name\":\"vpc\", \"Value\":\"vpc-1a2b3c4d\"}, {\"Name\":\"instance_id\", \"Value\":\"i-1234567890abcdef0\"}], \"Time\":\"1575486000000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"cpu_utilization\", \"MeasureValueType\":\"DOUBLE\",\"MeasureValue\":\"35.2\"}]"
+
+aws timestream-write write-records --database-name data_queries_test_db --table-name TestComplexTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"region\", \"Value\":\"us-east-1\"}, {\"Name\":\"az\", \"Value\":\"us-east-1d\"}, {\"Name\":\"vpc\", \"Value\":\"vpc-1a2b3c4d\"}, {\"Name\":\"instance_id\", \"Value\":\"i-1234567890abcdef0\"}], \"Time\":\"1575486060000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"cpu_utilization\", \"MeasureValueType\":\"DOUBLE\",\"MeasureValue\":\"38.2\"}]"
+
+aws timestream-write write-records --database-name data_queries_test_db --table-name TestComplexTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"region\", \"Value\":\"us-east-1\"}, {\"Name\":\"az\", \"Value\":\"us-east-1d\"}, {\"Name\":\"vpc\", \"Value\":\"vpc-1a2b3c4d\"}, {\"Name\":\"instance_id\", \"Value\":\"i-1234567890abcdef0\"}], \"Time\":\"1575486120000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"cpu_utilization\", \"MeasureValueType\":\"DOUBLE\",\"MeasureValue\":\"45.3\"}]"
+
+aws timestream-write write-records --database-name data_queries_test_db --table-name TestComplexTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"region\", \"Value\":\"us-east-1\"}, {\"Name\":\"az\", \"Value\":\"us-east-1d\"}, {\"Name\":\"vpc\", \"Value\":\"vpc-1a2b3c4d\"}, {\"Name\":\"instance_id\", \"Value\":\"i-1234567890abcdef1\"}], \"Time\":\"1575486000000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"cpu_utilization\", \"MeasureValueType\":\"DOUBLE\",\"MeasureValue\":\"54.1\"}]"
+
+aws timestream-write write-records --database-name data_queries_test_db --table-name TestComplexTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"region\", \"Value\":\"us-east-1\"}, {\"Name\":\"az\", \"Value\":\"us-east-1d\"}, {\"Name\":\"vpc\", \"Value\":\"vpc-1a2b3c4d\"}, {\"Name\":\"instance_id\", \"Value\":\"i-1234567890abcdef1\"}], \"Time\":\"1575486060000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"cpu_utilization\", \"MeasureValueType\":\"DOUBLE\",\"MeasureValue\":\"42.5\"}]"
+
+aws timestream-write write-records --database-name data_queries_test_db --table-name TestComplexTypes --common-attributes "{\"Dimensions\":[{\"Name\":\"region\", \"Value\":\"us-east-1\"}, {\"Name\":\"az\", \"Value\":\"us-east-1d\"}, {\"Name\":\"vpc\", \"Value\":\"vpc-1a2b3c4d\"}, {\"Name\":\"instance_id\", \"Value\":\"i-1234567890abcdef1\"}], \"Time\":\"1575486120000\",\"TimeUnit\":\"MILLISECONDS\"}" --records "[{\"MeasureName\":\"cpu_utilization\", \"MeasureValueType\":\"DOUBLE\",\"MeasureValue\":\"33.7\"}]"
+
+# Run following AWS CLI command to disable magnetic storage writes for table data_queries_test_db.TestComplexTypes
+aws timestream-write update-table --database-name data_queries_test_db --table-name TestComplexTypes --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": false}"
+
+# Run below command to create table data_queries_test_db.EmptyTable. It is kept as empty table
+aws timestream-write create-table --database-name data_queries_test_db --table-name EmptyTable
+```
+
+3. Load large scale data with data writer.
+
+   i. Run the driver build script, it will build the data writer executable.
+
+   ii. Run below AWS CLI command to create table data_queries_test_db.TestMultiMeasureBigTable and enable magnetic storage writes.
+   ```
+   aws timestream-write create-table --database-name data_queries_test_db --table-name  TestMultiMeasureBigTable --magnetic-store-write-properties "{\"EnableMagneticStoreWrites\": true}"
+   ```
+
+   iii. Run below `timestream-populate-data` command to insert test data for big table tests. For help with this command, see [data-population guide](data-population-guide.md). Note that this command will write data in region `us-west-2`, which is expected by our tests.
+   ```
+   timestream-populate-data -u <access_key_id> -p <secret_access_key> -d data_queries_test_db -t TestMultiMeasureBigTable -ty computer -l 20000
+   ```
+   Since this command inserts randomly generated 20000 rows of data, it is estimated to take 15 - 20 minutes for the command to run.
+
+4. (Optional) Now all test data has been loaded. Double check that all table dependencies have been created:
+   ```
+   sampleDB
+   └-- IoTMulti
+   meta_queries_test_db
+   └-- IoTMulti
+   └-- DevOpsMulti
+   └-- TestColumnsMetadata1
+   └-- TestColumnsMetadata2
+   └-- testTableMeta (empty table)
+   data_queries_test_db
+   └-- TestComplexTypes
+   └-- TestScalarTypes
+   └-- EmptyTable (empty table)
+   └-- TestMultiMeasureBigTable
+   ```
+
+### Known Issues with test data loading
+#### AWS CLI parsing errors on PowerShell
+AWS CLI commands may have parsing errors with PowerShell. The workaround is to wrap the json inputs with single quotes. 
+For example, before wrapping json data: `aws timestream-write write-records --database-name <database name>  --table-name <table name> --common-attributes "{<json data>}" --records "{<json data>}"`
+
+After wrapping json data: `aws timestream-write write-records --database-name <database name>  --table-name <table name> --common-attributes '"{<json data>}"' --records '"{<json data>}"'`
+
+#### Lacking permissions to read/change/write table
+Reading and writing data on Timestream requires corresponding permissions. For read permissions, it is suggested to add Amazon-managed policy `AmazonTimestreamReadOnlyAccess`. For write permissions, see below for example policy.
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "timestream:WriteRecords",
+                "timestream:CreateDatabase",
+                "timestream:UpdateTable",
+                "timestream:CreateTable"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+#### `timestream-populate-data` command not found on PowerShell
+`timestream-populate-data` is a data population tool provided together with Timestream ODBC driver. It is under `<your_timestream_repository>\build\odbc\bin\<Debug or Release>`, add that path to your environment variable PATH to use it without path.
 
 ## Integration Tests
 
