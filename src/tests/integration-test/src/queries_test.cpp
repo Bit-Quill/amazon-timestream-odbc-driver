@@ -35,6 +35,7 @@
 
 using namespace timestream;
 using namespace timestream_test;
+using timestream::odbc::utility::CheckEnvVarSetToTrue;
 
 using namespace boost::unit_test;
 
@@ -42,22 +43,6 @@ using namespace boost::unit_test;
  * Test setup fixture.
  */
 struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
-  /**
-   * Constructor.
-   */
-  QueriesTestSuiteFixture() {
-    BigTablePaginationTestIsEnabled =
-        GetEnv("BIG_TABLE_PAGINATION_TEST_ENABLE");
-    std::transform(BigTablePaginationTestIsEnabled.begin(),
-                   BigTablePaginationTestIsEnabled.end(),
-                   BigTablePaginationTestIsEnabled.begin(), ::toupper);
-  }
-
-  /**
-   * Destructor.
-   */
-  ~QueriesTestSuiteFixture() override = default;
-
   /**
    * Connect to the local server with the database name
    *
@@ -996,7 +981,7 @@ BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
-  if (BigTablePaginationTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("BIG_TABLE_PAGINATION_TEST_ENABLE")) {
     // This test verifies big table resultset could be paginated
     // and the returned data is correct
     std::string dsnConnectionString;
@@ -1039,7 +1024,7 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
-  if (BigTablePaginationTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("BIG_TABLE_PAGINATION_TEST_ENABLE")) {
     // This test verifies the internal asynchronous thread could be
     // terminated when testcase ends. It also verifies all rows could
     // be fetched including the last page.
@@ -1072,7 +1057,7 @@ BOOST_AUTO_TEST_CASE(TestSQLExecBigTablePagination) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination1000Rows) {
-  if (BigTablePaginationTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("BIG_TABLE_PAGINATION_TEST_ENABLE")) {
     // Fetch 1000 rows and verify the resultset is correct for 1001st record.
     // Each page contains only one row. There will be 1000 internal asynchronous
     // threads created to fetch 1000 pages.

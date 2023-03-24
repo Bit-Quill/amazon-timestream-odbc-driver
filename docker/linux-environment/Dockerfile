@@ -44,7 +44,6 @@ RUN apt-get -y update \
                           tar \
     && rm -r /var/lib/apt/lists/*
 
-ENV REPOSITORY_ROOT /timestream-odbc/
 ENV ODBC_LIB_PATH /timestream-odbc/build/odbc/lib/
 
 WORKDIR /timestream-odbc

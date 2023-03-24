@@ -72,11 +72,8 @@ C/C++ usage and formatting.
    .\<repo-folder>\src\odbc\install\install_amd64.cmd <repo-folder>\build\odbc\cmake\Debug\timestream.odbc.dll
    ```
    Ensure that backslashes are used in your command.
-9. Set environment variable REPOSITORY_ROOT to your repository root.
-10. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
-11. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
-12. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-13. Once configured, run the tests:
+9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+10. Once configured, run the tests:
     - Run integration tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-integration-tests.exe`.
     - Run unit tests: `.\build\odbc\bin\<Release or Debug>\timestream-odbc-unit-tests.exe`.
 
@@ -105,15 +102,8 @@ Driver installer detects existing driver and isn't allowing installation
 4. Set the environment variable `DYLD_LIBRARY_PATH`. On a developer's machine, set it to `<repo-folder>/build/odbc/lib:$DYLD_LIBRARY_PATH`.
 5. Run the following command to register the ODBC driver.
    `./scripts/register_driver_unix.sh`.
-6. Set environment variable REPOSITORY_ROOT to your repository root
-
-    `export REPOSITORY_ROOT=<your repository root>`
-7. Run `./src/tests/input/create_credentials_file.sh` from the respository root to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-8. Set environment variable AWS_SHARED_CREDENTIALS_FILE
-
-    `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-9. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-10. Once configured, run the tests:
+6. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+7. Once configured, run the tests:
       - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
       - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests  --catch_system_errors=false`.
 
@@ -123,8 +113,6 @@ have all been set correctly:
 - `AWS_SECRET_ACCESS_KEY` (from prerequisites)
 - `ODBCINSTINI`
 - `DYLD_LIBRARY`
-- `REPOSITORY_ROOT`
-- `AWS_SHARED_CREDENTIALS_FILE`
 
 ### Known issues
 
@@ -166,19 +154,12 @@ set(CMAKE_CXX_FLAGS "--sysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS} -DIGNITE_
 1. Run docker container with interactive mode. E.g.: `docker run --add-host host.docker.internal:host-gateway -v "<path-to-repo>:/timestream-odbc" -it timestream-dev-linux`
 2. Next steps all are from inside the container
    1. Set environment variables for testing and double-check if all dev environmnet variables are set by running `scripts/env_variables_check.sh`. More info [Environment Variables for Testing Accounts/Secrets ](#environment-variables-for-testing-accounts/secrets)
-      Note. Since the environment variables `ODBC_LIB_PATH` and `REPOSITORY_ROOT` are already set in the container, it is not recommended to change those.
+      Note. Since the environment variable `ODBC_LIB_PATH` is already set in the container, it is not recommended to change it.
    2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
    3. Run the following command to register the ODBC driver. 
    
       `./scripts/register_driver_unix.sh`
-   4. Set environment variable REPOSITORY_ROOT to your repository root
-
-        `export REPOSITORY_ROOT=<your repository root>`
-   5. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   6. Set environment variable AWS_SHARED_CREDENTIALS_FILE
-
-       `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   7. You are ready to run the tests.
+   4. You are ready to run the tests.
    E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
    E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
 
@@ -225,15 +206,8 @@ There are two ways to fix the issue.
 
       `./scripts/register_driver_unix.sh`
    4. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   5. Set environment variable `REPOSITORY_ROOT` to your repository root
-
-        `export REPOSITORY_ROOT=<your repository root>`
-   6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   7. Set environment variable `AWS_SHARED_CREDENTIALS_FILE`
-
-       `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   8. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-   9. Once configured, run the tests under `$REPOSITORY_ROOT`:
+   5. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   6. Once configured, run the tests under the repository root folder:
          - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
          - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
@@ -276,15 +250,8 @@ There are two ways to fix the issue.
 
       `sudo ./scripts/register_driver_unix.sh`
    4. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   5. Set environment variable `REPOSITORY_ROOT` to your repository root
-
-        `export REPOSITORY_ROOT=<your repository root>`
-   6. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   7. Set environment variable `AWS_SHARED_CREDENTIALS_FILE`
-
-       `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   8. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-   9. Once configured, run the tests under `$REPOSITORY_ROOT`:
+   5. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   6. Once configured, run the tests under repository root folder:
          - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
          - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
@@ -343,15 +310,8 @@ There are two ways to fix the issue.
 
       `./scripts/register_driver_unix.sh`
    6. Set environment variables for testing and double-check if all dev environmnet variables are set running `scripts/env_variables_check.sh`.
-   7. Set environment variable `REPOSITORY_ROOT` to your repository root
-
-        `export REPOSITORY_ROOT=<your repository root>`
-   8. Run `./src/tests/input/create_credentials_file.sh` to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-   9. Set environment variable `AWS_SHARED_CREDENTIALS_FILE`
-
-       `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
-   10. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
-   11. Once configured, run the tests under `$REPOSITORY_ROOT`:
+   7. Now you're ready to begin [configuration for integration and unit testing](#integration-tests).
+   8. Once configured, run the tests under repository root folder:
          - Run integration tests: `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`.
          - Run unit tests: `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`.
 
@@ -425,6 +385,22 @@ Driver will report databases as schemas when the user exports environment variab
 [Data Population Guide](data-population-guide.md)
 
 ## Integration Tests
+
+### IAM Profile Tests
+1. The IAM profile tests are disabled by default because they require valid IAM profiles. They can be enabled by exporting environment variable `ENABLE_PROFILE_TEST` to `true`. Follow below instructions for setting up valid IAM profiles and required environmenr variables. 
+#### Windows
+1. `cd` to repository root. Set environment variable REPOSITORY_ROOT to your repository root.
+2. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
+3. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
+
+#### Linux or macOS
+1. `cd` to repository root. Set environment variable REPOSITORY_ROOT to your repository root
+
+    `export REPOSITORY_ROOT=<your repository root>`
+2. Run `./src/tests/input/create_credentials_file.sh` from the respository root to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
+3. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
+
+    `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
 
 ### Azure AD Authentication Tests
 

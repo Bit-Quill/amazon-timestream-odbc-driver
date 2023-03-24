@@ -23,7 +23,6 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
-  AWS_SHARED_CREDENTIALS_FILE: "${{github.workspace}}/src/tests/input/credentials"
   BIG_TABLE_PAGINATION_TEST_ENABLE: "TRUE"
 
   # # AAD Test environment variables. Uncomment out to use GitHub secrets to enable AAD integration tests
@@ -209,15 +208,6 @@ jobs:
     - name: Install dependencies Windows
       run: vcpkg integrate install; vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows --recurse
 
-    - name: create-credentials-files
-      run: |
-        echo "[test-profile]" > ${{github.workspace}}\src\tests\input\credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{github.workspace}}\src\tests\input\credentials
-        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{github.workspace}}\src\tests\input\credentials
-
-        echo "[incomplete-profile]" >> ${{github.workspace}}\src\tests\input\credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{github.workspace}}\src\tests\input\credentials
-
     - name: configure-and-build-driver
       run: |
         .\build_win_release64.ps1
@@ -345,15 +335,6 @@ jobs:
   
     - name: Install dependencies Windows
       run: vcpkg integrate install; vcpkg install boost-test:x64-windows boost-asio:x64-windows boost-chrono:x64-windows boost-interprocess:x64-windows boost-regex:x64-windows boost-system:x64-windows boost-thread:x64-windows --recurse
-
-    - name: create-credentials-files
-      run: |
-        echo "[test-profile]" > ${{github.workspace}}\src\tests\input\credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{github.workspace}}\src\tests\input\credentials
-        echo "aws_secret_access_key = ${{env.AWS_SECRET_ACCESS_KEY}}" >> ${{github.workspace}}\src\tests\input\credentials
-
-        echo "[incomplete-profile]" >> ${{github.workspace}}\src\tests\input\credentials
-        echo "aws_access_key_id = ${{env.AWS_ACCESS_KEY_ID}}" >> ${{github.workspace}}\src\tests\input\credentials
 
     - name: configure-and-build-driver
       run: |

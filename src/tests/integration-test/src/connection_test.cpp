@@ -28,6 +28,7 @@
 
 #include "odbc_test_suite.h"
 #include "test_utils.h"
+#include "timestream/odbc/utility.h"
 #include <ignite/common/include/common/platform_utils.h>
 
 #include <boost/thread.hpp>
@@ -37,7 +38,7 @@
 using boost::unit_test::precondition;
 using timestream::odbc::AuthType;
 using timestream::odbc::OdbcTestSuite;
-using ignite::odbc::common::GetEnv;
+using timestream::odbc::utility::CheckEnvVarSetToTrue;
 using timestream_test::GetOdbcErrorMessage;
 using namespace boost::unit_test;
 
@@ -47,30 +48,12 @@ using namespace boost::unit_test;
 struct ConnectionTestSuiteFixture : OdbcTestSuite {
   using OdbcTestSuite::OdbcTestSuite;
 
-  ConnectionTestSuiteFixture() {
-    AADTestIsEnabled = GetEnv("ENABLE_AAD_TEST");
-    std::transform(AADTestIsEnabled.begin(), AADTestIsEnabled.end(),
-                   AADTestIsEnabled.begin(), ::toupper);
-
-    OktaTestIsEnabled = GetEnv("ENABLE_OKTA_TEST");
-    std::transform(OktaTestIsEnabled.begin(), OktaTestIsEnabled.end(),
-                   OktaTestIsEnabled.begin(), ::toupper);
-  }
-
-  /**
-   * Destructor.
-   */
-  ~ConnectionTestSuiteFixture() override = default;
-
   void connect() {
     std::string connectionString;
     CreateDsnConnectionStringForAWS(connectionString);
     Connect(connectionString);
     Disconnect();
   }
-
-  std::string AADTestIsEnabled;
-  std::string OktaTestIsEnabled;
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
@@ -278,7 +261,7 @@ BOOST_AUTO_TEST_CASE(TestDriverConnectionUsingDupCredStringWithWrongPwd) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAAD) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given all correct configuration parameters
     // which are from environment variables by default.
     std::string connectionString;
@@ -296,7 +279,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAAD) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionGenericConnectionStringUsingAAD) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given all correct configuration parameters
     // which are from environment variables by default. uid/pwd are used in the
     // connection string
@@ -345,7 +328,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionGenericConnectionStringUsingAAD) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidUser) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid username (uid)
     std::string connectionString;
 
@@ -365,7 +348,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidUser) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyUser) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty username (uid)
     std::string connectionString;
 
@@ -387,7 +370,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyUser) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidPassword) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid password (pwd)
     std::string connectionString;
 
@@ -407,7 +390,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidPassword) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyPassword) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty password (pwd)
     std::string connectionString;
 
@@ -429,7 +412,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyPassword) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidAPPId) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid application id
     std::string connectionString;
 
@@ -450,7 +433,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidAPPId) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyAppId) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty application id
     std::string connectionString;
 
@@ -472,7 +455,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyAppId) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidTenant) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid tenant id
     std::string connectionString;
 
@@ -493,7 +476,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidTenant) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyTenant) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty tenant id
     std::string connectionString;
 
@@ -516,7 +499,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyTenant) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidClientSecret) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid client secret
     std::string connectionString;
 
@@ -537,7 +520,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidClientSecret) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyClientSecret) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty client secret
     std::string connectionString;
 
@@ -560,7 +543,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyClientSecret) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidRoleArn) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid role arn
     std::string connectionString;
 
@@ -584,7 +567,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidRoleArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyRoleArn) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty role arn
     std::string connectionString;
 
@@ -607,7 +590,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyRoleArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidIdpArn) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given invalid idp arn
     std::string connectionString;
 
@@ -631,7 +614,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidIdpArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyIdpArn) {
-  if (AADTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_AAD_TEST")) {
     // Test AAD authentication given empty idp arn
     std::string connectionString;
 
@@ -654,7 +637,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyIdpArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOkta) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication given all correct configuration parameters
     // which are from environment variables by default.
     std::string connectionString;
@@ -670,7 +653,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOkta) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaUidPwd) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication given all correct configuration parameters
     // which are from environment variables by default. 
     // Using Uid/Pwd instead of idPUsername/idPPassword
@@ -701,7 +684,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaUidPwd) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidHost) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with invalid host
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, "invalid_host");
@@ -726,7 +709,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidHost) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyHost) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with empty host
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, "");
@@ -745,7 +728,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyHost) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidUser) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with invalid user
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, "invalid_user");
@@ -762,7 +745,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidUser) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyUser) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with empty user
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, "");
@@ -781,7 +764,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyUser) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidPasswd) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with invalid password
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr,
@@ -799,7 +782,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidPasswd) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyPassword) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with empty password
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, "");
@@ -818,7 +801,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyPassword) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidAPPId) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with invalid application id
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
@@ -836,7 +819,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidAPPId) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyAppId) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with empty application id
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
@@ -856,7 +839,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyAppId) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidRoleArn) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with invalid role arn
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
@@ -876,7 +859,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidRoleArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyRoleArn) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with empty role arn
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
@@ -896,7 +879,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyRoleArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidIdpArn) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with invalid IDP arn
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
@@ -916,7 +899,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidIdpArn) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaEmptyIdpArn) {
-  if (OktaTestIsEnabled == "TRUE") {
+  if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication with empty IDP arn
     std::string connectionString;
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
@@ -1022,13 +1005,39 @@ BOOST_AUTO_TEST_CASE(TestDriverConnectionWithAccessKeyIdPWD) {
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectionUsingProfile) {
-  const std::string profile = "test-profile";
-  std::string connectionString;
-  CreateDsnConnectionStringForAWS(connectionString, AuthType::Type::AWS_PROFILE,
-                                  profile);
-  Connect(connectionString);
-  Disconnect();
+  if (CheckEnvVarSetToTrue("ENABLE_PROFILE_TEST")) {
+    const std::string profile = "test-profile";
+    std::string connectionString;
+    CreateDsnConnectionStringForAWS(connectionString,
+                                    AuthType::Type::AWS_PROFILE, profile);
+    Connect(connectionString);
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid IAM test profile" << std::endl;
+  }
 }
+
+BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
+  if (CheckEnvVarSetToTrue("ENABLE_PROFILE_TEST")) {
+    const std::string profile = "incomplete-profile";
+
+    std::string connectionString;
+    CreateDsnConnectionStringForAWS(connectionString,
+                                    AuthType::Type::AWS_PROFILE, profile);
+
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\nINVALID_ENDPOINT: "
+        "Failed to discover endpoint");
+
+    Disconnect();
+  } else {
+    std::cout << boost::unit_test::framework::current_test_case().p_name
+              << "  is skipped due to no valid IAM test profile" << std::endl;
+  }
+}
+
 
 BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
   const std::string profile = "nonexist-profile";
@@ -1053,22 +1062,6 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile, *disabled()) {
 
   Disconnect();
 }
-
-BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
-  const std::string profile = "incomplete-profile";
-
-  std::string connectionString;
-  CreateDsnConnectionStringForAWS(connectionString, AuthType::Type::AWS_PROFILE,
-                                  profile);
-
-  ExpectConnectionReject(
-      connectionString, "08001",
-      "Failed to establish connection to Timestream.\nINVALID_ENDPOINT: "
-      "Failed to discover endpoint");
-
-  Disconnect();
-}
-
 
 // This test hangs on Winodws self-hosted runn, so disable it now
 // Use AT-1323 to investigate the root cause
