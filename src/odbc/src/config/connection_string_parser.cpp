@@ -137,7 +137,7 @@ void ConnectionStringParser::HandleAttributePair(
   LOG_DEBUG_MSG("HandleAttributePair is called");
   std::string lKey = ignite::odbc::common::ToLower(key);
 
-  if (lKey == Key::uid && lKey == Key::accessKeyId || lKey == Key::idPUserName
+  if (lKey == Key::uid || lKey == Key::accessKeyId || lKey == Key::idPUserName
       || lKey == Key::pwd || lKey == Key::secretKey || lKey == Key::idPPassword
       || lKey == Key::aadClientSecret) {
     LOG_DEBUG_MSG(lKey << " is found");

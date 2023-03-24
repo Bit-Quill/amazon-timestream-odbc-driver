@@ -2788,8 +2788,10 @@ SqlResult::Type ConnectionInfo::GetInfo(InfoType type, void* buf, short buflen,
         itStr->second, reinterpret_cast< SQLWCHAR* >(buf), buflen, isTruncated,
         true));
 
-    LOG_INFO_MSG(type << " (" << ConnectionInfo::InfoTypeToString(type)
-                      << ") string result: \"" << itStr->second << "\"");
+    if (type != SQL_USER_NAME) {
+      LOG_INFO_MSG(type << " (" << ConnectionInfo::InfoTypeToString(type)
+                        << ") string result: \"" << itStr->second << "\"");
+    }
 
     if (reslen)
       *reslen = strlen;

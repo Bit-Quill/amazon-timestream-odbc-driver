@@ -31,8 +31,7 @@ using namespace ignite::odbc::common;
 size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
                                      size_t outBufferLenBytes,
                                      bool& isTruncated) {
-  LOG_DEBUG_MSG("CopyUtf8StringToSqlCharString is called with inBuffer is "
-                << inBuffer << ", outBufferLenBytes is " << outBufferLenBytes);
+  LOG_DEBUG_MSG("CopyUtf8StringToSqlCharString is called with outBufferLenBytes is " << outBufferLenBytes);
   if (!inBuffer || (outBuffer && outBufferLenBytes == 0))
     return 0;
 
@@ -68,8 +67,7 @@ template < typename OutCharT >
 size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
                                    size_t outBufferLenBytes,
                                    bool& isTruncated) {
-  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with inBuffer is "
-                << inBuffer << ", outBufferLenBytes is " << outBufferLenBytes);
+  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with outBufferLenBytes is " << outBufferLenBytes);
   if (!inBuffer || (outBuffer && outBufferLenBytes == 0))
     return 0;
 
@@ -158,8 +156,7 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
 size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
                                       size_t outBufferLenBytes,
                                       bool& isTruncated) {
-  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with inBuffer is "
-                << inBuffer << ", outBufferLenBytes is " << outBufferLenBytes);
+  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with outBufferLenBytes is " << outBufferLenBytes);
   if (!inBuffer)
     return 0;
 
@@ -185,8 +182,7 @@ size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
 // High-level entry point to handle buffer size in either bytes or characters
 size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
                           bool& isTruncated, bool isLenInBytes) {
-  LOG_DEBUG_MSG("CopyStringToBuffer is called with str is "
-                << str << ", buflen is " << buflen << ", isLenInBytes is "
+  LOG_DEBUG_MSG("CopyStringToBuffer is called with buflen is " << buflen << ", isLenInBytes is "
                 << isLenInBytes);
   size_t wCharSize = sizeof(SQLWCHAR);
 
@@ -288,7 +284,6 @@ std::vector< SQLWCHAR > ToWCHARVector(const std::string& value) {
 }
 
 std::vector< SQLWCHAR > ToWCHARVector(const char* value) {
-  LOG_DEBUG_MSG("ToWCHARVector is called with value is " << value);
   size_t wCharSize = sizeof(SQLWCHAR);
   size_t inBufferLenBytes = std::strlen(value);
   // Handle worst-case scenario where there is a one-to-one mapping.
