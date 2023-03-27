@@ -13,15 +13,21 @@ on:
   #  branches:
   #    - main
   #    - develop
+  workflow_dispatch:
+    inputs:
+      sign:
+        description: Build and Sign Artifacts (for release only)
+        type: boolean
+        required: false
+        default: false
 
 env:
+  SIGNING_ENABLED: ${{ github.event.inputs.sign }}
   CI_OUTPUT_PATH: "ci-output"
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin/Release"
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
-  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   VCPKG_ROOT: "c:/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
@@ -93,6 +99,18 @@ jobs:
     #     name: cppcheck-results
     #     path: cppcheck-results.log 
 
+    - name: "Configure AWS credentials"
+      if: always()
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-skip-session-tagging: true
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 3600
+
     - name: Install Chocolatey
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -110,7 +128,7 @@ jobs:
 #     with:
 #       repository: todogroup/repolinter
 #       path: repolinter
-#
+# 
 #   - name: Run repolinter
 #     run: |
 #       if (Test-Path ../repolinter) { Remove-Item ../repolinter -Recurse -Force -Confirm:$false }
@@ -217,6 +235,7 @@ jobs:
     #   if: success()
     #   run: |
     #     .\scripts\build_installer.ps1 Release Win32 .\src $Env:ODBC_BUILD_PATH $Env:AWS_SDK_INSTALL_PATH
+    #
     # - name: prepare-output
     #   if: success()
     #   run: |
@@ -239,6 +258,21 @@ jobs:
     #   with:
     #     name: windows-test-results
     #     path: $CI_OUTPUT_PATH/test
+
+    - name: Read VERSION file
+      if: ${{ env.SIGNING_ENABLED == 'true' }}
+      id: getversion
+      run: echo "::set-output name=version::$(cat src/ODBC_DRIVER_VERSION.txt)"
+
+    - name: Sign executables
+      if: ${{ env.SIGNING_ENABLED == 'true' }}
+      id: sign-executables-32
+      shell: pwsh
+      run: |
+        . ./scripts/sign_installer.ps1
+        choco install jq -y
+        Invoke-SignInstaller build\odbc\cmake\Release x86 ${{ steps.getversion.outputs.version }} ${{ secrets.AWS_UNSIGNED_BUCKET }} ${{ secrets.AWS_SIGNED_BUCKET }} ${{ secrets.AWS_KEY }}
+
   build-windows64:
     runs-on: windows-2022
 
@@ -246,6 +280,18 @@ jobs:
     if: needs.check.outputs.status == 'continue'
     steps:
     - uses: actions/checkout@v2
+
+    - name: "Configure AWS credentials"
+      if: always()
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-skip-session-tagging: true
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 3600
 
     - name: Install Chocolatey
       run: |
@@ -407,6 +453,7 @@ jobs:
   #     if: success()
   #     run: |
   #       .\scripts\build_installer.ps1 Release x64 .\src $Env:ODBC_BUILD_PATH $Env:AWS_SDK_INSTALL_PATH
+  #
   #   - name: prepare-output
   #     if: success()
   #     run: |
@@ -423,6 +470,21 @@ jobs:
   #     with:
   #       name: windows64-installer
   #       path: ci-output/installer
+
+    - name: Read VERSION file
+      if: ${{ env.SIGNING_ENABLED == 'true' }}
+      id: getversion
+      run: echo "::set-output name=version::$(cat src/ODBC_DRIVER_VERSION.txt)"
+
+    - name: Sign executables
+      if: ${{ env.SIGNING_ENABLED == 'true' }}
+      id: sign-executables-64
+      shell: pwsh
+      run: |
+        . ./scripts/sign_installer.ps1
+        choco install jq -y
+        Invoke-SignInstaller build\odbc\cmake\Release x64 ${{ steps.getversion.outputs.version }} ${{ secrets.AWS_UNSIGNED_BUCKET }} ${{ secrets.AWS_SIGNED_BUCKET }} ${{ secrets.AWS_KEY }}
+
   build-windows64_coverage:
     runs-on: windows-2022
 
@@ -517,7 +579,6 @@ jobs:
       with:
         name: code-coverage
         path: coverage.cobertura.xml
-
 
   comment_PR_coverage:
     runs-on: ubuntu-latest
