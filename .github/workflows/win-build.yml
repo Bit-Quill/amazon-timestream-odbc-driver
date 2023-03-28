@@ -358,15 +358,6 @@ jobs:
       run: |
         .\build_win_release64.ps1
 
-    - name: Upload ODBC driver build at push to main
-      # [AT-1066] uncomment out when GitHub Action is enabled at push to PR
-      # https://bitquill.atlassian.net/browse/AT-1066
-      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: timestream-odbc-driver
-        path: build/odbc/cmake/Release
-
     - name: Build PowerBI connector
       run: |
         cd src/PowerBIConnector
@@ -486,6 +477,15 @@ jobs:
         . ./scripts/sign_installer.ps1
         choco install jq -y
         Invoke-SignInstaller build\odbc\cmake\Release x64 ${{ steps.getversion.outputs.version }} ${{ secrets.AWS_UNSIGNED_BUCKET }} ${{ secrets.AWS_SIGNED_BUCKET }} ${{ secrets.AWS_KEY }}
+
+    - name: Upload ODBC driver build at push to main
+      # [AT-1066] uncomment out when GitHub Action is enabled at push to PR
+      # https://bitquill.atlassian.net/browse/AT-1066
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: timestream-odbc-driver
+        path: build/odbc/cmake/Release
 
   build-windows64_coverage:
     runs-on: windows-2022
