@@ -146,17 +146,17 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // test SQL_DESC_DISPLAY_SIZE
   found = columnMeta.GetAttribute(SQL_DESC_DISPLAY_SIZE, intVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(intVal, SQL_NO_TOTAL);
+  BOOST_CHECK_EQUAL(intVal, TIMESTREAM_SQL_MAX_LENGTH);
 
   // test SQL_DESC_LENGTH
   found = columnMeta.GetAttribute(SQL_DESC_LENGTH, intVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(intVal, SQL_NO_TOTAL);
+  BOOST_CHECK_EQUAL(intVal, TIMESTREAM_SQL_MAX_LENGTH);
 
   // test SQL_DESC_OCTET_LENGTH
   found = columnMeta.GetAttribute(SQL_DESC_OCTET_LENGTH, intVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(intVal, SQL_NO_TOTAL);
+  BOOST_CHECK_EQUAL(intVal, TIMESTREAM_SQL_MAX_LENGTH);
 
   // test SQL_DESC_NULLABLE
   found = columnMeta.GetAttribute(SQL_DESC_NULLABLE, intVal);
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttribute) {
   // test SQL_DESC_PRECISION
   found = columnMeta.GetAttribute(SQL_DESC_PRECISION, intVal);
   BOOST_CHECK(found);
-  BOOST_CHECK_EQUAL(intVal, SQL_NO_TOTAL);
+  BOOST_CHECK_EQUAL(intVal, TIMESTREAM_SQL_MAX_LENGTH);
 
   // test SQL_DESC_SCALE
   found = columnMeta.GetAttribute(SQL_DESC_SCALE, intVal);

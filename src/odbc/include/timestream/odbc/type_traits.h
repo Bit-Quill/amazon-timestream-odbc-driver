@@ -18,6 +18,10 @@
 #ifndef _TIMESTREAM_ODBC_TYPE_TRAITS
 #define _TIMESTREAM_ODBC_TYPE_TRAITS
 
+#ifndef TIMESTREAM_SQL_MAX_LENGTH
+#define TIMESTREAM_SQL_MAX_LENGTH 65532
+#endif // TIMESTREAM_SQL_MAX_LENGTH
+
 #include <stdint.h>
 
 #include <string>

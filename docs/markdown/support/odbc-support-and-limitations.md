@@ -8,6 +8,7 @@
 - [SQLPrepare, SQLExecute and SQLExecDirect](#sqlprepare-sqlexecute-and-sqlexecdirect)
 - [SQLTables](#sqltables)
 - [Database Reporting Differences Between Timestream JDBC Driver and ODBC Driver](#database-reporting-differences-between-timestream-jdbc-driver-and-odbc-driver)
+- [Timestream Data Types](#timestream-data-types)
 
 ## ODBC API Support
 Note that the following table describes the planned functionality for the GA release. As the driver is still in development, not all functions marked as "yes" under the "Support" column below are supported at this time.
@@ -159,27 +160,29 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_SQL92_RELATIONAL_JOIN_OPERATORS | SQL_SRJO_CROSS_JOIN, SQL_SRJO_INNER_JOIN, SQL_SRJO_LEFT_OUTER_JOIN, SQL_SRJO_RIGHT_OUTER_JOIN | no |
 | SQL_STATIC_CURSOR_ATTRIBUTES1 | SQL_CA1_NEXT, SQL_CA1_ABSOLUTE, SQL_CA1_RELATIVE, SQL_CA1_BOOKMARK, SQL_CA1_LOCK_NO_CHANGE, SQL_CA1_POS_POSITION, SQL_CA1_POS_REFRESH | no |
 | SQL_STATIC_CURSOR_ATTRIBUTES2 | SQL_CA2_READ_ONLY_CONCURRENCY, SQL_CA2_CRC_EXACT | no |
-| SQL_CONVERT_BIGINT | SQL_CVT_DOUBLE | no |
+| SQL_CONVERT_BIGINT | SQL_CVT_BIGINT, SQL_CVT_DOUBLE | no |
 | SQL_CONVERT_BINARY | 0 (not supported) | no |
 | SQL_CONVERT_BIT | 0 (not supported) | no |
 | SQL_CONVERT_CHAR | 0 (not supported) | no |
-| SQL_CONVERT_VARCHAR | 0 (not supported) | no |
+| SQL_CONVERT_VARCHAR | SQL_CVT_VARCHAR | no |
 | SQL_CONVERT_LONGVARCHAR | 0 (not supported) | no |
 | SQL_CONVERT_WCHAR | 0 (not supported) | no |
 | SQL_CONVERT_WVARCHAR | 0 (not supported) | no |
 | SQL_CONVERT_WLONGVARCHAR | 0 (not supported) | no |
 | SQL_CONVERT_GUID | 0 (not supported) | no |
-| SQL_CONVERT_DATE | 0 (not supported) | no |
+| SQL_CONVERT_DATE | SQL_CVT_DATE | no |
 | SQL_CONVERT_DECIMAL | 0 (not supported) | no |
-| SQL_CONVERT_DOUBLE | 0 (not supported) | no |
+| SQL_CONVERT_DOUBLE | SQL_CVT_INTEGER, SQL_CVT_BIGINT, SQL_CVT_DOUBLE | no |
 | SQL_CONVERT_FLOAT | 0 (not supported) | no |
 | SQL_CONVERT_REAL | 0 (not supported) | no |
-| SQL_CONVERT_INTEGER | 0 (not supported) | no |
+| SQL_CONVERT_INTEGER | SQL_CVT_INTEGER, SQL_CVT_BIGINT, SQL_CVT_DOUBLE | no |
 | SQL_CONVERT_NUMERIC | 0 (not supported) | no |
 | SQL_CONVERT_SMALLINT | 0 (not supported) | no |
 | SQL_CONVERT_TINYINT | 0 (not supported) | no |
-| SQL_CONVERT_TIME | 0 (not supported) | no |
-| SQL_CONVERT_TIMESTAMP | 0 (not supported) | no |
+| SQL_CONVERT_TIME | SQL_CVT_TIME | no |
+| SQL_CONVERT_TIMESTAMP | SQL_CVT_TIMESTAMP | no |
+| SQL_CONVERT_INTERVAL_DAY_TIME | 0 (not supported) | no |
+| SQL_CONVERT_INTERVAL_YEAR_MONTH | 0 (not supported) | no |
 | SQL_CONVERT_VARBINARY | 0 (not supported) | no |
 | SQL_CONVERT_LONGVARBINARY | 0 (not supported) | no |
 | SQL_PARAM_ARRAY_ROW_COUNTS | SQL_PARC_BATCH | no |
@@ -332,7 +335,7 @@ When `SQL_ATTR_METADATA_ID` is set to `true`, it means database name and table n
 ## Timestream Data Types
 Timestream SQL support scalar types int, bigint, boolean, double, varchar, date, time, timestamp, interval_year_month and interval_day_second. Their values could be fetched based using their corresponding SQL data types or as a string/unicode string.
 
-Besides complex data types are also supported. Complex types include Array, Row and Timeseries. These complex types data could only be fetched as a string using our driver. 
+Besides regular data types, complex data types are also supported. Complex types include Array, Row and Timeseries. These complex types data could only be fetched as a string using our driver. 
 
 ### Timeseries format
 Wrapped in "[]". Each item is wrapped in "{}" and separated from each other by ",". 

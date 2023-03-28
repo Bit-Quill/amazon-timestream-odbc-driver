@@ -308,6 +308,8 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK_EQUAL(nullability, expNullability);
   }
 
+// TODO [AT-1339] Change this test to enable SQLDescribeCol tests
+// https://bitquill.atlassian.net/browse/AT-1339
   /**
    * @param func Function to call before tests. May be PrepareQuery or
    * ExecQuery.
@@ -338,16 +340,16 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK_EQUAL(columnCount, 9);
 
     CheckColumnMetaWithSQLDescribeCol(stmt, 1, "meta_queries_test_001__id",
-                                      SQL_VARCHAR, SQL_NO_TOTAL, -1,
+                                      SQL_VARCHAR, TIMESTREAM_SQL_MAX_LENGTH, -1,
                                       SQL_NO_NULLS);
     CheckColumnMetaWithSQLDescribeCol(stmt, 2, "fieldDecimal128", SQL_DECIMAL,
-                                      SQL_NO_TOTAL, -1, SQL_NULLABLE);
+                                      TIMESTREAM_SQL_MAX_LENGTH, -1, SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 3, "fieldDouble", SQL_DOUBLE, 15,
                                       -1, SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 4, "fieldString", SQL_VARCHAR,
-                                      SQL_NO_TOTAL, -1, SQL_NULLABLE);
+                                      TIMESTREAM_SQL_MAX_LENGTH, -1, SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 5, "fieldObjectId", SQL_VARCHAR,
-                                      SQL_NO_TOTAL, -1, SQL_NULLABLE);
+                                      TIMESTREAM_SQL_MAX_LENGTH, -1, SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 6, "fieldBoolean", SQL_BIT, 1, -1,
                                       SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 7, "fieldDate", SQL_TYPE_TIMESTAMP,
@@ -355,7 +357,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     CheckColumnMetaWithSQLDescribeCol(stmt, 8, "fieldInt", SQL_INTEGER, 10, 0,
                                       SQL_NULLABLE);
     CheckColumnMetaWithSQLDescribeCol(stmt, 9, "fieldBinary", SQL_VARBINARY,
-                                      SQL_NO_TOTAL, -1, SQL_NULLABLE);
+                                      0, -1, SQL_NULLABLE);
   }
 
   /**
@@ -435,8 +437,9 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
 
     BOOST_CHECK_EQUAL(columnCount, 5);
 
-    CheckColumnMetaWithSQLColAttribute(stmt, 1, "device_id",
-                                       SQL_VARCHAR, SQL_NO_TOTAL, -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLColAttribute(stmt, 1, "device_id", SQL_VARCHAR,
+                                       TIMESTREAM_SQL_MAX_LENGTH, -1,
+                                       SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLColAttribute(stmt, 2, "time", SQL_TYPE_TIMESTAMP, 19,
                                        -1, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLColAttribute(stmt, 3, "flag", SQL_BIT, 1, -1,
@@ -785,8 +788,9 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescDisplaySize) {
 
   const SQLCHAR req1[] = "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_VARCHAR should have display size SQL_NO_TOTAL
-  callSQLColAttribute(stmt, req1, SQL_DESC_DISPLAY_SIZE, SQL_NO_TOTAL);
+  // SQL_VARCHAR should have display size TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttribute(stmt, req1, SQL_DESC_DISPLAY_SIZE,
+                      TIMESTREAM_SQL_MAX_LENGTH);
 
   const SQLCHAR req2[] = "select cast(video_startup_time as int) from meta_queries_test_db.TestColumnsMetadata1";
 
@@ -838,8 +842,8 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLength) {
   const SQLCHAR req1[] =
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_VARCHAR should have length SQL_NO_TOTAL
-  callSQLColAttribute(stmt, req1, SQL_DESC_LENGTH, SQL_NO_TOTAL);
+  // SQL_VARCHAR should have length TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttribute(stmt, req1, SQL_DESC_LENGTH, TIMESTREAM_SQL_MAX_LENGTH);
 
   const SQLCHAR req2[] =
       "select cast(video_startup_time as int) from "
@@ -992,8 +996,8 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
   const SQLCHAR req1[] =
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_VARCHAR should have octet length SQL_NO_TOTAL
-  callSQLColAttribute(stmt, req1, SQL_DESC_OCTET_LENGTH, SQL_NO_TOTAL);
+  // SQL_VARCHAR should have octet length TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttribute(stmt, req1, SQL_DESC_OCTET_LENGTH, TIMESTREAM_SQL_MAX_LENGTH);
 
   const SQLCHAR req2[] =
       "select flag from meta_queries_test_db.TestColumnsMetadata1";
@@ -1027,8 +1031,8 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision) {
   const SQLCHAR req1[] =
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_VARCHAR should have precision SQL_NO_TOTAL
-  callSQLColAttribute(stmt, req1, SQL_DESC_PRECISION, SQL_NO_TOTAL);
+  // SQL_VARCHAR should have precision TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttribute(stmt, req1, SQL_DESC_PRECISION, TIMESTREAM_SQL_MAX_LENGTH);
 
   const SQLCHAR req2[] =
       "select flag from meta_queries_test_db.TestColumnsMetadata1";
@@ -3017,9 +3021,9 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   BOOST_CHECK_EQUAL(false, WasNull(type_name_len));
   BOOST_CHECK_EQUAL("VARCHAR", type_name);  // TYPE_NAME
   BOOST_CHECK_EQUAL(false, WasNull(column_size_len));
-  BOOST_CHECK_EQUAL(SQL_NO_TOTAL, column_size);  // COLUMN_SIZE
+  BOOST_CHECK_EQUAL(TIMESTREAM_SQL_MAX_LENGTH, column_size);  // COLUMN_SIZE
   BOOST_CHECK_EQUAL(false, WasNull(buffer_length_len));
-  BOOST_CHECK_EQUAL(SQL_NO_TOTAL, buffer_length);  // BUFFER_LENGTH
+  BOOST_CHECK_EQUAL(TIMESTREAM_SQL_MAX_LENGTH, buffer_length);  // BUFFER_LENGTH
   BOOST_CHECK_EQUAL(true, WasNull(decimal_digits_len));
   BOOST_CHECK_EQUAL(0, decimal_digits);  // DECIMAL_DIGITS
   BOOST_CHECK_EQUAL(false, WasNull(num_prec_radix_len));
@@ -3035,7 +3039,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   BOOST_CHECK_EQUAL(true, WasNull(sql_datetime_sub_len));
   BOOST_CHECK_EQUAL(0, sql_datetime_sub);  // SQL_DATETIME_SUB
   BOOST_CHECK_EQUAL(false, WasNull(char_octet_length_len));
-  BOOST_CHECK_EQUAL(SQL_NO_TOTAL, char_octet_length);  // CHAR_OCTET_LENGTH
+  BOOST_CHECK_EQUAL(TIMESTREAM_SQL_MAX_LENGTH, char_octet_length);  // CHAR_OCTET_LENGTH
   BOOST_CHECK_EQUAL(false, WasNull(ordinal_position_len));
   BOOST_CHECK_EQUAL(1, ordinal_position);  // ORDINAL_POSITION
   BOOST_CHECK_EQUAL(false, WasNull(is_nullable_len));

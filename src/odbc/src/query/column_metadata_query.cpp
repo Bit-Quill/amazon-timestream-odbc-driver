@@ -26,9 +26,6 @@
 #include "ignite/odbc/odbc_error.h"
 #include "timestream/odbc/type_traits.h"
 
-// TODO [AT-1270] fix SQLColumns implementation to have correct handling of
-// empty string/nullptr inputs https://bitquill.atlassian.net/browse/AT-1270
-
 using timestream::odbc::IgniteError;
 
 namespace {

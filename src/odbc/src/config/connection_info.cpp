@@ -1207,7 +1207,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_BIGINT
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type BIGINT
-  intParams[SQL_CONVERT_BIGINT] = SQL_CVT_DOUBLE;
+  intParams[SQL_CONVERT_BIGINT] = SQL_CVT_BIGINT | SQL_CVT_DOUBLE;
 #endif  // SQL_CONVERT_BIGINT
 
 #ifdef SQL_CONVERT_BINARY
@@ -1231,7 +1231,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_VARCHAR
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type VARCHAR
-  intParams[SQL_CONVERT_VARCHAR] = 0; // i.e., unsupported
+  intParams[SQL_CONVERT_VARCHAR] = SQL_CVT_VARCHAR;
 #endif  // SQL_CONVERT_VARCHAR
 
 #ifdef SQL_CONVERT_LONGVARCHAR
@@ -1267,7 +1267,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_DATE
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type DATE
-  intParams[SQL_CONVERT_DATE] = 0; // i.e., unsupported
+  intParams[SQL_CONVERT_DATE] = SQL_CVT_DATE;
 #endif  // SQL_CONVERT_DATE
 
 #ifdef SQL_CONVERT_DECIMAL
@@ -1279,7 +1279,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_DOUBLE
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type DOUBLE
-  intParams[SQL_CONVERT_DOUBLE] = 0; // i.e., unsupported
+  intParams[SQL_CONVERT_DOUBLE] =  SQL_CVT_INTEGER | SQL_CVT_BIGINT | SQL_CVT_DOUBLE;
 #endif  // SQL_CONVERT_DOUBLE
 
 #ifdef SQL_CONVERT_FLOAT
@@ -1297,7 +1297,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_INTEGER
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type INTEGER
-  intParams[SQL_CONVERT_INTEGER] = 0; // i.e., unsupported
+  intParams[SQL_CONVERT_INTEGER] =  SQL_CVT_INTEGER | SQL_CVT_BIGINT | SQL_CVT_DOUBLE;
 #endif  // SQL_CONVERT_INTEGER
 
 #ifdef SQL_CONVERT_NUMERIC
@@ -1321,14 +1321,26 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
 #ifdef SQL_CONVERT_TIME
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type TIME
-  intParams[SQL_CONVERT_TIME] = 0; // i.e., unsupported
+  intParams[SQL_CONVERT_TIME] = SQL_CVT_TIME;
 #endif  // SQL_CONVERT_TIME
 
 #ifdef SQL_CONVERT_TIMESTAMP
   // Bitmask indicates the conversions supported by the CONVERT scalar function
   // for target type TIMESTAMP
-  intParams[SQL_CONVERT_TIMESTAMP] = 0; // i.e., unsupported
+  intParams[SQL_CONVERT_TIMESTAMP] = SQL_CVT_TIMESTAMP;
 #endif  // SQL_CONVERT_TIMESTAMP
+
+#ifdef SQL_CONVERT_INTERVAL_DAY_TIME
+  // Bitmask indicates the conversions supported by the CONVERT scalar function
+  // for target type INTERVAL_DAY_TIME
+  intParams[SQL_CONVERT_INTERVAL_DAY_TIME] = 0;  // i.e., unsupported
+#endif  // SQL_CONVERT_INTERVAL_DAY_TIME
+
+#ifdef SQL_CONVERT_INTERVAL_YEAR_MONTH
+  // Bitmask indicates the conversions supported by the CONVERT scalar function
+  // for target type INTERVAL_YEAR_MONTH
+  intParams[SQL_CONVERT_INTERVAL_YEAR_MONTH] = 0;  // i.e., unsupported
+#endif  // SQL_CONVERT_INTERVAL_YEAR_MONTH
 
 #ifdef SQL_CONVERT_VARBINARY
   // Bitmask indicates the conversions supported by the CONVERT scalar function

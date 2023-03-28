@@ -176,12 +176,12 @@ bool IsSqlTypeSupported(boost::optional< int16_t > type) {
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIMESTAMP:
     case SQL_TYPE_TIME:
-    case SQL_BINARY:
-    case SQL_VARBINARY:
-    case SQL_LONGVARBINARY:
     case SQL_TYPE_NULL:
       return true;
 
+    case SQL_BINARY:
+    case SQL_VARBINARY:
+    case SQL_LONGVARBINARY:
     case SQL_GUID:
     case SQL_INTERVAL_MONTH:
     case SQL_INTERVAL_YEAR:
@@ -393,12 +393,9 @@ boost::optional< int32_t > SqlTypeDisplaySize(boost::optional< int16_t > type) {
     case SQL_WCHAR:
     case SQL_LONGVARCHAR:
     case SQL_WLONGVARCHAR:
-    case SQL_LONGVARBINARY:
-    case SQL_BINARY:
-    case SQL_VARBINARY:
     case SQL_DECIMAL:
     case SQL_NUMERIC:
-      return SQL_NO_TOTAL;
+      return TIMESTREAM_SQL_MAX_LENGTH;
 
     case SQL_BIT:
     case SQL_TYPE_NULL:
@@ -435,8 +432,9 @@ boost::optional< int32_t > SqlTypeDisplaySize(boost::optional< int16_t > type) {
     case SQL_GUID:
       return 36;
 
+    // Binary types are not supported in Timestream, return 0
     default:
-      return SQL_NO_TOTAL;
+      return 0;
   }
 }
 
@@ -457,12 +455,9 @@ boost::optional< int32_t > SqlTypeColumnSize(boost::optional< int16_t > type) {
     case SQL_WCHAR:
     case SQL_LONGVARCHAR:
     case SQL_WLONGVARCHAR:
-    case SQL_LONGVARBINARY:
-    case SQL_BINARY:
-    case SQL_VARBINARY:
     case SQL_DECIMAL:
     case SQL_NUMERIC:
-      return SQL_NO_TOTAL;
+      return TIMESTREAM_SQL_MAX_LENGTH;
 
     case SQL_BIT:
     case SQL_TYPE_NULL:
@@ -499,8 +494,9 @@ boost::optional< int32_t > SqlTypeColumnSize(boost::optional< int16_t > type) {
     case SQL_GUID:
       return 36;
 
+    // Binary types are not supported in Timestream, return 0
     default:
-      return SQL_NO_TOTAL;
+      return 0;
   }
 }
 
@@ -522,12 +518,9 @@ boost::optional< int32_t > SqlTypeTransferLength(
     case SQL_WCHAR:
     case SQL_LONGVARCHAR:
     case SQL_WLONGVARCHAR:
-    case SQL_LONGVARBINARY:
-    case SQL_BINARY:
-    case SQL_VARBINARY:
     case SQL_DECIMAL:
     case SQL_NUMERIC:
-      return SQL_NO_TOTAL;
+      return TIMESTREAM_SQL_MAX_LENGTH;
 
     case SQL_BIT:
     case SQL_TINYINT:
@@ -560,8 +553,9 @@ boost::optional< int32_t > SqlTypeTransferLength(
     case SQL_GUID:
       return 16;
 
+    // Binary types are not supported in Timestream, return 0
     default:
-      return SQL_NO_TOTAL;
+      return 0;
   }
 }
 
@@ -635,13 +629,14 @@ boost::optional< int32_t > SqlTypeCharOctetLength(
     case SQL_CHAR:
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR:
+      return TIMESTREAM_SQL_MAX_LENGTH;
+
     case SQL_WCHAR:
     case SQL_WVARCHAR:
     case SQL_WLONGVARCHAR:
-    case SQL_BINARY:
-    case SQL_LONGVARBINARY:
-      return SQL_NO_TOTAL;
+      return sizeof(SQLWCHAR) * TIMESTREAM_SQL_MAX_LENGTH;
 
+    // Binary types are not supported in Timestream, return 0
     default:
       return 0;
   }
