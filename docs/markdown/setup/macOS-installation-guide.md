@@ -1,7 +1,7 @@
 # Amazon Timestream ODBC Driver Setup on MacOS
 
 ## Supported versions
-macOS 11 (Big Sur) and above on 64-bit Intel processor
+macOS 11 (Big Sur) and above on 64-bit Intel processor. Apple M1 is not currently supported.
 
 ## Prerequisites
 In order to use the Timestream ODBC Driver, [libiodbc](https://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/WelcomeVisitors) must be installed.
