@@ -28,6 +28,8 @@ env:
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin/Release"
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   VCPKG_ROOT: "c:/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
@@ -98,18 +100,6 @@ jobs:
     #   with:
     #     name: cppcheck-results
     #     path: cppcheck-results.log 
-
-    - name: "Configure AWS credentials"
-      if: always()
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-skip-session-tagging: true
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
-        role-duration-seconds: 3600
 
     - name: Install Chocolatey
       run: |
@@ -264,6 +254,18 @@ jobs:
       id: getversion
       run: echo "::set-output name=version::$(cat src/ODBC_DRIVER_VERSION.txt)"
 
+    - name: "Configure AWS credentials"
+      if: ${{ env.SIGNING_ENABLED == 'true' }}
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-skip-session-tagging: true
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 3600
+
     - name: Sign executables
       if: ${{ env.SIGNING_ENABLED == 'true' }}
       id: sign-executables-32
@@ -280,18 +282,6 @@ jobs:
     if: needs.check.outputs.status == 'continue'
     steps:
     - uses: actions/checkout@v2
-
-    - name: "Configure AWS credentials"
-      if: always()
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-skip-session-tagging: true
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
-        role-duration-seconds: 3600
 
     - name: Install Chocolatey
       run: |
@@ -475,6 +465,18 @@ jobs:
       if: ${{ env.SIGNING_ENABLED == 'true' }}
       id: getversion
       run: echo "::set-output name=version::$(cat src/ODBC_DRIVER_VERSION.txt)"
+
+    - name: "Configure AWS credentials"
+      if: ${{ env.SIGNING_ENABLED == 'true' }}
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-skip-session-tagging: true
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 3600
 
     - name: Sign executables
       if: ${{ env.SIGNING_ENABLED == 'true' }}
