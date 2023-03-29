@@ -1285,4 +1285,58 @@ BOOST_AUTO_TEST_CASE(TestManyFds, *disabled()) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(TestSQLCancelForTypeInfo) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_ALL_TYPES);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLFetch(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLCancel(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLFetch(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL("HY010: [unixODBC][Driver Manager]Function sequence error",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#else
+  BOOST_REQUIRE_EQUAL("HY010: Query was not executed.",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLCloseCursorForTypeInfo) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_ALL_TYPES);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLFetch(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLCloseCursor(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLFetch(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+  ret = SQLCloseCursor(stmt);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL(
+      "24000: [unixODBC][Driver Manager]Invalid cursor state",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#else
+  BOOST_REQUIRE_EQUAL("24000: No cursor was open",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
+}
+
 BOOST_AUTO_TEST_SUITE_END()

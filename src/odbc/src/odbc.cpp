@@ -432,6 +432,23 @@ SQLRETURN SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
+SQLRETURN SQLCancel(SQLHSTMT stmt) {
+  using odbc::Statement;
+
+  LOG_DEBUG_MSG("SQLCancel called");
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG("statement is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  statement->CancelSqlQuery();
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
+}
+
 SQLRETURN SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
                      SQLPOINTER targetValue, SQLLEN bufferLength,
                      SQLLEN* strLengthOrIndicator) {

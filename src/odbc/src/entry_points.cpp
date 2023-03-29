@@ -103,6 +103,10 @@ SQLRETURN SQL_API SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query,
   return timestream::SQLExecDirect(stmt, query, queryLen);
 }
 
+SQLRETURN SQL_API SQLCancel(SQLHSTMT stmt) {
+  return timestream::SQLCancel(stmt);
+}
+
 SQLRETURN SQL_API SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT colNum,
                              SQLSMALLINT targetType, SQLPOINTER targetValue,
                              SQLLEN bufferLength,
@@ -338,13 +342,6 @@ SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 //
 // ==== Not implemented ====
 //
-
-SQLRETURN SQL_API SQLCancel(SQLHSTMT stmt) {
-  IGNITE_UNUSED(stmt);
-
-  LOG_MSG("SQLCancel called");
-  return SQL_SUCCESS;
-}
 
 SQLRETURN SQL_API SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
                                    SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,

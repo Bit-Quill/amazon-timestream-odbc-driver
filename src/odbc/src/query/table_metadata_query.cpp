@@ -192,6 +192,18 @@ SqlResult::Type TableMetadataQuery::Execute() {
   return result;
 }
 
+SqlResult::Type TableMetadataQuery::Cancel() {
+  LOG_DEBUG_MSG("Cancel is called");
+
+  if (dataQuery_) {
+    dataQuery_->Cancel();
+  }
+
+  Close();
+
+  return SqlResult::AI_SUCCESS;
+}
+
 const meta::ColumnMetaVector* TableMetadataQuery::GetMeta() {
   return &columnsMeta;
 }
@@ -285,6 +297,7 @@ SqlResult::Type TableMetadataQuery::GetColumn(
 SqlResult::Type TableMetadataQuery::Close() {
   LOG_DEBUG_MSG("Close is called");
   meta.clear();
+  cursor = meta.end();
 
   executed = false;
 

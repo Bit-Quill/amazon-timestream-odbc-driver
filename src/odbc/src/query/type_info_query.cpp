@@ -217,6 +217,14 @@ SqlResult::Type TypeInfoQuery::Execute() {
   return SqlResult::AI_SUCCESS;
 }
 
+SqlResult::Type TypeInfoQuery::Cancel() {
+  LOG_DEBUG_MSG("Cancel is called");
+
+  Close();
+
+  return SqlResult::AI_SUCCESS;
+}
+
 const meta::ColumnMetaVector* TypeInfoQuery::GetMeta() {
   return &columnsMeta;
 }

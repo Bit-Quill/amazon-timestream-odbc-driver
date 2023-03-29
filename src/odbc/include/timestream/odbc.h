@@ -75,6 +75,8 @@ SQLRETURN SQLExecute(SQLHSTMT stmt);
 
 SQLRETURN SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen);
 
+SQLRETURN SQLCancel(SQLHSTMT stmt);
+
 SQLRETURN SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
                      SQLPOINTER targetValue, SQLLEN bufferLength,
                      SQLLEN* strLengthOrIndicator);

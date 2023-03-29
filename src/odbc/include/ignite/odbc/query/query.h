@@ -86,6 +86,13 @@ class Query {
   virtual SqlResult::Type Execute() = 0;
 
   /**
+   * Cancel query.
+   *
+   * @return True on success.
+   */
+  virtual SqlResult::Type Cancel() = 0;
+
+  /**
    * Fetch next result row to application buffers.
    *
    * @param columnBindings Application buffers to put data to.

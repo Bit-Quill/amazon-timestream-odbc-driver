@@ -149,6 +149,11 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   void ExecuteSqlQuery();
 
   /**
+   * Cancel SQL query.
+   */
+  void CancelSqlQuery();
+
+  /**
    * Get columns metadata.
    *
    * @param catalog Catalog search pattern, nullable.
@@ -502,6 +507,13 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @return Operation result.
    */
   SqlResult::Type InternalExecuteSqlQuery();
+
+  /**
+   * Cancel SQL query.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type InternalCancelSqlQuery();
 
   /**
    * Fetch query result row with offset

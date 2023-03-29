@@ -247,6 +247,17 @@ SqlResult::Type ColumnMetadataQuery::Execute() {
   return result;
 }
 
+SqlResult::Type ColumnMetadataQuery::Cancel() {
+  LOG_DEBUG_MSG("Cancel is called");
+  if (dataQuery_) {
+    dataQuery_->Cancel();
+  }
+    
+  Close();
+
+  return SqlResult::AI_SUCCESS;
+}
+
 const meta::ColumnMetaVector* ColumnMetadataQuery::GetMeta() {
   return &columnsMeta;
 }
@@ -416,6 +427,7 @@ SqlResult::Type ColumnMetadataQuery::GetColumn(
 
 SqlResult::Type ColumnMetadataQuery::Close() {
   meta.clear();
+  cursor = meta.end();
 
   executed = false;
 

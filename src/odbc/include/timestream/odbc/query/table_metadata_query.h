@@ -84,6 +84,13 @@ class TableMetadataQuery : public ignite::odbc::query::Query {
   virtual SqlResult::Type Execute();
 
   /**
+   * Cancel query.
+   *
+   * @return True on success.
+   */
+  virtual SqlResult::Type Cancel();
+
+  /**
    * Get column metadata.
    *
    * @return Column metadata.

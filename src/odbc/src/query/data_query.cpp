@@ -22,6 +22,7 @@
 #include "ignite/odbc/odbc_error.h"
 
 #include <aws/timestream-query/model/Type.h>
+#include <aws/timestream-query/model/CancelQueryRequest.h>
 
 namespace timestream {
 namespace odbc {
@@ -61,6 +62,48 @@ SqlResult::Type DataQuery::Execute() {
 
   LOG_DEBUG_MSG("retval is " << retval);
   return retval;
+}
+
+SqlResult::Type DataQuery::Cancel() {
+  LOG_DEBUG_MSG("Cancel is called");
+
+  if (hasAsyncFetch) {
+    if (!result_) {
+      LOG_ERROR_MSG("no result found");
+      diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+          "query is not executed");
+      return SqlResult::AI_ERROR;
+    }
+  
+    // Try to cancel current query
+    Aws::TimestreamQuery::Model::CancelQueryRequest cancel_request;
+    cancel_request.SetQueryId(result_->GetQueryId());
+
+    auto outcome =
+          connection_.GetQueryClient()->CancelQuery(cancel_request);
+    std::string message("");
+    if (outcome.IsSuccess()) {
+      message = "Query ID: " + cancel_request.GetQueryId()
+                            + " is cancelled." 
+          + outcome.GetResult().GetCancellationMessage();
+    } else {
+      message = "Query ID: " + cancel_request.GetQueryId()
+                            + " can't cancel."
+                            + outcome.GetError().GetMessage();
+      // ValidationException is an exception that the query is finished and 
+      // cancel does not work, it should not be counted as error
+      if (outcome.GetError().GetExceptionName() != "ValidationException") {
+        LOG_ERROR_MSG(message.c_str());
+        diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR, message);
+        return SqlResult::AI_ERROR;
+      }
+    }
+    LOG_DEBUG_MSG(message.c_str());
+  }
+
+  InternalClose();
+
+  return SqlResult::AI_SUCCESS;
 }
 
 const meta::ColumnMetaVector* DataQuery::GetMeta() {
@@ -121,9 +164,11 @@ SqlResult::Type DataQuery::SwitchCursor() {
                             << error.GetMessage() << ", for query " << sql_
                             << ", number of rows fetched: " << rowCounter);
     cursor_.reset();
+    hasAsyncFetch = false;  // no async fetch any more
     return SqlResult::Type::AI_ERROR;
   }
 
+  result_ = std::make_shared< QueryResult >(outcome.GetResult());
   const Aws::Vector< Row >& rows = outcome.GetResult().GetRows();
   const Aws::String& token = outcome.GetResult().GetNextToken();
   if (rows.empty()) {

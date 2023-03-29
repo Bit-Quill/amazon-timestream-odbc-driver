@@ -449,6 +449,21 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
   return currentQuery->Execute();
 }
 
+void Statement::CancelSqlQuery() {
+  IGNITE_ODBC_API_CALL(InternalCancelSqlQuery());
+}
+
+SqlResult::Type Statement::InternalCancelSqlQuery() {
+  LOG_DEBUG_MSG("InternalCancelSqlQuery is called");
+  if (!currentQuery.get()) {
+    AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR, "Query does not exist.");
+
+    return SqlResult::AI_ERROR;
+  }
+
+  return currentQuery->Cancel();
+}
+
 void Statement::ExecuteGetColumnsMetaQuery(
     const boost::optional< std::string >& catalog,
     const boost::optional< std::string >& schema, 
@@ -614,6 +629,12 @@ void Statement::Close() {
 SqlResult::Type Statement::InternalClose() {
   if (!currentQuery.get())
     return SqlResult::AI_SUCCESS;
+
+  if (!currentQuery->DataAvailable()) {
+    AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
+                    "No cursor was open");
+    return SqlResult::AI_ERROR;
+  }
 
   SqlResult::Type result = currentQuery->Close();
 

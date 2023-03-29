@@ -177,6 +177,8 @@ bool IsSqlTypeSupported(boost::optional< int16_t > type) {
     case SQL_TYPE_TIMESTAMP:
     case SQL_TYPE_TIME:
     case SQL_TYPE_NULL:
+    case SQL_INTERVAL_YEAR_TO_MONTH:
+    case SQL_INTERVAL_DAY_TO_SECOND:
       return true;
 
     case SQL_BINARY:
@@ -185,14 +187,12 @@ bool IsSqlTypeSupported(boost::optional< int16_t > type) {
     case SQL_GUID:
     case SQL_INTERVAL_MONTH:
     case SQL_INTERVAL_YEAR:
-    case SQL_INTERVAL_YEAR_TO_MONTH:
     case SQL_INTERVAL_DAY:
     case SQL_INTERVAL_HOUR:
     case SQL_INTERVAL_MINUTE:
     case SQL_INTERVAL_SECOND:
     case SQL_INTERVAL_DAY_TO_HOUR:
     case SQL_INTERVAL_DAY_TO_MINUTE:
-    case SQL_INTERVAL_DAY_TO_SECOND:
     case SQL_INTERVAL_HOUR_TO_MINUTE:
     case SQL_INTERVAL_HOUR_TO_SECOND:
     case SQL_INTERVAL_MINUTE_TO_SECOND:

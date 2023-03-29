@@ -1000,6 +1000,59 @@ BOOST_AUTO_TEST_CASE(TestArrayStructJoinUsingGetData, *disabled()) {
   BOOST_CHECK_EQUAL(9, actual_rows);
 }
 
+BOOST_AUTO_TEST_CASE(TestSQLCancel) {
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+    SQLRETURN ret;
+    std::vector< SQLWCHAR > request = MakeSqlBuffer(
+        "select time, index, cpu_utilization from "
+        "data_queries_test_db.TestMultiMeasureBigTable order by time");
+    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+    ret = SQLCancel(stmt);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+    ret = SQLFetch(stmt);
+#if defined(__linux__) || defined(__APPLE__)
+    BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+#else
+    BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+#endif
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLCloseCursor) {
+    std::string dsnConnectionString;
+    CreateDsnConnectionStringForAWS(dsnConnectionString);
+    AddMaxRowPerPage(dsnConnectionString, "1");
+    Connect(dsnConnectionString);
+    SQLRETURN ret;
+    std::vector< SQLWCHAR > request = MakeSqlBuffer(
+        "select time, index, cpu_utilization from "
+        "data_queries_test_db.TestMultiMeasureBigTable order by time");
+    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+    ret = SQLCloseCursor(stmt);
+    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+    ret = SQLFetch(stmt);
+    BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+
+    ret = SQLCloseCursor(stmt);
+    BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+
+#ifdef __linux__
+    BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#else
+    BOOST_REQUIRE_EQUAL("24000: No cursor was open",
+                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
+}
+
 BOOST_AUTO_TEST_CASE(TestSQLFetchBigTablePagination) {
   if (CheckEnvVarSetToTrue("BIG_TABLE_PAGINATION_TEST_ENABLE")) {
     // This test verifies big table resultset could be paginated
