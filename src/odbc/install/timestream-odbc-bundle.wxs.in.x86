@@ -30,6 +30,8 @@
             />
     </BootstrapperApplicationRef>
 
+    <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]Amazon Timestream\ODBC Driver" />
+
     <util:FileSearch Path='[WindowsFolder]System32\vcruntime140.dll' Result="exists" Variable="VCRUNTIME140DLL"/>
     <util:FileSearch Path='[WindowsFolder]System32\msvcp140.dll' Result="exists" Variable="MSVCP140DLL"/>
 
@@ -39,10 +41,13 @@
                   InstallCommand="/q /ACTION=Install"
                   RepairCommand="/q ACTION=Repair /hideconsole" />
 
-      <MsiPackage SourceFile="@WIX_INSTALLER_PREFIX@.msi" />
+      <MsiPackage SourceFile="@WIX_INSTALLER_PREFIX@.msi">
+          <MsiProperty Name="TARGETDIR" Value="[InstallFolder]"/>
+      </MsiPackage>
 
     </Chain>
   </Bundle>
+
   <Fragment>
     <util:RegistrySearch
       Id="SearchForTimestreamDll"
