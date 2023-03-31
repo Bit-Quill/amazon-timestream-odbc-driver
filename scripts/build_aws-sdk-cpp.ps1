@@ -21,7 +21,7 @@ Write-Host $args
 
 # Clone the AWS SDK CPP repo
 git config --global core.longpaths true
-git clone --recurse-submodules -b "1.9.220" "https://github.com/aws/aws-sdk-cpp.git" $SRC_DIR
+git clone --recurse-submodules -b "1.11.48" "https://github.com/aws/aws-sdk-cpp.git" $SRC_DIR
 
 # Make and move to build directory
 New-Item -Path $BUILD_DIR -ItemType Directory -Force | Out-Null

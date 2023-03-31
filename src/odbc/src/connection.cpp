@@ -666,10 +666,6 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
 
   SetClientProxy(clientCfg);
 
-  // When cfg.GetMaxRetryCountClient() is 0, it could lead to error
-  // "AWS API ERROR: ThrottlingException: Request rate limit exceeded"
-  // Maybe a bug of aws-sdk-cpp 1.9.x. Verify this using AT-1244
-  // https://bitquill.atlassian.net/browse/AT-1244
   if (cfg.GetMaxRetryCountClient() > 0) {
     clientCfg.retryStrategy =
         std::make_shared< Aws::Client::DefaultRetryStrategy >(

@@ -83,9 +83,7 @@ BOOST_AUTO_TEST_CASE(TestDriverConnection) {
   Disconnect();
 }
 
-// Enable this test after vcpkg upgrades aws-sdk-cpp to 1.10.55, see AT-1244
-// https://bitquill.atlassian.net/browse/AT-1244
-BOOST_AUTO_TEST_CASE(TestDriverConnectionWithEndpoint, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestDriverConnectionWithEndpoint) {
   std::string connectionString;
   std::string misc("EndpointOverride=query.timestream.us-west-2.amazonaws.com;");
 

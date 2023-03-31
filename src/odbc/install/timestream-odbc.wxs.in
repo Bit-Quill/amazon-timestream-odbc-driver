@@ -84,6 +84,9 @@
 	    <Component Id='aws_c_s3' Guid='@WIX_COMPONENT_ID_AWS_C_S3@' Win64='@WIX_COMPONENT_IS_WIN64@'>
                 <File Id='aws_c_s3' Name='aws-c-s3.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_S3@' KeyPath='yes'/>
             </Component>
+	    <Component Id='aws_c_sdkutils' Guid='@WIX_COMPONENT_ID_AWS_C_SDKUTILS@' Win64='@WIX_COMPONENT_IS_WIN64@'>
+                <File Id='aws_c_sdkutils' Name='aws-c-sdkutils.dll' DiskId='1' Source='@WIX_ODBC_AWS_C_SDKUTILS@' KeyPath='yes'/>
+            </Component>
         </Directory>
 
         <Feature Id='Complete' Title='ODBC Driver' Description='@WIX_PRODUCT_NAME@.' Level='1'
@@ -103,6 +106,7 @@
             <ComponentRef Id='aws_c_mqtt' />
             <ComponentRef Id='aws_crt_cpp' />
             <ComponentRef Id='aws_c_s3' />
+            <ComponentRef Id='aws_c_sdkutils' />
         </Feature>
     </Product>
 </Wix>

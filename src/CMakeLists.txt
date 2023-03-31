@@ -57,6 +57,7 @@ if (WIN32)
     configure_file(${AWS_DLL_DIR}/aws-c-mqtt.dll ${CMAKE_BUILD_DIR}/aws-c-mqtt.dll COPYONLY)
     configure_file(${AWS_DLL_DIR}/aws-crt-cpp.dll ${CMAKE_BUILD_DIR}/aws-crt-cpp.dll COPYONLY)
     configure_file(${AWS_DLL_DIR}/aws-c-s3.dll ${CMAKE_BUILD_DIR}/aws-c-s3.dll COPYONLY)
+    configure_file(${AWS_DLL_DIR}/aws-c-sdkutils.dll ${CMAKE_BUILD_DIR}/aws-c-sdkutils.dll COPYONLY)
 endif()
 
 # ensure AWS SDK libraries built by us could be found by find_package

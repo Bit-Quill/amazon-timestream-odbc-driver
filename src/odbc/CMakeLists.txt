@@ -28,7 +28,7 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 find_package(ODBC REQUIRED)
 find_package(AWSSDK REQUIRED COMPONENTS core sts timestream-query)
 find_package(Boost REQUIRED)
-if (UNIX AND NOT APPLE)
+if (UNIX)
     find_package(ZLIB REQUIRED)
 endif()
 
@@ -118,7 +118,7 @@ if (WIN32)
     set_target_properties(aws-cpp-sdk-core aws-cpp-sdk-sts aws-cpp-sdk-timestream-query PROPERTIES
       IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/bin
     )
-    set_target_properties(AWS::aws-crt-cpp AWS::aws-c-cal AWS::aws-c-auth AWS::aws-c-common AWS::aws-c-io AWS::aws-checksums AWS::aws-c-event-stream AWS::aws-c-s3  AWS::aws-c-http AWS::aws-c-mqtt AWS::aws-c-compression PROPERTIES
+    set_target_properties(AWS::aws-crt-cpp AWS::aws-c-cal AWS::aws-c-auth AWS::aws-c-common AWS::aws-c-io AWS::aws-checksums AWS::aws-c-event-stream AWS::aws-c-s3  AWS::aws-c-http AWS::aws-c-mqtt AWS::aws-c-compression AWS::aws-c-sdkutils PROPERTIES
       IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/../build/aws-sdk/install/lib
     )
 endif ()
@@ -171,6 +171,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
     set(WIX_ODBC_AWS_C_MQTT ".\\aws-c-mqtt.dll")
     set(WIX_ODBC_AWS_CRT_CPP ".\\aws-crt-cpp.dll")
     set(WIX_ODBC_AWS_C_S3 ".\\aws-c-s3.dll")
+    set(WIX_ODBC_AWS_C_SDKUTILS ".\\aws-c-sdkutils.dll")
 
     set(WIX_PROJECT_NAME "Amazon Timestream")
     set(WIX_MANUFACTURER "Amazon Web Services")
@@ -201,6 +202,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
             set(WIX_COMPONENT_ID_AWS_C_MQTT "21D27FB0-7C0A-4E80-881D-DEA2DBD085FC")
             set(WIX_COMPONENT_ID_AWS_CRT_CPP "475234A5-AF23-4E7C-80AA-066B30522C58")
             set(WIX_COMPONENT_ID_AWS_C_S3 "E35D33AB-3C50-469E-8A60-4E4B266D03A9")
+	    set(WIX_COMPONENT_ID_AWS_C_SDKUTILS "A9E68859-0566-4D3B-836A-89AA61472D54")
             set(WIX_BUNDLE_UPGRADE_CODE "C77C052F-CBEF-4EC1-8030-C4A6F6F7094A")
 
             set(WIX_PACKAGE_PLATFORM "arm64")
@@ -223,6 +225,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
             set(WIX_COMPONENT_ID_AWS_C_MQTT "C420CFFC-2289-4F3C-9FA7-0A1D9271DF90")
             set(WIX_COMPONENT_ID_AWS_CRT_CPP "811269B1-D54D-486D-BED3-F0A2A74D4E12")
             set(WIX_COMPONENT_ID_AWS_C_S3 "05FB1CFF-6993-4924-A872-322B1250C608")
+	    set(WIX_COMPONENT_ID_AWS_C_SDKUTILS "BD17E26C-ED17-4064-B7F2-8B1BDF965AC7")
             set(WIX_BUNDLE_UPGRADE_CODE "BA03135B-F78E-41E5-8D70-C7FD62A4757A")
 
             set(WIX_PACKAGE_PLATFORM "x64")
@@ -253,6 +256,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_COMPONENT_ID_AWS_C_MQTT "8F43AF91-BB7B-489D-9707-292497BBB21E")
         set(WIX_COMPONENT_ID_AWS_CRT_CPP "DB6DCE34-B717-43C1-A53C-EC36227B1B01")
         set(WIX_COMPONENT_ID_AWS_C_S3 "E382CA06-AEE1-48D3-95D4-D712A832AC4D")
+	set(WIX_COMPONENT_ID_AWS_C_SDKUTILS "327859D5-75D3-4E2B-AC08-5E33F4372E4B")
         set(WIX_BUNDLE_UPGRADE_CODE "D788EB72-42FC-49EB-A47A-D65087A83C1A")
 
         set(WIX_PACKAGE_PLATFORM "x86")
