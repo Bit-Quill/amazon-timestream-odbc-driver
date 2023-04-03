@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <ignite/common/include/common/decimal.h>
@@ -287,8 +290,7 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToDouble, *disabled()) {
 
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_DOUBLE, &numBuf,
                                sizeof(numBuf), &reslen);
-
-  common::Decimal decimal;
+  ignite::odbc::common::Decimal decimal;
 
   BOOST_CHECK_CLOSE_FRACTION(static_cast< double >(decimal), 0.0,
                              FLOAT_PRECISION);
@@ -298,14 +300,14 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToDouble, *disabled()) {
 
   int8_t mag1[] = {1, 0};
 
-  decimal = common::Decimal(mag1, sizeof(mag1), 0, 1);
+  decimal = ignite::odbc::common::Decimal(mag1, sizeof(mag1), 0, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK_CLOSE_FRACTION(numBuf, 256.0, FLOAT_PRECISION);
 
   int8_t mag2[] = {2, 23};
 
-  decimal = common::Decimal(mag2, sizeof(mag2), 1, -1);
+  decimal = ignite::odbc::common::Decimal(mag2, sizeof(mag2), 1, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK_CLOSE_FRACTION(numBuf, -53.5, FLOAT_PRECISION);
@@ -318,21 +320,21 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToLong, *disabled()) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_SIGNED_LONG, &numBuf,
                                sizeof(numBuf), &reslen);
 
-  common::Decimal decimal;
+  ignite::odbc::common::Decimal decimal;
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(numBuf == 0);
 
   int8_t mag1[] = {1, 0};
 
-  decimal = common::Decimal(mag1, sizeof(mag1), 0, 1);
+  decimal = ignite::odbc::common::Decimal(mag1, sizeof(mag1), 0, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(numBuf == 256);
 
   int8_t mag2[] = {2, 23};
 
-  decimal = common::Decimal(mag2, sizeof(mag2), 1, -1);
+  decimal = ignite::odbc::common::Decimal(mag2, sizeof(mag2), 1, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(numBuf == -53);
@@ -345,21 +347,21 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToString, *disabled()) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  common::Decimal decimal;
+  ignite::odbc::common::Decimal decimal;
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(std::string(strBuf, reslen) == "0");
 
   int8_t mag1[] = {1, 0};
 
-  decimal = common::Decimal(mag1, sizeof(mag1), 0, 1);
+  decimal = ignite::odbc::common::Decimal(mag1, sizeof(mag1), 0, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(std::string(strBuf, reslen) == "256");
 
   int8_t mag2[] = {2, 23};
 
-  decimal = common::Decimal(mag2, sizeof(mag2), 1, -1);
+  decimal = ignite::odbc::common::Decimal(mag2, sizeof(mag2), 1, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(std::string(strBuf, reslen) == "-53.5");
@@ -372,21 +374,21 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToWString, *disabled()) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  common::Decimal decimal;
+  ignite::odbc::common::Decimal decimal;
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "0");
 
   int8_t mag1[] = {1, 0};
 
-  decimal = common::Decimal(mag1, sizeof(mag1), 0, 1);
+  decimal = ignite::odbc::common::Decimal(mag1, sizeof(mag1), 0, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "256");
 
   int8_t mag2[] = {2, 23};
 
-  decimal = common::Decimal(mag2, sizeof(mag2), 1, -1);
+  decimal = ignite::odbc::common::Decimal(mag2, sizeof(mag2), 1, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "-53.5");
@@ -399,7 +401,7 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric, *disabled()) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_NUMERIC, &buf, sizeof(buf),
                                &reslen);
 
-  common::Decimal decimal;
+  ignite::odbc::common::Decimal decimal;
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK_EQUAL(1, buf.sign);  // Positive
@@ -414,8 +416,8 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric, *disabled()) {
   // Trying to store 123.45 => 12345 => 0x3039 => [0x30, 0x39].
   uint8_t mag1[] = {0x30, 0x39};
 
-  decimal =
-      common::Decimal(reinterpret_cast< int8_t* >(mag1), sizeof(mag1), 2, 1);
+  decimal = ignite::odbc::common::Decimal(reinterpret_cast< int8_t* >(mag1),
+                                          sizeof(mag1), 2, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK_EQUAL(1, buf.sign);  // Positive
@@ -433,8 +435,8 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric, *disabled()) {
   // Trying to store 12345.678 => 12345678 => 0xBC614E => [0xBC, 0x61, 0x4E].
   uint8_t mag2[] = {0xBC, 0x61, 0x4E};
 
-  decimal =
-      common::Decimal(reinterpret_cast< int8_t* >(mag2), sizeof(mag2), 3, -1);
+  decimal = ignite::odbc::common::Decimal(reinterpret_cast< int8_t* >(mag2),
+                                          sizeof(mag2), 3, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK_EQUAL(0, buf.sign);  // Negative
@@ -458,7 +460,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Date date = common::MakeDateGmt(1999, 2, 22);
+  Date date = timestream::odbc::common::MakeDateGmt(1999, 2, 22);
 
   appBuf.PutDate(date);
 
@@ -472,7 +474,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToStringEdgeCase) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Date date = common::MakeDateGmt(1999, 2, 22);
+  Date date = timestream::odbc::common::MakeDateGmt(1999, 2, 22);
 
   appBuf.PutDate(date);
 
@@ -486,7 +488,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToWString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Date date = common::MakeDateGmt(1999, 2, 22);
+  Date date = timestream::odbc::common::MakeDateGmt(1999, 2, 22);
 
   appBuf.PutDate(date);
 
@@ -501,7 +503,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToWStringEdgeCase) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Date date = common::MakeDateGmt(1999, 2, 22);
+  Date date = timestream::odbc::common::MakeDateGmt(1999, 2, 22);
 
   appBuf.PutDate(date);
 
@@ -516,7 +518,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToDate) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TDATE, &buf, sizeof(buf),
                                &reslen);
 
-  Date date = common::MakeDateGmt(1984, 5, 27);
+  Date date = timestream::odbc::common::MakeDateGmt(1984, 5, 27);
 
   appBuf.PutDate(date);
 
@@ -533,7 +535,7 @@ BOOST_AUTO_TEST_CASE(TestPutDateToTimestamp) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIMESTAMP, &buf, sizeof(buf),
                                &reslen);
 
-  Date date = common::MakeDateGmt(1984, 5, 27);
+  Date date = timestream::odbc::common::MakeDateGmt(1984, 5, 27);
 
   appBuf.PutDate(date);
 
@@ -553,7 +555,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
+  Time time = timestream::odbc::common::MakeTimeGmt(7, 15, 0, 123456789);
 
   appBuf.PutTime(time);
 
@@ -568,7 +570,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToStringEdgeCase) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
+  Time time = timestream::odbc::common::MakeTimeGmt(7, 15, 0, 123456789);
 
   appBuf.PutTime(time);
 
@@ -583,7 +585,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToWString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
+  Time time = timestream::odbc::common::MakeTimeGmt(7, 15, 0, 123456789);
 
   appBuf.PutTime(time);
 
@@ -598,7 +600,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToWStringEdgeCase) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Time time = common::MakeTimeGmt(7, 15, 0, 123456789);
+  Time time = timestream::odbc::common::MakeTimeGmt(7, 15, 0, 123456789);
 
   appBuf.PutTime(time);
 
@@ -613,7 +615,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToTime) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIME, &buf, sizeof(buf),
                                &reslen);
 
-  Time time = common::MakeTimeGmt(23, 51, 1, 123456789);
+  Time time = timestream::odbc::common::MakeTimeGmt(23, 51, 1, 123456789);
 
   appBuf.PutTime(time);
 
@@ -629,7 +631,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToTimestamp) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIMESTAMP, &buf, sizeof(buf),
                                &reslen);
 
-  Time time = common::MakeTimeGmt(23, 51, 1, 123456789);
+  Time time = timestream::odbc::common::MakeTimeGmt(23, 51, 1, 123456789);
 
   appBuf.PutTime(time);
 
@@ -646,7 +648,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -661,7 +663,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToStringEdgeCase) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -676,7 +678,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToWString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Timestamp date = common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -692,7 +694,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToWStringEdgeCase) {
                                sizeof(strBuf), &reslen);
 
   Timestamp date =
-      common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+      timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -707,7 +709,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToDate) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TDATE, &buf, sizeof(buf),
                                &reslen);
 
-  Timestamp ts = common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
+  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
 
   appBuf.PutTimestamp(ts);
 
@@ -723,7 +725,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTime) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIME, &buf, sizeof(buf),
                                &reslen);
 
-  Timestamp ts = common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
+  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
 
   appBuf.PutTimestamp(ts);
 
@@ -739,7 +741,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTimestamp) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIMESTAMP, &buf, sizeof(buf),
                                &reslen);
 
-  Timestamp ts = common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
+  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
 
   appBuf.PutTimestamp(ts);
 
@@ -1232,7 +1234,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromString, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::DateToCTm(date, tmDate);
+  bool success = timestream::odbc::common::DateToCTm(date, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1255,7 +1257,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromWString, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::DateToCTm(date, tmDate);
+  bool success = timestream::odbc::common::DateToCTm(date, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1278,7 +1280,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimeFromString, *disabled()) {
 
   tm tmTime;
 
-  bool success = common::TimeToCTm(time, tmTime);
+  bool success = timestream::odbc::common::TimeToCTm(time, tmTime);
 
   BOOST_REQUIRE(success);
 
@@ -1301,7 +1303,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimeFromWString, *disabled()) {
 
   tm tmTime;
 
-  bool success = common::TimeToCTm(time, tmTime);
+  bool success = timestream::odbc::common::TimeToCTm(time, tmTime);
 
   BOOST_REQUIRE(success);
 
@@ -1324,7 +1326,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromString, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::TimestampToCTm(date, tmDate);
+  bool success = timestream::odbc::common::TimestampToCTm(date, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1347,7 +1349,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromWString, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::TimestampToCTm(date, tmDate);
+  bool success = timestream::odbc::common::TimestampToCTm(date, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1375,7 +1377,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromDate, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::DateToCTm(date, tmDate);
+  bool success = timestream::odbc::common::DateToCTm(date, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1403,7 +1405,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromDate, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::TimestampToCTm(ts, tmDate);
+  bool success = timestream::odbc::common::TimestampToCTm(ts, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1431,7 +1433,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromTime, *disabled()) {
 
   tm tmTime;
 
-  bool success = common::TimeToCTm(time, tmTime);
+  bool success = timestream::odbc::common::TimeToCTm(time, tmTime);
 
   BOOST_REQUIRE(success);
 
@@ -1463,7 +1465,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromTimestamp, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::TimestampToCTm(ts, tmDate);
+  bool success = timestream::odbc::common::TimestampToCTm(ts, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1496,7 +1498,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromTimestamp, *disabled()) {
 
   tm tmDate;
 
-  bool success = common::DateToCTm(date, tmDate);
+  bool success = timestream::odbc::common::DateToCTm(date, tmDate);
 
   BOOST_REQUIRE(success);
 
@@ -1528,7 +1530,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimeFromTimestamp, *disabled()) {
 
   tm tmTime;
 
-  bool success = common::TimeToCTm(time, tmTime);
+  bool success = timestream::odbc::common::TimeToCTm(time, tmTime);
 
   BOOST_REQUIRE(success);
 

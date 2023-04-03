@@ -13,10 +13,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef _IGNITE_ODBC_COMMON_UTILS
-#define _IGNITE_ODBC_COMMON_UTILS
+#ifndef _TIMESTREAM_ODBC_COMMON_UTILS
+#define _TIMESTREAM_ODBC_COMMON_UTILS
 
 #include <ignite/common/include/date.h>
 #include <ignite/common/common.h>
@@ -41,7 +44,7 @@
 using timestream::odbc::Time;
 using timestream::odbc::Timestamp;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace common {
 /**
@@ -250,7 +253,7 @@ inline time_t TimeToCTime(const Time& time) {
 inline bool DateToCTm(const Date& date, tm& ctime) {
   time_t tmt = DateToCTime(date);
 
-  return common::IgniteGmTime(tmt, ctime);
+  return ignite::odbc::common::IgniteGmTime(tmt, ctime);
 }
 
 /**
@@ -263,7 +266,7 @@ inline bool DateToCTm(const Date& date, tm& ctime) {
 inline bool TimestampToCTm(const Timestamp& ts, tm& ctime) {
   time_t tmt = TimestampToCTime(ts);
 
-  return common::IgniteGmTime(tmt, ctime);
+  return ignite::odbc::common::IgniteGmTime(tmt, ctime);
 }
 
 /**
@@ -276,7 +279,7 @@ inline bool TimestampToCTm(const Timestamp& ts, tm& ctime) {
 inline bool TimeToCTm(const Time& time, tm& ctime) {
   time_t tmt = TimeToCTime(time);
 
-  return common::IgniteGmTime(tmt, ctime);
+  return ignite::odbc::common::IgniteGmTime(tmt, ctime);
 }
 
 /**
@@ -319,7 +322,7 @@ inline Timestamp CTimeToTimestamp(time_t ctime, int32_t ns) {
  * @return Corresponding value of Date.
  */
 inline Date CTmToDate(const tm& ctime) {
-  time_t time = common::IgniteTimeGm(ctime);
+  time_t time = ignite::odbc::common::IgniteTimeGm(ctime);
 
   return CTimeToDate(time);
 }
@@ -332,7 +335,7 @@ inline Date CTmToDate(const tm& ctime) {
  * @return Corresponding value of Time.
  */
 inline Time CTmToTime(const tm& ctime, int32_t ns=0) {
-  time_t time = common::IgniteTimeGm(ctime);
+  time_t time = ignite::odbc::common::IgniteTimeGm(ctime);
 
   return CTimeToTime(time, ns);
 }
@@ -345,7 +348,7 @@ inline Time CTmToTime(const tm& ctime, int32_t ns=0) {
  * @return Corresponding value of Timestamp.
  */
 inline Timestamp CTmToTimestamp(const tm& ctime, int32_t ns) {
-  time_t time = common::IgniteTimeGm(ctime);
+  time_t time = ignite::odbc::common::IgniteTimeGm(ctime);
 
   return CTimeToTimestamp(time, ns);
 }
@@ -630,6 +633,6 @@ class DeinitGuard {
 IGNITE_IMPORT_EXPORT std::string GetDynamicLibraryName(const char* name);
 }  // namespace common
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
-#endif  //_IGNITE_ODBC_COMMON_UTILS
+#endif  //_TIMESTREAM_ODBC_COMMON_UTILS

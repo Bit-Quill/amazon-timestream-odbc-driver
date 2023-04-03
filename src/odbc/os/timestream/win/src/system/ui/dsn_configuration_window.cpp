@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "timestream/odbc/system/ui/dsn_configuration_window.h"
@@ -866,7 +869,7 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 
             std::string maxConStr = utility::ToUtf8(maxConWStr);
 
-            int16_t maxCon = ignite::odbc::common::LexicalCast< int16_t >(maxConStr);
+            int16_t maxCon = timestream::odbc::common::LexicalCast< int16_t >(maxConStr);
 
             if (!shownMaxConBalloon && maxCon <= 0) {
               Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
@@ -1098,19 +1101,19 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
   int32_t connectionTimeout =
       connectionTimeoutStr.empty()
           ? 0
-          : ignite::odbc::common::LexicalCast< int32_t >(connectionTimeoutStr);
+          : timestream::odbc::common::LexicalCast< int32_t >(connectionTimeoutStr);
   int32_t reqTimeout =
       reqTimeoutStr.empty()
           ? 0
-          : ignite::odbc::common::LexicalCast< int32_t >(reqTimeoutStr);
+          : timestream::odbc::common::LexicalCast< int32_t >(reqTimeoutStr);
   int32_t maxRetryCountClient =
       maxRetryCountStr.empty()
           ? 0
-          : ignite::odbc::common::LexicalCast< int32_t >(maxRetryCountStr);
+          : timestream::odbc::common::LexicalCast< int32_t >(maxRetryCountStr);
   int32_t maxCon =
       maxConStr.empty()
           ? 0
-          : ignite::odbc::common::LexicalCast< int32_t >(maxConStr);
+          : timestream::odbc::common::LexicalCast< int32_t >(maxConStr);
 
   if (maxCon <= 0)
     throw IgniteError(

@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "timestream/odbc/meta/column_meta.h"
@@ -258,7 +261,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       if (!precision || *precision == -1)
         retval = false;
       else 
-        value = ignite::odbc::common::LexicalCast< std::string >(*precision);
+        value = timestream::odbc::common::LexicalCast< std::string >(*precision);
 
       break;
     }
@@ -268,7 +271,7 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
       if (!scale || *scale == -1)
         retval = false;
       else
-        value = ignite::odbc::common::LexicalCast< std::string >(*scale);
+        value = timestream::odbc::common::LexicalCast< std::string >(*scale);
 
       break;
     }

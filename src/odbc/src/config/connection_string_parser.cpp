@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "timestream/odbc/config/connection_string_parser.h"
@@ -136,7 +139,7 @@ void ConnectionStringParser::HandleAttributePair(
     const std::string& key, const std::string& value,
     diagnostic::DiagnosticRecordStorage* diag) {
   LOG_DEBUG_MSG("HandleAttributePair is called");
-  std::string lKey = ignite::odbc::common::ToLower(key);
+  std::string lKey = timestream::odbc::common::ToLower(key);
 
   if (lKey == Key::uid || lKey == Key::accessKeyId || lKey == Key::idPUserName
       || lKey == Key::pwd || lKey == Key::secretKey || lKey == Key::idPPassword
@@ -162,7 +165,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!ignite::odbc::common::AllDigits(value)) {
+    if (!timestream::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -216,7 +219,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!ignite::odbc::common::AllDigits(value)) {
+    if (!timestream::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -271,7 +274,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!ignite::odbc::common::AllDigits(value)) {
+    if (!timestream::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -326,7 +329,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!ignite::odbc::common::AllDigits(value)) {
+    if (!timestream::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -374,7 +377,7 @@ void ConnectionStringParser::HandleAttributePair(
   } else if (lKey == Key::authType) {
     AuthType::Type authType = AuthType::FromString(value);
 
-    std::string val = utility::Trim(ignite::odbc::common::ToLower(value));
+    std::string val = utility::Trim(timestream::odbc::common::ToLower(value));
     if (val != "aws_profile" && authType == AuthType::Type::AWS_PROFILE) {
       if (diag) {
         diag->AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -546,7 +549,7 @@ void ConnectionStringParser::HandleAttributePair(
       return;
     }
 
-    if (!ignite::odbc::common::AllDigits(value)) {
+    if (!timestream::odbc::common::AllDigits(value)) {
       if (diag) {
         diag->AddStatusRecord(
             SqlState::S01S02_OPTION_VALUE_CHANGED,
@@ -599,7 +602,7 @@ void ConnectionStringParser::HandleAttributePair(
 
 ConnectionStringParser::BoolParseResult::Type
 ConnectionStringParser::StringToBool(const std::string& value) {
-  std::string lower = ignite::odbc::common::ToLower(value);
+  std::string lower = timestream::odbc::common::ToLower(value);
 
   if (lower == "true")
     return BoolParseResult::Type::AI_TRUE;

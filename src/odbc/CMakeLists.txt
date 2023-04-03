@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Modifications Copyright Amazon.com, Inc. or its affiliates.
+# SPDX-License-Identifier: Apache-2.0
+#
 
 project(timestream-odbc)
 
@@ -40,19 +43,12 @@ include_directories(SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${AWSSDK_I
 
 include_directories(include)
 
-set(SOURCES src/ignite/common/src/common/big_integer.cpp
-        src/ignite/common/src/common/bits.cpp
-        src/ignite/common/src/common/concurrent.cpp
-        src/ignite/common/src/common/decimal.cpp
-        src/ignite/common/src/common/utils.cpp
-        src/ignite/common/src/date.cpp
-        src/app/application_data_buffer.cpp
-        src/authentication/auth_type.cpp
+set(SOURCES src/app/application_data_buffer.cpp
         src/authentication/aad.cpp
+        src/authentication/auth_type.cpp
         src/authentication/okta.cpp
         src/authentication/saml.cpp
         src/common_types.cpp
-        src/ignite_error.cpp
         src/config/configuration.cpp
         src/config/connection_info.cpp
         src/config/connection_string_parser.cpp
@@ -60,28 +56,35 @@ set(SOURCES src/ignite/common/src/common/big_integer.cpp
         src/diagnostic/diagnosable_adapter.cpp
         src/diagnostic/diagnostic_record.cpp
         src/diagnostic/diagnostic_record_storage.cpp
+        src/dsn_config.cpp
+        src/entry_points.cpp
         src/environment.cpp
+        src/ignite/common/src/common/big_integer.cpp
+        src/ignite/common/src/common/bits.cpp
+        src/ignite/common/src/common/concurrent.cpp
+        src/ignite/common/src/common/decimal.cpp
+        src/ignite/common/src/date.cpp
+        src/ignite_error.cpp
+        src/interval_day_second.cpp
+        src/interval_year_month.cpp
+        src/log.cpp
+        src/log_level.cpp
         src/meta/column_meta.cpp
         src/meta/table_meta.cpp
         src/odbc.cpp
-        src/entry_points.cpp
-        src/dsn_config.cpp
         src/query/column_metadata_query.cpp
         src/query/data_query.cpp
         src/query/table_metadata_query.cpp
         src/query/type_info_query.cpp
         src/statement.cpp
-        src/type_traits.cpp
-        src/utility.cpp
-        src/log.cpp
-        src/log_level.cpp
         src/time.cpp
         src/timestamp.cpp
         src/timestream_column.cpp
         src/timestream_cursor.cpp
         src/timestream_row.cpp
-	src/interval_year_month.cpp
-        src/interval_day_second.cpp)
+        src/type_traits.cpp
+        src/utility.cpp
+        src/utils.cpp)
 
 if (WIN32)
     set(OS_INCLUDE os/ignite/common/os/win/include os/timestream/win/include)

@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "timestream/odbc/app/application_data_buffer.h"
@@ -588,7 +591,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
   tm tmTime;
 
-  ignite::odbc::common::DateToCTm(value, tmTime);
+  timestream::odbc::common::DateToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday
@@ -718,7 +721,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTimestamp(
   tm tmTime;
   memset(&tmTime, 0, sizeof(tm));
 
-  ignite::odbc::common::TimestampToCTm(value, tmTime);
+  timestream::odbc::common::TimestampToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -853,7 +856,7 @@ ConversionResult::Type ApplicationDataBuffer::PutTime(const Time& value) {
   tm tmTime;
 
   memset(&tmTime, 0, sizeof(tm));
-  ignite::odbc::common::TimeToCTm(value, tmTime);
+  timestream::odbc::common::TimeToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -1446,7 +1449,7 @@ Date ApplicationDataBuffer::GetDate() const {
       break;
   }
 
-  Date retval = ignite::odbc::common::CTmToDate(tmTime);
+  Date retval = timestream::odbc::common::CTmToDate(tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
@@ -1557,7 +1560,7 @@ Timestamp ApplicationDataBuffer::GetTimestamp() const {
       break;
   }
 
-  return ignite::odbc::common::CTmToTimestamp(tmTime, nanos);
+  return timestream::odbc::common::CTmToTimestamp(tmTime, nanos);
 }
 
 Time ApplicationDataBuffer::GetTime() const {
@@ -1631,7 +1634,7 @@ Time ApplicationDataBuffer::GetTime() const {
       break;
   }
 
-  Time retval = ignite::odbc::common::CTmToTime(tmTime);
+  Time retval = timestream::odbc::common::CTmToTime(tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
                 << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "

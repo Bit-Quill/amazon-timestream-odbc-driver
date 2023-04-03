@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef _TIMESTREAM_ODBC_UTILITY
@@ -40,7 +43,7 @@ namespace timestream {
 namespace odbc {
 namespace utility {
 /** Using common version of the util. */
-using ignite::odbc::common::IntoLower;
+using timestream::odbc::common::IntoLower;
 using namespace ignite::odbc::common;
 
 template < typename T >

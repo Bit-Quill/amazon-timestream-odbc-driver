@@ -22,7 +22,7 @@
 namespace timestream {
 namespace odbc {
 AuthType::Type AuthType::FromString(const std::string& val, Type dflt) {
-  std::string lowerVal = utility::Trim(ignite::odbc::common::ToLower(val));
+  std::string lowerVal = utility::Trim(timestream::odbc::common::ToLower(val));
 
 
   if (lowerVal == "aws_profile")

@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "timestream/odbc/dsn_config.h"
@@ -110,7 +113,7 @@ SettableValue< int32_t > ReadDsnInt(const char* dsn, const std::string& key,
 
   if (str.IsSet())
     res.SetValue(
-        ignite::odbc::common::LexicalCast< int, std::string >(str.GetValue()));
+        timestream::odbc::common::LexicalCast< int, std::string >(str.GetValue()));
 
   LOG_DEBUG_MSG("res is " << res.GetValue());
   return res;
@@ -310,7 +313,7 @@ bool RegisterDsn(const Configuration& config, const LPCSTR driver,
                  IgniteError& error) {
   LOG_DEBUG_MSG("RegisterDsn is called");
   using namespace timestream::odbc::config;
-  using ignite::odbc::common::LexicalCast;
+  using timestream::odbc::common::LexicalCast;
 
   typedef Configuration::ArgumentMap ArgMap;
 

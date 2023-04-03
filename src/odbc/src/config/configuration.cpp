@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "timestream/odbc/config/configuration.h"
@@ -27,7 +30,7 @@
 #include "timestream/odbc/log.h"
 #include "timestream/odbc/utility.h"
 
-using ignite::odbc::common::EncodeURIComponent;
+using timestream::odbc::common::EncodeURIComponent;
 
 namespace timestream {
 namespace odbc {
@@ -550,7 +553,7 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
                              const SettableValue< uint16_t >& value) {
   if (value.IsSet())
     map[key] =
-        ignite::odbc::common::LexicalCast< std::string >(value.GetValue());
+        timestream::odbc::common::LexicalCast< std::string >(value.GetValue());
 }
 
 template <>
@@ -558,7 +561,7 @@ void Configuration::AddToMap(ArgumentMap& map, const std::string& key,
                              const SettableValue< int32_t >& value) {
   if (value.IsSet())
     map[key] =
-        ignite::odbc::common::LexicalCast< std::string >(value.GetValue());
+        timestream::odbc::common::LexicalCast< std::string >(value.GetValue());
 }
 
 template <>

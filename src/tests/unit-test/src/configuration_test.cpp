@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifdef _WIN32
@@ -35,7 +38,7 @@
 
 using namespace timestream::odbc;
 using namespace timestream::odbc::config;
-using ignite::odbc::common::EncodeURIComponent;
+using timestream::odbc::common::EncodeURIComponent;
 using namespace boost::unit_test;
 
 namespace {
@@ -220,8 +223,8 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << ';';
   const std::string& expectedStr = constructor.str();
 
-  BOOST_CHECK_EQUAL(ignite::odbc::common::ToLower(cfg.ToConnectString()),
-                    ignite::odbc::common::ToLower(expectedStr));
+  BOOST_CHECK_EQUAL(timestream::odbc::common::ToLower(cfg.ToConnectString()),
+                    timestream::odbc::common::ToLower(expectedStr));
 }
 
 void CheckDsnConfig(const Configuration& cfg) {

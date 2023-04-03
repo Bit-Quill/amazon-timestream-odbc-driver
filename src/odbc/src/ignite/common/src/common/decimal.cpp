@@ -79,7 +79,7 @@ Decimal::operator int64_t() const {
 }
 
 double Decimal::ToDouble() const {
-  return common::LexicalCast< double >(*this);
+  return timestream::odbc::common::LexicalCast< double >(*this);
 }
 
 int64_t Decimal::ToInt64() const {

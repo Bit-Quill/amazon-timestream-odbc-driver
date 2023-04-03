@@ -13,11 +13,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <timestream/odbc/utils.h>
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace common {
 /**
@@ -94,7 +97,7 @@ IGNITE_FRIEND_EXPORT Date MakeDateLocal(int year, int month, int day, int hour,
   date.tm_min = min;
   date.tm_sec = sec;
 
-  time_t localTime = common::IgniteTimeLocal(date);
+  time_t localTime = ignite::odbc::common::IgniteTimeLocal(date);
 
   return CTimeToDate(localTime);
 }
@@ -126,7 +129,7 @@ IGNITE_FRIEND_EXPORT Time MakeTimeLocal(int hour, int min, int sec, int ns) {
   date.tm_min = min;
   date.tm_sec = sec;
 
-  time_t localTime = common::IgniteTimeLocal(date);
+  time_t localTime = ignite::odbc::common::IgniteTimeLocal(date);
 
   return CTimeToTime(localTime, ns);
 }
@@ -162,7 +165,7 @@ IGNITE_FRIEND_EXPORT Timestamp MakeTimestampLocal(int year, int month, int day,
   date.tm_min = min;
   date.tm_sec = sec;
 
-  time_t localTime = common::IgniteTimeLocal(date);
+  time_t localTime = ignite::odbc::common::IgniteTimeLocal(date);
 
   return CTimeToTimestamp(localTime, ns);
 }
@@ -170,7 +173,7 @@ IGNITE_FRIEND_EXPORT Timestamp MakeTimestampLocal(int year, int month, int day,
 IGNITE_IMPORT_EXPORT std::string GetDynamicLibraryName(const char* name) {
   std::stringstream libNameBuffer;
 
-  libNameBuffer << name << Dle;
+  libNameBuffer << name << ignite::odbc::common::Dle;
 
   return libNameBuffer.str();
 }
@@ -186,4 +189,4 @@ IGNITE_IMPORT_EXPORT bool AllDigits(const std::string& val) {
 
 }  // namespace common
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
