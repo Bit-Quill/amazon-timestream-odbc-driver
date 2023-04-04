@@ -45,6 +45,14 @@ LICENSE.txt
 /AWSSDK/
 /sdk-build/
 /CMakeFiles/
+/performance/**/CMakeFiles/
+/performance/**/Makefile
+/performance/**/*.so
+/performance/**/performance_results
+/performance/**/performance_execution
+/performance/**/googletest/
+/performance/lib/
+/performance/bin/
 /googletest/
 /installer/
 /IntegrationTests/
