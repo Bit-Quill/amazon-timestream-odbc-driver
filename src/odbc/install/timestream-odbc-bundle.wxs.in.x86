@@ -32,12 +32,9 @@
 
     <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]Amazon Timestream\ODBC Driver" />
 
-    <util:FileSearch Path='[WindowsFolder]System32\vcruntime140.dll' Result="exists" Variable="VCRUNTIME140DLL"/>
-    <util:FileSearch Path='[WindowsFolder]System32\msvcp140.dll' Result="exists" Variable="MSVCP140DLL"/>
-
     <Chain>
       <ExePackage SourceFile='@WIX_VC_RUNTIME_NAME@'
-                  DetectCondition="VCRUNTIME140DLL AND MSVCP140DLL"
+                  DetectCondition="VCRuntimeInstalled"
                   InstallCommand="/q /ACTION=Install"
                   RepairCommand="/q ACTION=Repair /hideconsole" />
 
@@ -49,6 +46,13 @@
   </Bundle>
 
   <Fragment>
+    <util:RegistrySearch
+      Id="SearchForVCRuntime"
+      Variable="VCRuntimeInstalled"
+      Result="exists"
+      Root="HKLM"
+      Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86"
+      Win64="no" />
     <util:RegistrySearch
       Id="SearchForTimestreamDll"
       Condition="NOT WixBundleInstalled"
