@@ -41,7 +41,7 @@ TableMetadataQuery::TableMetadataQuery(
     const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& tableType)
-    : Query(diag, ignite::odbc::query::QueryType::TABLE_METADATA),
+    : Query(diag, timestream::odbc::query::QueryType::TABLE_METADATA),
       connection(connection),
       catalog(catalog),
       schema(schema),

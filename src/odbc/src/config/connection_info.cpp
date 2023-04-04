@@ -1145,7 +1145,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // SQL_POS_UPDATE (ODBC 2.0)
   // SQL_POS_DELETE (ODBC 2.0)
   // SQL_POS_ADD (ODBC 2.0)
-  intParams[SQL_POS_OPERATIONS] = SQL_POS_POSITION | SQL_POS_REFRESH;
+  intParams[SQL_POS_OPERATIONS] = 0;  // i.e., not supported
 #endif  // SQL_POS_OPERATIONS
 
 #ifdef SQL_SQL92_NUMERIC_VALUE_FUNCTIONS

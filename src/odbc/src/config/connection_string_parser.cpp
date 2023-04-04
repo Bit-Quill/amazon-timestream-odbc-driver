@@ -142,8 +142,8 @@ void ConnectionStringParser::HandleAttributePair(
   std::string lKey = timestream::odbc::common::ToLower(key);
 
   if (lKey == Key::uid || lKey == Key::accessKeyId || lKey == Key::idPUserName
-      || lKey == Key::pwd || lKey == Key::secretKey || lKey == Key::idPPassword
-      || lKey == Key::aadClientSecret) {
+      || lKey == Key::pwd || lKey == Key::secretKey || lKey == Key::sessionToken
+      || lKey == Key::idPPassword || lKey == Key::aadClientSecret) {
     LOG_DEBUG_MSG(lKey << " is found");
   } else {
     LOG_DEBUG_MSG("key:value is " << lKey << ":" << value);

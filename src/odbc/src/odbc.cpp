@@ -559,6 +559,75 @@ SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
+SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                     SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+                     SQLSMALLINT tableNameLen, SQLWCHAR* columnName,
+                     SQLSMALLINT columnNameLen) {
+  using odbc::Statement;
+
+  LOG_DEBUG_MSG("SQLColumns called");
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG("statement is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  boost::optional< std::string > catalog =
+      SqlWcharToOptString(catalogName, catalogNameLen);
+  boost::optional< std::string > schema =
+      SqlWcharToOptString(schemaName, schemaNameLen);
+  boost::optional< std::string > table =
+      SqlWcharToOptString(tableName, tableNameLen);
+  boost::optional< std::string > column =
+      SqlWcharToOptString(columnName, columnNameLen);
+
+  LOG_INFO_MSG("catalog: " << catalog.get_value_or("")
+                           << ", schema: " << schema.get_value_or("")
+                           << ", table: " << table << ", column: " << column);
+
+  if (catalog && catalog->empty() && schema && schema->empty()) {
+    statement->AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                               "catalogName and schemaName are empty strings.");
+    return SQL_SUCCESS_WITH_INFO;
+  }
+
+  statement->ExecuteGetColumnsMetaQuery(catalog, schema, table, column);
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
+}
+
+SQLRETURN SQLColumnPrivileges(
+    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
+    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+    SQLSMALLINT tableNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
+  LOG_DEBUG_MSG("SQLColumnPrivileges called");
+
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(tableName);
+  IGNITE_UNUSED(tableNameLen);
+  IGNITE_UNUSED(columnName);
+  IGNITE_UNUSED(columnNameLen);
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG(
+        "SQLColumnPrivileges exiting with SQL_INVALID_HANDLE because statement "
+        "object is null");
+    return SQL_INVALID_HANDLE;
+  }
+
+  statement->ExecuteColumnPrivilegesQuery();
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
+}
+
 SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -592,39 +661,32 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
-                     SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
-                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
-                     SQLSMALLINT tableNameLen, SQLWCHAR* columnName,
-                     SQLSMALLINT columnNameLen) {
-  using odbc::Statement;
 
-  LOG_DEBUG_MSG("SQLColumns called");
+SQLRETURN SQLTablePrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                     SQLSMALLINT catalogNameLen,
+                                     SQLWCHAR* schemaName,
+                                     SQLSMALLINT schemaNameLen,
+                                     SQLWCHAR* tableName,
+                                     SQLSMALLINT tableNameLen) {
+  LOG_DEBUG_MSG("SQLTablePrivileges called");
+
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(tableName);
+  IGNITE_UNUSED(tableNameLen);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
-    LOG_ERROR_MSG("statement is nullptr");
+    LOG_ERROR_MSG(
+        "SQLTablePrivileges exiting with SQL_INVALID_HANDLE because statement "
+        "object is null");
     return SQL_INVALID_HANDLE;
   }
 
-  boost::optional< std::string > catalog = SqlWcharToOptString(catalogName, catalogNameLen);
-  boost::optional< std::string > schema = SqlWcharToOptString(schemaName, schemaNameLen);
-  boost::optional< std::string > table = SqlWcharToOptString(tableName, tableNameLen);
-  boost::optional< std::string > column = SqlWcharToOptString(columnName, columnNameLen);
-
-
-  LOG_INFO_MSG("catalog: " << catalog.get_value_or("")
-                           << ", schema: " << schema.get_value_or("")
-                           << ", table: " << table << ", column: " << column);
-
-  if (catalog && catalog->empty() && schema && schema->empty()) {
-    statement->AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-      "catalogName and schemaName are empty strings.");
-    return SQL_SUCCESS_WITH_INFO;
-  }
-
-  statement->ExecuteGetColumnsMetaQuery(catalog, schema, table, column);
+  statement->ExecuteTablePrivilegesQuery();
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -642,29 +704,6 @@ SQLRETURN SQLMoreResults(SQLHSTMT stmt) {
   }
 
   statement->MoreResults();
-
-  return statement->GetDiagnosticRecords().GetReturnCode();
-}
-
-SQLRETURN SQLBindParameter(SQLHSTMT stmt, SQLUSMALLINT paramIdx,
-                           SQLSMALLINT ioType, SQLSMALLINT bufferType,
-                           SQLSMALLINT paramSqlType, SQLULEN columnSize,
-                           SQLSMALLINT decDigits, SQLPOINTER buffer,
-                           SQLLEN bufferLen, SQLLEN* resLen) {
-  using odbc::Statement;
-
-  LOG_DEBUG_MSG("SQLBindParameter called: " << paramIdx << ", " << bufferType
-                                            << ", " << paramSqlType);
-
-  Statement* statement = reinterpret_cast< Statement* >(stmt);
-
-  if (!statement) {
-    LOG_ERROR_MSG("statement is nullptr");
-    return SQL_INVALID_HANDLE;
-  }
-
-  statement->BindParameter(paramIdx, ioType, bufferType, paramSqlType,
-                           columnSize, decDigits, buffer, bufferLen, resLen);
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -705,9 +744,6 @@ SQLRETURN SQLColAttribute(SQLHSTMT stmt, SQLUSMALLINT columnNum,
   LOG_DEBUG_MSG("SQLColAttribute called: "
                 << fieldId << " (" << ColumnMeta::AttrIdToString(fieldId)
                 << ")");
-
-  // TODO adapt SQLColumns
-  // https://bitquill.atlassian.net/browse/AT-1032
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -864,8 +900,35 @@ SQLRETURN SQLForeignKeys(
     SQLSMALLINT foreignCatalogNameLen, SQLWCHAR* foreignSchemaName,
     SQLSMALLINT foreignSchemaNameLen, SQLWCHAR* foreignTableName,
     SQLSMALLINT foreignTableNameLen) {
-  //TODO: see AT-1235 https://bitquill.atlassian.net/browse/AT-1325
-  return SQL_ERROR;
+  using odbc::Statement;
+  
+  LOG_DEBUG_MSG("SQLForeignKeys called");
+
+  IGNITE_UNUSED(primaryCatalogName);
+  IGNITE_UNUSED(primaryCatalogNameLen);
+  IGNITE_UNUSED(primarySchemaName);
+  IGNITE_UNUSED(primarySchemaNameLen);
+  IGNITE_UNUSED(primaryTableName);
+  IGNITE_UNUSED(primaryTableNameLen);
+  IGNITE_UNUSED(foreignCatalogName);
+  IGNITE_UNUSED(foreignCatalogNameLen);
+  IGNITE_UNUSED(foreignSchemaName);
+  IGNITE_UNUSED(foreignSchemaNameLen);
+  IGNITE_UNUSED(foreignTableName);
+  IGNITE_UNUSED(foreignTableNameLen);
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG(
+        "SQLForeignKeys exiting with SQL_INVALID_HANDLE because statement "
+        "object is null");
+    return SQL_INVALID_HANDLE;
+  }
+
+  statement->ExecuteGetForeignKeysQuery();
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
 SQLRETURN SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER valueBuf,
@@ -920,27 +983,27 @@ SQLRETURN SQLPrimaryKeys(SQLHSTMT stmt, SQLWCHAR* catalogName,
                          SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                          SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                          SQLSMALLINT tableNameLen) {
-  // TODO: see AT-1235 https://bitquill.atlassian.net/browse/AT-1325
-  return SQL_ERROR;
-}
-
-SQLRETURN SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt) {
   using odbc::Statement;
 
-  LOG_DEBUG_MSG("SQLNumParams called");
+  LOG_DEBUG_MSG("SQLPrimaryKeys called");
+
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(tableName);
+  IGNITE_UNUSED(tableNameLen);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
     LOG_ERROR_MSG(
-        "SQLNumParams exiting with SQL_INVALID_HANDLE because statement "
+        "SQLPrimaryKeys exiting with SQL_INVALID_HANDLE because statement "
         "object is null");
     return SQL_INVALID_HANDLE;
   }
 
-  if (paramCnt) {
-    *paramCnt = 0;
-  }
+  statement->ExecuteGetPrimaryKeysQuery();
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
@@ -1105,12 +1168,6 @@ SQLRETURN SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT type) {
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
-                     SQLSMALLINT completionType) {
-  // TODO: see AT-1235 https://bitquill.atlassian.net/browse/AT-1325
-  return SQL_ERROR;
-}
-
 SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
                      SQLPOINTER targetValue, SQLLEN bufferLength,
                      SQLLEN* strLengthOrIndicator) {
@@ -1190,9 +1247,17 @@ SQLRETURN SQLSpecialColumns(SQLHSTMT stmt, SQLSMALLINT idType,
                             SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
                             SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
                             SQLSMALLINT scope, SQLSMALLINT nullable) {
-  using namespace odbc;
-
   LOG_DEBUG_MSG("SQLSpecialColumns called");
+
+  IGNITE_UNUSED(idType);
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(tableName);
+  IGNITE_UNUSED(tableNameLen);
+  IGNITE_UNUSED(scope);
+  IGNITE_UNUSED(nullable);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -1203,85 +1268,93 @@ SQLRETURN SQLSpecialColumns(SQLHSTMT stmt, SQLSMALLINT idType,
     return SQL_INVALID_HANDLE;
   }
 
-  std::string catalog = SqlWcharToString(catalogName, catalogNameLen);
-  std::string schema = SqlWcharToString(schemaName, schemaNameLen);
-  std::string table = SqlWcharToString(tableName, tableNameLen);
-
-  LOG_INFO_MSG("catalog: " << catalog);
-  LOG_INFO_MSG("schema: " << schema);
-  LOG_INFO_MSG("table: " << table);
-
-  statement->ExecuteSpecialColumnsQuery(idType, catalog, schema, table, scope,
-                                        nullable);
-
-  LOG_DEBUG_MSG("SQLSpecialColumns exiting");
+  statement->ExecuteSpecialColumnsQuery();
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLParamData(SQLHSTMT stmt, SQLPOINTER* value) {
-  using namespace timestream::odbc;
+SQLRETURN SQLStatistics(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                SQLSMALLINT catalogNameLen,
+                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
+                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
+                                SQLUSMALLINT unique, SQLUSMALLINT reserved) {
+  LOG_DEBUG_MSG("SQLStatistics called");
 
-  LOG_DEBUG_MSG("SQLParamData called");
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(tableName);
+  IGNITE_UNUSED(tableNameLen);
+  IGNITE_UNUSED(unique);
+  IGNITE_UNUSED(reserved);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
     LOG_ERROR_MSG(
-        "SQLParamData exiting with SQL_INVALID_HANDLE because statement "
+        "SQLStatistics exiting with SQL_INVALID_HANDLE because statement "
         "object is null");
     return SQL_INVALID_HANDLE;
   }
 
-  statement->SelectParam(value);
-
-  LOG_DEBUG_MSG("SQLParamData exiting");
+  statement->ExecuteStatisticsQuery();
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLPutData(SQLHSTMT stmt, SQLPOINTER data,
-                     SQLLEN strLengthOrIndicator) {
-  using namespace timestream::odbc;
+SQLRETURN SQLProcedureColumns(
+    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
+    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* procName,
+    SQLSMALLINT procNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
+  LOG_DEBUG_MSG("SQLProcedureColumns called");
 
-  LOG_DEBUG_MSG("SQLPutData called");
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(procName);
+  IGNITE_UNUSED(procNameLen);
+  IGNITE_UNUSED(columnName);
+  IGNITE_UNUSED(columnNameLen);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
     LOG_ERROR_MSG(
-        "SQLPutData exiting with SQL_INVALID_HANDLE because statement "
+        "SQLProcedures exiting with SQL_INVALID_HANDLE because statement "
         "object is null");
     return SQL_INVALID_HANDLE;
   }
 
-  statement->PutData(data, strLengthOrIndicator);
-
-  LOG_DEBUG_MSG("SQLPutData exiting");
+  statement->ExecuteProcedureColumnsQuery();
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLDescribeParam(SQLHSTMT stmt, SQLUSMALLINT paramNum,
-                           SQLSMALLINT* dataType, SQLULEN* paramSize,
-                           SQLSMALLINT* decimalDigits, SQLSMALLINT* nullable) {
-  using namespace timestream::odbc;
+SQLRETURN SQLProcedures(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                        SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+                        SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+                        SQLSMALLINT tableNameLen) {
+  LOG_DEBUG_MSG("SQLProcedures called");
 
-  LOG_DEBUG_MSG("SQLDescribeParam called");
+  IGNITE_UNUSED(catalogName);
+  IGNITE_UNUSED(catalogNameLen);
+  IGNITE_UNUSED(schemaName);
+  IGNITE_UNUSED(schemaNameLen);
+  IGNITE_UNUSED(tableName);
+  IGNITE_UNUSED(tableNameLen);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
   if (!statement) {
     LOG_ERROR_MSG(
-        "SQLDescribeParam exiting with SQL_INVALID_HANDLE because statement "
+        "SQLProcedures exiting with SQL_INVALID_HANDLE because statement "
         "object is null");
     return SQL_INVALID_HANDLE;
   }
 
-  statement->DescribeParam(paramNum, dataType, paramSize, decimalDigits,
-                           nullable);
-
-  LOG_DEBUG_MSG("SQLDescribeParam exiting");
+  statement->ExecuteProceduresQuery();
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }

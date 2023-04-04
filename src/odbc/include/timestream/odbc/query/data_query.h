@@ -22,7 +22,7 @@
 #define _TIMESTREAM_ODBC_QUERY_DATA_QUERY
 
 #include "timestream/odbc/timestream_cursor.h"
-#include "ignite/odbc/query/query.h"
+#include "timestream/odbc/query/query.h"
 #include "timestream/odbc/connection.h"
 
 #include <aws/timestream-query/model/QueryRequest.h>
@@ -69,7 +69,7 @@ class IGNITE_IMPORT_EXPORT DataQueryContext  {
 /**
  * Query.
  */
-class IGNITE_IMPORT_EXPORT DataQuery : public ignite::odbc::query::Query {
+class IGNITE_IMPORT_EXPORT DataQuery : public timestream::odbc::query::Query {
  public:
   /**
    * Constructor.

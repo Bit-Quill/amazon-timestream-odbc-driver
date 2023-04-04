@@ -13,10 +13,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications Copyright Amazon.com, Inc. or its affiliates.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef _IGNITE_ODBC_QUERY_QUERY
-#define _IGNITE_ODBC_QUERY_QUERY
+#ifndef _TIMESTREAM_ODBC_QUERY_QUERY
+#define _TIMESTREAM_ODBC_QUERY_QUERY
 
 #include <stdint.h>
 
@@ -28,7 +31,7 @@
 
 using timestream::odbc::SqlResult;
 
-namespace ignite {
+namespace timestream {
 namespace odbc {
 namespace query {
 /** Query type. */
@@ -39,12 +42,6 @@ struct QueryType {
 
     /** Data query type. */
     DATA,
-
-    /** Batch query type. */
-    BATCH,
-
-    /** Streaming query type. */
-    STREAMING,
 
     /** Foreign keys query type. */
     FOREIGN_KEYS,
@@ -60,6 +57,21 @@ struct QueryType {
 
     /** Type info query type. */
     TYPE_INFO,
+
+    /** Statistics query type. */
+    STATISTICS,
+
+    /** Procedures query type. */
+    PROCEDURES,
+
+    /** Procedure columns query type. */
+    PROCEDURE_COLUMNS,
+
+    /** Column privileges query type. */
+    COLUMN_PRIVILEGES,
+
+    /** Table privileges query type. */
+    TABLE_PRIVILEGES,
 
     /** Internal query, that should be parsed by a driver itself. */
     INTERNAL
@@ -171,6 +183,6 @@ class Query {
 };
 }  // namespace query
 }  // namespace odbc
-}  // namespace ignite
+}  // namespace timestream
 
-#endif  //_IGNITE_ODBC_QUERY_QUERY
+#endif  //_TIMESTREAM_ODBC_QUERY_QUERY

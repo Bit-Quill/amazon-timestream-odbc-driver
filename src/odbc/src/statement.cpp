@@ -27,8 +27,16 @@
 #include "timestream/odbc/log.h"
 #include "ignite/odbc/odbc_error.h"
 #include "timestream/odbc/query/column_metadata_query.h"
+#include "timestream/odbc/query/column_privileges_query.h"
 #include "timestream/odbc/query/data_query.h"
+#include "timestream/odbc/query/foreign_keys_query.h"
+#include "timestream/odbc/query/primary_keys_query.h"
+#include "timestream/odbc/query/procedure_columns_query.h"
+#include "timestream/odbc/query/procedures_query.h"
+#include "timestream/odbc/query/statistics_query.h"
+#include "timestream/odbc/query/special_columns_query.h"
 #include "timestream/odbc/query/table_metadata_query.h"
+#include "timestream/odbc/query/table_privileges_query.h"
 #include "timestream/odbc/query/type_info_query.h"
 #include "timestream/odbc/system/odbc_constants.h"
 #include "timestream/odbc/utility.h"
@@ -138,24 +146,6 @@ SqlResult::Type Statement::InternalGetColumnNumber(int32_t& res) {
   res = static_cast< int32_t >(meta->size());
 
   return SqlResult::AI_SUCCESS;
-}
-
-void Statement::BindParameter(uint16_t paramIdx, int16_t ioType,
-                              int16_t bufferType, int16_t paramSqlType,
-                              SqlUlen columnSize, int16_t decDigits,
-                              void* buffer, SqlLen bufferLen, SqlLen* resLen) {
-  IGNITE_ODBC_API_CALL(
-      InternalBindParameter(paramIdx, ioType, bufferType, paramSqlType,
-                            columnSize, decDigits, buffer, bufferLen, resLen));
-}
-
-SqlResult::Type Statement::InternalBindParameter(
-    uint16_t paramIdx, int16_t ioType, int16_t bufferType, int16_t paramSqlType,
-    SqlUlen columnSize, int16_t decDigits, void* buffer, SqlLen bufferLen,
-    SqlLen* resLen) {
-
-  // not supported
-  return SqlResult::AI_ERROR;
 }
 
 void Statement::SetAttribute(int attr, void* value, SQLINTEGER valueLen) {
@@ -514,57 +504,113 @@ SqlResult::Type Statement::InternalExecuteGetTablesMetaQuery(
   return currentQuery->Execute();
 }
 
-void Statement::ExecuteGetForeignKeysQuery(
-    const std::string& primaryCatalog, const std::string& primarySchema,
-    const std::string& primaryTable,
-    const boost::optional< std::string >& foreignCatalog,
-    const boost::optional< std::string >& foreignSchema,
-    const std::string& foreignTable) {
-  IGNITE_ODBC_API_CALL(InternalExecuteGetForeignKeysQuery(
-      primaryCatalog, primarySchema, primaryTable, foreignCatalog,
-      foreignSchema, foreignTable));
+void Statement::ExecuteGetForeignKeysQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteGetForeignKeysQuery());
 }
 
-SqlResult::Type Statement::InternalExecuteGetForeignKeysQuery(
-    const std::string& primaryCatalog, const std::string& primarySchema,
-    const std::string& primaryTable,
-    const boost::optional< std::string >& foreignCatalog,
-    const boost::optional< std::string >& foreignSchema,
-    const std::string& foreignTable) {
-  // not supported
-  return SqlResult::AI_ERROR;
+SqlResult::Type Statement::InternalExecuteGetForeignKeysQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(new query::ForeignKeysQuery(
+      *this));
+
+  return currentQuery->Execute();
 }
 
-void Statement::ExecuteGetPrimaryKeysQuery(
-    const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema,
-    const boost::optional< std::string >& table) {
+void Statement::ExecuteGetPrimaryKeysQuery() {
   IGNITE_ODBC_API_CALL(
-      InternalExecuteGetPrimaryKeysQuery(catalog, schema, table));
+      InternalExecuteGetPrimaryKeysQuery());
 }
 
-SqlResult::Type Statement::InternalExecuteGetPrimaryKeysQuery(
-    const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema,
-    const boost::optional< std::string >& table) {
-  // not supported
-  return SqlResult::AI_ERROR;
+SqlResult::Type Statement::InternalExecuteGetPrimaryKeysQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(
+      new query::PrimaryKeysQuery(*this));
+
+  return currentQuery->Execute();
 }
 
-void Statement::ExecuteSpecialColumnsQuery(int16_t type,
-                                           const std::string& catalog,
-                                           const std::string& schema,
-                                           const std::string& table,
-                                           int16_t scope, int16_t nullable) {
-  IGNITE_ODBC_API_CALL(InternalExecuteSpecialColumnsQuery(
-      type, catalog, schema, table, scope, nullable));
+void Statement::ExecuteSpecialColumnsQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteSpecialColumnsQuery());
 }
 
-SqlResult::Type Statement::InternalExecuteSpecialColumnsQuery(
-    int16_t type, const std::string& catalog, const std::string& schema,
-    const std::string& table, int16_t scope, int16_t nullable) {
-  // not supported
-  return SqlResult::AI_ERROR;
+SqlResult::Type Statement::InternalExecuteSpecialColumnsQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(new query::SpecialColumnsQuery(
+      *this));
+
+  return currentQuery->Execute();
+}
+
+void Statement::ExecuteStatisticsQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteStatisticsQuery());
+}
+
+SqlResult::Type Statement::InternalExecuteStatisticsQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(new query::StatisticsQuery(*this, connection.GetEnvODBCVer()));
+
+  return currentQuery->Execute();
+}
+
+void Statement::ExecuteProcedureColumnsQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteProcedureColumnsQuery());
+}
+
+SqlResult::Type Statement::InternalExecuteProcedureColumnsQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(new query::ProcedureColumnsQuery(*this));
+
+  return currentQuery->Execute();
+}
+
+void Statement::ExecuteProceduresQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteProceduresQuery());
+}
+
+SqlResult::Type Statement::InternalExecuteProceduresQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(
+      new query::ProceduresQuery(*this));
+
+  return currentQuery->Execute();
+}
+
+void Statement::ExecuteColumnPrivilegesQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteColumnPrivilegesQuery());
+}
+
+SqlResult::Type Statement::InternalExecuteColumnPrivilegesQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(new query::ColumnPrivilegesQuery(*this));
+
+  return currentQuery->Execute();
+}
+
+void Statement::ExecuteTablePrivilegesQuery() {
+  IGNITE_ODBC_API_CALL(InternalExecuteTablePrivilegesQuery());
+}
+
+SqlResult::Type Statement::InternalExecuteTablePrivilegesQuery() {
+  if (currentQuery.get())
+    currentQuery->Close();
+
+  currentQuery.reset(new query::TablePrivilegesQuery(*this));
+
+  return currentQuery->Execute();
 }
 
 void Statement::ExecuteGetTypeInfoQuery(int16_t sqlType) {
@@ -861,40 +907,6 @@ void Statement::SetRowStatusesPtr(SQLUSMALLINT* ptr) {
 
 SQLUSMALLINT* Statement::GetRowStatusesPtr() {
   return rowStatuses;
-}
-
-void Statement::SelectParam(void** paramPtr) {
-  IGNITE_ODBC_API_CALL(InternalSelectParam(paramPtr));
-}
-
-SqlResult::Type Statement::InternalSelectParam(void** paramPtr) {
-  // not supported
-  return SqlResult::AI_ERROR;
-}
-
-void Statement::PutData(void* data, SqlLen len) {
-  IGNITE_ODBC_API_CALL(InternalPutData(data, len));
-}
-
-SqlResult::Type Statement::InternalPutData(void* data, SqlLen len) {
-  // not supported
-  return SqlResult::AI_ERROR;
-}
-
-void Statement::DescribeParam(int16_t paramNum, int16_t* dataType,
-                              SqlUlen* paramSize, int16_t* decimalDigits,
-                              int16_t* nullable) {
-  IGNITE_ODBC_API_CALL(InternalDescribeParam(paramNum, dataType, paramSize,
-                                             decimalDigits, nullable));
-}
-
-SqlResult::Type Statement::InternalDescribeParam(int16_t paramNum,
-                                                 int16_t* dataType,
-                                                 SqlUlen* paramSize,
-                                                 int16_t* decimalDigits,
-                                                 int16_t* nullable) {
-    // not supported
-    return SqlResult::AI_ERROR;
 }
 
 SqlResult::Type Statement::UpdateParamsMeta() {

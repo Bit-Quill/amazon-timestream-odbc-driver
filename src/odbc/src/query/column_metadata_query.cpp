@@ -101,7 +101,7 @@ ColumnMetadataQuery::ColumnMetadataQuery(
     const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& column)
-    : Query(diag, ignite::odbc::query::QueryType::COLUMN_METADATA),
+    : Query(diag, timestream::odbc::query::QueryType::COLUMN_METADATA),
       connection(connection),
       catalog(catalog),
       schema(schema),
@@ -158,6 +158,7 @@ ColumnMetadataQuery::ColumnMetadataQuery(
                                    ScalarType::INTEGER, Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "IS_NULLABLE", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
+
   tableMetadataQuery_ = std::make_shared< TableMetadataQuery >(
       diag, connection, catalog, schema, table, boost::none);
 }

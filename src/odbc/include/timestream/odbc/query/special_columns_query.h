@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef _TIMESTREAM_ODBC_QUERY_TYPE_INFO_QUERY
-#define _TIMESTREAM_ODBC_QUERY_TYPE_INFO_QUERY
+#ifndef _TIMESTREAM_ODBC_QUERY_SPECIAL_COLUMNS_QUERY
+#define _TIMESTREAM_ODBC_QUERY_SPECIAL_COLUMNS_QUERY
 
 #include "timestream/odbc/query/query.h"
 
@@ -27,22 +27,21 @@ namespace timestream {
 namespace odbc {
 namespace query {
 /**
- * Type info query.
+ * Special columns query.
  */
-class TypeInfoQuery : public timestream::odbc::query::Query {
+class SpecialColumnsQuery : public Query {
  public:
   /**
    * Constructor.
    *
    * @param diag Diagnostics collector.
-   * @param sqlType SQL type.
    */
-  TypeInfoQuery(diagnostic::DiagnosableAdapter& diag, int16_t sqlType);
+  SpecialColumnsQuery(diagnostic::DiagnosableAdapter& diag);
 
   /**
    * Destructor.
    */
-  virtual ~TypeInfoQuery();
+  virtual ~SpecialColumnsQuery();
 
   /**
    * Execute query.
@@ -52,22 +51,9 @@ class TypeInfoQuery : public timestream::odbc::query::Query {
   virtual SqlResult::Type Execute();
 
   /**
-   * Cancel query.
-   *
-   * @return True on success.
-   */
-  virtual SqlResult::Type Cancel();
-
-  /**
-   * Get column metadata.
-   *
-   * @return Column metadata.
-   */
-  virtual const meta::ColumnMetaVector* GetMeta();
-
-  /**
    * Fetch next result row to application buffers.
    *
+   * @param columnBindings Application buffers to put data to.
    * @return Operation result.
    */
   virtual SqlResult::Type FetchNextRow(app::ColumnBindingMap& columnBindings);
@@ -88,6 +74,20 @@ class TypeInfoQuery : public timestream::odbc::query::Query {
    * @return True on success.
    */
   virtual SqlResult::Type Close();
+
+  /**
+   * Cancel query.
+   *
+   * @return True on success.
+   */
+  virtual SqlResult::Type Cancel();
+
+  /**
+   * Get column metadata.
+   *
+   * @return Column metadata.
+   */
+  virtual const meta::ColumnMetaVector* GetMeta();
 
   /**
    * Check if data is available.
@@ -111,25 +111,13 @@ class TypeInfoQuery : public timestream::odbc::query::Query {
   virtual SqlResult::Type NextResultSet();
 
  private:
-  IGNITE_NO_COPY_ASSIGNMENT(TypeInfoQuery);
+  IGNITE_NO_COPY_ASSIGNMENT(SpecialColumnsQuery);
 
   /** Columns metadata. */
   meta::ColumnMetaVector columnsMeta;
-
-  /** Executed flag. */
-  bool executed;
-
-  /** Fetched flag. */
-  bool fetched;
-
-  /** Requested types. */
-  std::vector< int8_t > types;
-
-  /** Query cursor. */
-  std::vector< int8_t >::const_iterator cursor;
 };
 }  // namespace query
 }  // namespace odbc
 }  // namespace timestream
 
-#endif  //_TIMESTREAM_ODBC_QUERY_TYPE_INFO_QUERY
+#endif  //_TIMESTREAM_ODBC_QUERY_SPECIAL_COLUMNS_QUERY

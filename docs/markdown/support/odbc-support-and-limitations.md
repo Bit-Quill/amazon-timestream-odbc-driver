@@ -49,7 +49,7 @@ Note that the following table describes the planned functionality for the GA rel
 | SQLCancel | yes |
 | SQLCancelHandle | no | ODBC 3.8+ only
 | SQLCloseCursor | yes |
-| SQLEndTrans | no (error) | Driver will not support transactions
+| SQLEndTran | no (error) | Driver will not support transactions
 | SQLFreeHandle | yes |
 | SQLDescribeParam | no (empty results) | No parameter support
 | SQLExecDirect | yes |
@@ -151,7 +151,7 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_SYSTEM_FUNCTIONS | SQL_FN_SYS_IFNULL | no |
 | SQL_CONVERT_FUNCTIONS | SQL_FN_CVT_CAST | no |
 | SQL_OJ_CAPABILITIES | SQL_OJ_LEFT, SQL_OJ_RIGHT, SQL_OJ_NOT_ORDERED, SQL_OJ_ALL_COMPARISON_OPS | no |
-| SQL_POS_OPERATIONS | SQL_POS_POSITION, SQL_POS_REFRESH | no |
+| SQL_POS_OPERATIONS | 0 (not supported) | no |
 | SQL_SQL92_NUMERIC_VALUE_FUNCTIONS | 0 (not supported) | no |
 | SQL_SQL92_STRING_FUNCTIONS | SQL_SSF_CONVERT, SQL_SSF_LOWER, SQL_SSF_UPPER, SQL_SSF_SUBSTRING, SQL_SSF_TRANSLATE, SQL_SSF_TRIM_BOTH, SQL_SSF_TRIM_LEADING, SQL_SSF_TRIM_TRAILING | no |
 | SQL_SQL92_DATETIME_FUNCTIONS | SQL_SDF_CURRENT_DATE, SQL_SDF_CURRENT_TIME, SQL_SDF_CURRENT_TIMESTAMP | no |

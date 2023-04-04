@@ -194,43 +194,7 @@ struct OdbcTestSuite {
    * Destructor.
    */
   virtual ~OdbcTestSuite();
-
-  /**
-   * Insert requested number of TestType values with all defaults except
-   * for the strFields, which are generated using GetTestString().
-   *
-   * @param recordsNum Number of records to insert.
-   * @param merge Set to true to use merge instead.
-   */
-  void InsertTestStrings(int recordsNum, bool merge = false);
-
-  /**
-   * Insert requested number of TestType values in a batch.
-   *
-   * @param from Index to start from.
-   * @param to Index to stop.
-   * @param expectedToAffect Expected number of affected records.
-   * @param merge Set to true to use merge instead of insert.
-   * @return Records inserted.
-   */
-  int InsertTestBatch(int from, int to, int expectedToAffect,
-                      bool merge = false);
-
-  /**
-   * Insert requested number of TestType values in a batch,
-   * select them and check all the values.
-   *
-   * @param recordsNum Number of records.
-   */
-  void InsertBatchSelect(int recordsNum);
-
-  /**
-   * Insert values in two batches, select them and check all the values.
-   * @param recordsNum Number of records.
-   * @param splitAt Point where two batches are separated.
-   */
-  void InsertNonFullBatchSelect(int recordsNum, int splitAt);
-
+  
   /**
    * Get test i8Field.
    *

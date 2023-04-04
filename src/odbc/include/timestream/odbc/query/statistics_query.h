@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef _TIMESTREAM_ODBC_QUERY_TYPE_INFO_QUERY
-#define _TIMESTREAM_ODBC_QUERY_TYPE_INFO_QUERY
+#ifndef _TIMESTREAM_ODBC_QUERY_STATISTICS_QUERY
+#define _TIMESTREAM_ODBC_QUERY_STATISTICS_QUERY
 
 #include "timestream/odbc/query/query.h"
 
@@ -27,22 +27,22 @@ namespace timestream {
 namespace odbc {
 namespace query {
 /**
- * Type info query.
+ * Statistics Query.
  */
-class TypeInfoQuery : public timestream::odbc::query::Query {
+class StatisticsQuery : public timestream::odbc::query::Query {
  public:
   /**
    * Constructor.
    *
    * @param diag Diagnostics collector.
-   * @param sqlType SQL type.
+   * @param odbcVer ODBC Version
    */
-  TypeInfoQuery(diagnostic::DiagnosableAdapter& diag, int16_t sqlType);
+  StatisticsQuery(diagnostic::DiagnosableAdapter& diag, int32_t odbcVer);
 
   /**
    * Destructor.
    */
-  virtual ~TypeInfoQuery();
+  virtual ~StatisticsQuery();
 
   /**
    * Execute query.
@@ -111,25 +111,13 @@ class TypeInfoQuery : public timestream::odbc::query::Query {
   virtual SqlResult::Type NextResultSet();
 
  private:
-  IGNITE_NO_COPY_ASSIGNMENT(TypeInfoQuery);
+  IGNITE_NO_COPY_ASSIGNMENT(StatisticsQuery);
 
   /** Columns metadata. */
   meta::ColumnMetaVector columnsMeta;
-
-  /** Executed flag. */
-  bool executed;
-
-  /** Fetched flag. */
-  bool fetched;
-
-  /** Requested types. */
-  std::vector< int8_t > types;
-
-  /** Query cursor. */
-  std::vector< int8_t >::const_iterator cursor;
 };
 }  // namespace query
 }  // namespace odbc
 }  // namespace timestream
 
-#endif  //_TIMESTREAM_ODBC_QUERY_TYPE_INFO_QUERY
+#endif  //_TIMESTREAM_ODBC_QUERY_STATISTICS_QUERY

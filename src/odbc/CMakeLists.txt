@@ -73,8 +73,16 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/meta/table_meta.cpp
         src/odbc.cpp
         src/query/column_metadata_query.cpp
+        src/query/column_privileges_query.cpp
         src/query/data_query.cpp
+        src/query/foreign_keys_query.cpp
+        src/query/primary_keys_query.cpp
+        src/query/procedure_columns_query.cpp
+        src/query/procedures_query.cpp
+        src/query/special_columns_query.cpp
+        src/query/statistics_query.cpp
         src/query/table_metadata_query.cpp
+        src/query/table_privileges_query.cpp
         src/query/type_info_query.cpp
         src/statement.cpp
         src/time.cpp

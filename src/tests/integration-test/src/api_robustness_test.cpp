@@ -127,13 +127,9 @@ SQLSMALLINT unsupportedSql[] = {SQL_INTERVAL_MONTH,
 
 BOOST_FIXTURE_TEST_SUITE(ApiRobustnessTestSuite, ApiRobustnessTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize) {
   // check that statement array size cannot be set to values other than 1
-
-  std::string dsnConnectionString;
-  CreateDsnConnectionStringForAWS(dsnConnectionString);
-
-  Connect(dsnConnectionString);
+  ConnectToTS();
 
   SQLINTEGER actual_row_array_size;
   SQLINTEGER resLen = 0;
@@ -473,38 +469,6 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys, *disabled()) {
-  ConnectToTS();
-
-  std::vector< SQLWCHAR > catalogName = {0};
-  std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("odbc-test");
-  std::vector< SQLWCHAR > tableName = MakeSqlBuffer("jni_test_001");
-
-  // Everything is ok.
-  SQLRETURN ret =
-      SQLPrimaryKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(),
-                     SQL_NTS, tableName.data(), SQL_NTS);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  ret = SQLFetch(stmt);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  SQLPrimaryKeys(stmt, 0, SQL_NTS, schemaName.data(), SQL_NTS, tableName.data(),
-                 SQL_NTS);
-  SQLPrimaryKeys(stmt, catalogName.data(), 0, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS);
-  SQLPrimaryKeys(stmt, catalogName.data(), SQL_NTS, 0, SQL_NTS,
-                 tableName.data(), SQL_NTS);
-  SQLPrimaryKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), 0,
-                 tableName.data(), SQL_NTS);
-  SQLPrimaryKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 0, SQL_NTS);
-  SQLPrimaryKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), 0);
-  SQLPrimaryKeys(stmt, 0, 0, 0, 0, 0, 0);
-}
-
 BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   ConnectToTS();
 
@@ -549,68 +513,6 @@ BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   // All nulls.
   ret = SQLBindCol(stmt, 4, SQL_C_SLONG, 0, 0, 0);
   //BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-}
-
-BOOST_AUTO_TEST_CASE(TestSQLBindParameter, *disabled()) {
-  // There are no checks because we do not really care what is the result of
-  // these calls as long as they do not cause segmentation fault.
-
-  ConnectToTS();
-
-  SQLINTEGER ind1;
-  SQLLEN len1 = 0;
-
-  // Everything is ok.
-  SQLRETURN ret =
-      SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 100,
-                       100, &ind1, sizeof(ind1), &len1);
-
-#ifdef __APPLE__
-  BOOST_REQUIRE_EQUAL(ret, SQL_INVALID_HANDLE);
-#else
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-#endif
-
-  // Unsupported parameter type : output
-  SQLBindParameter(stmt, 2, SQL_PARAM_OUTPUT, SQL_C_SLONG, SQL_INTEGER, 100,
-                   100, &ind1, sizeof(ind1), &len1);
-  CheckSQLStatementDiagnosticError("HY105");
-
-  // Unsupported parameter type : input/output
-  SQLBindParameter(stmt, 2, SQL_PARAM_INPUT_OUTPUT, SQL_C_SLONG, SQL_INTEGER,
-                   100, 100, &ind1, sizeof(ind1), &len1);
-  CheckSQLStatementDiagnosticError("HY105");
-
-  // Unsupported data types
-  for (size_t i = 0; i < sizeof(unsupportedSql) / sizeof(unsupportedSql[0]);
-       ++i) {
-    ret = SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG,
-                           unsupportedSql[i], 100, 100, &ind1, sizeof(ind1),
-                           &len1);
-
-#ifdef __APPLE__
-    BOOST_REQUIRE_EQUAL(ret, SQL_INVALID_HANDLE);
-#else
-    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-#endif
-    CheckSQLStatementDiagnosticError("HYC00");
-  }
-
-  // Size is null.
-  SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 100, 100,
-                   &ind1, 0, &len1);
-
-  // Res size is null.
-  SQLBindParameter(stmt, 3, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 100, 100,
-                   &ind1, sizeof(ind1), 0);
-
-  // Value is null.
-  SQLBindParameter(stmt, 4, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 100, 100,
-                   0, sizeof(ind1), &len1);
-
-  // All nulls.
-  SQLBindParameter(stmt, 5, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 100, 100,
-                   0, 0, 0);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLNativeSql) {
@@ -807,105 +709,7 @@ BOOST_AUTO_TEST_CASE(TestSQLRowCount, *disabled()) {
   SQLRowCount(stmt, nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLForeignKeysSegFault, *disabled()) {
-  // There are no checks because we do not really care what is the result of
-  // these calls as long as they do not cause segmentation fault.
-
-  ConnectToTS();
-
-  std::vector< SQLWCHAR > catalogName = {0};
-  std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("cache");
-  std::vector< SQLWCHAR > tableName = MakeSqlBuffer("TestType");
-
-  // Everything is ok.
-  SQLRETURN ret = SQLForeignKeys(
-      stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-      tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS, schemaName.data(),
-      SQL_NTS, tableName.data(), SQL_NTS);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, 0, SQL_NTS, schemaName.data(), SQL_NTS, tableName.data(),
-                 SQL_NTS, catalogName.data(), SQL_NTS, schemaName.data(),
-                 SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), 0, schemaName.data(),
-                 sizeof(schemaName), tableName.data(), SQL_NTS,
-                 catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, 0, SQL_NTS,
-                 tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS,
-                 schemaName.data(), SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), 0,
-                 tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS,
-                 schemaName.data(), SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 0, SQL_NTS, catalogName.data(), SQL_NTS, schemaName.data(),
-                 SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), 0, catalogName.data(), SQL_NTS,
-                 schemaName.data(), SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS, 0, SQL_NTS, schemaName.data(),
-                 SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS, catalogName.data(), 0,
-                 schemaName.data(), SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS, 0,
-                 SQL_NTS, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS,
-                 schemaName.data(), 0, tableName.data(), SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS,
-                 schemaName.data(), SQL_NTS, 0, SQL_NTS);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, catalogName.data(), SQL_NTS, schemaName.data(), SQL_NTS,
-                 tableName.data(), SQL_NTS, catalogName.data(), SQL_NTS,
-                 schemaName.data(), SQL_NTS, tableName.data(), 0);
-
-  SQLCloseCursor(stmt);
-
-  SQLForeignKeys(stmt, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-  SQLCloseCursor(stmt);
-}
-
-BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 

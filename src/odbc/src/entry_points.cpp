@@ -21,8 +21,22 @@
 #include <ignite/common/common.h>
 
 #include "timestream/odbc.h"
+#include "timestream/odbc/connection.h"
 #include "timestream/odbc/log.h"
 #include "timestream/odbc/utility.h"
+#include "timestream/odbc/statement.h"
+
+#define CONN_UNSUPPORTED_FUNC(conn, diagStr)            \
+  using timestream::odbc::Connection;                             \
+  Connection* connection = reinterpret_cast< Connection* >(conn); \
+  connection->AddStatusRecord(                                    \
+      SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, diagStr);
+
+#define STMT_UNSUPPORTED_FUNC(stmt, diagStr)         \
+  using timestream::odbc::Statement;                           \
+  Statement* statement = reinterpret_cast< Statement* >(stmt); \
+  statement->AddStatusRecord(                                  \
+      SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, diagStr);
 
 SQLRETURN SQL_API SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType,
                              SQLPOINTER infoValue, SQLSMALLINT infoValueMax,
@@ -148,6 +162,17 @@ SQLRETURN SQL_API SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                            tableTypeLen);
 }
 
+SQLRETURN SQL_API SQLTablePrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                     SQLSMALLINT catalogNameLen,
+                                     SQLWCHAR* schemaName,
+                                     SQLSMALLINT schemaNameLen,
+                                     SQLWCHAR* tableName,
+                                     SQLSMALLINT tableNameLen) {
+  return timestream::SQLTablePrivileges(stmt, catalogName, catalogNameLen,
+                                        schemaName, schemaNameLen, tableName,
+                                        tableNameLen);
+}
+
 SQLRETURN SQL_API SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                              SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                              SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
@@ -158,18 +183,17 @@ SQLRETURN SQL_API SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                             columnNameLen);
 }
 
-SQLRETURN SQL_API SQLMoreResults(SQLHSTMT stmt) {
-  return timestream::SQLMoreResults(stmt);
+SQLRETURN SQL_API SQLColumnPrivileges(
+    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
+    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+    SQLSMALLINT tableNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
+  return timestream::SQLColumnPrivileges(
+      stmt, catalogName, catalogNameLen, schemaName, schemaNameLen, tableName,
+      tableNameLen, columnName, columnNameLen);
 }
 
-SQLRETURN SQL_API SQLBindParameter(SQLHSTMT stmt, SQLUSMALLINT paramIdx,
-                                   SQLSMALLINT ioType, SQLSMALLINT bufferType,
-                                   SQLSMALLINT paramSqlType, SQLULEN columnSize,
-                                   SQLSMALLINT decDigits, SQLPOINTER buffer,
-                                   SQLLEN bufferLen, SQLLEN* resLen) {
-  return timestream::SQLBindParameter(stmt, paramIdx, ioType, bufferType,
-                                  paramSqlType, columnSize, decDigits, buffer,
-                                  bufferLen, resLen);
+SQLRETURN SQL_API SQLMoreResults(SQLHSTMT stmt) {
+  return timestream::SQLMoreResults(stmt);
 }
 
 SQLRETURN SQL_API SQLNativeSql(SQLHDBC conn, SQLWCHAR* inQuery,
@@ -248,10 +272,6 @@ SQLRETURN SQL_API SQLPrimaryKeys(SQLHSTMT stmt, SQLWCHAR* catalogName,
                                 schemaNameLen, tableName, tableNameLen);
 }
 
-SQLRETURN SQL_API SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt) {
-  return timestream::SQLNumParams(stmt, paramCnt);
-}
-
 SQLRETURN SQL_API SQLGetDiagField(SQLSMALLINT handleType, SQLHANDLE handle,
                                   SQLSMALLINT recNum, SQLSMALLINT diagId,
                                   SQLPOINTER buffer, SQLSMALLINT bufferLen,
@@ -270,11 +290,6 @@ SQLRETURN SQL_API SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
 
 SQLRETURN SQL_API SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT type) {
   return timestream::SQLGetTypeInfo(stmt, type);
-}
-
-SQLRETURN SQL_API SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
-                             SQLSMALLINT completionType) {
-  return timestream::SQLEndTran(handleType, handle, completionType);
 }
 
 SQLRETURN SQL_API SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum,
@@ -306,21 +321,32 @@ SQLRETURN SQL_API SQLSpecialColumns(
                                    tableNameLen, scope, nullable);
 }
 
-SQLRETURN SQL_API SQLParamData(SQLHSTMT stmt, SQLPOINTER* value) {
-  return timestream::SQLParamData(stmt, value);
+SQLRETURN SQL_API SQLStatistics(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                SQLSMALLINT catalogNameLen,
+                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
+                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
+                                SQLUSMALLINT unique, SQLUSMALLINT reserved) {
+  return timestream::SQLStatistics(stmt, catalogName, catalogNameLen,
+                                       schemaName, schemaNameLen, tableName,
+                                       tableNameLen, unique, reserved);
 }
 
-SQLRETURN SQL_API SQLPutData(SQLHSTMT stmt, SQLPOINTER data,
-                             SQLLEN strLengthOrIndicator) {
-  return timestream::SQLPutData(stmt, data, strLengthOrIndicator);
+SQLRETURN SQL_API SQLProcedureColumns(
+    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
+    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* procName,
+    SQLSMALLINT procNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
+  return timestream::SQLProcedureColumns(
+      stmt, catalogName, catalogNameLen, schemaName, schemaNameLen, procName,
+      procNameLen, columnName, columnNameLen);
 }
 
-SQLRETURN SQL_API SQLDescribeParam(SQLHSTMT stmt, SQLUSMALLINT paramNum,
-                                   SQLSMALLINT* dataType, SQLULEN* paramSize,
-                                   SQLSMALLINT* decimalDigits,
-                                   SQLSMALLINT* nullable) {
-  return timestream::SQLDescribeParam(stmt, paramNum, dataType, paramSize,
-                                  decimalDigits, nullable);
+SQLRETURN SQL_API SQLProcedures(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                SQLSMALLINT catalogNameLen,
+                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
+                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen) {
+  return timestream::SQLProcedures(
+      stmt, catalogName, catalogNameLen, schemaName, schemaNameLen, tableName,
+      tableNameLen);
 }
 
 SQLRETURN SQL_API SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt,
@@ -359,7 +385,7 @@ SQLRETURN SQL_API SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
   IGNITE_UNUSED(strAttrResLen);
   IGNITE_UNUSED(numAttrBuf);
 
-  LOG_MSG("SQLColAttributes called");
+  LOG_DEBUG_MSG("SQLColAttributes called");
   return SQL_SUCCESS;
 }
 
@@ -371,7 +397,7 @@ SQLRETURN SQL_API SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
   IGNITE_UNUSED(nameBufLen);
   IGNITE_UNUSED(nameResLen);
 
-  LOG_MSG("SQLGetCursorName called");
+  LOG_DEBUG_MSG("SQLGetCursorName called");
   return SQL_SUCCESS;
 }
 
@@ -381,7 +407,7 @@ SQLRETURN SQL_API SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
   IGNITE_UNUSED(name);
   IGNITE_UNUSED(nameLen);
 
-  LOG_MSG("SQLSetCursorName called");
+  LOG_DEBUG_MSG("SQLSetCursorName called");
   return SQL_SUCCESS;
 }
 
@@ -408,7 +434,7 @@ SQLRETURN SQL_API SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
   IGNITE_UNUSED(option);
   IGNITE_UNUSED(value);
 
-  LOG_MSG("SQLGetStmtOption called");
+  LOG_DEBUG_MSG("SQLGetStmtOption called");
   return SQL_SUCCESS;
 }
 
@@ -418,26 +444,7 @@ SQLRETURN SQL_API SQLSetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
   IGNITE_UNUSED(option);
   IGNITE_UNUSED(value);
 
-  LOG_MSG("SQLSetStmtOption called");
-  return SQL_SUCCESS;
-}
-
-SQLRETURN SQL_API SQLStatistics(SQLHSTMT stmt, SQLWCHAR* catalogName,
-                                SQLSMALLINT catalogNameLen,
-                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
-                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
-                                SQLUSMALLINT unique, SQLUSMALLINT reserved) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(catalogName);
-  IGNITE_UNUSED(catalogNameLen);
-  IGNITE_UNUSED(schemaName);
-  IGNITE_UNUSED(schemaNameLen);
-  IGNITE_UNUSED(tableName);
-  IGNITE_UNUSED(tableNameLen);
-  IGNITE_UNUSED(unique);
-  IGNITE_UNUSED(reserved);
-
-  LOG_MSG("SQLStatistics called");
+  LOG_DEBUG_MSG("SQLSetStmtOption called");
   return SQL_SUCCESS;
 }
 
@@ -453,37 +460,20 @@ SQLRETURN SQL_API SQLBrowseConnect(SQLHDBC conn, SQLWCHAR* inConnectionStr,
   IGNITE_UNUSED(outConnectionStrBufLen);
   IGNITE_UNUSED(outConnectionStrResLen);
 
-  LOG_MSG("SQLBrowseConnect called");
-  return SQL_SUCCESS;
-}
-
-SQLRETURN SQL_API SQLProcedureColumns(
-    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
-    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* procName,
-    SQLSMALLINT procNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(catalogName);
-  IGNITE_UNUSED(catalogNameLen);
-  IGNITE_UNUSED(schemaName);
-  IGNITE_UNUSED(schemaNameLen);
-  IGNITE_UNUSED(procName);
-  IGNITE_UNUSED(procNameLen);
-  IGNITE_UNUSED(columnName);
-  IGNITE_UNUSED(columnNameLen);
-
-  LOG_MSG("SQLProcedureColumns called");
+  LOG_DEBUG_MSG("SQLBrowseConnect called");
   return SQL_SUCCESS;
 }
 
 SQLRETURN SQL_API SQLSetPos(SQLHSTMT stmt, SQLSETPOSIROW rowNum,
                             SQLUSMALLINT operation, SQLUSMALLINT lockType) {
-  IGNITE_UNUSED(stmt);
   IGNITE_UNUSED(rowNum);
   IGNITE_UNUSED(operation);
   IGNITE_UNUSED(lockType);
 
-  LOG_MSG("SQLSetPos called");
-  return SQL_SUCCESS;
+  LOG_DEBUG_MSG("unsupported function SQLSetPos called");
+
+  STMT_UNSUPPORTED_FUNC(stmt, "SQLSetPos is not supported.");
+  return SQL_ERROR;
 }
 
 SQLRETURN SQL_API SQLSetScrollOptions(SQLHSTMT stmt, SQLUSMALLINT concurrency,
@@ -494,42 +484,36 @@ SQLRETURN SQL_API SQLSetScrollOptions(SQLHSTMT stmt, SQLUSMALLINT concurrency,
   IGNITE_UNUSED(crowKeyset);
   IGNITE_UNUSED(crowRowset);
 
-  LOG_MSG("SQLSetScrollOptions called");
+  LOG_DEBUG_MSG("SQLSetScrollOptions called");
   return SQL_SUCCESS;
 }
 
 SQLRETURN SQL_API SQLBulkOperations(SQLHSTMT stmt, SQLUSMALLINT operation) {
-  IGNITE_UNUSED(stmt);
   IGNITE_UNUSED(operation);
 
-  LOG_MSG("SQLBulkOperations called");
-  return SQL_SUCCESS;
-}
+  LOG_DEBUG_MSG("Unsupported function SQLBulkOperations called");
 
-SQLRETURN SQL_API SQLTablePrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
-                                     SQLSMALLINT catalogNameLen,
-                                     SQLWCHAR* schemaName,
-                                     SQLSMALLINT schemaNameLen,
-                                     SQLWCHAR* tableName,
-                                     SQLSMALLINT tableNameLen) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(catalogName);
-  IGNITE_UNUSED(catalogNameLen);
-  IGNITE_UNUSED(schemaName);
-  IGNITE_UNUSED(schemaNameLen);
-  IGNITE_UNUSED(tableName);
-  IGNITE_UNUSED(tableNameLen);
-
-  LOG_MSG("SQLTablePrivileges called");
-  return SQL_SUCCESS;
+  CONN_UNSUPPORTED_FUNC(stmt, "SQLBulkOperations is not supported.");
+  return SQL_ERROR;
 }
 
 SQLRETURN SQL_API SQLCopyDesc(SQLHDESC src, SQLHDESC dst) {
   IGNITE_UNUSED(src);
   IGNITE_UNUSED(dst);
 
-  LOG_MSG("SQLCopyDesc called");
+  LOG_DEBUG_MSG("SQLCopyDesc called");
   return SQL_SUCCESS;
+}
+
+SQLRETURN SQL_API SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
+                             SQLSMALLINT completionType) {
+  IGNITE_UNUSED(handleType);
+  IGNITE_UNUSED(completionType);
+
+  LOG_DEBUG_MSG("Unsupported function SQLEndTran called");
+
+  CONN_UNSUPPORTED_FUNC(handle, "SQLEndTran is not supported.");
+  return SQL_ERROR;
 }
 
 SQLRETURN SQL_API SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
@@ -542,7 +526,7 @@ SQLRETURN SQL_API SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
   IGNITE_UNUSED(bufferLen);
   IGNITE_UNUSED(resLen);
 
-  LOG_MSG("SQLGetDescField called");
+  LOG_DEBUG_MSG("SQLGetDescField called");
   return SQL_SUCCESS;
 }
 
@@ -552,7 +536,6 @@ SQLRETURN SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
                                 SQLSMALLINT* type, SQLSMALLINT* subType,
                                 SQLLEN* len, SQLSMALLINT* precision,
                                 SQLSMALLINT* scale, SQLSMALLINT* nullable) {
-  IGNITE_UNUSED(DescriptorHandle);
   IGNITE_UNUSED(RecNumber);
   IGNITE_UNUSED(nameBuffer);
   IGNITE_UNUSED(nameBufferLen);
@@ -564,8 +547,8 @@ SQLRETURN SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
   IGNITE_UNUSED(scale);
   IGNITE_UNUSED(nullable);
 
-  LOG_MSG("SQLGetDescRec called");
-  return SQL_SUCCESS;
+  LOG_DEBUG_MSG("unsupported function SQLGetDescRec called");
+  return SQL_ERROR;
 }
 
 SQLRETURN SQL_API SQLSetDescField(SQLHDESC descr, SQLSMALLINT recNum,
@@ -577,7 +560,7 @@ SQLRETURN SQL_API SQLSetDescField(SQLHDESC descr, SQLSMALLINT recNum,
   IGNITE_UNUSED(buffer);
   IGNITE_UNUSED(bufferLen);
 
-  LOG_MSG("SQLSetDescField called");
+  LOG_DEBUG_MSG("SQLSetDescField called");
   return SQL_SUCCESS;
 }
 
@@ -586,7 +569,6 @@ SQLRETURN SQL_API SQLSetDescRec(SQLHDESC descr, SQLSMALLINT recNum,
                                 SQLLEN len, SQLSMALLINT precision,
                                 SQLSMALLINT scale, SQLPOINTER buffer,
                                 SQLLEN* resLen, SQLLEN* id) {
-  IGNITE_UNUSED(descr);
   IGNITE_UNUSED(recNum);
   IGNITE_UNUSED(type);
   IGNITE_UNUSED(subType);
@@ -597,26 +579,54 @@ SQLRETURN SQL_API SQLSetDescRec(SQLHDESC descr, SQLSMALLINT recNum,
   IGNITE_UNUSED(resLen);
   IGNITE_UNUSED(id);
 
-  LOG_MSG("SQLSetDescRec called");
-  return SQL_SUCCESS;
+  LOG_DEBUG_MSG("unsupported function SQLSetDescRec called");
+  return SQL_ERROR;
 }
 
-SQLRETURN SQL_API SQLColumnPrivileges(
-    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
-    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
-    SQLSMALLINT tableNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(catalogName);
-  IGNITE_UNUSED(catalogNameLen);
-  IGNITE_UNUSED(schemaName);
-  IGNITE_UNUSED(schemaNameLen);
-  IGNITE_UNUSED(tableName);
-  IGNITE_UNUSED(tableNameLen);
-  IGNITE_UNUSED(columnName);
-  IGNITE_UNUSED(columnNameLen);
+SQLRETURN SQL_API SQLBindParameter(SQLHSTMT stmt, SQLUSMALLINT paramIdx,
+                                   SQLSMALLINT ioType, SQLSMALLINT bufferType,
+                                   SQLSMALLINT paramSqlType, SQLULEN columnSize,
+                                   SQLSMALLINT decDigits, SQLPOINTER buffer,
+                                   SQLLEN bufferLen, SQLLEN* resLen) {
+  IGNITE_UNUSED(paramIdx);
+  IGNITE_UNUSED(ioType);
+  IGNITE_UNUSED(bufferType);
+  IGNITE_UNUSED(paramSqlType);
+  IGNITE_UNUSED(columnSize);
+  IGNITE_UNUSED(decDigits);
+  IGNITE_UNUSED(buffer);
+  IGNITE_UNUSED(bufferLen);
+  IGNITE_UNUSED(resLen);
 
-  LOG_MSG("SQLColumnPrivileges called");
-  return SQL_SUCCESS;
+  LOG_DEBUG_MSG("unsupported function SQLBindParameter called");
+
+  STMT_UNSUPPORTED_FUNC(stmt, "SQLBindParameter is not supported.");
+  return SQL_ERROR;
+}
+
+SQLRETURN SQL_API SQLDescribeParam(SQLHSTMT stmt, SQLUSMALLINT paramNum,
+                                   SQLSMALLINT* dataType, SQLULEN* paramSize,
+                                   SQLSMALLINT* decimalDigits,
+                                   SQLSMALLINT* nullable) {
+  IGNITE_UNUSED(paramNum);
+  IGNITE_UNUSED(dataType);
+  IGNITE_UNUSED(paramSize);
+  IGNITE_UNUSED(decimalDigits);
+  IGNITE_UNUSED(nullable);
+
+  LOG_DEBUG_MSG("unsupported function SQLDescribeParam called");
+
+  STMT_UNSUPPORTED_FUNC(stmt, "SQLDescribeParam is not supported.");
+  return SQL_ERROR;
+}
+
+SQLRETURN SQL_API SQLParamData(SQLHSTMT stmt, SQLPOINTER* value) {
+  IGNITE_UNUSED(value);
+
+  LOG_DEBUG_MSG("unsupported function SQLParamData called");
+
+  STMT_UNSUPPORTED_FUNC(stmt, "SQLParamData is not supported.");
+  return SQL_ERROR;
 }
 
 SQLRETURN SQL_API SQLParamOptions(SQLHSTMT stmt, SQLULEN paramSetSize,
@@ -625,22 +635,26 @@ SQLRETURN SQL_API SQLParamOptions(SQLHSTMT stmt, SQLULEN paramSetSize,
   IGNITE_UNUSED(paramSetSize);
   IGNITE_UNUSED(paramsProcessed);
 
-  LOG_MSG("SQLParamOptions called");
+  LOG_DEBUG_MSG("SQLParamOptions called");
   return SQL_SUCCESS;
 }
 
-SQLRETURN SQL_API SQLProcedures(SQLHSTMT stmt, SQLWCHAR* catalogName,
-                                SQLSMALLINT catalogNameLen,
-                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
-                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(catalogName);
-  IGNITE_UNUSED(catalogNameLen);
-  IGNITE_UNUSED(schemaName);
-  IGNITE_UNUSED(schemaNameLen);
-  IGNITE_UNUSED(tableName);
-  IGNITE_UNUSED(tableNameLen);
+SQLRETURN SQL_API SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt) {
+  IGNITE_UNUSED(paramCnt);
 
-  LOG_MSG("SQLProcedures called");
-  return SQL_SUCCESS;
+  LOG_DEBUG_MSG("unsupported function SQLNumParams called");
+
+  STMT_UNSUPPORTED_FUNC(stmt, "SQLNumParams is not supported.");
+  return SQL_ERROR;
+}
+
+SQLRETURN SQL_API SQLPutData(SQLHSTMT stmt, SQLPOINTER data,
+                             SQLLEN strLengthOrIndicator) {
+  IGNITE_UNUSED(data);
+  IGNITE_UNUSED(strLengthOrIndicator);
+
+  LOG_DEBUG_MSG("unsupported function SQLPutData called");
+
+  STMT_UNSUPPORTED_FUNC(stmt, "SQLPutData is not supported.");
+  return SQL_ERROR;
 }

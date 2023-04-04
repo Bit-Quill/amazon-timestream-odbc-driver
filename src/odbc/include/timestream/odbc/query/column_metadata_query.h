@@ -21,7 +21,7 @@
 #ifndef _TIMESTREAM_ODBC_QUERY_COLUMN_METADATA_QUERY
 #define _TIMESTREAM_ODBC_QUERY_COLUMN_METADATA_QUERY
 
-#include "ignite/odbc/query/query.h"
+#include "timestream/odbc/query/query.h"
 #include "timestream/odbc/query/data_query.h"
 #include "timestream/odbc/query/table_metadata_query.h"
 
@@ -34,7 +34,7 @@ namespace query {
 /**
  * Query.
  */
-class ColumnMetadataQuery : public ignite::odbc::query::Query {
+class ColumnMetadataQuery : public timestream::odbc::query::Query {
  public:
   /**
    * Constructor.

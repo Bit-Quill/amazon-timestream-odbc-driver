@@ -30,9 +30,9 @@
 #include "timestream/odbc/common_types.h"
 #include "timestream/odbc/diagnostic/diagnosable_adapter.h"
 #include "timestream/odbc/meta/column_meta.h"
-#include "ignite/odbc/query/query.h"
+#include "timestream/odbc/query/query.h"
 
-using ignite::odbc::query::Query;
+using timestream::odbc::query::Query;
 
 namespace timestream {
 namespace odbc {
@@ -83,26 +83,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @return Columns number.
    */
   int32_t GetColumnNumber();
-
-  /**
-   * Bind parameter.
-   *
-   * @param paramIdx Parameter index.
-   * @param ioType Type of the parameter (input/output).
-   * @param bufferType The data type of the parameter.
-   * @param paramSqlType The SQL data type of the parameter.
-   * @param columnSize  The size of the column or expression of the
-   * corresponding parameter marker.
-   * @param decDigits  The decimal digits of the column or expression of the
-   * corresponding parameter marker.
-   * @param buffer A pointer to a buffer for the parameter's data.
-   * @param bufferLen Length of the ParameterValuePtr buffer in bytes.
-   * @param resLen A pointer to a buffer for the parameter's length.
-   */
-  void BindParameter(uint16_t paramIdx, int16_t ioType, int16_t bufferType,
-                     int16_t paramSqlType, SqlUlen columnSize,
-                     int16_t decDigits, void* buffer, SqlLen bufferLen,
-                     SqlLen* resLen);
 
   /**
    * Set statement attribute.
@@ -184,48 +164,44 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
       const boost::optional< std::string >& tableType);
 
   /**
-   * Get foreign keys.
-   *
-   * @param primaryCatalog Primary key catalog name.
-   * @param primarySchema Primary key schema name.
-   * @param primaryTable Primary key table name.
-   * @param foreignCatalog Foreign key catalog name.
-   * @param foreignSchema Foreign key schema name.
-   * @param foreignTable Foreign key table name.
+   * Get foreign keys. Empty result will be returned.
    */
-  void ExecuteGetForeignKeysQuery(
-      const std::string& primaryCatalog, const std::string& primarySchema,
-      const std::string& primaryTable,
-      const boost::optional< std::string >& foreignCatalog,
-      const boost::optional< std::string >& foreignSchema,
-      const std::string& foreignTable);
+  void ExecuteGetForeignKeysQuery();
 
   /**
-   * Get primary keys.
-   *
-   * @param catalog Catalog name.
-   * @param schema Schema name.
-   * @param table Table name.
+   * Get primary keys. Empty result will be returned.
    */
-  void ExecuteGetPrimaryKeysQuery(const boost::optional< std::string >& catalog,
-                                  const boost::optional< std::string >& schema,
-                                  const boost::optional< std::string >& table);
+  void ExecuteGetPrimaryKeysQuery();
 
   /**
-   * Get special columns.
-   *
-   * @param type Special column type.
-   * @param catalog Catalog name.
-   * @param schema Schema name.
-   * @param table Table name.
-   * @param scope Minimum required scope of the rowid.
-   * @param type Determines whether to return special columns that
-   *             can have a NULL value.
+   * Get special columns. Empty result will be returned.
    */
-  void ExecuteSpecialColumnsQuery(int16_t type, const std::string& catalog,
-                                  const std::string& schema,
-                                  const std::string& table, int16_t scope,
-                                  int16_t nullable);
+  void ExecuteSpecialColumnsQuery();
+
+  /**
+   * Get statistics. Empty result will be returned.
+   */
+  void ExecuteStatisticsQuery();
+
+  /**
+   * Get procedure columns. Empty result will be returned.
+   */
+  void ExecuteProcedureColumnsQuery();
+
+  /**
+   * Get procedures. Empty result will be returned.
+   */
+  void ExecuteProceduresQuery();
+
+  /**
+   * Get column privileges. Empty result will be returned.
+   */
+  void ExecuteColumnPrivilegesQuery();
+
+  /**
+   * Get table privileges. Empty result will be returned.
+   */
+  void ExecuteTablePrivilegesQuery();
 
   /**
    * Get type info.
@@ -326,33 +302,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SQLUSMALLINT* GetRowStatusesPtr();
 
-  /**
-   * Select next parameter data for which is required.
-   *
-   * @param paramPtr Pointer to param id stored here.
-   */
-  void SelectParam(void** paramPtr);
-
-  /**
-   * Puts data for previously selected parameter or column.
-   *
-   * @param data Data.
-   * @param len Data length.
-   */
-  void PutData(void* data, SqlLen len);
-
-  /**
-   * Get type info of the parameter of the prepared statement.
-   *
-   * @param paramNum - Parameter index.
-   * @param dataType - Data type.
-   * @param paramSize - Size of the parameter.
-   * @param decimalDigits - Decimal digits.
-   * @param nullable - Nullability flag.
-   */
-  void DescribeParam(int16_t paramNum, int16_t* dataType, SqlUlen* paramSize,
-                     int16_t* decimalDigits, int16_t* nullable);
-
  protected:
   /**
    * Constructor.
@@ -399,29 +348,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   SqlResult::Type InternalBindColumn(uint16_t columnIdx, int16_t targetType,
                                      void* targetValue, SqlLen bufferLength,
                                      SqlLen* strLengthOrIndicator);
-
-  /**
-   * Bind parameter.
-   *
-   * @param paramIdx Parameter index.
-   * @param ioType Type of the parameter (input/output).
-   * @param bufferType The data type of the parameter.
-   * @param paramSqlType The SQL data type of the parameter.
-   * @param columnSize  The size of the column or expression of the
-   * corresponding parameter marker.
-   * @param decDigits  The decimal digits of the column or expression of the
-   * corresponding parameter marker.
-   * @param buffer A pointer to a buffer for the parameter's data.
-   * @param bufferLen Length of the ParameterValuePtr buffer in bytes.
-   * @param resLen A pointer to a buffer for the parameter's length.
-   * @return Operation result.
-   */
-  SqlResult::Type InternalBindParameter(uint16_t paramIdx, int16_t ioType,
-                                        int16_t bufferType,
-                                        int16_t paramSqlType,
-                                        SqlUlen columnSize, int16_t decDigits,
-                                        void* buffer, SqlLen bufferLen,
-                                        SqlLen* resLen);
 
   /**
    * Set statement attribute.
@@ -572,52 +498,60 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
       const boost::optional< std::string >& tableType);
 
   /**
-   * Get foreign keys.
-   * Params primaryCatalog, primarySchema, and primaryTable are ignored.
-   *
-   * @param primaryCatalog Primary key catalog name.
-   * @param primarySchema Primary key schema name.
-   * @param primaryTable Primary key table name.
-   * @param foreignCatalog Foreign key catalog name.
-   * @param foreignSchema Foreign key schema name.
-   * @param foreignTable Foreign key table name.
+   * Get foreign keys. Empty result will be returned.
+   * 
    * @return Operation result.
    */
-  SqlResult::Type InternalExecuteGetForeignKeysQuery(
-      const std::string& primaryCatalog, const std::string& primarySchema,
-      const std::string& primaryTable,
-      const boost::optional< std::string >& foreignCatalog,
-      const boost::optional< std::string >& foreignSchema,
-      const std::string& foreignTable);
+  SqlResult::Type InternalExecuteGetForeignKeysQuery();
 
   /**
-   * Get primary keys.
-   *
-   * @param catalog Catalog name.
-   * @param schema Schema name.
-   * @param table Table name.
+   * Get primary keys. Empty result will be returned.
+   * 
    * @return Operation result.
    */
-  SqlResult::Type InternalExecuteGetPrimaryKeysQuery(
-      const boost::optional< std::string >& catalog,
-      const boost::optional< std::string >& schema,
-      const boost::optional< std::string >& table);
+  SqlResult::Type InternalExecuteGetPrimaryKeysQuery();
 
   /**
-   * Get special columns.
-   *
-   * @param type Special column type.
-   * @param catalog Catalog name.
-   * @param schema Schema name.
-   * @param table Table name.
-   * @param scope Minimum required scope of the rowid.
-   * @param nullable Determines whether to return special columns
-   *                 that can have a NULL value.
+   * Get special columns. Empty result will be returned.
+   * 
    * @return Operation result.
    */
-  SqlResult::Type InternalExecuteSpecialColumnsQuery(
-      int16_t type, const std::string& catalog, const std::string& schema,
-      const std::string& table, int16_t scope, int16_t nullable);
+  SqlResult::Type InternalExecuteSpecialColumnsQuery();
+
+  /**
+   * Get statistics. Empty result will be returned.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type InternalExecuteStatisticsQuery();
+
+  /**
+   * Get procedure columns. Empty result will be returned.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type InternalExecuteProcedureColumnsQuery();
+
+  /**
+   * Get procedures. Empty result will be returned.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type InternalExecuteProceduresQuery();
+
+  /**
+   * Get column privileges. Empty result will be returned.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type InternalExecuteColumnPrivilegesQuery();
+
+  /**
+   * Get table privileges. Empty result will be returned.
+   *
+   * @return Operation result.
+   */
+  SqlResult::Type InternalExecuteTablePrivilegesQuery();
 
   /**
    * Get type info.
@@ -658,38 +592,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @return Operation result.
    */
   SqlResult::Type InternalAffectedRows(int64_t& rowCnt);
-
-  /**
-   * Select next parameter data for which is required.
-   *
-   * @param paramPtr Pointer to param id stored here.
-   * @return Operation result.
-   */
-  SqlResult::Type InternalSelectParam(void** paramPtr);
-
-  /**
-   * Puts data for previously selected parameter or column.
-   *
-   * @param data Data.
-   * @param len Data length.
-   * @return Operation result.
-   */
-  SqlResult::Type InternalPutData(void* data, SqlLen len);
-
-  /**
-   * Get type info of the parameter of the prepared statement.
-   *
-   * @param paramNum - Parameter index.
-   * @param dataType - Data type.
-   * @param paramSize - Size of the parameter.
-   * @param decimalDigits - Decimal digits.
-   * @param nullable - Nullability flag.
-   * @return Operation result.
-   */
-  SqlResult::Type InternalDescribeParam(int16_t paramNum, int16_t* dataType,
-                                        SqlUlen* paramSize,
-                                        int16_t* decimalDigits,
-                                        int16_t* nullable);
 
   /**
    * Make request to data source to update parameters metadata.

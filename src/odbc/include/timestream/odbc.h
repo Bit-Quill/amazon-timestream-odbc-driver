@@ -100,19 +100,25 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT tableNameLen, SQLWCHAR* tableType,
                     SQLSMALLINT tableTypeLen);
 
+SQLRETURN SQLTablePrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                     SQLSMALLINT catalogNameLen,
+                                     SQLWCHAR* schemaName,
+                                     SQLSMALLINT schemaNameLen,
+                                     SQLWCHAR* tableName,
+                                     SQLSMALLINT tableNameLen);
+
 SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                      SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                      SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                      SQLSMALLINT tableNameLen, SQLWCHAR* columnName,
                      SQLSMALLINT columnNameLen);
 
-SQLRETURN SQLMoreResults(SQLHSTMT stmt);
+SQLRETURN SQLColumnPrivileges(
+    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
+    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+    SQLSMALLINT tableNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen);
 
-SQLRETURN SQLBindParameter(SQLHSTMT stmt, SQLUSMALLINT paramIdx,
-                           SQLSMALLINT ioType, SQLSMALLINT bufferType,
-                           SQLSMALLINT paramSqlType, SQLULEN columnSize,
-                           SQLSMALLINT decDigits, SQLPOINTER buffer,
-                           SQLLEN bufferLen, SQLLEN* resLen);
+SQLRETURN SQLMoreResults(SQLHSTMT stmt);
 
 SQLRETURN SQLNativeSql(SQLHDBC conn, SQLWCHAR* inQuery, SQLINTEGER inQueryLen,
                        SQLWCHAR* outQueryBuffer, SQLINTEGER outQueryBufferLen,
@@ -131,12 +137,6 @@ SQLRETURN SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT columnNum,
 
 SQLRETURN SQLRowCount(SQLHSTMT stmt, SQLLEN* rowCnt);
 
-/** Currently, we only support the following case :
- * If *FKTableName contains a table name, SQLForeignKeys returns a result set
- * that contains  all the foreign keys in the specified table that point to
- * primary keys in other tables, and the primary keys in the other tables to
- * which they refer. The list of foreign keys in the specified table does not
- * contain foreign keys that refer to unique constraints in other tables. */
 SQLRETURN SQLForeignKeys(
     SQLHSTMT stmt, SQLWCHAR* primaryCatalogName,
     SQLSMALLINT primaryCatalogNameLen, SQLWCHAR* primarySchemaName,
@@ -157,8 +157,6 @@ SQLRETURN SQLPrimaryKeys(SQLHSTMT stmt, SQLWCHAR* catalogName,
                          SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                          SQLSMALLINT tableNameLen);
 
-SQLRETURN SQLNumParams(SQLHSTMT stmt, SQLSMALLINT* paramCnt);
-
 SQLRETURN SQLGetDiagField(SQLSMALLINT handleType, SQLHANDLE handle,
                           SQLSMALLINT recNum, SQLSMALLINT diagId,
                           SQLPOINTER buffer, SQLSMALLINT bufferLen,
@@ -170,9 +168,6 @@ SQLRETURN SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
                         SQLSMALLINT msgBufferLen, SQLSMALLINT* msgLen);
 
 SQLRETURN SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT type);
-
-SQLRETURN SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
-                     SQLSMALLINT completionType);
 
 SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
                      SQLPOINTER targetValue, SQLLEN bufferLength,
@@ -190,24 +185,31 @@ SQLRETURN SQLSpecialColumns(SQLHSTMT stmt, SQLSMALLINT idType,
                             SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
                             SQLSMALLINT scope, SQLSMALLINT nullable);
 
-SQLRETURN SQLParamData(SQLHSTMT stmt, SQLPOINTER* value);
+SQLRETURN SQLStatistics(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                SQLSMALLINT catalogNameLen,
+                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
+                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
+                                SQLUSMALLINT unique, SQLUSMALLINT reserved);
 
-SQLRETURN SQLPutData(SQLHSTMT stmt, SQLPOINTER data,
-                     SQLLEN strLengthOrIndicator);
+SQLRETURN SQLProcedureColumns(
+    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
+    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* procName,
+    SQLSMALLINT procNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen);
 
-SQLRETURN SQLDescribeParam(SQLHSTMT stmt, SQLUSMALLINT paramNum,
-                           SQLSMALLINT* dataType, SQLULEN* paramSize,
-                           SQLSMALLINT* decimalDigits, SQLSMALLINT* nullable);
+SQLRETURN SQLProcedures(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                                SQLSMALLINT catalogNameLen,
+                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
+                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen);
 
 SQLRETURN SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt, SQLWCHAR* state,
                    SQLINTEGER* error, SQLWCHAR* msgBuf, SQLSMALLINT msgBufLen,
                    SQLSMALLINT* msgResLen);
 
-SQLRETURN SQL_API SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
+SQLRETURN SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
                                     SQLPOINTER valueBuf, SQLINTEGER valueBufLen,
                                     SQLINTEGER* valueResLen);
 
-SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
+SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
                                     SQLPOINTER value, SQLINTEGER valueLen);
 }  // namespace timestream
 

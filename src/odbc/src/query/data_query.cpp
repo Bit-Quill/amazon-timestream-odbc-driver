@@ -33,7 +33,7 @@ namespace query {
 DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
                      Connection& connection, const std::string& sql,
                      int32_t& timeout)
-    : Query(diag, ignite::odbc::query::QueryType::DATA),
+    : Query(diag, timestream::odbc::query::QueryType::DATA),
       connection_(connection),
       sql_(sql),
       resultMetaAvailable_(false),
