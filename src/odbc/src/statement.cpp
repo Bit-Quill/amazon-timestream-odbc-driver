@@ -439,7 +439,15 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
     return SqlResult::AI_ERROR;
   }
 
-  return currentQuery->Execute();
+  SqlResult::Type retval = currentQuery->Execute();
+  // For SQLExecute() when the query result is empty according to Microsoft document it should be SUCCESS.
+  // SQL_NO_DATA is only used for DML statements. The DataQuery::Execute() needs to keep AI_NO_DATA as it is needed by 
+  // TableMetadataQuery::getMatchedTables().
+  if (retval == SqlResult::AI_NO_DATA) {
+    AddStatusRecord(SqlState::S01000_GENERAL_WARNING, "Query result is empty");
+    retval = SqlResult::AI_SUCCESS_WITH_INFO;
+  }
+  return retval;
 }
 
 void Statement::CancelSqlQuery() {

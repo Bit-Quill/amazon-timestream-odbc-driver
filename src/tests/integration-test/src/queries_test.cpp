@@ -1388,23 +1388,14 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPaginationEmptyTable) {
       "select measure_name, time from data_queries_test_db.EmptyTable");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+  BOOST_REQUIRE_NE(
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt)
+          .find("01000: Query result is empty"),
+      std::string::npos);
 
   ret = SQLFetch(stmt);
-#ifdef _WIN32
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
-#else
-  // unixODBC DM/iODBC DM returns an error
-  BOOST_CHECK_EQUAL(SQL_ERROR, ret);
-  std::string error = GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt);
-#if defined(__APPLE__) || (defined(__linux__) && defined(__i386__))
-  std::string pattern = "Function sequence error";
-#else
-  std::string pattern = "Invalid cursor state";
-#endif  //__APPLE__
-  if (error.find(pattern) == std::string::npos)
-    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
-#endif  //_WIN32
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLRowCountWithNoResults) {
