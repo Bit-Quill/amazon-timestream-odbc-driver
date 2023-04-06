@@ -596,15 +596,22 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttribute) {
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  SQLColAttribute(stmt, 1, SQL_COLUMN_TABLE_NAME, buffer, sizeof(buffer),
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer),
                   &resLen, 0);
-  SQLColAttribute(stmt, 1, SQL_COLUMN_TABLE_NAME, buffer, sizeof(buffer), 0,
+  #ifndef __APPLE__
+  // On macOS machine with iODBC, iODBC driver manager will attempt to access StringLengthPtr 
+  // (the 6th parameter of SQLColAttribute) when buffer is non-empty, and segmentation fault will occur if StringLengthPtr is nullptr. 
+  // This behavior is out of the driver's control.
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer), 0,
                   &numericAttr);
-  SQLColAttribute(stmt, 1, SQL_COLUMN_TABLE_NAME, buffer, 0, &resLen,
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer),
+        0, 0);
+  #endif // __APPLE__
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, 0, &resLen,
                   &numericAttr);
-  SQLColAttribute(stmt, 1, SQL_COLUMN_TABLE_NAME, 0, sizeof(buffer), &resLen,
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, 0, sizeof(buffer), &resLen,
                   &numericAttr);
-  SQLColAttribute(stmt, 1, SQL_COLUMN_TABLE_NAME, 0, 0, 0, 0);
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, 0, 0, 0, 0);
 
   SQLColAttribute(stmt, 1, SQL_DESC_COUNT, buffer, sizeof(buffer), &resLen, 0);
   SQLColAttribute(stmt, 1, SQL_DESC_COUNT, buffer, sizeof(buffer), 0,

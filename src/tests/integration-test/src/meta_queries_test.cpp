@@ -225,7 +225,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
   void callSQLColAttribute(SQLHSTMT stmt, const SQLCHAR *query,
                            SQLSMALLINT fieldId,
                            const std::string &expectedVal) {
-    SQLWCHAR strBuf[1024];
+    SQLWCHAR strBuf[1024] = { 0 };
     std::vector< SQLWCHAR > wQuery =
         MakeSqlBuffer(reinterpret_cast< const char * >(query));
 
@@ -234,7 +234,11 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     if (!SQL_SUCCEEDED(ret) && ret != SQL_NO_DATA)
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-    ret = SQLColAttribute(stmt, 1, fieldId, strBuf, sizeof(strBuf), nullptr,
+    // resLen (6th parameter of SQLColAttribute) is unused, but it needs to be defined for macOS, 
+    // as iODBC will attempt to access resLen when strBuf is non-empty string.
+    // This behavior is out of the driver's control.
+    SQLSMALLINT resLen = 0;
+    ret = SQLColAttribute(stmt, 1, fieldId, strBuf, sizeof(strBuf), &resLen,
                           nullptr);
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -1660,7 +1664,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
   // 12th column
   for (int i = 0; i < 12; i++) {
     ret = SQLFetch(stmt);
-    BOOST_TEST_MESSAGE("i = " + i);
+    BOOST_TEST_MESSAGE("i = " + std::to_string(i));
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
