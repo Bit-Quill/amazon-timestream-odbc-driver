@@ -187,16 +187,37 @@ BOOST_AUTO_TEST_CASE(TestSQLBindParameter) {
   ConnectToTS();
 
   SQLINTEGER int1;
-  SQLLEN len1 = 0;
+  SQLLEN len1 = SQL_DATA_AT_EXEC;
 
-  SQLRETURN ret =
-      SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 100,
-                       100, &int1, sizeof(int1), &len1);
+  SQLRETURN ret = SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_LONG,
+                                   SQL_INTEGER, 0, 0, &int1, 0, &len1);
 
+  BOOST_REQUIRE(!SQL_SUCCEEDED(ret));
+
+  #ifdef __APPLE__
+  // SQLBindParameter is not a supported function. 
+  // On GitHub runner, iODBC returns SQL_INVALID_HANDLE when SQLBindParameter is
+  // called after a connection is made. This behavior is outside of driver's
+  // control.
+
+  // TODO [AT-1354] Check if making SQLGetFunctions return TRUE for SQLBindParameter will resolve
+  // the issue of SQL_INVALID_HANDLE being returned
+  // https://bitquill.atlassian.net/browse/AT-1354
+  if (ret != SQL_ERROR)
+    BOOST_REQUIRE_EQUAL(ret, SQL_INVALID_HANDLE);
+  else {
+    // On Ventura (macOS 13), iODBC calls SQLBindParameter normally and returns SQL_ERROR
+    // as expected.
+    CheckSQLStatementDiagnosticError("HYC00");
+    BOOST_REQUIRE_EQUAL("HYC00: SQLBindParameter is not supported.",
+                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+  #else
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLBindParameter is not supported.",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  #endif //__APPLE__
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLSetParam) {
@@ -206,7 +227,6 @@ BOOST_AUTO_TEST_CASE(TestSQLSetParam) {
   SQLINTEGER int1;
   SQLLEN len = 0;
 
-  // Everything is ok.
   SQLRETURN ret =
       SQLSetParam(stmt, 1, SQL_PARAM_INPUT, SQL_INTEGER, len, 100, &int1, &len);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
@@ -218,7 +238,17 @@ BOOST_AUTO_TEST_CASE(TestSQLBulkOperations) {
   ConnectToTS();
 
   SQLRETURN ret = SQLBulkOperations(stmt, SQL_ADD);
+
+  BOOST_REQUIRE(!SQL_SUCCEEDED(ret));
+
+  #ifdef __APPLE__
+  // SQLBulkOperations is not a supported function, this is indicated in SQLGetInfo.
+  // iODBC returns SQL_INVALID_HANDLE when SQLBulkOperations is called after a connection is made. 
+  // This behavior is outside of driver's control.
+  BOOST_REQUIRE_EQUAL(ret, SQL_INVALID_HANDLE);
+  #else
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  #endif // __APPLE__
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLSetPos) {

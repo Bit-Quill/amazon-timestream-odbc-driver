@@ -3037,59 +3037,6 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithTablesReturnsMany) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsOneFromLocalServer,
-                     *disabled()) {
-  std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
-
-  ConnectToTS();
-
-  SQLRETURN ret =
-      SQLPrimaryKeys(stmt, nullptr, 0, nullptr, 0, table.data(), SQL_NTS);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  // check result for COLUMN_NAME
-  CheckSingleRowResultSetWithGetData(stmt, 4, "meta_queries_test_001__id");
-}
-
-BOOST_AUTO_TEST_CASE(TestGetDataWithPrimaryKeysReturnsNone, *disabled()) {
-  std::vector< SQLWCHAR > empty = {0};
-  std::vector< SQLWCHAR > table = MakeSqlBuffer("meta_queries_test_001");
-
-  ConnectToTS();
-
-  SQLRETURN ret = SQLPrimaryKeys(stmt, nullptr, SQL_NTS, nullptr, SQL_NTS,
-                                 empty.data(), SQL_NTS);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
-
-  ret = SQLPrimaryKeys(stmt, empty.data(), SQL_NTS, empty.data(), SQL_NTS,
-                       empty.data(), SQL_NTS);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
-
-  ret = SQLPrimaryKeys(stmt, empty.data(), SQL_NTS, empty.data(), SQL_NTS,
-                       table.data(), SQL_NTS);
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
-}
-
 BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   ConnectToTS();
 
@@ -3379,10 +3326,6 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeys) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
-
   SQLSMALLINT columnCount = 0;
 
   ret = SQLNumResultCols(stmt, &columnCount);
@@ -3442,6 +3385,11 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeys) {
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 14, "DEFERRABILITY", SQL_INTEGER, 10, 0,
                                     SQL_NULLABLE);
+  
+  // Check SQL_NO_DATA is returned for SQLForeignKeys
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys) {
@@ -3455,10 +3403,6 @@ BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys) {
 
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3490,6 +3434,11 @@ BOOST_AUTO_TEST_CASE(TestSQLPrimaryKeys) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 6, "PK_NAME", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLPrimaryKeys
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns) {
@@ -3513,10 +3462,6 @@ BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns) {
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_ERROR(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3551,6 +3496,11 @@ BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns) {
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 8, "PSEUDO_COLUMN", SQL_INTEGER, 10, 0,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLSpecialColumns
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer3) {
@@ -3572,10 +3522,6 @@ BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer3) {
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_ERROR(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3631,6 +3577,11 @@ BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer3) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 13, "FILTER_CONDITION", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLStatistics
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer2) {
@@ -3653,10 +3604,6 @@ BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer2) {
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_ERROR(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3681,6 +3628,11 @@ BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer2) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 10, "COLLATION", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLStatistics
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLProcedureColumns) {
@@ -3702,10 +3654,6 @@ BOOST_AUTO_TEST_CASE(TestSQLProcedureColumns) {
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_ERROR(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3779,6 +3727,11 @@ BOOST_AUTO_TEST_CASE(TestSQLProcedureColumns) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 19, "IS_NULLABLE", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for TestSQLProcedureColumns
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLProcedures) {
@@ -3800,10 +3753,6 @@ BOOST_AUTO_TEST_CASE(TestSQLProcedures) {
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_ERROR(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3843,6 +3792,11 @@ BOOST_AUTO_TEST_CASE(TestSQLProcedures) {
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 8, "PROCEDURE_TYPE", SQL_INTEGER, 10,
                                     0, SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLProcedures
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLColumnPrivileges) {
@@ -3867,10 +3821,6 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnPrivileges) {
   if (!SQL_SUCCEEDED(ret)) {
     BOOST_ERROR(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3911,6 +3861,11 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnPrivileges) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 8, "IS_GRANTABLE", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLColumnPrivileges
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLTablePrivileges) {
@@ -3931,10 +3886,6 @@ BOOST_AUTO_TEST_CASE(TestSQLTablePrivileges) {
 
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
-  ret = SQLFetch(stmt);
-
-  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   SQLSMALLINT columnCount = 0;
 
@@ -3971,6 +3922,11 @@ BOOST_AUTO_TEST_CASE(TestSQLTablePrivileges) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 7, "IS_GRANTABLE", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
+
+  // Check SQL_NO_DATA is returned for SQLTablePrivileges
+  ret = SQLFetch(stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLCancelWithColumns) {
