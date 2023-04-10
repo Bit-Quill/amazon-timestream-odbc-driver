@@ -85,10 +85,13 @@ SqlResult::Type Statement::InternalBindColumn(uint16_t columnIdx,
     return SqlResult::AI_ERROR;
   }
 
-  if (bufferLength < 0) {
-    AddStatusRecord(
-        SqlState::SHY090_INVALID_STRING_OR_BUFFER_LENGTH,
-        "The value specified for the argument BufferLength was less than 0.");
+  if (bufferLength < 0
+      || (bufferLength == 0
+          && (driverType == OdbcNativeType::AI_CHAR
+              || driverType == OdbcNativeType::AI_WCHAR))) {
+    AddStatusRecord(SqlState::SHY090_INVALID_STRING_OR_BUFFER_LENGTH,
+                    "The value specified for the argument BufferLength was "
+                    "less than 0 or 0 for string types.");
 
     return SqlResult::AI_ERROR;
   }
@@ -407,8 +410,7 @@ SqlResult::Type Statement::InternalPrepareSqlQuery(const std::string& query) {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(
-      new query::DataQuery(*this, connection, query, timeout));
+  currentQuery.reset(new query::DataQuery(*this, connection, query, timeout));
 
   return SqlResult::AI_SUCCESS;
 }
@@ -467,7 +469,7 @@ SqlResult::Type Statement::InternalCancelSqlQuery() {
 
 void Statement::ExecuteGetColumnsMetaQuery(
     const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema, 
+    const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& column) {
   IGNITE_ODBC_API_CALL(
@@ -476,7 +478,7 @@ void Statement::ExecuteGetColumnsMetaQuery(
 
 SqlResult::Type Statement::InternalExecuteGetColumnsMetaQuery(
     const boost::optional< std::string >& catalog,
-    const boost::optional< std::string >& schema, 
+    const boost::optional< std::string >& schema,
     const boost::optional< std::string >& table,
     const boost::optional< std::string >& column) {
   if (currentQuery.get())
@@ -520,23 +522,20 @@ SqlResult::Type Statement::InternalExecuteGetForeignKeysQuery() {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(new query::ForeignKeysQuery(
-      *this));
+  currentQuery.reset(new query::ForeignKeysQuery(*this));
 
   return currentQuery->Execute();
 }
 
 void Statement::ExecuteGetPrimaryKeysQuery() {
-  IGNITE_ODBC_API_CALL(
-      InternalExecuteGetPrimaryKeysQuery());
+  IGNITE_ODBC_API_CALL(InternalExecuteGetPrimaryKeysQuery());
 }
 
 SqlResult::Type Statement::InternalExecuteGetPrimaryKeysQuery() {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(
-      new query::PrimaryKeysQuery(*this));
+  currentQuery.reset(new query::PrimaryKeysQuery(*this));
 
   return currentQuery->Execute();
 }
@@ -549,8 +548,7 @@ SqlResult::Type Statement::InternalExecuteSpecialColumnsQuery() {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(new query::SpecialColumnsQuery(
-      *this));
+  currentQuery.reset(new query::SpecialColumnsQuery(*this));
 
   return currentQuery->Execute();
 }
@@ -563,7 +561,8 @@ SqlResult::Type Statement::InternalExecuteStatisticsQuery() {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(new query::StatisticsQuery(*this, connection.GetEnvODBCVer()));
+  currentQuery.reset(
+      new query::StatisticsQuery(*this, connection.GetEnvODBCVer()));
 
   return currentQuery->Execute();
 }
@@ -589,8 +588,7 @@ SqlResult::Type Statement::InternalExecuteProceduresQuery() {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(
-      new query::ProceduresQuery(*this));
+  currentQuery.reset(new query::ProceduresQuery(*this));
 
   return currentQuery->Execute();
 }
@@ -918,8 +916,8 @@ SQLUSMALLINT* Statement::GetRowStatusesPtr() {
 }
 
 SqlResult::Type Statement::UpdateParamsMeta() {
-    // not supported
-    return SqlResult::AI_ERROR;
+  // not supported
+  return SqlResult::AI_ERROR;
 }
 
 uint16_t Statement::SqlResultToRowResult(SqlResult::Type value) {

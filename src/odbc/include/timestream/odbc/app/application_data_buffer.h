@@ -578,6 +578,29 @@ class ApplicationDataBuffer {
    */
   std::string GetTimestampString(tm& tmTime, int32_t fraction, const char* pattern);
 
+  /**
+   * Set the interval buffer type.
+   *
+   * @param buffer The interval buffer for output
+   */
+  void SetIntervalType(SQL_INTERVAL_STRUCT* buffer);
+
+  /**
+   * Set the interval buffer interval value.
+   *
+   * @param buffer The interval buffer for output
+   * @param value The value retrieved from Timestream
+   */
+  void SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer, const IntervalYearMonth& value);
+
+  /**
+   * Set the interval buffer interval value.
+   *
+   * @param buffer The interval buffer for output
+   * @param value The value retrieved from Timestream
+   */
+  void SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer, const IntervalDaySecond& value);
+
   /** Underlying data type. */
   type_traits::OdbcNativeType::Type type;
 

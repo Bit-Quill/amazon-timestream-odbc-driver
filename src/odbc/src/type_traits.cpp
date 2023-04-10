@@ -43,8 +43,7 @@ const std::string SqlTypeName::TIME("TIME");
 
 const std::string SqlTypeName::INTERVAL_DAY_TO_SECOND("INTERVAL_DAY_TO_SECOND");
 
-const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH(
-    "INTERVAL_YEAR_TO_MONTH");
+const std::string SqlTypeName::INTERVAL_YEAR_TO_MONTH("INTERVAL_YEAR_TO_MONTH");
 
 const std::string SqlTypeName::NOT_SET("NOT_SET");
 
@@ -306,17 +305,47 @@ OdbcNativeType::Type ToDriverType(int16_t type) {
     case SQL_C_NUMERIC:
       return OdbcNativeType::AI_NUMERIC;
 
-    case SQL_C_GUID:
-      return OdbcNativeType::AI_GUID;
-
     case SQL_C_DEFAULT:
       return OdbcNativeType::AI_DEFAULT;
 
+    case SQL_C_INTERVAL_YEAR:
+      return OdbcNativeType::AI_INTERVAL_YEAR;
+
+    case SQL_C_INTERVAL_MONTH:
+      return OdbcNativeType::AI_INTERVAL_MONTH;
+
+    case SQL_C_INTERVAL_DAY:
+      return OdbcNativeType::AI_INTERVAL_DAY;
+
+    case SQL_C_INTERVAL_HOUR:
+      return OdbcNativeType::AI_INTERVAL_HOUR;
+
+    case SQL_C_INTERVAL_MINUTE:
+      return OdbcNativeType::AI_INTERVAL_MINUTE;
+
+    case SQL_C_INTERVAL_SECOND:
+      return OdbcNativeType::AI_INTERVAL_SECOND;
+
+    case SQL_C_INTERVAL_DAY_TO_HOUR:
+      return OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR;
+
+    case SQL_C_INTERVAL_DAY_TO_MINUTE:
+      return OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE;
+
+    case SQL_C_INTERVAL_HOUR_TO_MINUTE:
+      return OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE;
+
+    case SQL_C_INTERVAL_HOUR_TO_SECOND:
+      return OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND;
+
+    case SQL_C_INTERVAL_MINUTE_TO_SECOND:
+      return OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND;
+
     case SQL_C_INTERVAL_YEAR_TO_MONTH:
-      return OdbcNativeType::AI_INTERVAL_YEAR_MONTH;
+      return OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH;
 
     case SQL_C_INTERVAL_DAY_TO_SECOND:
-      return OdbcNativeType::AI_INTERVAL_DAY_SECOND;
+      return OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND;
 
     default:
       return OdbcNativeType::AI_UNSUPPORTED;

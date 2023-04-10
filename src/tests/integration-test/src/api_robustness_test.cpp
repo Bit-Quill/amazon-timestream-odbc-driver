@@ -101,30 +101,6 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
   }
 };
 
-SQLSMALLINT unsupportedC[] = {SQL_C_INTERVAL_YEAR,
-                              SQL_C_INTERVAL_MONTH,
-                              SQL_C_INTERVAL_DAY,
-                              SQL_C_INTERVAL_HOUR,
-                              SQL_C_INTERVAL_MINUTE,
-                              SQL_C_INTERVAL_SECOND,
-                              SQL_C_INTERVAL_DAY_TO_HOUR,
-                              SQL_C_INTERVAL_DAY_TO_MINUTE,
-                              SQL_C_INTERVAL_HOUR_TO_MINUTE,
-                              SQL_C_INTERVAL_HOUR_TO_SECOND,
-                              SQL_C_INTERVAL_MINUTE_TO_SECOND};
-
-SQLSMALLINT unsupportedSql[] = {SQL_INTERVAL_MONTH,
-                                SQL_INTERVAL_YEAR,
-                                SQL_INTERVAL_DAY,
-                                SQL_INTERVAL_HOUR,
-                                SQL_INTERVAL_MINUTE,
-                                SQL_INTERVAL_SECOND,
-                                SQL_INTERVAL_DAY_TO_HOUR,
-                                SQL_INTERVAL_DAY_TO_MINUTE,
-                                SQL_INTERVAL_HOUR_TO_MINUTE,
-                                SQL_INTERVAL_HOUR_TO_SECOND,
-                                SQL_INTERVAL_MINUTE_TO_SECOND};
-
 BOOST_FIXTURE_TEST_SUITE(ApiRobustnessTestSuite, ApiRobustnessTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize) {
@@ -465,11 +441,13 @@ BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Unsupported data types
-  for (size_t i = 0; i < sizeof(unsupportedC) / sizeof(unsupportedC[0]); ++i) {
-    ret = SQLBindCol(stmt, 1, unsupportedC[i], &ind1, sizeof(ind1), &len1);
-    BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-    CheckSQLStatementDiagnosticError("HY003");
-  }
+  ret = SQLBindCol(stmt, 1, SQL_C_GUID, &ind1, sizeof(ind1), &len1);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+#ifdef _WIN32
+  CheckSQLStatementDiagnosticError("HYC00");
+#else
+  CheckSQLStatementDiagnosticError("HY003");
+#endif // _WIN32
 
   // Size is negative.
   ret = SQLBindCol(stmt, 1, SQL_C_SLONG, &ind1, -1, &len1);
@@ -480,23 +458,26 @@ BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   CheckSQLStatementDiagnosticError("HY090");
 #endif
 
-  // return values are all SQL_SUCCESS which is unexpected
-  // TODO: Need to fix them in https://bitquill.atlassian.net/browse/AT-1147 
-  // Size is null.
+  // Size is 0 for string
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, &ind1, 0, &len1);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+#ifdef __APPLE__
+  CheckSQLStatementDiagnosticError("S1090");
+#else
+  CheckSQLStatementDiagnosticError("HY090");
+#endif
+
+  // Size is 0 for non-string
   ret = SQLBindCol(stmt, 1, SQL_C_SLONG, &ind1, 0, &len1);
-  //BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
 
   // Res size is null.
   ret = SQLBindCol(stmt, 2, SQL_C_SLONG, &ind1, sizeof(ind1), 0);
-  //BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
 
   // Value is null.
   ret = SQLBindCol(stmt, 3, SQL_C_SLONG, 0, sizeof(ind1), &len1);
-  //BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-
-  // All nulls.
-  ret = SQLBindCol(stmt, 4, SQL_C_SLONG, 0, 0, 0);
-  //BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLNativeSql) {

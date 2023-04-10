@@ -219,13 +219,13 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
                    &timeValue_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  SQL_YEAR_MONTH_STRUCT yearMonth;
+  SQL_INTERVAL_STRUCT yearMonth;
   SQLLEN yearMonth_len = 0;
   ret = SQLBindCol(stmt, 8, SQL_C_INTERVAL_YEAR_TO_MONTH, &yearMonth,
                    sizeof(yearMonth), &yearMonth_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  SQL_DAY_SECOND_STRUCT daySecond;
+  SQL_INTERVAL_STRUCT daySecond;
   SQLLEN daySecond_len = 0;
   ret = SQLBindCol(stmt, 9, SQL_C_INTERVAL_DAY_TO_SECOND, &daySecond,
                    sizeof(daySecond), &daySecond_len);
@@ -257,11 +257,13 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingBindCol) {
   BOOST_CHECK_EQUAL(timeValue.minute, current_timestamp.minute);
   BOOST_CHECK_EQUAL(timeValue.second, current_timestamp.second);
 
-  BOOST_CHECK_EQUAL(yearMonth.year, 4);
-  BOOST_CHECK_EQUAL(yearMonth.month, 2);
+  BOOST_CHECK_EQUAL(yearMonth.interval_type, SQL_IS_YEAR_TO_MONTH);
+  BOOST_CHECK_EQUAL(yearMonth.intval.year_month.year, 4);
+  BOOST_CHECK_EQUAL(yearMonth.intval.year_month.month, 2);
 
-  BOOST_CHECK_EQUAL(daySecond.day, 6);
-  BOOST_CHECK_EQUAL(daySecond.hour, 4);
+  BOOST_CHECK_EQUAL(daySecond.interval_type, SQL_IS_DAY_TO_SECOND);
+  BOOST_CHECK_EQUAL(daySecond.intval.day_second.day, 6);
+  BOOST_CHECK_EQUAL(daySecond.intval.day_second.hour, 4);
 
   // Fetch 2nd row - not exist
   ret = SQLFetch(stmt);
@@ -351,13 +353,13 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
                    &timeValue_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS_WITH_INFO, ret);
 
-  SQL_YEAR_MONTH_STRUCT yearMonth;
+  SQL_INTERVAL_STRUCT yearMonth;
   SQLLEN yearMonth_len = 0;
   ret = SQLGetData(stmt, 8, SQL_C_INTERVAL_YEAR_TO_MONTH, &yearMonth,
                    sizeof(yearMonth), &yearMonth_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  SQL_DAY_SECOND_STRUCT daySecond;
+  SQL_INTERVAL_STRUCT daySecond;
   SQLLEN daySecond_len = 0;
   ret = SQLGetData(stmt, 9, SQL_C_INTERVAL_DAY_TO_SECOND, &daySecond,
                    sizeof(daySecond), &daySecond_len);
@@ -385,11 +387,13 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
   BOOST_CHECK_EQUAL(timeValue.minute, current_timestamp.minute);
   BOOST_CHECK_EQUAL(timeValue.second, current_timestamp.second);
 
-  BOOST_CHECK_EQUAL(yearMonth.year, 4);
-  BOOST_CHECK_EQUAL(yearMonth.month, 2);
+  BOOST_CHECK_EQUAL(yearMonth.interval_type, SQL_IS_YEAR_TO_MONTH);
+  BOOST_CHECK_EQUAL(yearMonth.intval.year_month.year, 4);
+  BOOST_CHECK_EQUAL(yearMonth.intval.year_month.month, 2);
 
-  BOOST_CHECK_EQUAL(daySecond.day, 6);
-  BOOST_CHECK_EQUAL(daySecond.hour, 4);
+  BOOST_CHECK_EQUAL(daySecond.interval_type, SQL_IS_DAY_TO_SECOND);
+  BOOST_CHECK_EQUAL(daySecond.intval.day_second.day, 6);
+  BOOST_CHECK_EQUAL(daySecond.intval.day_second.hour, 4);
 
   // Fetch 2nd row - not exist
   ret = SQLFetch(stmt);

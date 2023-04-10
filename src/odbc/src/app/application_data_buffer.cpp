@@ -414,7 +414,8 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
 ConversionResult::Type ApplicationDataBuffer::PutString(
     const std::string& value, int32_t& written) {
   using namespace type_traits;
-  LOG_DEBUG_MSG("PutString is called with value " << value << ", type is " << type);
+  LOG_DEBUG_MSG("PutString is called with value " << value << ", type is "
+                                                  << type);
 
   switch (type) {
     case OdbcNativeType::AI_SIGNED_TINYINT:
@@ -542,7 +543,8 @@ ConversionResult::Type ApplicationDataBuffer::PutDecimal(
 
       ignite::odbc::common::FixedSizeArray< int8_t > bytesBuffer;
 
-      const ignite::odbc::common::BigInteger& unscaled = zeroScaled.GetUnscaledValue();
+      const ignite::odbc::common::BigInteger& unscaled =
+          zeroScaled.GetUnscaledValue();
 
       unscaled.MagnitudeToBytes(bytesBuffer);
 
@@ -594,11 +596,10 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
   timestream::odbc::common::DateToCTm(value, tmTime);
   LOG_DEBUG_MSG("tmTime.tm_year "
                 << tmTime.tm_year << ", tmTime.tm_mon " << tmTime.tm_mon
-                << ", tmTime.tm_mday " << tmTime.tm_mday
-                << ", tmTime.tm_hour " << tmTime.tm_hour
-                << ", tmTime.tm_min " << tmTime.tm_min << ", tmTime.tm_sec "
-                << tmTime.tm_sec << ", tmTime.tm_wday " << tmTime.tm_wday
-                << ", tmTime.tm_yday " << tmTime.tm_yday
+                << ", tmTime.tm_mday " << tmTime.tm_mday << ", tmTime.tm_hour "
+                << tmTime.tm_hour << ", tmTime.tm_min " << tmTime.tm_min
+                << ", tmTime.tm_sec " << tmTime.tm_sec << ", tmTime.tm_wday "
+                << tmTime.tm_wday << ", tmTime.tm_yday " << tmTime.tm_yday
                 << ", tmTime.tm_isdst " << tmTime.tm_isdst);
 
   SqlLen* resLenPtr = GetResLen();
@@ -1012,15 +1013,25 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
       return ConversionResult::Type::AI_SUCCESS;
     }
 
-    case OdbcNativeType::AI_INTERVAL_YEAR_MONTH: {
-      SQL_YEAR_MONTH_STRUCT* buffer =
-          reinterpret_cast< SQL_YEAR_MONTH_STRUCT* >(dataPtr);
-
-      buffer->year = value.GetYear();
-      buffer->month = value.GetMonth();
+    case OdbcNativeType::AI_INTERVAL_YEAR:
+    case OdbcNativeType::AI_INTERVAL_MONTH:
+    case OdbcNativeType::AI_INTERVAL_DAY:
+    case OdbcNativeType::AI_INTERVAL_HOUR:
+    case OdbcNativeType::AI_INTERVAL_MINUTE:
+    case OdbcNativeType::AI_INTERVAL_SECOND:
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR:
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE:
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE:
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND:
+    case OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND:
+    case OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH:
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND: {
+      SQL_INTERVAL_STRUCT* buffer =
+          reinterpret_cast< SQL_INTERVAL_STRUCT* >(dataPtr);
+      SetIntervalBufferValue(buffer, value);
 
       if (resLenPtr)
-        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_YEAR_MONTH_STRUCT));
+        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_INTERVAL_STRUCT));
 
       return ConversionResult::Type::AI_SUCCESS;
     }
@@ -1088,18 +1099,25 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
       return ConversionResult::Type::AI_SUCCESS;
     }
 
-    case OdbcNativeType::AI_INTERVAL_DAY_SECOND: {
-      SQL_DAY_SECOND_STRUCT* buffer =
-          reinterpret_cast< SQL_DAY_SECOND_STRUCT* >(dataPtr);
-
-      buffer->day = value.GetDay();
-      buffer->hour = value.GetHour();
-      buffer->minute = value.GetMinute();
-      buffer->second = value.GetSecond();
-      buffer->fraction = value.GetFraction();
+    case OdbcNativeType::AI_INTERVAL_YEAR:
+    case OdbcNativeType::AI_INTERVAL_MONTH:
+    case OdbcNativeType::AI_INTERVAL_DAY:
+    case OdbcNativeType::AI_INTERVAL_HOUR:
+    case OdbcNativeType::AI_INTERVAL_MINUTE:
+    case OdbcNativeType::AI_INTERVAL_SECOND:
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR:
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE:
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE:
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND:
+    case OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND:
+    case OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH:
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND: {
+      SQL_INTERVAL_STRUCT* buffer =
+          reinterpret_cast< SQL_INTERVAL_STRUCT* >(dataPtr);
+      SetIntervalBufferValue(buffer, value);
 
       if (resLenPtr)
-        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_DAY_SECOND_STRUCT));
+        *resLenPtr = static_cast< SqlLen >(sizeof(SQL_INTERVAL_STRUCT));
 
       return ConversionResult::Type::AI_SUCCESS;
     }
@@ -1343,9 +1361,9 @@ T ApplicationDataBuffer::GetNum() const {
       const SQL_NUMERIC_STRUCT* numeric =
           reinterpret_cast< const SQL_NUMERIC_STRUCT* >(GetData());
 
-      ignite::odbc::common::Decimal dec(reinterpret_cast< const int8_t* >(numeric->val),
-                          SQL_MAX_NUMERIC_LEN, numeric->scale,
-                          numeric->sign ? 1 : -1, false);
+      ignite::odbc::common::Decimal dec(
+          reinterpret_cast< const int8_t* >(numeric->val), SQL_MAX_NUMERIC_LEN,
+          numeric->scale, numeric->sign ? 1 : -1, false);
 
       res = static_cast< T >(dec.ToInt64());
 
@@ -1645,7 +1663,8 @@ Time ApplicationDataBuffer::GetTime() const {
   return retval;
 }
 
-void ApplicationDataBuffer::GetDecimal(ignite::odbc::common::Decimal& val) const {
+void ApplicationDataBuffer::GetDecimal(
+    ignite::odbc::common::Decimal& val) const {
   LOG_DEBUG_MSG("GetDecimal is called with type " << type);
   using namespace type_traits;
 
@@ -1698,9 +1717,9 @@ void ApplicationDataBuffer::GetDecimal(ignite::odbc::common::Decimal& val) const
       const SQL_NUMERIC_STRUCT* numeric =
           reinterpret_cast< const SQL_NUMERIC_STRUCT* >(GetData());
 
-      ignite::odbc::common::Decimal dec(reinterpret_cast< const int8_t* >(numeric->val),
-                          SQL_MAX_NUMERIC_LEN, numeric->scale,
-                          numeric->sign ? 1 : -1, false);
+      ignite::odbc::common::Decimal dec(
+          reinterpret_cast< const int8_t* >(numeric->val), SQL_MAX_NUMERIC_LEN,
+          numeric->scale, numeric->sign ? 1 : -1, false);
 
       val.Swap(dec);
 
@@ -1800,9 +1819,6 @@ SqlLen ApplicationDataBuffer::GetDataAtExecSize() const {
     case OdbcNativeType::AI_NUMERIC:
       return static_cast< SqlLen >(sizeof(SQL_NUMERIC_STRUCT));
 
-    case OdbcNativeType::AI_GUID:
-      return static_cast< SqlLen >(sizeof(SQLGUID));
-
     case OdbcNativeType::AI_DEFAULT:
     case OdbcNativeType::AI_UNSUPPORTED:
     default:
@@ -1865,9 +1881,6 @@ SqlLen ApplicationDataBuffer::GetElementSize() const {
     case OdbcNativeType::AI_NUMERIC:
       return static_cast< SqlLen >(sizeof(SQL_NUMERIC_STRUCT));
 
-    case OdbcNativeType::AI_GUID:
-      return static_cast< SqlLen >(sizeof(SQLGUID));
-
     case OdbcNativeType::AI_DEFAULT:
     case OdbcNativeType::AI_UNSUPPORTED:
     default:
@@ -1887,6 +1900,240 @@ SqlLen ApplicationDataBuffer::GetInputSize() const {
 
   return GetDataAtExecSize();
 }
+
+void ApplicationDataBuffer::SetIntervalType(SQL_INTERVAL_STRUCT* buffer) {
+  switch (type) {
+    case OdbcNativeType::AI_INTERVAL_YEAR: {
+      buffer->interval_type = SQL_IS_YEAR;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MONTH: {
+      buffer->interval_type = SQL_IS_MONTH;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY: {
+      buffer->interval_type = SQL_IS_DAY;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR: {
+      buffer->interval_type = SQL_IS_HOUR;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MINUTE: {
+      buffer->interval_type = SQL_IS_MINUTE;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_SECOND: {
+      buffer->interval_type = SQL_IS_SECOND;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR: {
+      buffer->interval_type = SQL_IS_DAY_TO_HOUR;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE: {
+      buffer->interval_type = SQL_IS_DAY_TO_MINUTE;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE: {
+      buffer->interval_type = SQL_IS_HOUR_TO_MINUTE;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND: {
+      buffer->interval_type = SQL_IS_HOUR_TO_SECOND;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND: {
+      buffer->interval_type = SQL_IS_MINUTE_TO_SECOND;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH: {
+      buffer->interval_type = SQL_IS_YEAR_TO_MONTH;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND: {
+      buffer->interval_type = SQL_IS_DAY_TO_SECOND;
+      break;
+    }
+    default:
+      LOG_ERROR_MSG("Unsupported type " << type);
+      break;
+  }
+}
+
+void ApplicationDataBuffer::SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
+                                          const IntervalYearMonth& value) {
+  SetIntervalType(buffer);
+  if (value.GetYear() < 0 || (value.GetYear() == 0 && value.GetMonth() < 0)) {
+    buffer->interval_sign = SQL_FALSE;
+  } else {
+    buffer->interval_sign = SQL_TRUE;
+  }
+
+  switch (type) {
+    case OdbcNativeType::AI_INTERVAL_YEAR: {
+      buffer->intval.year_month.year = std::abs(value.GetYear());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MONTH: {
+      buffer->intval.year_month.month = std::abs(value.GetMonth());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH: {
+      buffer->intval.year_month.year = std::abs(value.GetYear());
+      buffer->intval.year_month.month = std::abs(value.GetMonth());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY: {
+      buffer->intval.day_second.day = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR: {
+      buffer->intval.day_second.hour = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MINUTE: {
+      buffer->intval.day_second.minute = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_SECOND: {
+      buffer->intval.day_second.second = 0;
+      buffer->intval.day_second.fraction = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR: {
+      buffer->intval.day_second.day = 0;
+      buffer->intval.day_second.hour = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE: {
+      buffer->intval.day_second.day = 0;
+      buffer->intval.day_second.hour = 0;
+      buffer->intval.day_second.minute = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE: {
+      buffer->intval.day_second.hour = 0;
+      buffer->intval.day_second.minute = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND: {
+      buffer->intval.day_second.hour = 0;
+      buffer->intval.day_second.minute = 0;
+      buffer->intval.day_second.second = 0;
+      buffer->intval.day_second.fraction = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND: {
+      buffer->intval.day_second.minute = 0;
+      buffer->intval.day_second.second = 0;
+      buffer->intval.day_second.fraction = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND: {
+      buffer->intval.day_second.day = 0;
+      buffer->intval.day_second.hour = 0;
+      buffer->intval.day_second.minute = 0;
+      buffer->intval.day_second.second = 0;
+      buffer->intval.day_second.fraction = 0;
+      break;
+    }
+    default: {
+      LOG_ERROR_MSG("Unsupported type " << type);
+      break;
+    }
+  }
+}
+
+void ApplicationDataBuffer::SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
+                                           const IntervalDaySecond& value) {
+  SetIntervalType(buffer);
+  if (value.GetDay() < 0 || (value.GetDay() == 0 && value.GetHour() < 0)
+      || (value.GetDay() == 0 && value.GetHour() == 0 && value.GetMinute() < 0)
+      || (value.GetDay() == 0 && value.GetHour() == 0 && value.GetMinute() == 0
+          && value.GetSecond() < 0)
+      || (value.GetDay() == 0 && value.GetHour() == 0 && value.GetMinute() == 0
+          && value.GetSecond() == 0 && value.GetFraction() < 0)) {
+    buffer->interval_sign = SQL_FALSE;
+  } else {
+    buffer->interval_sign = SQL_TRUE;
+  }
+
+  switch (type) {
+    case OdbcNativeType::AI_INTERVAL_YEAR: {
+      buffer->intval.year_month.year = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MONTH: {
+      buffer->intval.year_month.month = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH: {
+      buffer->intval.year_month.year = 0;
+      buffer->intval.year_month.month = 0;
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY: {
+      buffer->intval.day_second.day = std::abs(value.GetDay());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR: {
+      buffer->intval.day_second.hour = std::abs(value.GetHour());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MINUTE: {
+      buffer->intval.day_second.minute = std::abs(value.GetMinute());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_SECOND: {
+      buffer->intval.day_second.second = std::abs(value.GetSecond());
+      buffer->intval.day_second.fraction = std::abs(value.GetFraction());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR: {
+      buffer->intval.day_second.day = std::abs(value.GetDay());
+      buffer->intval.day_second.hour = std::abs(value.GetHour());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE: {
+      buffer->intval.day_second.day = std::abs(value.GetDay());
+      buffer->intval.day_second.hour = std::abs(value.GetHour());
+      buffer->intval.day_second.minute = std::abs(value.GetMinute());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE: {
+      buffer->intval.day_second.hour = std::abs(value.GetHour());
+      buffer->intval.day_second.minute = std::abs(value.GetMinute());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND: {
+      buffer->intval.day_second.hour = std::abs(value.GetHour());
+      buffer->intval.day_second.minute = std::abs(value.GetMinute());
+      buffer->intval.day_second.second = std::abs(value.GetSecond());
+      buffer->intval.day_second.fraction = std::abs(value.GetFraction());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND: {
+      buffer->intval.day_second.minute = std::abs(value.GetMinute());
+      buffer->intval.day_second.second = std::abs(value.GetSecond());
+      buffer->intval.day_second.fraction = std::abs(value.GetFraction());
+      break;
+    }
+    case OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND: {
+      buffer->intval.day_second.day = std::abs(value.GetDay());
+      buffer->intval.day_second.hour = std::abs(value.GetHour());
+      buffer->intval.day_second.minute = std::abs(value.GetMinute());
+      buffer->intval.day_second.second = std::abs(value.GetSecond());
+      buffer->intval.day_second.fraction = std::abs(value.GetFraction());
+      break;
+    }
+    default: {
+      LOG_ERROR_MSG("Unsupported type " << type);
+      break;
+    }
+  }
+}
+
 }  // namespace app
 }  // namespace odbc
 }  // namespace timestream

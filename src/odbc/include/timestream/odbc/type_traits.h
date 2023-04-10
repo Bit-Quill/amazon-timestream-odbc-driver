@@ -109,14 +109,44 @@ struct OdbcNativeType {
     /** Alias for the SQL_C_NUMERIC type. */
     AI_NUMERIC,
 
-    /** Alias for the SQL_C_GUID type. */
-    AI_GUID,
+    /** Alias for the SQL_C_INTERVAL_YEAR type. */
+    AI_INTERVAL_YEAR,
 
-    /** Alias for the SQL_YEAR_MONTH_STRUCT type. */
-    AI_INTERVAL_YEAR_MONTH,
+    /** Alias for the SQL_C_INTERVAL_MONTH type. */
+    AI_INTERVAL_MONTH,
 
-    /** Alias for the SQL_DAY_SECOND_STRUCT type. */
-    AI_INTERVAL_DAY_SECOND,
+    /** Alias for the SQL_C_INTERVAL_DAY type. */
+    AI_INTERVAL_DAY,
+
+    /** Alias for the SQL_C_INTERVAL_HOUR type. */
+    AI_INTERVAL_HOUR,
+
+    /** Alias for the SQL_C_INTERVAL_MINUTE type. */
+    AI_INTERVAL_MINUTE,
+
+    /** Alias for the SQL_C_INTERVAL_SECOND type. */
+    AI_INTERVAL_SECOND,
+
+    /** Alias for the SQL_C_INTERVAL_DAY_TO_HOUR type. */
+    AI_INTERVAL_DAY_TO_HOUR,
+
+    /** Alias for the SQL_C_INTERVAL_DAY_TO_MINUTE type. */
+    AI_INTERVAL_DAY_TO_MINUTE,
+
+    /** Alias for the SQL_C_INTERVAL_HOUR_TO_MINUTE type. */
+    AI_INTERVAL_HOUR_TO_MINUTE,
+
+    /** Alias for the SQL_C_INTERVAL_HOUR_TO_SECOND type. */
+    AI_INTERVAL_HOUR_TO_SECOND,
+
+    /** Alias for the SQL_C_INTERVAL_MINUTE_TO_SECOND type. */
+    AI_INTERVAL_MINUTE_TO_SECOND,
+
+    /** Alias for the SQL_C_INTERVAL_YEAR_MONTH type. */
+    AI_INTERVAL_YEAR_TO_MONTH,
+
+    /** Alias for the SQL_C_INTERVAL_DAY_SECOND type. */
+    AI_INTERVAL_DAY_TO_SECOND,
 
     /** Alias for the SQL_DEFAULT. */
     AI_DEFAULT,

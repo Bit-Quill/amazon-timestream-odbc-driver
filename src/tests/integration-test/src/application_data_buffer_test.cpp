@@ -755,18 +755,38 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTimestamp) {
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToIntervalYearMonth) {
-  SQL_YEAR_MONTH_STRUCT buf;
+  SQL_INTERVAL_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_INTERVAL_YEAR_MONTH, &buf,
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH, &buf,
                                sizeof(buf), &reslen);
 
   IntervalYearMonth interval(4, 10);
-
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   appBuf.PutInterval(interval);
 
-  BOOST_CHECK_EQUAL(4, buf.year);
-  BOOST_CHECK_EQUAL(10, buf.month);
+  BOOST_CHECK_EQUAL(SQL_IS_YEAR_TO_MONTH, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(4, buf.intval.year_month.year);
+  BOOST_CHECK_EQUAL(10, buf.intval.year_month.month);
+
+  IntervalYearMonth negInterval1(-4, 10);
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  appBuf.PutInterval(negInterval1);
+
+  BOOST_CHECK_EQUAL(SQL_IS_YEAR_TO_MONTH, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(4, buf.intval.year_month.year);
+  BOOST_CHECK_EQUAL(10, buf.intval.year_month.month);
+
+  IntervalYearMonth negInterval2(0, -10);
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  appBuf.PutInterval(negInterval2);
+
+  BOOST_CHECK_EQUAL(SQL_IS_YEAR_TO_MONTH, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.year_month.year);
+  BOOST_CHECK_EQUAL(10, buf.intval.year_month.month);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToString) {
@@ -825,22 +845,202 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWStringEdgeCase) {
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("4-1"));
 }
 
+BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
+  SQL_INTERVAL_STRUCT buf;
+  SqlLen reslen = sizeof(buf);
+  IntervalYearMonth interval(4, 10);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer yearBuf(OdbcNativeType::AI_INTERVAL_YEAR, &buf,
+                               sizeof(buf), &reslen);
+  yearBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_YEAR, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(4, buf.intval.year_month.year);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer monthBuf(OdbcNativeType::AI_INTERVAL_MONTH, &buf,
+                                sizeof(buf), &reslen);
+  monthBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_MONTH, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(10, buf.intval.year_month.month);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayBuf(OdbcNativeType::AI_INTERVAL_DAY, &buf,
+                                 sizeof(buf), &reslen);
+  dayBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer hourBuf(OdbcNativeType::AI_INTERVAL_HOUR, &buf,
+                                 sizeof(buf), &reslen);
+  hourBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_HOUR, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer minuteBuf(OdbcNativeType::AI_INTERVAL_MINUTE, &buf,
+                                 sizeof(buf), &reslen);
+  minuteBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_MINUTE, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer secondBuf(OdbcNativeType::AI_INTERVAL_SECOND, &buf,
+                                 sizeof(buf), &reslen);
+  secondBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayToHourBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR, &buf,
+                                 sizeof(buf), &reslen);
+  dayToHourBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_HOUR, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayToMinBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE,
+                                 &buf,
+                                 sizeof(buf), &reslen);
+  dayToMinBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_MINUTE, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer hourToMinBuf(OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE,
+                                 &buf,
+                                 sizeof(buf), &reslen);
+  hourToMinBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_HOUR_TO_MINUTE, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer hourToSecBuf(OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND,
+                                 &buf,
+                                 sizeof(buf), &reslen);
+  hourToSecBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_HOUR_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer minToSecBuf(OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND,
+                                 &buf,
+                                 sizeof(buf), &reslen);
+  minToSecBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_MINUTE_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayToSecBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND,
+                                 &buf,
+                                 sizeof(buf), &reslen);
+  dayToSecBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
+}
+
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToIntervalDaySecond) {
-  SQL_DAY_SECOND_STRUCT buf;
+  SQL_INTERVAL_STRUCT buf;
   SqlLen reslen = sizeof(buf);
 
-  ApplicationDataBuffer appBuf(OdbcNativeType::AI_INTERVAL_DAY_SECOND, &buf,
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND, &buf,
                                sizeof(buf), &reslen);
-
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   IntervalDaySecond interval(3, 10, 25, 55, 123456789);
-
   appBuf.PutInterval(interval);
 
-  BOOST_CHECK_EQUAL(3, buf.day);
-  BOOST_CHECK_EQUAL(10, buf.hour);
-  BOOST_CHECK_EQUAL(25, buf.minute);
-  BOOST_CHECK_EQUAL(55, buf.second);
-  BOOST_CHECK_EQUAL(123456789, buf.fraction);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(3, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  IntervalDaySecond negInterval1(-3, 10, 25, 55, 123456789);
+  appBuf.PutInterval(negInterval1);
+
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(3, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  IntervalDaySecond negInterval2(0, -10, 25, 55, 123456789);
+  appBuf.PutInterval(negInterval2);
+
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  IntervalDaySecond negInterval3(0, 0, -25, 55, 123456789);
+  appBuf.PutInterval(negInterval3);
+
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  IntervalDaySecond negInterval4(0, 0, 0, -55, 123456789);
+  appBuf.PutInterval(negInterval4);
+
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  IntervalDaySecond negInterval5(0, 0, 0, 0, -123456789);
+  appBuf.PutInterval(negInterval5);
+
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_FALSE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToString) {
@@ -901,6 +1101,119 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("3 10:25:55.12345678"));
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToOtherIntervals) {
+  SQL_INTERVAL_STRUCT buf;
+  SqlLen reslen = sizeof(buf);
+  IntervalDaySecond interval(3, 10, 25, 55, 123456789);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer yearBuf(OdbcNativeType::AI_INTERVAL_YEAR, &buf,
+                                sizeof(buf), &reslen);
+  yearBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_YEAR, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.year_month.year);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer monthBuf(OdbcNativeType::AI_INTERVAL_MONTH, &buf,
+                                 sizeof(buf), &reslen);
+  monthBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_MONTH, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.year_month.month);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer yearToMonthBuf(
+      OdbcNativeType::AI_INTERVAL_YEAR_TO_MONTH, &buf, sizeof(buf), &reslen);
+  yearToMonthBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_YEAR_TO_MONTH, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(0, buf.intval.year_month.year);
+  BOOST_CHECK_EQUAL(0, buf.intval.year_month.month);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayBuf(OdbcNativeType::AI_INTERVAL_DAY, &buf,
+                               sizeof(buf), &reslen);
+  dayBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(3, buf.intval.day_second.day);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer hourBuf(OdbcNativeType::AI_INTERVAL_HOUR, &buf,
+                                sizeof(buf), &reslen);
+  hourBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_HOUR, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer minuteBuf(OdbcNativeType::AI_INTERVAL_MINUTE, &buf,
+                                  sizeof(buf), &reslen);
+  minuteBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_MINUTE, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer secondBuf(OdbcNativeType::AI_INTERVAL_SECOND, &buf,
+                                  sizeof(buf), &reslen);
+  secondBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayToHourBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR,
+                                     &buf, sizeof(buf), &reslen);
+  dayToHourBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_HOUR, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(3, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer dayToMinBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE,
+                                    &buf, sizeof(buf), &reslen);
+  dayToMinBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_MINUTE, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(3, buf.intval.day_second.day);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer hourToMinBuf(OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE,
+                                     &buf, sizeof(buf), &reslen);
+  hourToMinBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_HOUR_TO_MINUTE, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer hourToSecBuf(OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND,
+                                     &buf, sizeof(buf), &reslen);
+  hourToSecBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_HOUR_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(10, buf.intval.day_second.hour);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
+
+  memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
+  ApplicationDataBuffer minToSecBuf(
+      OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND, &buf, sizeof(buf), &reslen);
+  minToSecBuf.PutInterval(interval);
+  BOOST_CHECK_EQUAL(SQL_IS_MINUTE_TO_SECOND, buf.interval_type);
+  BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
+  BOOST_CHECK_EQUAL(25, buf.intval.day_second.minute);
+  BOOST_CHECK_EQUAL(55, buf.intval.day_second.second);
+  BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
 }
 
 BOOST_AUTO_TEST_CASE(TestGetStringFromLong, *disabled()) {
