@@ -13,14 +13,15 @@
 
 project(performance_results)
 
+find_package(Boost 1.71 REQUIRED COMPONENTS thread)
 find_package(ODBC REQUIRED)
 # Source, headers, and include dirs
 set(SOURCE_FILES performance_odbc_results.cpp)
-include_directories(${PERFORMANCE_HELPER} SYSTEM ${ODBC_INCLUDE_DIRS})	
+include_directories(${PERFORMANCE_HELPER} SYSTEM ${ODBC_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 # Generate executable
 add_executable(performance_results ${SOURCE_FILES})
 
 # Library dependencies
-target_link_libraries(performance_results performance_helper gtest_main ${ODBC_LIBRARIES})
+target_link_libraries(performance_results performance_helper gtest_main ${ODBC_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_definitions(performance_results PUBLIC _UNICODE UNICODE)

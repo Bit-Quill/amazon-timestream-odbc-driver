@@ -18,6 +18,9 @@
 #include "gtest/gtest.h"
 #include "performance_helper.h"
 #include "chrono"
+#include <boost/thread.hpp>
+#include <boost/thread/detail/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 #include <numeric>
 #include <sql.h>
@@ -48,6 +51,43 @@ typedef struct Col {
     SQLCHAR data_dat[BIND_SIZE];
 } Col;
 
+bool queryFinished = false;
+
+// Whether to run Q21_EXPECT_2000000_ROWS, which greatly extends runtime
+bool enableLargeTest = false;
+
+// Get the average and peak memory usage for any memory created in
+// excess of the current process' memory usage, assumed to be during a query
+void queryMemUsage(int currentMem, long long &averageMem, long long &peakMem) {
+    long long memSum = 0;
+    long long memCalc;
+    long long i = 0;
+    if (currentMem <= 0) {
+      return;
+    }
+    do {
+        memCalc = currentMemUsage();
+        if (memCalc > currentMem) {
+          memSum += (memCalc - currentMem);
+          if (memCalc > peakMem) {
+            peakMem = memCalc;
+          }
+          i++;
+        }
+        // Attempt to limit the number of memory calculations
+        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
+    } while(!queryFinished);
+
+    if (peakMem > currentMem) {
+      // Isolate query's memory usage from process total
+      peakMem = peakMem - currentMem;
+    }
+
+    if (i > 0) {
+      averageMem = (memSum / i);
+    }
+}
+
 auto RecordBindingFetching = [](SQLHSTMT& hstmt,
                                 std::vector< long long >& times,
                                 const testString& query) {
@@ -58,14 +98,13 @@ auto RecordBindingFetching = [](SQLHSTMT& hstmt,
         row_count = 0;
         // Execute query
         auto start = std::chrono::steady_clock::now();
-        SQLRETURN ret =
-            SQLExecDirect(hstmt, TO_SQLTCHAR(query.c_str()), SQL_NTS);
+
+        SQLRETURN ret = SQLExecDirect(hstmt, TO_SQLTCHAR(query.c_str()), SQL_NTS);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         // Get column count
         SQLNumResultCols(hstmt, &total_columns);
         std::vector< std::vector< Col > > cols(total_columns);
-        //std::cout << "Total columns: " << total_columns << std::endl;
         for (size_t i = 0; i < cols.size(); i++)
             cols[i].resize(SINGLE_ROW);
 
@@ -84,14 +123,32 @@ auto RecordBindingFetching = [](SQLHSTMT& hstmt,
                 .count());
         logDiagnostics(SQL_HANDLE_STMT, hstmt, ret);
     }
+    queryFinished = true;
 };
 
 // Test template for Amazon queries
-#define TEST_PERF_TEST(test_name, query)                           \
-    TEST_F(TestPerformance, test_name) {                           \
-        std::vector< long long > times;                            \
-        RecordBindingFetching(_hstmt, times, testString(query));   \
-        ReportTime(#test_name, times, testString(query));          \
+#define TEST_PERF_TEST(test_name, query)                                        \
+    TEST_F(TestPerformance, test_name) {                                        \
+        if (strcmp(                                                             \
+              ::testing::UnitTest::GetInstance()->current_test_info()->name(),  \
+              "Q21_EXPECT_1500000_ROWS") == 0 &&                                \
+              !enableLargeTest) {                                               \
+            GTEST_SKIP();                                                       \
+        }                                                                       \
+        std::vector< long long > times;                                         \
+        int currentMem = currentMemUsage();                                     \
+        long long averageMem = 0;                                               \
+        long long peakMem = 0;                                                  \
+        boost::thread queryThread([&] {                                         \
+            RecordBindingFetching(_hstmt, times, testString(query));            \
+        });                                                                     \
+        boost::thread memThread([&] {                                           \
+            queryMemUsage(currentMem, averageMem, peakMem);                     \
+        });                                                                     \
+        queryThread.join();                                                     \
+        memThread.join();                                                       \
+        queryFinished = false;                                                  \
+        Report(#test_name, times, testString(query), averageMem, peakMem);      \
     }
 
 class TestPerformance : public testing::Test {
@@ -117,16 +174,16 @@ class TestPerformance : public testing::Test {
         }
         ret = SQLAllocHandle(SQL_HANDLE_DBC, _env, &_conn);
         if (!SQL_SUCCEEDED(ret)) {
-            logDiagnostics(SQL_HANDLE_STMT, _conn, ret);
+            logDiagnostics(SQL_HANDLE_DBC, _conn, ret);
             FAIL() << "SQLAllocHandle failed for database connection";
         }
-        SQLTCHAR outConnString[1024] = {};
+        SQLTCHAR outConnString[1024];
         SQLSMALLINT outConnStringLen;
         ret = SQLDriverConnect(_conn, NULL, connectionString, SQL_NTS,
             outConnString, HELPER_SIZEOF(outConnString),
             &outConnStringLen, SQL_DRIVER_COMPLETE);
         if (!SQL_SUCCEEDED(ret)) {
-            logDiagnostics(SQL_HANDLE_STMT, _conn, ret);
+            logDiagnostics(SQL_HANDLE_DBC, _conn, ret);
             FAIL() << "SQLDriverConnect failed";
         }
 
@@ -158,10 +215,12 @@ const std::string sync_min = "%%__MIN__%%";
 const std::string sync_max = "%%__MAX__%%";
 const std::string sync_mean = "%%__MEAN__%%";
 const std::string sync_median = "%%__MEDIAN__%%";
+const std::string sync_average_memory_usage = "%%__AVERAGE_MEMORY_USAGE__%%";
+const std::string sync_peak_memory_usage = "%%__PEAK_MEMORY_USAGE__%%";
 const std::string sync_end = "%%__PARSE__SYNC__END__%%";
 
-void ReportTime(const std::string& test_case, std::vector< long long > data,
-                const testString& query) {
+void Report(const std::string& test_case, std::vector< long long > data,
+                const testString& query, long long averageMemoryUsage, long long peakMemoryUsage) {
     size_t size = data.size();
     ASSERT_EQ(size, (size_t)ITERATION_COUNT);
 
@@ -188,6 +247,8 @@ void ReportTime(const std::string& test_case, std::vector< long long > data,
     std::cout << sync_max << time_max << " ms" << std::endl;
     std::cout << sync_mean << time_mean << " ms" << std::endl;
     std::cout << sync_median << time_median << " ms" << std::endl;
+    std::cout << sync_average_memory_usage << averageMemoryUsage << " KB" << std::endl;
+    std::cout << sync_peak_memory_usage << peakMemoryUsage << " KB" << std::endl;
     std::cout << sync_end << std::endl;
 
     std::cout << "Time dump: ";
@@ -200,148 +261,187 @@ void ReportTime(const std::string& test_case, std::vector< long long > data,
 }
 
 TEST_F(TestPerformance, Time_Execute) {
-   // Execute a query just to wake the server up in case it has been sleeping
-   // for a while
+   // Execute a warm up query
     std::cout << "_hstmt: " << _hstmt << std::endl;
-   SQLRETURN ret =
-       SQLExecDirect(_hstmt, TO_SQLTCHAR(_query.c_str()), SQL_NTS);
-   ASSERT_TRUE(SQL_SUCCEEDED(ret));
-   ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
+    std::vector< long long > times;
+    int currentMem = currentMemUsage();
+    long long averageMem = 0;
+    long long peakMem = 0;
+    boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+    boost::thread queryThread = boost::thread([&] {
+        SQLRETURN ret =
+           SQLExecDirect(_hstmt, TO_SQLTCHAR(_query.c_str()), SQL_NTS);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
+        ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
 
-  std::vector< long long > times;
-  for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
-      auto start = std::chrono::steady_clock::now();
-      ret = SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
-      auto end = std::chrono::steady_clock::now();
-      logDiagnostics(SQL_HANDLE_STMT, _hstmt, ret);
-      ASSERT_TRUE(SQL_SUCCEEDED(ret));
-      times.push_back(
-          std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
-              .count());
-  }
-  ReportTime("Execute Query", times, _query);
+        for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
+            auto start = std::chrono::steady_clock::now();
+            ret = SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
+            auto end = std::chrono::steady_clock::now();
+            logDiagnostics(SQL_HANDLE_STMT, _hstmt, ret);
+            ASSERT_TRUE(SQL_SUCCEEDED(ret));
+            times.push_back(
+                std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
+                    .count());
+        }
+        queryFinished = true;
+    });
+    queryThread.join();
+    memoryThread.join();
+    queryFinished = false;
+    Report("Execute Query", times, _query, averageMem, peakMem);
 }
 
 TEST_PERF_TEST(Time_BindColumn_FetchSingleRow, _query)
 
 TEST_F(TestPerformance, Time_BindColumn_Fetch5Rows) {
-  SQLROWSETSIZE row_count = 0;
-  SQLSMALLINT total_columns = 0;
-  SQLROWSETSIZE rows_fetched = 0;
-  SQLUSMALLINT row_status[ROWSET_SIZE_5];
-  SQLSetStmtAttr(_hstmt, SQL_ROWSET_SIZE, (void*)ROWSET_SIZE_5, 0);
-
   std::vector< long long > times;
-  for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
-      // Execute query
-      SQLRETURN ret =
-          SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
-      ASSERT_TRUE(SQL_SUCCEEDED(ret));
+  int currentMem = currentMemUsage();
+  long long averageMem = 0;
+  long long peakMem = 0;
+  boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+  boost::thread queryThread = boost::thread([&] {
+    SQLROWSETSIZE row_count = 0;
+    SQLSMALLINT total_columns = 0;
+    SQLROWSETSIZE rows_fetched = 0;
+    SQLUSMALLINT row_status[ROWSET_SIZE_5];
+    SQLSetStmtAttr(_hstmt, SQL_ROWSET_SIZE, (void*)ROWSET_SIZE_5, 0);
 
-      // Get column count
-      SQLNumResultCols(_hstmt, &total_columns);
-      std::vector< std::vector< Col > > cols(total_columns);
-      for (size_t i = 0; i < cols.size(); i++)
-          cols[i].resize(ROWSET_SIZE_5);
+    for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
+        // Execute query
+        SQLRETURN ret =
+            SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
-      // Bind and fetch
-      auto start = std::chrono::steady_clock::now();
-      for (size_t i = 0; i < cols.size(); i++)
-          ret = SQLBindCol(_hstmt, (SQLUSMALLINT)i + 1, SQL_C_CHAR,
-                           (SQLPOINTER)&cols[i][0].data_dat[i], BIND_SIZE,
-                           &cols[i][0].data_len);
-      while (SQLExtendedFetch(_hstmt, SQL_FETCH_NEXT, 0, &rows_fetched,
-                              row_status)
-             == SQL_SUCCESS) {
-          row_count += rows_fetched;
-          if (rows_fetched < ROWSET_SIZE_5)
-              break;
-      }
-      auto end = std::chrono::steady_clock::now();
-      ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
-      times.push_back(
-          std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
-              .count());
-  }
-  ReportTime("Bind and (5 row) Fetch", times, _query);
+        // Get column count
+        SQLNumResultCols(_hstmt, &total_columns);
+        std::vector< std::vector< Col > > cols(total_columns);
+        for (size_t i = 0; i < cols.size(); i++)
+            cols[i].resize(ROWSET_SIZE_5);
+
+        // Bind and fetch
+        auto start = std::chrono::steady_clock::now();
+        for (size_t i = 0; i < cols.size(); i++)
+            ret = SQLBindCol(_hstmt, (SQLUSMALLINT)i + 1, SQL_C_CHAR,
+                             (SQLPOINTER)&cols[i][0].data_dat[i], BIND_SIZE,
+                             &cols[i][0].data_len);
+        while (SQLExtendedFetch(_hstmt, SQL_FETCH_NEXT, 0, &rows_fetched,
+                                row_status)
+               == SQL_SUCCESS) {
+            row_count += rows_fetched;
+            if (rows_fetched < ROWSET_SIZE_5)
+                break;
+        }
+        auto end = std::chrono::steady_clock::now();
+        ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
+        times.push_back(
+            std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
+                .count());
+    }
+    queryFinished = true;
+  });
+  queryThread.join();
+  memoryThread.join();
+  queryFinished = false;
+  Report("Bind and (5 row) Fetch", times, _query, averageMem, peakMem);
 }
 
 TEST_F(TestPerformance, Time_BindColumn_Fetch50Rows) {
-  SQLROWSETSIZE row_count = 0;
-  SQLSMALLINT total_columns = 0;
-  SQLROWSETSIZE rows_fetched = 0;
-  SQLUSMALLINT row_status[ROWSET_SIZE_50];
-  SQLSetStmtAttr(_hstmt, SQL_ROWSET_SIZE, (void*)ROWSET_SIZE_50, 0);
-
   std::vector< long long > times;
-  for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
-      // Execute query
-      SQLRETURN ret =
-          SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
-      ASSERT_TRUE(SQL_SUCCEEDED(ret));
+  int currentMem = currentMemUsage();
+  long long averageMem = 0;
+  long long peakMem = 0;
+  boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+  boost::thread queryThread = boost::thread([&] {
+    SQLROWSETSIZE row_count = 0;
+    SQLSMALLINT total_columns = 0;
+    SQLROWSETSIZE rows_fetched = 0;
+    SQLUSMALLINT row_status[ROWSET_SIZE_50];
+    SQLSetStmtAttr(_hstmt, SQL_ROWSET_SIZE, (void*)ROWSET_SIZE_50, 0);
 
-      // Get column count
-      SQLNumResultCols(_hstmt, &total_columns);
-      std::vector< std::vector< Col > > cols(total_columns);
-      for (size_t i = 0; i < cols.size(); i++)
-          cols[i].resize(ROWSET_SIZE_50);
+    for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
+        // Execute query
+        SQLRETURN ret =
+            SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
-      // Bind and fetch
-      auto start = std::chrono::steady_clock::now();
-      for (size_t i = 0; i < cols.size(); i++)
-          ret = SQLBindCol(_hstmt, (SQLUSMALLINT)i + 1, SQL_C_CHAR,
-                           (SQLPOINTER)&cols[i][0].data_dat[i], BIND_SIZE,
-                           &cols[i][0].data_len);
-      while (SQLExtendedFetch(_hstmt, SQL_FETCH_NEXT, 0, &rows_fetched,
-                              row_status)
-             == SQL_SUCCESS) {
-          row_count += rows_fetched;
-          if (rows_fetched < ROWSET_SIZE_50)
-              break;
-      }
+        // Get column count
+        SQLNumResultCols(_hstmt, &total_columns);
+        std::vector< std::vector< Col > > cols(total_columns);
+        for (size_t i = 0; i < cols.size(); i++)
+            cols[i].resize(ROWSET_SIZE_50);
 
-      auto end = std::chrono::steady_clock::now();
-      ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
-      times.push_back(
-          std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
-              .count());
-  }
-  ReportTime("Bind and (50 row) Fetch", times, _query);
+        // Bind and fetch
+        auto start = std::chrono::steady_clock::now();
+        for (size_t i = 0; i < cols.size(); i++)
+            ret = SQLBindCol(_hstmt, (SQLUSMALLINT)i + 1, SQL_C_CHAR,
+                             (SQLPOINTER)&cols[i][0].data_dat[i], BIND_SIZE,
+                             &cols[i][0].data_len);
+        while (SQLExtendedFetch(_hstmt, SQL_FETCH_NEXT, 0, &rows_fetched,
+                                row_status)
+               == SQL_SUCCESS) {
+            row_count += rows_fetched;
+            if (rows_fetched < ROWSET_SIZE_50)
+                break;
+        }
+
+        auto end = std::chrono::steady_clock::now();
+        ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
+        times.push_back(
+            std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
+                .count());
+    }
+    queryFinished = true;
+  });
+  queryThread.join();
+  memoryThread.join();
+  queryFinished = false;
+  Report("Bind and (50 row) Fetch", times, _query, averageMem, peakMem);
 }
 
 TEST_F(TestPerformance, Time_Execute_FetchSingleRow) {
-   SQLSMALLINT total_columns = 0;
-   int row_count = 0;
+  std::vector< long long > times;
+  int currentMem = currentMemUsage();
+  long long averageMem = 0;
+  long long peakMem = 0;
+  boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+  boost::thread queryThread = boost::thread([&] {
+    SQLSMALLINT total_columns = 0;
+    int row_count = 0;
 
-   std::vector< long long > times;
-   for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
-       // Execute query
-       auto start = std::chrono::steady_clock::now();
-       SQLRETURN ret =
-           SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
-       ASSERT_TRUE(SQL_SUCCEEDED(ret));
+    for (size_t iter = 0; iter < ITERATION_COUNT; iter++) {
+        // Execute query
+        auto start = std::chrono::steady_clock::now();
+        SQLRETURN ret =
+            SQLExecDirect(_hstmt, (SQLTCHAR*)_query.c_str(), SQL_NTS);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
-       // Get column count
-       SQLNumResultCols(_hstmt, &total_columns);
-       std::vector< std::vector< Col > > cols(total_columns);
-       for (size_t i = 0; i < cols.size(); i++)
-           cols[i].resize(SINGLE_ROW);
+        // Get column count
+        SQLNumResultCols(_hstmt, &total_columns);
+        std::vector< std::vector< Col > > cols(total_columns);
+        for (size_t i = 0; i < cols.size(); i++)
+            cols[i].resize(SINGLE_ROW);
 
-       // Bind and fetch
-       for (size_t i = 0; i < cols.size(); i++)
-           ret = SQLBindCol(_hstmt, (SQLUSMALLINT)i + 1, SQL_C_CHAR,
-                            (SQLPOINTER)&cols[i][0].data_dat[i], BIND_SIZE,
-                            &cols[i][0].data_len);
-       while (SQLFetch(_hstmt) == SQL_SUCCESS)
-           row_count++;
+        // Bind and fetch
+        for (size_t i = 0; i < cols.size(); i++)
+            ret = SQLBindCol(_hstmt, (SQLUSMALLINT)i + 1, SQL_C_CHAR,
+                             (SQLPOINTER)&cols[i][0].data_dat[i], BIND_SIZE,
+                             &cols[i][0].data_len);
+        while (SQLFetch(_hstmt) == SQL_SUCCESS)
+            row_count++;
 
-       auto end = std::chrono::steady_clock::now();
-       ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
-       times.push_back(
-           std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
-               .count());
-   }
-   ReportTime("Execute Query, Bind and (1 row) Fetch", times, _query);
+        auto end = std::chrono::steady_clock::now();
+        ASSERT_TRUE(SQL_SUCCEEDED(SQLCloseCursor(_hstmt)));
+        times.push_back(
+            std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
+                .count());
+    }
+    queryFinished = true;
+  });
+  queryThread.join();
+  memoryThread.join();
+  queryFinished = false;
+  Report("Execute Query, Bind and (1 row) Fetch", times, _query, averageMem, peakMem);
 }
 
 TEST_PERF_TEST(
@@ -812,6 +912,10 @@ TEST_PERF_TEST(
          "m.region AND i.cell = m.cell AND i.microservice_name = "
          "m.microservice_name WHERE i.instance_avg_metric > (1 + 0) * "
          "m.microservice_avg_metric ORDER BY i.instance_avg_metric DESC LIMIT 10000"))
+ TEST_PERF_TEST(
+     Q21_EXPECT_1500000_ROWS, 
+     CREATE_STRING(
+       "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 1500000"))
 
  int main(int argc, char** argv) {
 #ifdef WIN32
@@ -824,6 +928,9 @@ TEST_PERF_TEST(
     // Enable malloc logging for detecting memory leaks.
     system("export MallocStackLogging=1");
 #endif
+    if (argc > 1 && strcmp(argv[1], "--large_test") == 0) {
+        enableLargeTest = true;
+    }
     testing::internal::CaptureStdout();
     ::testing::InitGoogleTest(&argc, argv);
 

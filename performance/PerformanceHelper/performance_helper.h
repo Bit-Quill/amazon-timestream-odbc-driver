@@ -21,7 +21,19 @@
 
 #ifdef WIN32
 #include <windows.h>
+#include "psapi.h"
 #endif
+
+#ifdef __APPLE__
+#include <mach/mach.h>
+#endif
+
+#ifdef __linux__
+#include "stdlib.h"
+#include "stdio.h"
+#include <cstring>
+#endif
+
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
@@ -45,5 +57,9 @@
 
 void logDiagnostics(SQLSMALLINT handleType, SQLHANDLE handle, SQLRETURN ret,
                        SQLTCHAR* msgReturn = nullptr, const SQLSMALLINT size = 0);
+
+int parseLine(char* line);
+int currentMemUsage();
+
 std::string sqltcharToStr(const SQLTCHAR* sqltchar);
 #endif //PERFORMANCE_HELPER_H

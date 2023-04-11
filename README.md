@@ -31,6 +31,8 @@ See [Azure Active Directory set-up guide](/docs/markdown/setup/aad-saml-setup.md
 
 See [PowerBI oveview](/docs/markdown/setup/powerbi-connector-setup/powerbi_overview.md) for using PowerBI with Timestream ODBC driver and connector.
 
+See [performance testing setup](performance/README.md) for setting up and running performance tests.
+
 ## Connection String Syntax
 
 ```

@@ -1,10 +1,21 @@
 # performance-test-odbc
 Performance test framework for testing ODBC driver.
 
-# How to run with executable
+# Preparing the test data
 1. Setup test database system under the `timestream-iam` DSN, this DSN is hardcoded into the test framework.
-2. Build the performance tool: `cd performance && cmake . && make -j 4 && cd ..`.
-3. Run executable: `./performance/PTODBCResults/performance_results`.
+2. Load data into your database using the [Timestream continuous ingestor](https://github.com/awslabs/amazon-timestream-tools/tree/mainline/tools/continuous-ingestor). It is recommended to run the continuous ingestor for around an hour, this will generate around 8.5 million rows.
+
+NOTE: The continuous ingestor is non-deterministic, the performance tests are hardcoded to check values in an already-existing test database that will not match the data you generate for your test database. The only difference will be the number of rows returned by each query. The current dataset uses a very large time frame for the data (`WHERE time BETWEEN now() - 100y AND now()`) and the tests can be ran with no overhead apart from initial setup. If you wanted to run tests with "live" data you would need to change the time frame for tests to be within one hour (`WHERE time BETWEEN now() - 1h AND now()`) for all queries and run the continuous ingestor at the same time.
+
+# How to run with executable
+1. Build the performance tool:
+    - For Windows x86-64: run `.\build_performance_win64.ps1`.
+    - For Linux: run `./build_performance_linux.sh`.
+2. Run executable: 
+    - For Windows x86-64: run `.\performance\build\PTODBCResults\Release\performance_results.exe`.
+    - For Linux: run `./performance/bin/performance_results`.
+    - If you wish to run the "large test," which queries 1,500,000 rows 10 times, add `--large_test` as an argument. Be warned that this causes the runtime of the performance tests to increase from ~12 minutes to hours.
+
 e.g. output console:
 ```
 [ RUN      ] TestPerformance.Time_Execute
@@ -15,6 +26,8 @@ e.g. output console:
 %%__MAX__%% 81 ms
 %%__MEAN__%% 67 ms
 %%__MEDIAN__%% 66 ms
+%%__AVERAGE_MEMORY_USAGE__%% 128 KB
+%%__PEAK_MEMORY_USAGE__%% 632 KB
 %%__PARSE__SYNC__END__%%
 Time dump: 232 ms
 [       OK ] TestPerformance.Time_Execute (798 ms)

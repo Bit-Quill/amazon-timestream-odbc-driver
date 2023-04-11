@@ -51,6 +51,17 @@ LICENSE.txt
 /performance/**/performance_results
 /performance/**/performance_execution
 /performance/**/googletest/
+/performance/**/*.a
+/performance/**/*.vcxproj*
+/performance/**/*.dll
+/performance/**/*.stamp*
+/performance/**/*.pdb
+/performance/**/*.lib
+/performance/**/CMakeCache
+/performance/**/*.un
+/performance/**/*.sln
+/performance/**/*.exe
+/performance/build/
 /performance/lib/
 /performance/bin/
 /googletest/

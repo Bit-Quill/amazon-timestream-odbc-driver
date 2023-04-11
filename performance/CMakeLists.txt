@@ -25,6 +25,10 @@ add_subdirectory(${PERFORMANCE_HELPER})
 add_subdirectory(${RESULTS_PTESTS})
 add_subdirectory(${EXECUTION_PTESTS})
 
+if (NOT "$ENV{BOOST_ROOT}" STREQUAL "")
+    set(BOOST_ROOT "$ENV{BOOST_ROOT}")
+endif()
+
 # gtest
 include(gtest/googletest.cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -fPIC")

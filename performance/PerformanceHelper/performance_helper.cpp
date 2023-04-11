@@ -15,9 +15,11 @@
  */
 
 #include "performance_helper.h"
+#include <cstdlib>
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
+#include <regex>
 
 std::string sqltcharToStr(const SQLTCHAR* sqltchar) {
     if (sizeof(SQLTCHAR) == 2) {
@@ -32,6 +34,68 @@ std::string sqltcharToStr(const SQLTCHAR* sqltchar) {
         return std::string((const char*) sqltchar);
     }
 }
+
+int parseLine(char* line) {
+    int i = strlen(line);
+    if (i < 4) {
+        return -1;
+    }
+    std::string lineStr = line;
+    // Ensure string has digits and line ends in " kB\n"
+    if (!std::regex_match(lineStr, std::regex(".*[0-9]* (k|K)(b|B)\\s*"))) {
+        return -1;
+    }
+    const char* p = line;
+    while (*p < '0' || *p > '9') {
+        p++;
+    }
+    line[i-3] = '\0';
+    i = atoi(p);
+    return i;
+}
+
+// Gets the current physical RAM usage by the current process
+// Returns memory as KB
+#ifdef __linux__
+int currentMemUsage() {
+    // On linux memory info is stored in a file
+    FILE* file = fopen("/proc/self/status", "r");
+    int result = -1;
+    char line[128];
+    while (fgets(line, 128, file) != NULL){
+        if (strncmp(line, "VmSize:", 7) == 0){
+            result = parseLine(line);
+            break;
+        }
+    }
+    fclose(file);
+    return result;
+}
+#endif //__linux__
+
+#ifdef _WIN32
+int currentMemUsage() {
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+    // PrivateUsage is in bytes, return as KB
+    return static_cast<int>(pmc.PrivateUsage / 1000);
+}
+#endif //_WIN32
+
+#ifdef __APPLE__
+int currentMemUsage() {
+    struct task_basic_info t_info;
+    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+    if (KERN_SUCCESS != task_info(mach_task_self(),
+      TASK_BASIC_INFO, (task_info_t)&t_info,
+      &t_info_count)) {
+        return -1;
+    }
+    // resident_size is in bytes, return KB
+    return static_cast<int>(t_info_count.resident_size / 1000);
+}
+#endif //__APPLE__
 
 void logDiagnostics(SQLSMALLINT handleType, SQLHANDLE handle, SQLRETURN ret,
                        SQLTCHAR* msgReturn, const SQLSMALLINT size) {
