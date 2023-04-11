@@ -31,4 +31,4 @@ existing driver before attempting to install a driver with a different version.
 
 ## Next Steps
 
-- [Set up the DSN](dsn-configuration.md)
+- [Set up the DSN](windows-dsn-configuration.md)

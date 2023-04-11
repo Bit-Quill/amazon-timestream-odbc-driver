@@ -7,7 +7,9 @@
 # Windows
 
 ## Prerequisites
-Before you get started, [configure the Amazon Timestream ODBC driver DSN](windows-dsn-configuration.md) using the Windows ODBC Data Source Administrator. 
+- Before you get started, [configure the Amazon Timestream ODBC driver DSN](windows-dsn-configuration.md) using the Windows ODBC Data Source Administrator. 
+
+- Amazon Timestream ODBC driver reports databases as catalogs by default. But Tableau includes Timestream database name in auto-generated queries only if the databases are reported as schemas. The mismatch leads to data not being able to be loaded properly in Tableau. To make Tableau work properly, environment variable `DATABASE_AS_SCHEMA` needs to be set to `TRUE` before Tableau is started. For details, see [odbc-support-and-limitations](docs/markdown/support/odbc-support-and-limitations.md#sqltables).
 
 ## Connecting to an ODBC data source
 
@@ -24,8 +26,9 @@ If a DSN window pops up at any time, just press the "Ok" button and continue
 # MacOS
 
 ## Prerequisites
-Before you get started, [configure the Amazon Timestream ODBC driver DSN](macOS-dsn-configuration.md) by using the iODBC 
-Driver Manager or editing `odbcinst.ini` file.
+- Before you get started, [configure the Amazon Timestream ODBC driver DSN](macOS-dsn-configuration.md) by using the iODBC Driver Manager or editing `odbcinst.ini` file.
+
+- Amazon Timestream ODBC driver reports databases as catalogs by default. But Tableau includes Timestream database name in auto-generated queries only if the databases are reported as schemas. The mismatch leads to data not being able to be loaded properly in Tableau. To make Tableau work properly, environment variable `DATABASE_AS_SCHEMA` needs to be set to `TRUE` before Tableau is started. For details, see [odbc-support-and-limitations](docs/markdown/support/odbc-support-and-limitations.md#sqltables).
 
 ## Connecting to an ODBC data source
 

@@ -59,7 +59,7 @@ timestream-aws-profile     = Amazon Timestream ODBC Driver
 Driver    = Amazon Timestream ODBC Driver
 Region    = us-east-2
 Auth      = AWS_PROFILE
-ProfileName =
+ProfileName = default
 
 [timestream-aad]
 Driver           = Amazon Timestream ODBC Driver
