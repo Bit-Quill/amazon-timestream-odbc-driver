@@ -461,11 +461,7 @@ BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   // Size is 0 for string
   ret = SQLBindCol(stmt, 1, SQL_C_CHAR, &ind1, 0, &len1);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-#ifdef __APPLE__
-  CheckSQLStatementDiagnosticError("S1090");
-#else
   CheckSQLStatementDiagnosticError("HY090");
-#endif
 
   // Size is 0 for non-string
   ret = SQLBindCol(stmt, 1, SQL_C_SLONG, &ind1, 0, &len1);
