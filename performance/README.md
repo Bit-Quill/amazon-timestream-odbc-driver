@@ -32,4 +32,9 @@ e.g. output console:
 Time dump: 232 ms
 [       OK ] TestPerformance.Time_Execute (798 ms)
 ```
+# Performance report
+Results are written to `performance_results_report.csv` in the location that `performance_results` was ran from, overwriting any file with the same name.
+
+The output columns are as follows:  
+`Test Round,test_name,query,loop_count,Average Time (ms),Max Time (ms),Min Time (ms),Median Time (ms),Average Memory Usage (KB),Peak Memory Usage (KB)`.
 

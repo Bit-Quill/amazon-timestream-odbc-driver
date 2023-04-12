@@ -64,6 +64,7 @@ LICENSE.txt
 /performance/build/
 /performance/lib/
 /performance/bin/
+**/performance_results_report.csv
 /googletest/
 /installer/
 /IntegrationTests/

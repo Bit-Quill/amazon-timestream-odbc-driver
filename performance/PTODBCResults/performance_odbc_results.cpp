@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "performance_helper.h"
 #include "chrono"
+#include <fstream>
 #include <boost/thread.hpp>
 #include <boost/thread/detail/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -41,6 +42,8 @@ typedef SQLULEN SQLTRANSID;
 typedef SQLLEN SQLROWOFFSET;
 #endif
 
+std::string outFileName = "performance_results_report.csv";
+
 SQLTCHAR* connectionString = TO_SQLTCHAR(CREATE_STRING("DSN=timestream-iam;"));
 
 const testString _query =
@@ -53,8 +56,25 @@ typedef struct Col {
 
 bool queryFinished = false;
 
+// The number of executed tests
+int testNumber = 0;
+
 // Whether to run Q21_EXPECT_2000000_ROWS, which greatly extends runtime
 bool enableLargeTest = false;
+
+void prepareOutFile() {
+  std::ofstream outFile(outFileName, std::ios::trunc);
+  if (!outFile.is_open()) {
+    std::cout << "Setting up csv file failed\n";
+    return;
+  }
+  // Write header
+  outFile << 
+    "Test Round,test_name,query,loop_count,Average Time (ms),Max Time (ms),Min Time (ms),"
+    "Median Time (ms),Average Memory Usage (KB),Peak Memory Usage (KB)\n";
+  outFile.close();
+  return;
+}
 
 // Get the average and peak memory usage for any memory created in
 // excess of the current process' memory usage, assumed to be during a query
@@ -258,9 +278,33 @@ void Report(const std::string& test_case, std::vector< long long > data,
             std::cout << ", ";
     }
     std::cout << std::endl;
+
+    // Write to csv
+    std::ofstream outFile(outFileName, std::ios::app);
+    if (!outFile.is_open()) {
+      std::cout << "Writing test result to csv failed\n";
+      return;
+    }
+    outFile
+      << std::to_string(++testNumber) << ","
+      << "\"" << test_case << "\","
+      << "\"" << sqltcharToStr(TO_SQLTCHAR(query.c_str())) << "\","
+      << std::to_string(ITERATION_COUNT) << ","
+      << time_mean << ","
+      << time_max << ","
+      << time_min << ","
+      << time_median << ","
+      << averageMemoryUsage << ","
+      << peakMemoryUsage
+      << "\n";
+      outFile.close();
 }
 
-TEST_F(TestPerformance, Time_Execute) {
+// The below DISABLED_* tests are optional miscellaneous tests with functionality
+// more or less covered by the TEST_PERF_TEST numbered tests. These tests are disabled
+// because they muddy test results and execute simple queries.
+
+TEST_F(TestPerformance, DISABLED_Time_Execute) {
    // Execute a warm up query
     std::cout << "_hstmt: " << _hstmt << std::endl;
     std::vector< long long > times;
@@ -292,9 +336,9 @@ TEST_F(TestPerformance, Time_Execute) {
     Report("Execute Query", times, _query, averageMem, peakMem);
 }
 
-TEST_PERF_TEST(Time_BindColumn_FetchSingleRow, _query)
+TEST_PERF_TEST(DISABLED_Time_BindColumn_FetchSingleRow, _query)
 
-TEST_F(TestPerformance, Time_BindColumn_Fetch5Rows) {
+TEST_F(TestPerformance, DISABLED_Time_BindColumn_Fetch5Rows) {
   std::vector< long long > times;
   int currentMem = currentMemUsage();
   long long averageMem = 0;
@@ -346,7 +390,7 @@ TEST_F(TestPerformance, Time_BindColumn_Fetch5Rows) {
   Report("Bind and (5 row) Fetch", times, _query, averageMem, peakMem);
 }
 
-TEST_F(TestPerformance, Time_BindColumn_Fetch50Rows) {
+TEST_F(TestPerformance, DISABLED_Time_BindColumn_Fetch50Rows) {
   std::vector< long long > times;
   int currentMem = currentMemUsage();
   long long averageMem = 0;
@@ -399,7 +443,7 @@ TEST_F(TestPerformance, Time_BindColumn_Fetch50Rows) {
   Report("Bind and (50 row) Fetch", times, _query, averageMem, peakMem);
 }
 
-TEST_F(TestPerformance, Time_Execute_FetchSingleRow) {
+TEST_F(TestPerformance, DISABLED_Time_Execute_FetchSingleRow) {
   std::vector< long long > times;
   int currentMem = currentMemUsage();
   long long averageMem = 0;
@@ -931,6 +975,7 @@ TEST_PERF_TEST(
     if (argc > 1 && strcmp(argv[1], "--large_test") == 0) {
         enableLargeTest = true;
     }
+    prepareOutFile();
     testing::internal::CaptureStdout();
     ::testing::InitGoogleTest(&argc, argv);
 
