@@ -162,5 +162,10 @@ function Invoke-SignInstaller {
         Remove-Item $signedEnginePath
     }
 
+    # Remove unsigned installer and remove "-signed" in signed installer name
+    Write-Host "Removing unsigned executable."
+    Remove-Item -Path $unsignedInstallerPath
+    Rename-Item -Path $signedInstallerPath -NewName "timestream-odbc-installer-$Architecture.exe"
+
     return $true
 }

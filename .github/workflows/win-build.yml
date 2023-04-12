@@ -266,6 +266,7 @@ jobs:
         role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
         role-duration-seconds: 3600
 
+    # Name of signed executable is same as unsigned exeuctable
     - name: Sign executables
       if: ${{ env.SIGNING_ENABLED == 'true' }}
       id: sign-executables-32
@@ -469,6 +470,7 @@ jobs:
         role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
         role-duration-seconds: 3600
 
+    # Name of signed executable is same as unsigned exeuctable
     - name: Sign executables
       if: ${{ env.SIGNING_ENABLED == 'true' }}
       id: sign-executables-64
