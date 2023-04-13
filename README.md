@@ -46,7 +46,7 @@ the [connection string documentation](docs/markdown/setup/connection-string.md) 
 | Platform | Amazon Timestream ODBC Driver File 
 |----------|-----------------------------------|
 | Windows | timestream.odbc.dll
-| MacOS | libtimestream-odbc.dylib
+| macOS | libtimestream-odbc.dylib
 | Linux | libtimestream-odbc.so
 
 ## Known Issues

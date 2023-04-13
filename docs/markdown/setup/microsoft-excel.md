@@ -75,3 +75,17 @@ Driver Manager or editing `odbcinst.ini` file.
 ![Excel DSN (Mac)](../images/mac_excel_dsn.png)
 
 5. You're now successfully connected on Excel
+
+## Connection with AWS Profile
+Microsoft Excel in macOS is a sandboxed application, which means it cannot access all files on the user's machine, and the access to AWS profile file can be impacted. Follow below steps for connecting Timestream ODBC driver with AWS Profile on macOS Excel.
+1. Put AWS Profile `credentials` file in a folder where Excel has read access, such as `/Library`, `/Library/ODBC`, or `/Users/<username>/Library/Containers/com.microsoft.Excel/Data`. 
+   - `/Users/<username>/Library/Containers/com.microsoft.Excel/Data` folder is automatically created by Excel. 
+2. Set the environment variable `AWS_SHARED_CREDENTIALS_FILE` to point to file in #1. 
+   - Example command: `export AWS_SHARED_CREDENTIALS_FILE=/Users/<username>/Library/Containers/com.microsoft.Excel/Data/credentials`
+3. Open Excel application from terminal with command `/Applications/Microsoft\ Excel.app/Contents/MacOS/Microsoft\ Excel`, so the environment variable set in #2 is read.
+   - If this step is skipped, the driver will access the default location which is `$HOME/.aws/credentials`, a location that Excel cannot access due to sandbox.
+
+## Trouble-shooting with macOS Excel
+We suggest users to not change log path by setting `logOutput` for DSNs used to connect on Excel in macOS. This is because macOS Excel can only write files in `/Users/<username>/Library/Containers/com.microsoft.Excel/Data`, which is the default driver logging location for Excel.
+
+If any issues occur, such as databases/tables aren't shown in Excel, check Timestream ODBC driver logs at `/Users/<username>/Library/Containers/com.microsoft.Excel/Data` to see the root cause.

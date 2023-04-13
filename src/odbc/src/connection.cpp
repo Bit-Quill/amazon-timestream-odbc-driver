@@ -662,7 +662,7 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   clientCfg.requestTimeoutMs = cfg.GetReqTimeout();
   clientCfg.maxConnections = cfg.GetMaxConnections();
   LOG_DEBUG_MSG("region is "
-                << cfg.GetProfileName() << ", connection timeout is "
+                << cfg.GetRegion() << ", connection timeout is "
                 << clientCfg.connectTimeoutMs << ", request timeout is "
                 << clientCfg.requestTimeoutMs << ", max connection is "
                 << clientCfg.maxConnections);

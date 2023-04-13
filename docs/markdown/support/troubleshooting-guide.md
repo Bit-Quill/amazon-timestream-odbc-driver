@@ -11,7 +11,9 @@
 When troubleshooting, it can be helpful to view the logs so that you might be able 
 to resolve the issue on your own or at least have more context to provide when seeking support. 
 On Windows, the driver's logs will be written to the user's home directory (`%USERPROFILE%` or `%HOMEDRIVE%%HOMEPATH%`) by default.
-On Mac/Linux/Unix, the default log path is also the user's home directory(`getpwuid()` or `$HOME`), whichever one is available.
+On Mac/Linux/Unix, the default log path is also the user's home directory(`$HOME` or `getpwuid(getuid())->pw_dir`), whichever one is available.
+ - `getpwuid(getuid())->pw_dir` and `$HOME` may contain different values depending on the system and application. For example, on macOS Excel, `$HOME` is `/Users/<username>/Library/Containers/com.microsoft.Excel/Data`, and `getpwuid(getuid())->pw_dir` is `/Users/<username>`
+
 On Windows, you may change the default path in the DSN configuration window.
 In any platform, you may pass your log path / log level in the connection string.
 The log path indicates the path to store the log file. The log file name has `timestream_odbc_YYYYMMDD.log` format, 
@@ -34,8 +36,9 @@ There are the following levels of logging:
 |--------|-------------|--------|---------------|
 | `logLevel` | The log level for all sources/appenders. | All Platforms | `2` (means WARNING) |
 | `logOutput` | The location for file logging. | Windows | `%USERPROFILE%`, or if not available, `%HOMEDRIVE%%HOMEPATH%` |
-| `logOutput` | The location for file logging. | MacOS | `getpwuid()`, or if not available, `$HOME` |
-| `logOutput` | The location for file logging. | Linux/Unix | `getpwuid()`, or if not available, `$HOME` |
+| `logOutput` | The location for file logging. | macOS (except Excel) | `$HOME`, or if not available, use the field `pw_dir` from C++ function `getpwuid(getuid())` return value  |
+| `logOutput` | The location for file logging. | macOS Excel | `/Users/<username>/Library/Containers/com.microsoft.Excel/Data` |
+| `logOutput` | The location for file logging. | Linux/Unix | `$HOME`, or if not available, use the field `pw_dir` from C++ function `getpwuid(getuid())` return value |
 
 To set these properties, use the connection string with the following format 
 `<property-name>=<property-value>`. The user should **not** have a slash at the end of the log path. 
