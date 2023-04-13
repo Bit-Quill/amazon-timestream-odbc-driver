@@ -40,20 +40,3 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 
-3) License Notice for cmake code to incorporate Gtest
------------------------------------------
-
-The MIT License (MIT)
-
-Copyright (c) 2015 Crascit
-
-See license at https://github.com/Crascit/DownloadProject/blob/master/LICENSE
-
-4) License Notice for Google Test
------------------------------------------
-
-Copyright 2008, Google Inc.
-All rights reserved.
-
-See license at https://github.com/google/googletest/blob/main/LICENSE
-
