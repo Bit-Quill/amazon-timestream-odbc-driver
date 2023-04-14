@@ -30,7 +30,6 @@
 
 #include "complex_type.h"
 #include "timestream/odbc/binary/binary_object.h"
-#include "timestream/odbc/common/fixed_size_array.h"
 #include "timestream/timestream.h"
 #include "timestream/ignition.h"
 #include "timestream/odbc/impl/binary/binary_utils.h"

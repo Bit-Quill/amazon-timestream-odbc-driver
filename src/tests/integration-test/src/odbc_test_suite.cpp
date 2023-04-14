@@ -463,26 +463,6 @@ void OdbcTestSuite::CheckTestTimestampValue(int idx,
   }
 }
 
-void OdbcTestSuite::GetTestI8ArrayField(int64_t idx, int8_t* val,
-                                        size_t valLen) {
-  for (size_t j = 0; j < valLen; ++j)
-    val[j] = static_cast< int8_t >(idx * valLen + j);
-}
-
-void OdbcTestSuite::CheckTestI8ArrayValue(int idx, const int8_t* val,
-                                          size_t valLen) {
-  BOOST_TEST_CONTEXT("Test index: " << idx) {
-    ignite::odbc::common::FixedSizeArray< int8_t > expected(
-        static_cast< int32_t >(valLen));
-    GetTestI8ArrayField(idx, expected.GetData(), expected.GetSize());
-
-    for (size_t j = 0; j < valLen; ++j) {
-      BOOST_TEST_INFO("Byte index: " << j);
-      BOOST_CHECK_EQUAL(val[j], expected[(int32_t)j]);
-    }
-  }
-}
-
 void OdbcTestSuite::CheckSQLDiagnosticError(
     int16_t handleType, SQLHANDLE handle,
     const std::string& expectedSqlStateStr) {

@@ -31,7 +31,6 @@
 #include <vector>
 #include <chrono>
 
-#include "ignite/common/include/common/fixed_size_array.h"
 #include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
 #include "test_type.h"

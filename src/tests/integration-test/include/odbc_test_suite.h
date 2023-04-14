@@ -349,24 +349,6 @@ struct OdbcTestSuite {
   static void CheckTestTimestampValue(int idx, const SQL_TIMESTAMP_STRUCT& val);
 
   /**
-   * Get test i8ArrayField.
-   *
-   * @param idx Index.
-   * @param val Output value.
-   * @param valLen Value length.
-   */
-  static void GetTestI8ArrayField(int64_t idx, int8_t* val, size_t valLen);
-
-  /**
-   * Check i8ArrayField test value.
-   *
-   * @param idx Index.
-   * @param val Value to test.
-   * @param valLen Value length.
-   */
-  static void CheckTestI8ArrayValue(int idx, const int8_t* val, size_t valLen);
-
-  /**
    * Check that SQL error has expected SQL state.
    *
    * @param handleType Handle type.

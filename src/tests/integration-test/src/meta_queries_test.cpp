@@ -31,7 +31,6 @@
 #include <string>
 #include <vector>
 
-#include "ignite/common/include/common/fixed_size_array.h"
 #include "timestream/odbc/type_traits.h"
 #include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
