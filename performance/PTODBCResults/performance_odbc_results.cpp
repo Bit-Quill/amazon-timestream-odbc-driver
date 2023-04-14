@@ -42,9 +42,8 @@ typedef SQLULEN SQLTRANSID;
 typedef SQLLEN SQLROWOFFSET;
 #endif
 
+std::vector<SQLWCHAR> connectionString;
 std::string outFileName = "performance_results_report.csv";
-
-SQLTCHAR* connectionString = TO_SQLTCHAR(CREATE_STRING("DSN=timestream-iam;"));
 
 const testString _query =
     CREATE_STRING("SELECT * FROM ODBCTest.DevOps LIMIT 10000");
@@ -142,6 +141,7 @@ auto RecordBindingFetching = [](SQLHSTMT& hstmt,
             std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
                 .count());
         logDiagnostics(SQL_HANDLE_STMT, hstmt, ret);
+        SQLCloseCursor(hstmt);
     }
     queryFinished = true;
 };
@@ -199,7 +199,7 @@ class TestPerformance : public testing::Test {
         }
         SQLTCHAR outConnString[1024];
         SQLSMALLINT outConnStringLen;
-        ret = SQLDriverConnect(_conn, NULL, connectionString, SQL_NTS,
+        ret = SQLDriverConnect(_conn, NULL, &connectionString[0], SQL_NTS,
             outConnString, HELPER_SIZEOF(outConnString),
             &outConnStringLen, SQL_DRIVER_COMPLETE);
         if (!SQL_SUCCEEDED(ret)) {
@@ -957,7 +957,7 @@ TEST_PERF_TEST(
          "m.microservice_name WHERE i.instance_avg_metric > (1 + 0) * "
          "m.microservice_avg_metric ORDER BY i.instance_avg_metric DESC LIMIT 10000"))
  TEST_PERF_TEST(
-     Q21_EXPECT_1500000_ROWS, 
+     Q21_EXPECT_1500000_ROWS,
      CREATE_STRING(
        "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 1500000"))
 
@@ -972,10 +972,50 @@ TEST_PERF_TEST(
     // Enable malloc logging for detecting memory leaks.
     system("export MallocStackLogging=1");
 #endif
-    if (argc > 1 && strcmp(argv[1], "--large_test") == 0) {
-        enableLargeTest = true;
+    std::string accessKeyId;
+    std::string secretKey;
+    std::string region = "us-west-2";
+    std::string defaultConnStr = "DSN=timestream-iam;";
+    std::string specialConnStr;
+
+    // Handle passed in arguments
+    if (argc > 1) {
+      for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--large-test") == 0) {
+          enableLargeTest = true;
+        } else if (strcmp(argv[i], "--access-key-id") == 0 && i + 1 < argc) {
+          accessKeyId = std::string(argv[i + 1]);
+          i++;
+        } else if (strcmp(argv[i], "--secret-key") == 0 && i + 1 < argc) {
+          secretKey = std::string(argv[i + 1]);
+          i++;
+        } else if (strcmp(argv[i], "--region") == 0 && i + 1 < argc) {
+          region = std::string(argv[i + 1]);
+          i++;
+        } else {
+          std::cout << "Invalid argument: " << std::string(argv[i]) << std::endl <<
+            "Valid arguments are:\n"
+            "--large-test\t\t\t\t\t\t\tEnable the test that returns 1,500,000 rows and extends the run time to ~11 hours.\n"
+            "--region <region>\t\t\t\t\t\tThe region to use for testing. Optional, but if provided then the access key ID and secret key must also be provided. Defaults to us-west-2.\n"
+            "--access-key-id <access key id> --secret-key <secret key>\tThe AWS access key ID and AWS secret key to use for tests. If either are passed as arguments both must be provided.\n";
+          std::cout << "Exiting . . .\n";
+          return 1;
+        }
+        
+      }
     }
+
+    if (!accessKeyId.empty() && !secretKey.empty()) {
+      specialConnStr = std::string("Driver=Amazon Timestream ODBC Driver;")
+        + "Region=" + region + ";LogLevel=0;Auth=IAM;AccessKeyId=" + accessKeyId + ";"
+        + "SecretKey=" + secretKey + ";";
+        connectionString = std::vector<SQLWCHAR>(specialConnStr.begin(), specialConnStr.end());
+    } else {
+      connectionString = std::vector<SQLWCHAR>(defaultConnStr.begin(), defaultConnStr.end());
+    }
+
     prepareOutFile();
+
     testing::internal::CaptureStdout();
     ::testing::InitGoogleTest(&argc, argv);
 
