@@ -1,28 +1,20 @@
 # Connection String Properties on New Timestream ODBC Driver
 
 ## Topics
-- [Connection String Syntax and Options](#connection-string-syntax-and-options)
-
 - [Driver Connection Options](#driver-connection-options)
-
 - [Endpoint Configuration Options](#endpoint-configuration-options)
-
 - [Credentials Provider Options](#credentials-provider-options)
-
 - [AWS IAM Authentication Options](#aws-iam-authentication-options)
-
 - [SAML-Based Authentication Options for Okta](#saml-based-authentication-options-for-okta)
-
 - [SAML-Based Authentication Options for Azure Active Directory](#saml-based-authentication-options-for-azure-active-directory)
-
 - [AWS SDK (Advanced) Options](#aws-sdk-advanced-options)
-
 - [Logging Options](#logging-options)
-
-- [Examples](#examples)
-
+- [Environment Variables At Connection](#environment-variables-at-connection)
+    - [AWS SDK Log Level](#aws-sdk-log-level)
+- [Connecting to an Amazon Timestream Database](#connecting-to-an-amazon-timestream-database)
+    - [Connecting With IAM Credentials](#connecting-with-iam-credentials)
+    - [Connecting With Profile](#connecting-with-profile)
 - [Troubleshooting](#troubleshooting)
-
 - [Window Dialog](#window-dialog)
 
 # Connection String Syntax and Options
@@ -96,6 +88,14 @@ For how to find the connection values, go to the [SAML 2.0 Azure AD set up guide
 |--------|-------------|---------------|
 | `LogLevel` | Log level for driver logging. <br />Possible values:<br /> {0, 1, 2, 3, 4}<br /> meaning<br />{OFF, ERROR, WARNING, INFO, DEBUG}<br /> **Warning:** personal information can be logged by the driver when using the driver in **DEBUG** mode. | `1` (means ERROR)
 | `LogOutput` | Folder to store the log file | Windows: `%USERPROFILE%`, or if not available, `%HOMEDRIVE%%HOMEPATH%` <br /> macOS/Linux: `$HOME`, or if not available, use the field `pw_dir` from C++ function `getpwuid(getuid())` return value.
+
+### Environment Variables At Connection
+For setting up connection proxy properties, see [connection proxy guide.](connection-proxy-guide.md).
+
+#### AWS SDK Log Level
+AWS SDK Log Level can be set by envrionment variable `TS_AWS_LOG_LEVEL` to one of valid log level values: "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", and "OFF". If environment variable `TS_AWS_LOG_LEVEL` is not set, default log level `Warn` is used.
+
+Note that AWS SDK log level is separate from the Timestream ODBC driver log level, and setting one does not affect the other.
 
 ## Examples
 

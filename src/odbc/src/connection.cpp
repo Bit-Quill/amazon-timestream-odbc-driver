@@ -77,9 +77,18 @@ Connection::Connection(Environment* env)
     // Connection objects start to run.
     std::lock_guard< std::mutex > lock(mutex_);
     if (!awsSDKReady_) {
-      // TODO: make this loglevel configurable?
-      // https://bitquill.atlassian.net/browse/AT-1054
-      options_.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Warn;
+      Aws::Utils::Logging::LogLevel awsLogLvl = GetAWSLogLevelFromString(
+          ignite::odbc::common::GetEnv("TS_AWS_LOG_LEVEL"));
+      options_.loggingOptions.logLevel = awsLogLvl;
+
+      // Aws::Utils::Logging::GetLogLevelName aborts the program with parameter `LogLevel::Off`
+      // https://github.com/aws/aws-sdk-cpp/issues/2436 is created to track the AWS SDK issue.
+      if (awsLogLvl != Aws::Utils::Logging::LogLevel::Off) {
+        LOG_INFO_MSG("AWS SDK log level is set to: "
+                     << Aws::Utils::Logging::GetLogLevelName(awsLogLvl));
+      } else {
+        LOG_INFO_MSG("AWS SDK log level is set to: Off");
+      }
 
       Aws::InitAPI(options_);
       awsSDKReady_ = true;
@@ -507,6 +516,36 @@ void UpdateConnectionRuntimeInfo(const config::Configuration& config,
 
 std::shared_ptr< Aws::Http::HttpClient > Connection::GetHttpClient() {
   return Aws::Http::CreateHttpClient(Aws::Client::ClientConfiguration());
+}
+
+Aws::Utils::Logging::LogLevel Connection::GetAWSLogLevelFromString(
+    std::string awsLogLvl) {
+  std::transform(awsLogLvl.begin(), awsLogLvl.end(), awsLogLvl.begin(),
+                 ::toupper);
+
+  if (awsLogLvl == "OFF")
+    return Aws::Utils::Logging::LogLevel::Off;
+
+  if (awsLogLvl == "FATAL")
+    return Aws::Utils::Logging::LogLevel::Fatal;
+
+  if (awsLogLvl == "ERROR")
+    return Aws::Utils::Logging::LogLevel::Error;
+
+  if (awsLogLvl == "WARN")
+    return Aws::Utils::Logging::LogLevel::Warn;
+
+  if (awsLogLvl == "INFO")
+    return Aws::Utils::Logging::LogLevel::Info;
+
+  if (awsLogLvl == "DEBUG")
+    return Aws::Utils::Logging::LogLevel::Debug;
+
+  if (awsLogLvl == "TRACE")
+    return Aws::Utils::Logging::LogLevel::Trace;
+
+  // Return default
+  return Aws::Utils::Logging::LogLevel::Warn;
 }
 
 // TODO: [AT-1256] replace these environment variables with data from

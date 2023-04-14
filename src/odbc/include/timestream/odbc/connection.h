@@ -215,6 +215,15 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
     return samlCredProvider_;
   }
 
+  /**
+   * Get AWS Log Level from string
+   * 
+   * @param awsLogLvl AWS Log Level String
+   *
+   * @return awsLogLevel AWS Log Level, default is Warn.
+   */
+  static Aws::Utils::Logging::LogLevel GetAWSLogLevelFromString(std::string awsLogLvl);
+
  protected:
   /**
    * Constructor.

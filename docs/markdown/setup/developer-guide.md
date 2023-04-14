@@ -559,6 +559,7 @@ Ensure `OKTA_HOST` does not include `https://` or `http://`.
 Big table pagination tests are time-consuming. To save time for integration test， they are disabled by default. They could be enabled by export environment variable `BIG_TABLE_PAGINATION_TEST_ENABLE` to `true`.
 
 ### Proxy Manual Test on Windows
+For setting up connection proxy properties, see [connection proxy guide.](connection-proxy-guide.md).
 1. Download proxy-test-server from https://github.com/andris9/proxy-test-server
    `git clone git@github.com:andris9/proxy-test-server.git`
 2. Install proxy-test-server

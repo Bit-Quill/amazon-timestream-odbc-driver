@@ -30,9 +30,6 @@
 #include "timestream/odbc/ignite_error.h"
 #include "timestream/odbc/authentication/auth_type.h"
 
-// TODO Add ComboBox for AWS log level configuration
-// https://bitquill.atlassian.net/browse/AT-1054
-
 namespace timestream {
 namespace odbc {
 namespace system {

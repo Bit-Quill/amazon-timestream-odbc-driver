@@ -13,46 +13,65 @@
  * permissions and limitations under the License.
  *
  */
+#include <odbc_unit_test_suite.h>
+
+#include <timestream/odbc/connection.h>
 #include <timestream/odbc/log.h>
 #include <timestream/odbc/log_level.h>
+
+#include <aws/core/utils/logging/LogLevel.h>
 
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
 #include <random>
 #include <string>
 
-#include "odbc_test_suite.h"
-
 using namespace boost::unit_test;
 
 using boost::unit_test::precondition;
 using timestream::odbc::Logger;
 using timestream::odbc::LogLevel;
-using timestream::odbc::OdbcTestSuite;
+using timestream::odbc::OdbcUnitTestSuite;
 
-bool SaveLoggerVars(std::shared_ptr< Logger > logger,
-                    boost::optional< std::string >& origLogPath,
-                    boost::optional< LogLevel::Type >& origLogLevel) {
-  if (logger->IsEnabled()) {
-    origLogPath = logger->GetLogPath();
-    origLogLevel = logger->GetLogLevel();
-
-    return true;
+/**
+ * Test setup fixture.
+ */
+struct LogUnitTestSuiteFixture : OdbcUnitTestSuite {
+  LogUnitTestSuiteFixture() : OdbcUnitTestSuite() {
   }
-  origLogPath = boost::none;
-  origLogLevel = boost::none;
 
-  return false;
-}
+  /**
+   * Destructor.
+   */
+  ~LogUnitTestSuiteFixture() {
+  }
 
-void setLoggerVars(std::shared_ptr< Logger > logger,
-                   boost::optional< std::string >& origLogPath,
-                   boost::optional< LogLevel::Type >& origLogLevel) {
-  // pre-requiste: origLogPath and origLogLevel hold valid values
+  bool SaveLoggerVars(std::shared_ptr< Logger > logger,
+                      boost::optional< std::string >& origLogPath,
+                      boost::optional< LogLevel::Type >& origLogLevel) {
+    if (logger->IsEnabled()) {
+      origLogPath = logger->GetLogPath();
+      origLogLevel = logger->GetLogLevel();
 
-  logger->SetLogLevel(origLogLevel.get());
-  logger->SetLogPath(origLogPath.get());
-}
+      return true;
+    }
+    origLogPath = boost::none;
+    origLogLevel = boost::none;
+
+    return false;
+  }
+
+  void setLoggerVars(std::shared_ptr< Logger > logger,
+                     boost::optional< std::string >& origLogPath,
+                     boost::optional< LogLevel::Type >& origLogLevel) {
+    // pre-requiste: origLogPath and origLogLevel hold valid values
+
+    logger->SetLogLevel(origLogLevel.get());
+    logger->SetLogPath(origLogPath.get());
+  }
+};
+
+BOOST_FIXTURE_TEST_SUITE(LogUnitTestSuite, LogUnitTestSuiteFixture)
 
 BOOST_AUTO_TEST_CASE(TestLogStreamCreatedOnDefaultInstance) {
   std::minstd_rand randNum;
@@ -437,3 +456,34 @@ BOOST_AUTO_TEST_CASE(TestLogSetInvalidLogPath) {
     setLoggerVars(logger, origLogPath, origLogLevel);
 }
 
+BOOST_AUTO_TEST_CASE(TestAWSLogLevelParseMixedCases) {
+  using timestream::odbc::Connection;
+
+  // Check default value is Warn
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("")
+              == Aws::Utils::Logging::LogLevel::Warn);
+
+  // Check parse strings
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("OfF")
+              == Aws::Utils::Logging::LogLevel::Off);
+
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("FatAl")
+              == Aws::Utils::Logging::LogLevel::Fatal);
+
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("ErroR")
+              == Aws::Utils::Logging::LogLevel::Error);
+
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("WARn")
+              == Aws::Utils::Logging::LogLevel::Warn);
+
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("infO")
+              == Aws::Utils::Logging::LogLevel::Info);
+
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("dEbUg")
+              == Aws::Utils::Logging::LogLevel::Debug);
+
+  BOOST_CHECK(Connection::GetAWSLogLevelFromString("trace")
+              == Aws::Utils::Logging::LogLevel::Trace);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
