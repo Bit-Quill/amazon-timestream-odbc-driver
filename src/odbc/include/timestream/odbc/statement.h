@@ -279,14 +279,14 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    *
    * @param ptr Rows fetched buffer pointer.
    */
-  void SetRowsFetchedPtr(SQLINTEGER* ptr);
+  void SetRowsFetchedPtr(SQLULEN* ptr);
 
   /**
    * Get rows fetched buffer pointer.
    *
    * @return Rows fetched buffer pointer.
    */
-  SQLINTEGER* GetRowsFetchedPtr();
+  SQLULEN* GetRowsFetchedPtr();
 
   /**
    * Set row statuses array pointer.
@@ -594,11 +594,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   SqlResult::Type InternalAffectedRows(int64_t& rowCnt);
 
   /**
-   * Make request to data source to update parameters metadata.
-   */
-  SqlResult::Type UpdateParamsMeta();
-
-  /**
    * Convert SQLRESULT to SQL_ROW_RESULT.
    *
    * @return Operation result.
@@ -615,7 +610,7 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   std::unique_ptr< Query > currentQuery;
 
   /** Buffer to store number of rows fetched by the last fetch. */
-  SQLINTEGER* rowsFetched;
+  SQLULEN* rowsFetched;
 
   /** Array to store statuses of rows fetched by the last fetch. */
   SQLUSMALLINT* rowStatuses;
@@ -625,9 +620,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
 
   /** Row array size. */
   SqlUlen rowArraySize;
-
-  /** Query timeout in seconds. */
-  int32_t timeout;
 };
 }  // namespace odbc
 }  // namespace timestream

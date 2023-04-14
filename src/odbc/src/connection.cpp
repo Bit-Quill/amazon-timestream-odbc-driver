@@ -458,8 +458,8 @@ SqlResult::Type Connection::InternalSetAttribute(int attr, void* value,
           static_cast< SQLUINTEGER >(reinterpret_cast< ptrdiff_t >(value));
 
       if (id != SQL_TRUE && id != SQL_FALSE) {
-        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                        "Specified attribute is not supported.");
+        AddStatusRecord(SqlState::SHY024_INVALID_ATTRIBUTE_VALUE,
+                        "Invalid argument value");
 
         return SqlResult::AI_ERROR;
       }

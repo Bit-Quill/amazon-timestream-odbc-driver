@@ -404,6 +404,23 @@ int64_t TypeInfoQuery::AffectedRows() const {
   return 0;
 }
 
+int64_t TypeInfoQuery::RowNumber() const {
+  if (!executed || cursor == types.end()) {
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Cursor does not point to any data.",
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+
+    LOG_DEBUG_MSG("Row number returned is 0.");
+
+    return 0;
+  }
+
+  int64_t rowNumber = cursor - types.begin() + 1;
+  LOG_DEBUG_MSG("Row number returned: " << rowNumber);
+
+  return rowNumber;
+}
+
 SqlResult::Type TypeInfoQuery::NextResultSet() {
   return SqlResult::AI_NO_DATA;
 }

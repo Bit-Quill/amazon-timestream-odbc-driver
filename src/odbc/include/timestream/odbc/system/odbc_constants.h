@@ -48,6 +48,7 @@
 // Internal flag to use database as catalog or schema
 // true if databases are reported as catalog, false if databases are reported as
 // schema
+#include "timestream/odbc/utility.h"
 #define DATABASE_AS_SCHEMA \
   timestream::odbc::utility::CheckEnvVarSetToTrue("DATABASE_AS_SCHEMA")
 

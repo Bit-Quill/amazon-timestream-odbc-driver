@@ -151,6 +151,17 @@ class Query {
   virtual int64_t AffectedRows() const = 0;
 
   /**
+   * Get row number of the row that the cursor points at.
+   * Row number starts at 1. 
+   * 0 is invalid row number and is the default return value for unsupported queries.
+   *
+   * @return Row number of the row that the cursor points at.
+   */
+  virtual int64_t RowNumber() const {
+    return 0;
+  }
+
+  /**
    * Move to the next result set.
    *
    * @return Operation result.

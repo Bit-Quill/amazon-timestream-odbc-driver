@@ -273,9 +273,9 @@ BOOST_AUTO_TEST_CASE(TestSQLSetPos) {
       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-// TODO enable descriptor tests as part of in Jira created in AT-1230 
+// TODO enable descriptor tests as part of AT-1217
 // after SQL_ATTR_APP_ROW_DESC is supported
-// https://bitquill.atlassian.net/browse/AT-1230
+// https://bitquill.atlassian.net/browse/AT-1217
 BOOST_AUTO_TEST_CASE(TestSQLSetDescRec, *disabled()) {
   SQLHDESC desc;
   SQLINTEGER data = 10;

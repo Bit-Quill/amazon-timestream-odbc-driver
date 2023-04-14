@@ -77,11 +77,9 @@ class IGNITE_IMPORT_EXPORT DataQuery : public timestream::odbc::query::Query {
    * @param diag Diagnostics collector.
    * @param connection Associated connection.
    * @param sql SQL query string.
-   * @param timeout Timeout.
    */
   DataQuery(diagnostic::DiagnosableAdapter& diag, Connection& connection,
-            const std::string& sql,
-            int32_t& timeout);
+            const std::string& sql);
 
   /**
    * Destructor.
@@ -147,6 +145,14 @@ class IGNITE_IMPORT_EXPORT DataQuery : public timestream::odbc::query::Query {
    * @return Number of rows affected by the statement.
    */
   virtual int64_t AffectedRows() const;
+
+  /**
+   * Get row number of the row that the cursor points at.
+   * Row number starts at 1.
+   *
+   * @return Row number of the row that the cursor points at.
+   */
+  virtual int64_t RowNumber() const;
 
   /**
    * Move to the next result set.
@@ -273,9 +279,6 @@ class IGNITE_IMPORT_EXPORT DataQuery : public timestream::odbc::query::Query {
 
   /** Cursor. */
   std::unique_ptr< TimestreamCursor > cursor_;
-
-  /** Timeout. */
-  int32_t& timeout_;
 
   /** Timestream query client. */
   std::shared_ptr< Aws::TimestreamQuery::TimestreamQueryClient > queryClient_;

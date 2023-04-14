@@ -103,47 +103,6 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(ApiRobustnessTestSuite, ApiRobustnessTestSuiteFixture)
 
-BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttrRowArraySize) {
-  // check that statement array size cannot be set to values other than 1
-  ConnectToTS();
-
-  SQLINTEGER actual_row_array_size;
-  SQLINTEGER resLen = 0;
-
-  // check that statement array size cannot be set to values not equal to 1
-  // repeat test for different values
-  SQLULEN valList[5] = {0, 2, 3, 4, 5};
-  for (SQLULEN val : valList) {
-    SQLRETURN ret =
-        SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE,
-                       reinterpret_cast< SQLPOINTER >(val), sizeof(val));
-
-    BOOST_CHECK_EQUAL(ret, SQL_ERROR);
-
-    ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, &actual_row_array_size,
-                         sizeof(actual_row_array_size), &resLen);
-
-    ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-    BOOST_CHECK_EQUAL(actual_row_array_size, 1);
-  }
-
-  // check that setting row array size to 1 is successful
-  SQLULEN val = 1;
-  SQLRETURN ret =
-      SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE,
-                     reinterpret_cast< SQLPOINTER >(val), sizeof(val));
-
-  BOOST_CHECK_EQUAL(ret, SQL_SUCCESS);
-
-  ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, &actual_row_array_size,
-                       sizeof(actual_row_array_size), &resLen);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  BOOST_CHECK_EQUAL(actual_row_array_size, val);
-}
-
 #ifndef __APPLE__
 // only enable for Windows and Linux as it crashes on Mac
 // with iODBC, traced by AD-820
@@ -698,7 +657,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetStmtAttr) {
   SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -852,7 +811,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetData, *disabled()) {
   SQLFetch(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -871,67 +830,6 @@ BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr, *disabled()) {
   SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, buffer, 0, &resLen);
   SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, buffer, sizeof(buffer), 0);
   SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, nullptr, 0, nullptr);
-}
-
-BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns, *disabled()) {
-  // There are no checks because we do not really care what is the result of
-  // these calls as long as they do not cause segmentation fault.
-
-  ConnectToTS();
-
-  std::vector< SQLWCHAR > catalogName = {0};
-  std::vector< SQLWCHAR > schemaName = MakeSqlBuffer("cache");
-  std::vector< SQLWCHAR > tableName = MakeSqlBuffer("TestType");
-
-  // Everything is ok.
-  SQLRETURN ret = SQLSpecialColumns(
-      stmt, SQL_BEST_ROWID, catalogName.data(), SQL_NTS, schemaName.data(),
-      SQL_NTS, tableName.data(), SQL_NTS, SQL_SCOPE_CURROW, SQL_NO_NULLS);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, 0, SQL_NTS, schemaName.data(),
-                    SQL_NTS, tableName.data(), SQL_NTS, SQL_SCOPE_CURROW,
-                    SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, catalogName.data(), 0,
-                    schemaName.data(), SQL_NTS, tableName.data(), SQL_NTS,
-                    SQL_SCOPE_CURROW, SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, catalogName.data(), SQL_NTS, 0,
-                    SQL_NTS, tableName.data(), SQL_NTS, SQL_SCOPE_CURROW,
-                    SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, catalogName.data(), SQL_NTS,
-                    schemaName.data(), 0, tableName.data(), SQL_NTS,
-                    SQL_SCOPE_CURROW, SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, catalogName.data(), SQL_NTS,
-                    schemaName.data(), SQL_NTS, 0, SQL_NTS, SQL_SCOPE_CURROW,
-                    SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, catalogName.data(), SQL_NTS,
-                    schemaName.data(), SQL_NTS, tableName.data(), 0,
-                    SQL_SCOPE_CURROW, SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
-
-  SQLSpecialColumns(stmt, SQL_BEST_ROWID, 0, 0, 0, 0, 0, 0, SQL_SCOPE_CURROW,
-                    SQL_NO_NULLS);
-
-  SQLCloseCursor(stmt);
 }
 
 // TODO: Memory leak, traced by https://bitquill.atlassian.net/browse/AD-813

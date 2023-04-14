@@ -283,23 +283,33 @@ Note that the following table describes the planned functionality for the GA rel
 
 Note: SQL_ATTR_TSLOG_DEBUG is an internal connection attribute. It can be used to change logging level after a connection is established.
 
-## Supported Statements Attributes
+## Supported Statements Attributes 
 Table of statement attributes supported by the Amazon Timestream ODBC driver.\
-Related function: `SQLSetStmtAttr`
+In both `SQLSetStmtAttr` and `SQLGetStmtAttr`
 | Statement attribute | Default | Support Value Change|
 |--------|------|-------|
-|SQL_ATTR_PARAM_BIND_OFFSET_PTR| - | yes |
-|SQL_ATTR_PARAM_BIND_TYPE| - | no |
-|SQL_ATTR_PARAM_OPERATION_PTR| - | no |
-|SQL_ATTR_PARAM_STATUS_PTR| - | yes |
-|SQL_ATTR_PARAMS_PROCESSED_PTR| | no |
-|SQL_ATTR_PARAMSET_SIZE| - | yes | 
-|SQL_ATTR_ROW_ARRAY_SIZE| 1 | no | 
-|SQL_ATTR_ROW_BIND_OFFSET_PTR| - | yes |
-|SQL_ATTR_ROW_BIND_TYPE| - | no |
-|SQL_ATTR_ROW_OPERATION_PTR| - | no |
-|SQL_ATTR_ROW_STATUS_PTR| - | yes |
-|SQL_ATTR_ROWS_FETCHED_PTR| - | yes |
+|SQL_ATTR_CONCURRENCY| SQL_CONCUR_READ_ONLY| no |
+|SQL_ATTR_CURSOR_TYPE|SQL_CURSOR_FORWARD_ONLY| no |
+|SQL_ATTR_RETRIEVE_DATA|SQL_RD_ON| no |
+|SQL_ATTR_METADATA_ID|SQL_FALSE| yes |
+|SQL_ATTR_PARAM_BIND_TYPE| SQL_BIND_BY_COLUMN | no |
+|SQL_ATTR_ROW_ARRAY_SIZE| 1 | no |
+|SQL_ATTR_ROW_BIND_OFFSET_PTR| column bind offset pointer | yes |
+|SQL_ATTR_ROW_BIND_TYPE| SQL_BIND_BY_COLUMN | no |
+|SQL_ATTR_ROW_STATUS_PTR| row status pointer | yes| 
+|SQL_ATTR_ROWS_FETCHED_PTR| row fetched pointer | yes |
+
+Attributes that are only supported in `SQLGetStmtAttr`
+| Statement attribute | Return value |
+|--------|------|
+|SQL_ATTR_APP_ROW_DESC| pointer to statement |
+|SQL_ATTR_APP_PARAM_DESC| pointer to statement |
+|SQL_ATTR_IMP_ROW_DESC| pointer to statement |
+|SQL_ATTR_IMP_PARAM_DESC| pointer to statement |
+|SQL_ATTR_CURSOR_SCROLLABLE| SQL_NONSCROLLABLE |
+|SQL_ATTR_CURSOR_SENSITIVITY| SQL_INSENSITIVE |
+|SQL_ATTR_ENABLE_AUTO_IPD|SQL_FALSE|
+|SQL_ATTR_ROW_NUMBER| current row number, 0 if cannot be determined |
 
 ## SQLColumns
 

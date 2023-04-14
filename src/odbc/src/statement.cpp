@@ -50,8 +50,7 @@ Statement::Statement(Connection& parent)
       rowsFetched(0),
       rowStatuses(0),
       columnBindOffset(0),
-      rowArraySize(1),
-      timeout(0) {
+      rowArraySize(1) {
 }
 
 Statement::~Statement() {
@@ -159,6 +158,48 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
                                                 SQLINTEGER) {
   LOG_DEBUG_MSG("InternalSetAttribute is called with attr " << attr);
   switch (attr) {
+    case SQL_ATTR_CONCURRENCY: {
+      SqlUlen concurrency = reinterpret_cast< SqlUlen >(value);
+
+      if (concurrency != SQL_CONCUR_READ_ONLY) {
+        AddStatusRecord(
+            SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+            "Only read-only cursors are supported");
+
+        return SqlResult::AI_ERROR;
+      }
+
+      break;
+    }
+
+    case SQL_ATTR_CURSOR_TYPE: {
+      SqlUlen cursorType = reinterpret_cast< SqlUlen >(value);
+
+      if (cursorType != SQL_CURSOR_FORWARD_ONLY) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Only forward cursors are currently supported");
+
+        return SqlResult::AI_ERROR;
+      }
+
+      break;
+    }
+
+    case SQL_ATTR_METADATA_ID: {
+      SqlUlen id = reinterpret_cast< SqlUlen >(value);
+
+      if (id != SQL_TRUE && id != SQL_FALSE) {
+        AddStatusRecord(SqlState::SHY024_INVALID_ATTRIBUTE_VALUE,
+                        "Invalid argument value");
+
+        return SqlResult::AI_ERROR;
+      }
+
+      connection.SetAttribute(SQL_ATTR_METADATA_ID, reinterpret_cast< SQLPOINTER >(id), 0);
+
+      break;
+    }
+
     case SQL_ATTR_ROW_ARRAY_SIZE: {
       SqlUlen val = reinterpret_cast< SqlUlen >(value);
 
@@ -184,6 +225,19 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       break;
     }
 
+    case SQL_ATTR_RETRIEVE_DATA: {
+      SqlUlen retrievData = reinterpret_cast< SqlUlen >(value);
+
+      if (retrievData != SQL_RD_ON) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "SQLFetch can only retrieve data after it positions the cursor");
+
+        return SqlResult::AI_ERROR;
+      }
+
+      break;
+    }
+
     case SQL_ATTR_ROW_BIND_TYPE: {
       SqlUlen rowBindType = reinterpret_cast< SqlUlen >(value);
 
@@ -198,7 +252,7 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
     }
 
     case SQL_ATTR_ROWS_FETCHED_PTR: {
-      SetRowsFetchedPtr(reinterpret_cast< SQLINTEGER* >(value));
+      SetRowsFetchedPtr(reinterpret_cast< SQLULEN* >(value));
 
       break;
     }
@@ -224,29 +278,6 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 
     case SQL_ATTR_ROW_BIND_OFFSET_PTR: {
       SetColumnBindOffsetPtr(reinterpret_cast< int* >(value));
-
-      break;
-    }
-
-    case SQL_ATTR_QUERY_TIMEOUT: {
-      SqlUlen uTimeout = reinterpret_cast< SqlUlen >(value);
-
-      if (uTimeout > INT32_MAX) {
-        timeout = INT32_MAX;
-
-        std::stringstream ss;
-
-        ss << "Value is too big: " << uTimeout << ", changing to " << timeout
-           << ".";
-        std::string msg = ss.str();
-
-        AddStatusRecord(SqlState::S01S02_OPTION_VALUE_CHANGED, msg,
-                        timestream::odbc::LogLevel::Type::INFO_LEVEL);
-
-        return SqlResult::AI_SUCCESS_WITH_INFO;
-      }
-
-      timeout = static_cast< int32_t >(uTimeout);
 
       break;
     }
@@ -291,10 +322,58 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       break;
     }
 
-    case SQL_ATTR_ROW_BIND_TYPE: {
+    case SQL_ATTR_CONCURRENCY: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      *val = SQL_BIND_BY_COLUMN;
+      *val = SQL_CONCUR_READ_ONLY;
+
+      break;
+    }
+
+    case SQL_ATTR_CURSOR_SCROLLABLE: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = SQL_NONSCROLLABLE;
+
+      break;
+    }
+
+    case SQL_ATTR_CURSOR_SENSITIVITY: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = SQL_INSENSITIVE;
+
+      break;
+    }
+
+    case SQL_ATTR_CURSOR_TYPE: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = SQL_CURSOR_FORWARD_ONLY;
+
+      break;
+    }
+
+    case SQL_ATTR_ENABLE_AUTO_IPD: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = SQL_FALSE;
+
+      break;
+    }
+
+    case SQL_ATTR_METADATA_ID: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = connection.GetMetadataID() ? SQL_TRUE : SQL_FALSE;
+
+      break;
+    }
+
+    case SQL_ATTR_RETRIEVE_DATA: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = SQL_RD_ON;
 
       break;
     }
@@ -311,6 +390,14 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       break;
     }
 
+    case SQL_ATTR_ROW_BIND_TYPE: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      *val = SQL_BIND_BY_COLUMN;
+
+      break;
+    }
+
     case SQL_ATTR_ROWS_FETCHED_PTR: {
       SqlUlen** val = reinterpret_cast< SqlUlen** >(buf);
 
@@ -321,6 +408,22 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
 
       LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
                                << (valueLen ? *valueLen : 0));
+      break;
+    }
+
+    case SQL_ATTR_ROW_NUMBER: {
+      SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
+
+      if (!currentQuery.get()) {
+        std::string warnMsg = "Cursor is not in the open state, cannot determine row number";
+        AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, warnMsg,
+                        LogLevel::Type::WARNING_LEVEL);
+
+        *val = 0;
+      } else {
+        *val = static_cast< SqlUlen >(currentQuery->RowNumber());
+      }
+
       break;
     }
 
@@ -355,15 +458,6 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
 
       LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
                                << (valueLen ? *valueLen : 0));
-      break;
-    }
-
-    case SQL_ATTR_QUERY_TIMEOUT: {
-      SqlUlen* uTimeout = reinterpret_cast< SqlUlen* >(buf);
-
-      *uTimeout = static_cast< SqlUlen >(timeout);
-
-      LOG_DEBUG_MSG("*uTimeout is " << *uTimeout);
       break;
     }
 
@@ -410,7 +504,8 @@ SqlResult::Type Statement::InternalPrepareSqlQuery(const std::string& query) {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(new query::DataQuery(*this, connection, query, timeout));
+  currentQuery.reset(
+      new query::DataQuery(*this, connection, query));
 
   return SqlResult::AI_SUCCESS;
 }
@@ -758,8 +853,7 @@ SqlResult::Type Statement::InternalFetchRow() {
   }
 
   if (rowsFetched)
-    *rowsFetched =
-        fetched < 0 ? static_cast< SQLINTEGER >(rowArraySize) : fetched;
+    *rowsFetched = fetched < 0 ? static_cast< SQLULEN >(rowArraySize) : fetched;
 
   if (fetched > 0)
     return errors == 0 ? SqlResult::AI_SUCCESS
@@ -899,11 +993,11 @@ SqlResult::Type Statement::InternalAffectedRows(int64_t& rowCnt) {
   return SqlResult::AI_SUCCESS;
 }
 
-void Statement::SetRowsFetchedPtr(SQLINTEGER* ptr) {
+void Statement::SetRowsFetchedPtr(SQLULEN* ptr) {
   rowsFetched = ptr;
 }
 
-SQLINTEGER* Statement::GetRowsFetchedPtr() {
+SQLULEN* Statement::GetRowsFetchedPtr() {
   return rowsFetched;
 }
 
@@ -913,11 +1007,6 @@ void Statement::SetRowStatusesPtr(SQLUSMALLINT* ptr) {
 
 SQLUSMALLINT* Statement::GetRowStatusesPtr() {
   return rowStatuses;
-}
-
-SqlResult::Type Statement::UpdateParamsMeta() {
-  // not supported
-  return SqlResult::AI_ERROR;
 }
 
 uint16_t Statement::SqlResultToRowResult(SqlResult::Type value) {

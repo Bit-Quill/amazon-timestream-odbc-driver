@@ -104,6 +104,14 @@ class TypeInfoQuery : public timestream::odbc::query::Query {
   virtual int64_t AffectedRows() const;
 
   /**
+   * Get row number of the row that the cursor points at.
+   * Row number starts at 1.
+   *
+   * @return Row number of the row that the cursor points at.
+   */
+  virtual int64_t RowNumber() const;
+
+  /**
    * Move to the next result set.
    *
    * @return Operation result.

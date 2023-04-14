@@ -1816,23 +1816,6 @@ BOOST_AUTO_TEST_CASE(TestErrorMessage, *disabled()) {
     BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
 }
 
-BOOST_AUTO_TEST_CASE(TestQueryTimeoutQuery, *disabled()) {
-  connectToLocalServer("odbc-test");
-
-  SQLRETURN ret = SQLSetStmtAttr(stmt, SQL_ATTR_QUERY_TIMEOUT,
-                                 reinterpret_cast< SQLPOINTER >(5), 0);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-  std::vector< SQLWCHAR > selectReq =
-      MakeSqlBuffer("SELECT * FROM queries_test_005");
-
-  ret = SQLExecDirect(stmt, selectReq.data(), selectReq.size());
-
-  if (!SQL_SUCCEEDED(ret))
-    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-}
-
 BOOST_AUTO_TEST_CASE(TestManyCursors, *disabled()) {
   connectToLocalServer("odbc-test");
 

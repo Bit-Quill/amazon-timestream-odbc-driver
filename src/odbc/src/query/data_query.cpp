@@ -31,8 +31,7 @@ namespace timestream {
 namespace odbc {
 namespace query {
 DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
-                     Connection& connection, const std::string& sql,
-                     int32_t& timeout)
+                     Connection& connection, const std::string& sql)
     : Query(diag, timestream::odbc::query::QueryType::DATA),
       connection_(connection),
       sql_(sql),
@@ -41,7 +40,6 @@ DataQuery::DataQuery(diagnostic::DiagnosableAdapter& diag,
       request_(),
       result_(nullptr),
       cursor_(nullptr),
-      timeout_(timeout),
       queryClient_(connection.GetQueryClient()),
       hasAsyncFetch(false),
       rowCounter(0) {
@@ -339,6 +337,20 @@ int64_t DataQuery::AffectedRows() const {
   // Return zero by default, since number of affected rows is non-zero only
   // if we're executing update statements, which is not supported
   return 0;
+}
+
+int64_t DataQuery::RowNumber() const {
+  if (!cursor_.get()) {
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Cursor does not point to any data.",
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+
+    LOG_DEBUG_MSG("Row number returned is 0.");
+
+    return 0;
+  }
+  LOG_DEBUG_MSG("Row number returned: " << rowCounter);
+  return int64_t(rowCounter);
 }
 
 SqlResult::Type DataQuery::NextResultSet() {

@@ -446,6 +446,23 @@ int64_t ColumnMetadataQuery::AffectedRows() const {
   return 0;
 }
 
+int64_t ColumnMetadataQuery::RowNumber() const {
+  if (!executed || cursor == meta.end()) {
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Cursor does not point to any data.",
+                         timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+
+    LOG_DEBUG_MSG("Row number returned is 0.");
+
+    return 0;
+  }
+
+  int64_t rowNumber = cursor - meta.begin() + 1;
+  LOG_DEBUG_MSG("Row number returned: " << rowNumber);
+
+  return rowNumber;
+}
+
 SqlResult::Type ColumnMetadataQuery::NextResultSet() {
   return SqlResult::AI_NO_DATA;
 }
@@ -533,10 +550,8 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
   sql += tableName + "\"";
   LOG_DEBUG_MSG("sql is " << sql);
 
-  int32_t timeout = 60;
-
   dataQuery_ =
-      std::make_shared< DataQuery >(diag, connection, sql, timeout);
+      std::make_shared< DataQuery >(diag, connection, sql);
   SqlResult::Type result = dataQuery_->Execute();
   if (result != SqlResult::AI_SUCCESS) {
     LOG_DEBUG_MSG("Sql execution result is " << result);

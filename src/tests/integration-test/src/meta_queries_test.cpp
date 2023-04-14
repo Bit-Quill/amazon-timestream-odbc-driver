@@ -1590,10 +1590,10 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL("cpu_usage", column_name);  // COLUMN_NAME
-  BOOST_CHECK_EQUAL(SQL_DOUBLE, data_type);              // DATA_TYPE
-  BOOST_CHECK_EQUAL(SqlTypeName::DOUBLE, type_name);     // TYPE_NAME
-  BOOST_CHECK_EQUAL(SQL_NULLABLE, nullable);             // TYPE_NAME
+  BOOST_CHECK_EQUAL("cpu_usage", column_name);        // COLUMN_NAME
+  BOOST_CHECK_EQUAL(SQL_DOUBLE, data_type);           // DATA_TYPE
+  BOOST_CHECK_EQUAL(SqlTypeName::DOUBLE, type_name);  // TYPE_NAME
+  BOOST_CHECK_EQUAL(SQL_NULLABLE, nullable);          // TYPE_NAME
 
   ret = SQLFetch(stmt);
 
