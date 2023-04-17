@@ -331,10 +331,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     ConnectToTS();
 
     SQLRETURN ret = (this->*func)(
-        "select meta_queries_test_001__id, fieldDecimal128, fieldDouble, "
-        "fieldString, fieldObjectId,"
-        "fieldBoolean, fieldDate, fieldInt, fieldBinary from "
-        "meta_queries_test_001");
+        "select device_id, time, flag, rebuffering_ratio, video_startup_time from data_queries_test_db.TestScalarTypes");
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
     SQLSMALLINT columnCount = 0;
@@ -342,27 +339,18 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     ret = SQLNumResultCols(stmt, &columnCount);
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-    BOOST_CHECK_EQUAL(columnCount, 9);
+    BOOST_CHECK_EQUAL(columnCount, 5);
 
-    CheckColumnMetaWithSQLDescribeCol(stmt, 1, "meta_queries_test_001__id",
+    CheckColumnMetaWithSQLDescribeCol(stmt, 1, "device_id",
                                       SQL_VARCHAR, TIMESTREAM_SQL_MAX_LENGTH, -1,
-                                      SQL_NO_NULLS);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 2, "fieldDecimal128", SQL_DECIMAL,
-                                      TIMESTREAM_SQL_MAX_LENGTH, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 3, "fieldDouble", SQL_DOUBLE, 15,
-                                      -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "fieldString", SQL_VARCHAR,
-                                      TIMESTREAM_SQL_MAX_LENGTH, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 5, "fieldObjectId", SQL_VARCHAR,
-                                      TIMESTREAM_SQL_MAX_LENGTH, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 6, "fieldBoolean", SQL_BIT, 1, -1,
-                                      SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 7, "fieldDate", SQL_TYPE_TIMESTAMP,
-                                      19, -1, SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 8, "fieldInt", SQL_INTEGER, 10, 0,
-                                      SQL_NULLABLE);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 9, "fieldBinary", SQL_VARBINARY,
-                                      0, -1, SQL_NULLABLE);
+                                      SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 2, "time", SQL_TYPE_TIMESTAMP, 19,
+                                      -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 3, "flag", SQL_BIT, 1, -1,
+                                      SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE, 15, -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 5, "video_startup_time",
+                                      SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
   }
 
   /**
@@ -4113,8 +4101,7 @@ BOOST_AUTO_TEST_CASE(TestSQLCloseCursorWithTables) {
  * 4. Prepare statement.
  * 5. Check precision and scale of every column using SQLDescribeCol.
  */
-BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterPrepare,
-                     *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterPrepare) {
   CheckSQLDescribeColPrecisionAndScale(&OdbcTestSuite::PrepareQuery);
 }
 
@@ -4127,8 +4114,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterPrepare,
  * 3. Create table with decimal and char columns with specified size and scale.
  * 4. Execute statement.
  * 5. Check precision and scale of every column using SQLDescribeCol. */
-BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterExec,
-                     *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLDescribeColPrecisionAndScaleAfterExec) {
   CheckSQLDescribeColPrecisionAndScale(&OdbcTestSuite::ExecQuery);
 }
 
