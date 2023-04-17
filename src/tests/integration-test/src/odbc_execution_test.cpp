@@ -74,6 +74,33 @@ BOOST_AUTO_TEST_CASE(TestSQLEndTran) {
                       GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
 }
 
+BOOST_AUTO_TEST_CASE(TestSQLBrowseConnect) {
+  Prepare();
+
+  SQLWCHAR InConnectionString[ODBC_BUFFER_SIZE];
+  SQLWCHAR OutConnectionString[ODBC_BUFFER_SIZE];
+  SQLSMALLINT reslen;
+
+  SQLRETURN ret =
+      SQLBrowseConnect(dbc, InConnectionString, 0, InConnectionString, 0, &reslen);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  CheckSQLConnectionDiagnosticError("IM002");
+}
+
+#if (ODBCVER >= 0x0380)
+BOOST_AUTO_TEST_CASE(TestSQLCancelHandle) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLCancelHandle(SQL_HANDLE_STMT, stmt);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+  CheckSQLStatementDiagnosticError("HY010");
+  BOOST_REQUIRE_EQUAL("HY010: Query does not exist.",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+}
+#endif
+
 BOOST_AUTO_TEST_CASE(TestSQLTransact) {
   // SQLTransact is deprecated function and will be mapped to SQLEndTran 
   // by driver manager.
