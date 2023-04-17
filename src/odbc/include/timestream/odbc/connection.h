@@ -268,30 +268,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   IGNITE_NO_COPY_ASSIGNMENT(Connection);
 
   /**
-   * Init connection socket, using configuration.
-   *
-   * @return Operation result.
-   */
-  SqlResult::Type InitSocket();
-
-  /**
-   * Synchronously send request message and receive response.
-   * Uses provided timeout. Does not try to restore connection on
-   * fail.
-   *
-   * @param req Request message.
-   * @param rsp Response message.
-   * @param timeout Timeout.
-   * @return @c true on success, @c false on timeout.
-   * @throw OdbcError on error.
-   */
-  template < typename ReqT, typename RspT >
-  bool InternalSyncMessage(const ReqT& req, RspT& rsp, int32_t timeout) {
-    // TODO: Remove when unnecessary.
-    return true;
-  }
-
-  /**
    * Establish connection to ODBC server.
    * Internal call.
    *

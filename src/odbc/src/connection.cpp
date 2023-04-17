@@ -50,14 +50,6 @@ using namespace timestream::odbc;
 using namespace ignite::odbc::common;
 using timestream::odbc::IgniteError;
 
-namespace {
-#pragma pack(push, 1)
-struct OdbcProtocolHeader {
-  int32_t len;
-};
-#pragma pack(pop)
-}  // namespace
-
 namespace timestream {
 namespace odbc {
 

@@ -64,16 +64,16 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
   void CheckFetchScrollUnsupportedOrientation(SQLUSMALLINT orientation) {
     ConnectToTS();
 
-    int32_t intField = -1;
+    double doubleField = 0.0;
 
     // Binding column.
-    SQLRETURN ret = SQLBindCol(stmt, 1, SQL_C_SLONG, &intField, 0, 0);
+    SQLRETURN ret = SQLBindCol(stmt, 7, SQL_C_DOUBLE, &doubleField, 0, 0);
 
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
     std::vector< SQLWCHAR > request =
-        MakeSqlBuffer("SELECT fieldInt FROM \"api_robustness_test_001\"");
+        MakeSqlBuffer("select * from data_queries_test_db.TestComplexTypes order by time");
 
     ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
     if (!SQL_SUCCEEDED(ret))
@@ -83,11 +83,11 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-    BOOST_CHECK_EQUAL(intField, 2147483647);
+    BOOST_CHECK_EQUAL(abs(doubleField - 35.2) < 0.1, true);
 
     ret = SQLFetchScroll(stmt, orientation, 0);
 
-    // Operation is not supported. However, there should be no crash.
+    // Operation is not supported, only forward is supported. However, there should be no crash.
     BOOST_CHECK(ret == SQL_ERROR);
 
     CheckSQLStatementDiagnosticError("HYC00");
@@ -273,13 +273,13 @@ BOOST_AUTO_TEST_CASE(TestSQLExecDirect) {
   SQLCloseCursor(stmt);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
   ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+      MakeSqlBuffer("SELECT * FROM data_queries_test_db.TestComplexTypes");
 
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
@@ -294,7 +294,9 @@ BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch, *disabled()) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Row count is null.
-  SQLExtendedFetch(stmt, SQL_FETCH_NEXT, 0, 0, rowStatus);
+  ret = SQLExtendedFetch(stmt, SQL_FETCH_NEXT, 0, 0, rowStatus);
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Row statuses is null.
   SQLExtendedFetch(stmt, SQL_FETCH_NEXT, 0, &rowCount, 0);
@@ -303,11 +305,11 @@ BOOST_AUTO_TEST_CASE(TestSQLExtendedFetch, *disabled()) {
   SQLExtendedFetch(stmt, SQL_FETCH_NEXT, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLNumResultCols, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLNumResultCols) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+      MakeSqlBuffer("SELECT * FROM data_queries_test_db.TestComplexTypes");
 
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
@@ -318,7 +320,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNumResultCols, *disabled()) {
   // Everything is ok.
   ret = SQLNumResultCols(stmt, &columnCount);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-  BOOST_CHECK_EQUAL(13, columnCount);
+  BOOST_CHECK_EQUAL(7, columnCount);
 
   // Test with column count is null.
   ret = SQLNumResultCols(stmt, 0);
@@ -613,14 +615,14 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeCol) {
   BOOST_CHECK_EQUAL(ret, SQL_INVALID_HANDLE);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLRowCount, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLRowCount) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
   ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+      MakeSqlBuffer("select * from data_queries_test_db.TestScalarTypes");
 
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
@@ -678,13 +680,13 @@ BOOST_AUTO_TEST_CASE(TestSQLSetStmtAttr) {
   SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetDiagField, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLGetDiagField) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
   ConnectToTS();
 
   // Should fail.
-  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_INTERVAL_MONTH);
+  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_GUID);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 
@@ -706,7 +708,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagField, *disabled()) {
   SQLGetDiagField(SQL_HANDLE_STMT, stmt, 1, SQL_DIAG_MESSAGE_TEXT, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec) {
   ConnectToTS();
 
   SQLWCHAR state[ODBC_BUFFER_SIZE];
@@ -715,7 +717,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec, *disabled()) {
   SQLSMALLINT messageLen = 0;
 
   // Generating error.
-  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_INTERVAL_MONTH);
+  SQLRETURN ret = SQLGetTypeInfo(stmt, SQL_GUID);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 
   // Everything is ok.
@@ -767,14 +769,14 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDiagRec, *disabled()) {
   SQLGetDiagRec(SQL_HANDLE_STMT, stmt, 1, 0, 0, 0, 0, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetData, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLGetData) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
   ConnectToTS();
 
   std::vector< SQLWCHAR > sql =
-      MakeSqlBuffer("SELECT * FROM \"api_robustness_test_001\"");
+      MakeSqlBuffer("select * from data_queries_test_db.TestScalarTypes");
 
   SQLRETURN ret = SQLExecDirect(stmt, sql.data(), SQL_NTS);
 
@@ -833,23 +835,19 @@ BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr) {
 }
 
 // TODO: Memory leak, traced by https://bitquill.atlassian.net/browse/AD-813
-BOOST_AUTO_TEST_CASE(TestFetchScrollLast, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestFetchScrollLast) {
   CheckFetchScrollUnsupportedOrientation(SQL_FETCH_LAST);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchScrollPrior, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestFetchScrollPrior) {
   CheckFetchScrollUnsupportedOrientation(SQL_FETCH_PRIOR);
 }
 
-BOOST_AUTO_TEST_CASE(TestFetchScrollFirst, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestFetchScrollFirst) {
   CheckFetchScrollUnsupportedOrientation(SQL_FETCH_FIRST);
 }
 
-#ifndef __APPLE__
-// only enable for Windows and Linux as it crashes on Mac
-// with iODBC, traced by AD-820
-// https://bitquill.atlassian.net/browse/AD-820
-BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLError) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
 
@@ -869,32 +867,6 @@ BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
                  &messageLen);
   BOOST_REQUIRE_EQUAL(SQL_SUCCESS, ret);
   BOOST_CHECK_EQUAL(message[messageLen], 0);
-  std::vector< SQLWCHAR > actualMessage;
-  actualMessage.insert(actualMessage.end(), &message[0],
-                       &message[messageLen + 1]);
-  // variable actualMessage is to be used in AD-841
-
-#if 0
-  // TODO: [AD-841](https://bitquill.atlassian.net/browse/AD-841)
-  // Check boundary condition with reduced buffer size.
-  ret = SQLGetTypeInfo(stmt, SQL_INTERVAL_MONTH);
-  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-  SQLSMALLINT reducedMessageLen = 8;
-  ret = SQLError(env, dbc, stmt, state, &nativeCode, message,
-                 reducedMessageLen + 1, &messageLen);
-  BOOST_REQUIRE_EQUAL(SQL_SUCCESS_WITH_INFO, ret);
-  BOOST_CHECK_EQUAL(messageLen, reducedMessageLen);
-  BOOST_CHECK_EQUAL(message[messageLen], 0);
-  std::vector< SQLWCHAR > reducedActualMessage;
-  reducedActualMessage.insert(reducedActualMessage.end(), &message[0],
-                       &message[messageLen + 1]);
-  std::vector< SQLWCHAR > reducedExpectedMessage(
-      actualMessage.begin(), actualMessage.begin() + reducedMessageLen);
-  reducedExpectedMessage.push_back(0);
-  BOOST_CHECK_EQUAL_COLLECTIONS(
-      reducedActualMessage.begin(), reducedActualMessage.end(),
-      reducedExpectedMessage.begin(), reducedExpectedMessage.end());
-#endif
 
   ret = SQLError(0, dbc, 0, state, &nativeCode, message, ODBC_BUFFER_SIZE,
                  &messageLen);
@@ -922,9 +894,8 @@ BOOST_AUTO_TEST_CASE(TestSQLError, *disabled()) {
 
   SQLError(0, 0, 0, 0, 0, 0, 0, 0);
 }
-#endif
 
-BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords) {
   ConnectToTS();
 
   SQLHANDLE hnd;
@@ -940,22 +911,6 @@ BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords, *disabled()) {
 #else
   CheckSQLStatementDiagnosticError("HY092");
 #endif
-}
-
-BOOST_AUTO_TEST_CASE(TestManyFds, *disabled()) {
-  enum { FDS_NUM = 2000 };
-
-  std::FILE* fds[FDS_NUM];
-
-  for (int i = 0; i < FDS_NUM; ++i)
-    fds[i] = tmpfile();
-
-  ConnectToTS();
-
-  for (int i = 0; i < FDS_NUM; ++i) {
-    if (fds[i])
-      fclose(fds[i]);
-  }
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLCancelForTypeInfo) {

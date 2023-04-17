@@ -36,7 +36,7 @@ using namespace timestream::odbc::type_traits;
 
 BOOST_AUTO_TEST_SUITE(ApplicationDataBufferTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestPutIntToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutIntToString) {
   char buffer[1024];
   SqlLen reslen = 0;
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntToString, *disabled()) {
   BOOST_CHECK(reslen == intMinStr.size());
 }
 
-BOOST_AUTO_TEST_CASE(TestPutIntToWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutIntToWString) {
   SQLWCHAR buffer[1024];
   SqlLen reslen = 0;
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntToWString, *disabled()) {
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == intMinStr.size());
 }
 
-BOOST_AUTO_TEST_CASE(TestPutFloatToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutFloatToString) {
   char buffer[1024];
   SqlLen reslen = 0;
 
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(TestPutFloatToString, *disabled()) {
   BOOST_CHECK(reslen == strlen("-1000.21"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutFloatToWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutFloatToWString) {
   SQLWCHAR buffer[1024];
   SqlLen reslen = 0;
 
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(TestPutFloatToWString, *disabled()) {
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-1000.21"));
 }
 
-BOOST_AUTO_TEST_CASE(TestPutStringToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutStringToString) {
   char buffer[1024];
   SqlLen reslen = 0;
 
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(TestPutStringToString, *disabled()) {
   BOOST_CHECK_EQUAL(static_cast< size_t >(reslen), testString.size());
 }
 
-BOOST_AUTO_TEST_CASE(TestPutStringToWstring, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutStringToWstring) {
   SQLWCHAR buffer[1024];
   SqlLen reslen = 0;
 
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(TestPutStringToWstring, *disabled()) {
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "Test string");
 }
 
-BOOST_AUTO_TEST_CASE(TestPutStringToLong, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutStringToLong) {
   SQLINTEGER numBuf;
   SqlLen reslen = 0;
 
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(TestPutStringToLong, *disabled()) {
   BOOST_CHECK(numBuf == -424242424L);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutStringToTiny, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutStringToTiny) {
   int8_t numBuf;
   SqlLen reslen = 0;
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(TestPutStringToTiny, *disabled()) {
   BOOST_CHECK(numBuf == -12);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutStringToFloat, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutStringToFloat) {
   float numBuf;
   SqlLen reslen = 0;
 
@@ -238,7 +238,21 @@ BOOST_AUTO_TEST_CASE(TestPutStringToFloat, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(numBuf, -12.21, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutIntToFloat, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutStringToDouble) {
+  double numBuf;
+  SqlLen reslen = 0;
+
+  ApplicationDataBuffer appBuf(OdbcNativeType::AI_DOUBLE, &numBuf,
+                               sizeof(numBuf), &reslen);
+
+  appBuf.PutString("12.21");
+  BOOST_CHECK_CLOSE_FRACTION(numBuf, 12.21, FLOAT_PRECISION);
+
+  appBuf.PutString("-12.21");
+  BOOST_CHECK_CLOSE_FRACTION(numBuf, -12.21, FLOAT_PRECISION);
+}
+
+BOOST_AUTO_TEST_CASE(TestPutIntToFloat) {
   float numBuf;
   SqlLen reslen = 0;
 
@@ -264,7 +278,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntToFloat, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(numBuf, -1234567.0, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutFloatToShort, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutFloatToShort) {
   short numBuf;
   SqlLen reslen = 0;
 
@@ -284,7 +298,7 @@ BOOST_AUTO_TEST_CASE(TestPutFloatToShort, *disabled()) {
   BOOST_CHECK(numBuf == -42);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDecimalToDouble, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDecimalToDouble) {
   double numBuf;
   SqlLen reslen = 0;
 
@@ -313,7 +327,7 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToDouble, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(numBuf, -53.5, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDecimalToLong, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDecimalToLong) {
   SQLINTEGER numBuf;
   SqlLen reslen = 0;
 
@@ -340,7 +354,7 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToLong, *disabled()) {
   BOOST_CHECK(numBuf == -53);
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDecimalToString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDecimalToString) {
   char strBuf[64];
   SqlLen reslen = 0;
 
@@ -367,7 +381,9 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToString, *disabled()) {
   BOOST_CHECK(std::string(strBuf, reslen) == "-53.5");
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDecimalToWString, *disabled()) {
+// Decimal is not in use in our code, all related tests could be removed
+// see https://bitquill.atlassian.net/browse/AT-1360
+BOOST_AUTO_TEST_CASE(TestPutDecimalToWString) {
   SQLWCHAR strBuf[64];
   SqlLen reslen = 0;
 
@@ -394,7 +410,7 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToWString, *disabled()) {
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "-53.5");
 }
 
-BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric) {
   SQL_NUMERIC_STRUCT buf;
   SqlLen reslen = 0;
 
@@ -1216,7 +1232,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToOtherIntervals) {
   BOOST_CHECK_EQUAL(123456789, buf.intval.day_second.fraction);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetStringFromLong, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetStringFromLong) {
   long numBuf = 42;
   SqlLen reslen = sizeof(numBuf);
 
@@ -1234,7 +1250,7 @@ BOOST_AUTO_TEST_CASE(TestGetStringFromLong, *disabled()) {
   BOOST_CHECK(res == "-77");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetStringFromDouble, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetStringFromDouble) {
   double numBuf = 43.36;
   SqlLen reslen = sizeof(numBuf);
 
@@ -1252,7 +1268,7 @@ BOOST_AUTO_TEST_CASE(TestGetStringFromDouble, *disabled()) {
   BOOST_CHECK(res == "-58.91");
 }
 
-BOOST_AUTO_TEST_CASE(TestGetStringFromString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetStringFromString) {
   char buf[] = "Some data 32d2d5hs";
   SqlLen reslen = sizeof(buf);
 
@@ -1263,7 +1279,7 @@ BOOST_AUTO_TEST_CASE(TestGetStringFromString, *disabled()) {
   BOOST_CHECK(res.compare(buf));
 }
 
-BOOST_AUTO_TEST_CASE(TestGetStringFromWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetStringFromWString) {
   std::vector< SQLWCHAR > buf = utility::ToWCHARVector("Some data 32d2d5hs");
   SqlLen reslen = buf.size() * sizeof(SQLWCHAR);
 
@@ -1275,7 +1291,7 @@ BOOST_AUTO_TEST_CASE(TestGetStringFromWString, *disabled()) {
   BOOST_CHECK(utility::SqlWcharToString(buf.data()) == res);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetFloatFromUshort, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetFloatFromUshort) {
   unsigned short numBuf = 7162;
   SqlLen reslen = sizeof(numBuf);
 
@@ -1291,7 +1307,7 @@ BOOST_AUTO_TEST_CASE(TestGetFloatFromUshort, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(resDouble, 7162.0, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetFloatFromString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetFloatFromString) {
   char buf[] = "28.562";
   SqlLen reslen = sizeof(buf);
 
@@ -1306,7 +1322,7 @@ BOOST_AUTO_TEST_CASE(TestGetFloatFromString, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(resDouble, 28.562, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetFloatFromWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetFloatFromWString) {
   std::vector< SQLWCHAR > buf = utility::ToWCHARVector("28.562");
   SqlLen reslen = buf.size() * sizeof(SQLWCHAR);
 
@@ -1322,7 +1338,7 @@ BOOST_AUTO_TEST_CASE(TestGetFloatFromWString, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(resDouble, 28.562, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetFloatFromFloat, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetFloatFromFloat) {
   float buf = 207.49f;
   SqlLen reslen = sizeof(buf);
 
@@ -1337,7 +1353,7 @@ BOOST_AUTO_TEST_CASE(TestGetFloatFromFloat, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(resDouble, 207.49, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetFloatFromDouble, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetFloatFromDouble) {
   double buf = 893.162;
   SqlLen reslen = sizeof(buf);
 
@@ -1353,7 +1369,7 @@ BOOST_AUTO_TEST_CASE(TestGetFloatFromDouble, *disabled()) {
   BOOST_CHECK_CLOSE_FRACTION(resDouble, 893.162, FLOAT_PRECISION);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetIntFromString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetIntFromString) {
   char buf[] = "39";
   SqlLen reslen = sizeof(buf);
 
@@ -1376,7 +1392,7 @@ BOOST_AUTO_TEST_CASE(TestGetIntFromString, *disabled()) {
   BOOST_CHECK(resInt8 == 39);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetIntFromWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetIntFromWString) {
   std::vector< SQLWCHAR > buf = utility::ToWCHARVector("39");
   SqlLen reslen = buf.size() * sizeof(SQLWCHAR);
 
@@ -1400,7 +1416,7 @@ BOOST_AUTO_TEST_CASE(TestGetIntFromWString, *disabled()) {
   BOOST_CHECK(resInt8 == 39);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetIntFromFloat, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetIntFromFloat) {
   float buf = -107.49f;
   SqlLen reslen = sizeof(buf);
 
@@ -1423,7 +1439,7 @@ BOOST_AUTO_TEST_CASE(TestGetIntFromFloat, *disabled()) {
   BOOST_CHECK(resInt8 == -107);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetIntFromDouble, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetIntFromDouble) {
   double buf = 42.97f;
   SqlLen reslen = sizeof(buf);
 
@@ -1447,7 +1463,7 @@ BOOST_AUTO_TEST_CASE(TestGetIntFromDouble, *disabled()) {
   BOOST_CHECK(resInt8 == 42);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetIntFromBigint, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetIntFromBigint) {
   uint64_t buf = 19;
   SqlLen reslen = sizeof(buf);
 
@@ -1471,7 +1487,7 @@ BOOST_AUTO_TEST_CASE(TestGetIntFromBigint, *disabled()) {
   BOOST_CHECK(resInt8 == 19);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetIntWithOffset, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetIntWithOffset) {
   struct GetIntWithOffsetTestStruct {
     uint64_t val;
     SqlLen reslen;
@@ -1500,7 +1516,7 @@ BOOST_AUTO_TEST_CASE(TestGetIntWithOffset, *disabled()) {
   BOOST_CHECK(val == 12);
 }
 
-BOOST_AUTO_TEST_CASE(TestSetStringWithOffset, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSetStringWithOffset) {
   struct SetStringWithOffsetTestStruct {
     char val[64];
     SqlLen reslen;
@@ -1536,7 +1552,7 @@ BOOST_AUTO_TEST_CASE(TestSetStringWithOffset, *disabled()) {
   BOOST_CHECK(buf[1].reslen == strlen("Hello with offset!"));
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDateFromString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDateFromString) {
   char buf[] = "1999-02-22";
   SqlLen reslen = sizeof(buf);
 
@@ -1559,7 +1575,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromString, *disabled()) {
   BOOST_CHECK_EQUAL(0, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDateFromWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDateFromWString) {
   std::vector< SQLWCHAR > buf = utility::ToWCHARVector("1999-02-22");
   SqlLen reslen = buf.size() * sizeof(SQLWCHAR);
 
@@ -1582,7 +1598,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromWString, *disabled()) {
   BOOST_CHECK_EQUAL(0, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimeFromString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimeFromString) {
   char buf[] = "17:5:59";
   SqlLen reslen = sizeof(buf);
 
@@ -1605,7 +1621,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimeFromString, *disabled()) {
   BOOST_CHECK_EQUAL(59, tmTime.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimeFromWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimeFromWString) {
   std::vector< SQLWCHAR > buf = utility::ToWCHARVector("17:5:59");
   SqlLen reslen = buf.size() * sizeof(SQLWCHAR);
 
@@ -1628,7 +1644,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimeFromWString, *disabled()) {
   BOOST_CHECK_EQUAL(59, tmTime.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimestampFromString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimestampFromString) {
   char buf[] = "2018-11-01 17:45:59";
   SqlLen reslen = sizeof(buf);
 
@@ -1651,7 +1667,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromString, *disabled()) {
   BOOST_CHECK_EQUAL(59, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimestampFromWString, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimestampFromWString) {
   std::vector< SQLWCHAR > buf = utility::ToWCHARVector("2018-11-01 17:45:59");
   SqlLen reslen = buf.size() * sizeof(SQLWCHAR);
 
@@ -1674,7 +1690,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromWString, *disabled()) {
   BOOST_CHECK_EQUAL(59, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDateFromDate, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDateFromDate) {
   SQL_DATE_STRUCT buf;
 
   buf.year = 1984;
@@ -1702,7 +1718,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromDate, *disabled()) {
   BOOST_CHECK_EQUAL(0, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimestampFromDate, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimestampFromDate) {
   SQL_DATE_STRUCT buf;
 
   buf.year = 1984;
@@ -1730,7 +1746,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromDate, *disabled()) {
   BOOST_CHECK_EQUAL(0, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimestampFromTime, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimestampFromTime) {
   SQL_TIME_STRUCT buf;
 
   buf.hour = 6;
@@ -1758,7 +1774,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromTime, *disabled()) {
   BOOST_CHECK_EQUAL(51, tmTime.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimestampFromTimestamp, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimestampFromTimestamp) {
   SQL_TIMESTAMP_STRUCT buf;
 
   buf.year = 2004;
@@ -1791,7 +1807,7 @@ BOOST_AUTO_TEST_CASE(TestGetTimestampFromTimestamp, *disabled()) {
   BOOST_CHECK_EQUAL(573948623, ts.GetSecondFraction());
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDateFromTimestamp, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDateFromTimestamp) {
   SQL_TIMESTAMP_STRUCT buf;
 
   buf.year = 2004;
@@ -1823,7 +1839,7 @@ BOOST_AUTO_TEST_CASE(TestGetDateFromTimestamp, *disabled()) {
   BOOST_CHECK_EQUAL(51, tmDate.tm_sec);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetTimeFromTimestamp, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetTimeFromTimestamp) {
   SQL_TIMESTAMP_STRUCT buf;
 
   buf.year = 2004;

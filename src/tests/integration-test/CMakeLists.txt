@@ -49,6 +49,7 @@ set(SOURCES
 	src/api_robustness_test.cpp
 	src/application_data_buffer_test.cpp
 	src/attributes_test.cpp
+	src/connection_info_test.cpp
         src/connection_test.cpp
 	src/meta_queries_test.cpp
         src/odbc_test_suite.cpp

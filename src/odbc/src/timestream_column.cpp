@@ -101,6 +101,11 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
       convRes = dataBuf.PutString(value);
       break;
     case ScalarType::DOUBLE:
+      // There could be a precision problem for stod as double can not be 
+      // represented in binary form using finite precision. For example for 
+      // double value 35.2 in string, std::stod("35.2") could return 35.200000000000003
+      // on Windows. These rounding errors are a common issue in floating-point arithmetic 
+      // and can not be avoided.
       convRes = dataBuf.PutDouble(std::stod(value));
       break;
     case ScalarType::BOOLEAN:

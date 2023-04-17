@@ -30,7 +30,7 @@ using namespace timestream::odbc::config;
 
 BOOST_AUTO_TEST_SUITE(ConnectionInfoTestSuite)
 
-BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo) {
   char buffer[4096];
   short reslen = 0;
 

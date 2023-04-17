@@ -127,6 +127,7 @@ jobs:
     - name: run-unit-tests
       id: rununittests
       run: |
+        ulimit -c unlimited
         mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
         ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
 
@@ -152,6 +153,7 @@ jobs:
     - name: run-odbc-tests
       id: runodbctests
       run: |
+        ulimit -c unlimited
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
 
     - name: upload-odbc-test-report
@@ -262,6 +264,7 @@ jobs:
     - name: run-unit-tests
       id: rununittests
       run: |
+        ulimit -c unlimited
         mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
         ./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false
   
@@ -287,6 +290,7 @@ jobs:
     - name: run-odbc-tests
       id: runodbctests
       run: |
+        ulimit -c unlimited
         ./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false
         gcovr --exclude-directories=cmake-build64/tests/integration-test/CMakeFiles/timestream-odbc-integration-tests.dir$ --exclude-directories=cmake-build64/tests/unit-test/CMakeFiles/timestream-odbc-unit-tests.dir$ --cobertura --output coverage.cobertura.xml
 

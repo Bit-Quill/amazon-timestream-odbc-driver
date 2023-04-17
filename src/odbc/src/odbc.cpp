@@ -531,7 +531,15 @@ SQLRETURN SQLExtendedFetch(SQLHSTMT stmt, SQLUSMALLINT orientation,
   } else if (res == SQL_NO_DATA && rowCount)
     *rowCount = 0;
 
-  LOG_DEBUG_MSG("res is " << res << ", *rowCount is " << *rowCount);
+  LOG_DEBUG_MSG("res is " << res);
+
+  // If the SQL function SQLExtendedFetch is called with RowCountPtr
+  // setting to 0, the RowCountPtr is a null pointer. The rowCount here 
+  // is passed from driver manager based on RowCountPtr value.
+  // The rowCount is nullptr on Linux but not nullptr on Windows.
+  // This behavior is determined by driver manager.   
+  if (rowCount)
+      LOG_DEBUG_MSG("*rowCount is " << *rowCount);
 
   return res;
 }

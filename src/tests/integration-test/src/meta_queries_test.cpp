@@ -3167,11 +3167,11 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery) {
   ConnectToTS();
 
   std::vector< SQLWCHAR > selectReq =
-      MakeSqlBuffer("select fieldInt from meta_queries_test_001");
+      MakeSqlBuffer("select time from data_queries_test_db.TestComplexTypes where measure_value::double=35.2");
   SQLRETURN ret = SQLExecDirect(stmt, selectReq.data(), SQL_NTS);
 
   if (!SQL_SUCCEEDED(ret))
@@ -3184,7 +3184,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery, *disabled()) {
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions) {
   ConnectToTS();
 
   SQLUINTEGER val = 0;
@@ -3196,10 +3196,10 @@ BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions, *disabled()) {
   BOOST_CHECK_NE(val, 0);
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLNumResultColsAfterSQLPrepare, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLNumResultColsAfterSQLPrepare) {
   ConnectToTS();
 
-  SQLRETURN ret = PrepareQuery("select fieldInt from meta_queries_test_001");
+  SQLRETURN ret = PrepareQuery("select time from data_queries_test_db.TestComplexTypes where measure_value::double=35.2");
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   SQLSMALLINT columnCount = 0;
