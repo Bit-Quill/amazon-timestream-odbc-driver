@@ -367,7 +367,11 @@ if(UNIX)
 
     # CPack doesn't allow extensionless licenses, need to make a copy with an extension, .txt is appropriate
     set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_ROOT}/LICENSE.txt")
-    configure_file("${PROJECT_ROOT}/LICENSE" "${PROJECT_ROOT}/LICENSE.txt" COPYONLY)
+    # Prepend LICENSE file with NOTICE
+    configure_file("${PROJECT_ROOT}/NOTICE" "${PROJECT_ROOT}/LICENSE.txt" COPYONLY)
+    file(APPEND "${PROJECT_ROOT}/LICENSE.txt" "\n=====================================================\n")
+    file(READ "${PROJECT_ROOT}/LICENSE" ODBC_LICENSE)
+    file(APPEND "${PROJECT_ROOT}/LICENSE.txt" ${ODBC_LICENSE})
 
     # Set up components for installer
     cpack_add_component(Docs
@@ -384,7 +388,7 @@ if(UNIX)
         install(TARGETS ${TARGET} DESTINATION "timestream-odbc/lib" COMPONENT "Driver")
     
         # Install documentation files
-        install(FILES "${PROJECT_ROOT}/LICENSE" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
+        install(FILES "${PROJECT_ROOT}/LICENSE.txt" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
         install(FILES "${PROJECT_ROOT}/docs/markdown/setup/connection-string.md" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
         install(FILES "${PROJECT_ROOT}/docs/markdown/setup/macOS-dsn-configuration.md" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
         install(FILES "${PROJECT_ROOT}/docs/markdown/setup/microsoft-excel.md" DESTINATION "timestream-odbc/doc" COMPONENT "Docs")
@@ -403,7 +407,7 @@ if(UNIX)
 	install(FILES "${PROJECT_ROOT}/scripts/postinst_unix${BITNESS}.sh" DESTINATION ${LIBROOT}/timestream-odbc${BITNESS} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE COMPONENT "Driver")
 
         # Install documentation files
-        install(FILES "${PROJECT_ROOT}/LICENSE" DESTINATION "${LIBROOT}/timestream-odbc${BITNESS}" COMPONENT "Docs")
+        install(FILES "${PROJECT_ROOT}/LICENSE.txt" DESTINATION "${LIBROOT}/timestream-odbc${BITNESS}" COMPONENT "Docs")
         install(FILES "${PROJECT_ROOT}/docs/markdown/setup/linux-dsn-configuration.md" DESTINATION "${LIBROOT}/timestream-odbc${BITNESS}" COMPONENT "Docs")
     endif()
 endif()

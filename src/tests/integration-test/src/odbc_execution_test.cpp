@@ -30,7 +30,6 @@
 #include <vector>
 
 #include "odbc_test_suite.h"
-#include "test_type.h"
 #include "test_utils.h"
 
 using namespace timestream;

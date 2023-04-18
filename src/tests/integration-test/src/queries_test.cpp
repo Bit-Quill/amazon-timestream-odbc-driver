@@ -33,11 +33,11 @@
 
 #include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
-#include "test_type.h"
 #include "test_utils.h"
 
 using namespace timestream;
 using namespace timestream_test;
+using namespace timestream::odbc;
 using timestream::odbc::utility::CheckEnvVarSetToTrue;
 
 using namespace boost::unit_test;

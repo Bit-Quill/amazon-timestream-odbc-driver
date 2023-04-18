@@ -31,7 +31,6 @@
 #include "timestream/odbc/common/decimal.h"
 #include "timestream/timestream.h"
 #include "timestream/ignition.h"
-#include "test_type.h"
 
 namespace timestream {
 /**
