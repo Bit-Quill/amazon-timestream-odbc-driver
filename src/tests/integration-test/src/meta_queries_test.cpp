@@ -1588,9 +1588,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 }
 
-// This test needs to be updated to be environment unrelated
-// TODO: AT-1326 https://bitquill.atlassian.net/browse/AT-1326
-BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly) {
   // Test SQLColumns by only passing table names and "%" without specifying
   // database Check that columns from tables with duplicate names are returned
   // correctly with SQLColumns.
@@ -1625,7 +1623,7 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
   SQLSMALLINT nullable = 0;
   SQLLEN nullable_len = sizeof(nullable);
 
-  // databaseColumnIndex = 1 (TABLE_CAT) if databse is reported as catalog,
+  // databaseColumnIndex = 1 (TABLE_CAT) if database is reported as catalog,
   // 2 (TABLE_SCHEM) if database is reported as schema
   ret = SQLBindCol(stmt, databaseColumnIndex, SQL_C_CHAR, database_name,
                    sizeof(database_name), &database_name_len);
@@ -1650,7 +1648,8 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL("meta_queries_test_db", database_name);  // DATABASE
+  std::string first_database = std::string(database_name);
+
   BOOST_CHECK_EQUAL("fleet", column_name);                   // COLUMN_NAME
   BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);                 // DATA_TYPE
   BOOST_CHECK_EQUAL(SqlTypeName::VARCHAR, type_name);        // TYPE_NAME
@@ -1665,7 +1664,9 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly, *disabled()) {
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
 
-  BOOST_CHECK_EQUAL("sampleDB", database_name);        // DATABASE
+  std::string second_database = std::string(database_name);
+
+  BOOST_CHECK_NE(first_database, second_database);
   BOOST_CHECK_EQUAL("fleet", column_name);             // COLUMN_NAME
   BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);           // DATA_TYPE
   BOOST_CHECK_EQUAL(SqlTypeName::VARCHAR, type_name);  // TYPE_NAME
