@@ -140,6 +140,11 @@ target_link_libraries(${TARGET} ${ODBC_LIBRARIES})
 target_link_libraries(${TARGET} ${AWSSDK_LINK_LIBRARIES})
 
 add_definitions(-DUNICODE=1)
+add_definitions(-DPROJECT_VERSION=${CMAKE_PROJECT_VERSION})
+add_definitions(-DPROJECT_VERSION_MAJOR=${CMAKE_PROJECT_VERSION_MAJOR})
+add_definitions(-DPROJECT_VERSION_MINOR=${CMAKE_PROJECT_VERSION_MINOR})
+add_definitions(-DPROJECT_VERSION_PATCH=${CMAKE_PROJECT_VERSION_PATCH})
+
 if (WIN32)
     target_link_libraries(${TARGET} odbccp32 shlwapi)
 

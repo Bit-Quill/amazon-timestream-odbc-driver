@@ -421,6 +421,15 @@ bool CheckEnvVarSetToTrue(const std::string& envVar) {
   return envVarVal == "TRUE";
 }
 
+std::string GetFormatedDriverVersion() {
+  std::stringstream formattedVersion;
+  formattedVersion << std::setfill('0') << std::setw(2) << DRIVER_VERSION_MAJOR;
+  formattedVersion << ".";
+  formattedVersion << std::setfill('0') << std::setw(2) << DRIVER_VERSION_MINOR;
+  formattedVersion << ".";
+  formattedVersion << std::setfill('0') << std::setw(4) << DRIVER_VERSION_PATCH;
+  return formattedVersion.str();
+}
 }  // namespace utility
 }  // namespace odbc
 }  // namespace timestream

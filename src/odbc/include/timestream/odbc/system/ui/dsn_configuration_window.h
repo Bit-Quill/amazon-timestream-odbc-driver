@@ -151,7 +151,7 @@ class DsnConfigurationWindow : public CustomWindow {
    * @return str Parsed Driver Version.
    */
   static std::wstring GetParsedDriverVersion(
-      std::string driverVersion = TS_DRIVER_VERSION);
+      std::string driverVersion = utility::GetFormatedDriverVersion());
 
  private:
   IGNITE_NO_COPY_ASSIGNMENT(DsnConfigurationWindow)

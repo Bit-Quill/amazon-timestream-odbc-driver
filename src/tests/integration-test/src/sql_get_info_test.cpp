@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(TestValues) {
   #endif
   CheckStrInfo(SQL_DBMS_NAME, "Amazon Timestream");
   CheckStrInfo(SQL_DRIVER_ODBC_VER, "03.00");
-  CheckStrInfo(SQL_DRIVER_VER, TS_DRIVER_VERSION);
+  CheckStrInfo(SQL_DRIVER_VER, utility::GetFormatedDriverVersion());
   CheckStrInfo(SQL_ACCESSIBLE_TABLES, "N");
   CheckStrInfo(SQL_COLUMN_ALIAS, "Y");
   CheckStrInfo(SQL_IDENTIFIER_QUOTE_CHAR, "\"");

@@ -21,9 +21,6 @@
 #ifndef _TIMESTREAM_ODBC_CONFIG_CONNECTION_INFO
 #define _TIMESTREAM_ODBC_CONFIG_CONNECTION_INFO
 
-// Define Driver Version to be used for DSN Window
-#define TS_DRIVER_VERSION "02.00.0000"
-
 #include <ignite/common/common.h>
 #include <timestream/odbc/common_types.h>
 #include <timestream/odbc/config/configuration.h>

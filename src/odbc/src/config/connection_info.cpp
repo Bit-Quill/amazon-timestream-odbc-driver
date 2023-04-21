@@ -622,7 +622,7 @@ ConnectionInfo::ConnectionInfo(const Configuration& config)
   // Driver version. At a minimum, the version is of the form ##.##.####, where
   // the first two digits are the major version, the next two digits are the
   // minor version, and the last four digits are the release version.
-  strParams[SQL_DRIVER_VER] = TS_DRIVER_VERSION;
+  strParams[SQL_DRIVER_VER] = utility::GetFormatedDriverVersion();
 
 #endif  // SQL_DRIVER_VER
 #ifdef SQL_DBMS_VER

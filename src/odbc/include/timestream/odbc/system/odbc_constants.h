@@ -34,6 +34,12 @@
 
 #define ODBCVER 0x0351
 
+// PROJECT_VERSION taken from CMakeLists.txt
+#define DRIVER_VERSION PROJECT_VERSION
+#define DRIVER_VERSION_MAJOR PROJECT_VERSION_MAJOR
+#define DRIVER_VERSION_MINOR PROJECT_VERSION_MINOR
+#define DRIVER_VERSION_PATCH PROJECT_VERSION_PATCH
+
 #ifndef NAMEDATALEN
 #define NAMEDATALEN 64
 #endif /* NAMEDATALEN */
@@ -48,7 +54,6 @@
 // Internal flag to use database as catalog or schema
 // true if databases are reported as catalog, false if databases are reported as
 // schema
-#include "timestream/odbc/utility.h"
 #define DATABASE_AS_SCHEMA \
   timestream::odbc::utility::CheckEnvVarSetToTrue("DATABASE_AS_SCHEMA")
 

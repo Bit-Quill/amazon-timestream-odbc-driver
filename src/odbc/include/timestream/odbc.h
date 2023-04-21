@@ -22,6 +22,7 @@
 #define _TIMESTREAM_ODBC_ODBC
 
 #include "timestream/odbc/system/odbc_constants.h"
+#include "timestream/odbc/utility.h"
 
 /**
  * @file odbc.h

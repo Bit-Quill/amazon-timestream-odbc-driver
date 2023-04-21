@@ -30,6 +30,8 @@
 #include "timestream/odbc/ignite_error.h"
 #include "timestream/odbc/authentication/auth_type.h"
 
+#define TRIM_UTF8(str)  utility::Trim(utility::ToUtf8(str))
+
 namespace timestream {
 namespace odbc {
 namespace system {
@@ -476,7 +478,7 @@ void DsnConfigurationWindow::OnAuthTypeChanged() const {
 void DsnConfigurationWindow::OnLogLevelChanged() const {
   std::wstring logLevelWStr;
   logLevelComboBox->GetText(logLevelWStr);
-  if (LogLevel::FromString(utility::ToUtf8(logLevelWStr),
+  if (LogLevel::FromString(TRIM_UTF8(logLevelWStr),
                            LogLevel::Type::UNKNOWN)
       == LogLevel::Type::OFF) {
     logPathEdit->SetEnabled(false);
@@ -810,107 +812,127 @@ int DsnConfigurationWindow::CreateLogSettingsGroup(int posX, int posY,
   return rowPos - posY;
 }
 
+// Callback function to set the initial path.
+int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam,
+                                LPARAM lpData) {
+  switch (uMsg) {
+    case BFFM_INITIALIZED: {
+      if (lpData != NULL)
+        SendMessage(hwnd, BFFM_SETSELECTION, (WPARAM)TRUE, lpData);
+    } break;
+  }
+  return 0;
+}
+
 bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
   switch (msg) {
     case WM_COMMAND: {
       switch (LOWORD(wParam)) {
         case ChildId::TEST_BUTTON: {
-          TestConnection();
+            TestConnection();
 
-          break;
+            break;
         }
 
         case ChildId::OK_BUTTON: {
-          try {
-            RetrieveParameters(config);
+            try {
+                RetrieveParameters(config);
 
-            accepted = true;
+                accepted = true;
 
-            PostMessage(GetHandle(), WM_CLOSE, 0, 0);
-          } catch (IgniteError& err) {
-            std::wstring errWText = utility::FromUtf8(err.GetText());
-            MessageBox(NULL, errWText.c_str(), L"Error!",
-                       MB_ICONEXCLAMATION | MB_OK);
-          }
+                PostMessage(GetHandle(), WM_CLOSE, 0, 0);
+            }
+            catch (IgniteError& err) {
+                std::wstring errWText = utility::FromUtf8(err.GetText());
+                MessageBox(NULL, errWText.c_str(), L"Error!",
+                    MB_ICONEXCLAMATION | MB_OK);
+            }
 
-          break;
+            break;
         }
 
         case IDCANCEL:
         case ChildId::CANCEL_BUTTON: {
-          PostMessage(GetHandle(), WM_CLOSE, 0, 0);
+            PostMessage(GetHandle(), WM_CLOSE, 0, 0);
 
-          break;
+            break;
         }
 
         case ChildId::NAME_EDIT: {
-          // Check if window has been created.
-          if (created) {
-            okButton->SetEnabled(nameEdit->HasText());
+            // Check if window has been created.
+            if (created) {
+                okButton->SetEnabled(nameEdit->HasText());
 
-            if (!shownNameBalloon && !nameEdit->HasText()) {
-              Edit_ShowBalloonTip(nameEdit->GetHandle(), nameBalloon.get());
-              shownNameBalloon = true;
-            } else {
-              Edit_HideBalloonTip(nameEdit->GetHandle());
-              shownNameBalloon = false;
+                if (!shownNameBalloon && !nameEdit->HasText()) {
+                    Edit_ShowBalloonTip(nameEdit->GetHandle(), nameBalloon.get());
+                    shownNameBalloon = true;
+                }
+                else {
+                    Edit_HideBalloonTip(nameEdit->GetHandle());
+                    shownNameBalloon = false;
+                }
             }
-          }
-          break;
+            break;
         }
 
         case ChildId::MAX_CONNECTIONS_EDIT: {
-          if (created) {
-            std::wstring maxConWStr;
-            maxConnectionsEdit->GetText(maxConWStr);
+            if (created) {
+                std::wstring maxConWStr;
+                maxConnectionsEdit->GetText(maxConWStr);
 
-            std::string maxConStr = utility::ToUtf8(maxConWStr);
+                std::string maxConStr = TRIM_UTF8(maxConWStr);
 
-            int16_t maxCon = timestream::odbc::common::LexicalCast< int16_t >(maxConStr);
+                int16_t maxCon = timestream::odbc::common::LexicalCast< int16_t >(maxConStr);
 
-            if (!shownMaxConBalloon && maxCon <= 0) {
-              Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
-                                  maxConnectionsBalloon.get());
-              shownMaxConBalloon = true;
-            } else {
-              Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
-              shownMaxConBalloon = false;
+                if (!shownMaxConBalloon && maxCon <= 0) {
+                    Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
+                        maxConnectionsBalloon.get());
+                    shownMaxConBalloon = true;
+                }
+                else {
+                    Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
+                    shownMaxConBalloon = false;
+                }
             }
-          }
-          break;
+            break;
         }
 
         case ChildId::AUTH_TYPE_COMBO_BOX: {
-          OnAuthTypeChanged();
+            OnAuthTypeChanged();
 
-          break;
+            break;
         }
 
         case ChildId::LOG_LEVEL_COMBO_BOX: {
-          OnLogLevelChanged();
+            OnLogLevelChanged();
 
-          break;
+            break;
         }
 
         case ChildId::BROWSE_BUTTON: {
-          std::unique_ptr< BROWSEINFO > bi(std::make_unique< BROWSEINFO >());
-          bi->lpszTitle = L"Choose log file target directory:";
-          bi->ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+            std::wstring initLogPath;
+            logPathEdit->GetText(initLogPath);
+            std::unique_ptr< BROWSEINFO > bi(std::make_unique< BROWSEINFO >());
+            bi->lpszTitle = L"Choose log file target directory:";
+            bi->ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+            bi->hwndOwner = browseButton->GetHandle();
+            bi->lpfn = BrowseCallbackProc;
+            bi->lParam = reinterpret_cast< LPARAM >(initLogPath.c_str());
 
-          const LPITEMIDLIST& pidl = SHBrowseForFolder(bi.get());
+            const LPITEMIDLIST& pidl = SHBrowseForFolder(bi.get());
 
-          if (pidl != nullptr) {
-            // get the name of the folder and put it in the log path field
-            wchar_t logPath[_MAX_PATH];
-            SHGetPathFromIDList(pidl, logPath);
-            logPathEdit->SetText(static_cast< std::wstring >(logPath));
-          }
+            if (pidl != nullptr) {
+                // get the name of the folder and put it in the log path field
+                wchar_t logPath[_MAX_PATH];
+                SHGetPathFromIDList(pidl, logPath);
+                logPathEdit->SetText(static_cast<std::wstring>(logPath));
+            }
 
-          break;
+            break;
         }
 
         default:
-          return false;
+            return false;
       }
 
       break;
@@ -971,9 +993,9 @@ void DsnConfigurationWindow::RetrieveBasicParameters(
   endpointEdit->GetText(endpointWStr);
   regionEdit->GetText(regionWStr);
 
-  std::string dsnStr = utility::Trim(utility::ToUtf8(dsnWStr));
-  std::string endpointStr = utility::ToUtf8(endpointWStr);
-  std::string regionStr = utility::ToUtf8(regionWStr);
+  std::string dsnStr = TRIM_UTF8(dsnWStr);
+  std::string endpointStr = TRIM_UTF8(endpointWStr);
+  std::string regionStr = TRIM_UTF8(regionWStr);
 
   cfg.SetDsn(dsnStr);
   cfg.SetEndpoint(endpointStr);
@@ -997,10 +1019,10 @@ void DsnConfigurationWindow::RetrieveBasicAuthParameters(
   sessionTokenEdit->GetText(sessionTokenWStr);
   profileNameEdit->GetText(profileNameWStr);
 
-  std::string accessKeyIdStr = utility::ToUtf8(accessKeyIdWStr);
-  std::string secretKeyStr = utility::ToUtf8(secretKeyWStr);
-  std::string sessionTokenStr = utility::ToUtf8(sessionTokenWStr);
-  std::string profileNameStr = utility::ToUtf8(profileNameWStr);
+  std::string accessKeyIdStr = TRIM_UTF8(accessKeyIdWStr);
+  std::string secretKeyStr = TRIM_UTF8(secretKeyWStr);
+  std::string sessionTokenStr = TRIM_UTF8(sessionTokenWStr);
+  std::string profileNameStr = TRIM_UTF8(profileNameWStr);
 
   cfg.SetAccessKeyId(accessKeyIdStr);
   cfg.SetSecretKey(secretKeyStr);
@@ -1040,15 +1062,15 @@ void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
   aadClientSecretEdit->GetText(aadClientSecretWStr);
   aadTenantEdit->GetText(aadTenantWStr);
 
-  std::string roleArnStr = utility::ToUtf8(roleArnWStr);
-  std::string idPUserNameStr = utility::ToUtf8(idPUserNameWStr);
-  std::string idPPasswordStr = utility::ToUtf8(idPPasswordWStr);
-  std::string idPArnStr = utility::ToUtf8(idPArnWStr);
-  std::string idPHostStr = utility::ToUtf8(idPHostWStr);
-  std::string oktaAppIdStr = utility::ToUtf8(oktaAppIdWStr);
-  std::string aadAppIdStr = utility::ToUtf8(aadAppIdWStr);
-  std::string aadClientSecretStr = utility::ToUtf8(aadClientSecretWStr);
-  std::string aadTenantStr = utility::ToUtf8(aadTenantWStr);
+  std::string roleArnStr = TRIM_UTF8(roleArnWStr);
+  std::string idPUserNameStr = TRIM_UTF8(idPUserNameWStr);
+  std::string idPPasswordStr = TRIM_UTF8(idPPasswordWStr);
+  std::string idPArnStr = TRIM_UTF8(idPArnWStr);
+  std::string idPHostStr = TRIM_UTF8(idPHostWStr);
+  std::string oktaAppIdStr = TRIM_UTF8(oktaAppIdWStr);
+  std::string aadAppIdStr = TRIM_UTF8(aadAppIdWStr);
+  std::string aadClientSecretStr = TRIM_UTF8(aadClientSecretWStr);
+  std::string aadTenantStr = TRIM_UTF8(aadTenantWStr);
 
   AuthType::Type authType =
       static_cast< AuthType::Type >(authTypeComboBox->GetCBSelection());
@@ -1066,7 +1088,7 @@ void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
 
   LOG_INFO_MSG("Auth Type:    " << AuthType::ToString(authType));
   LOG_DEBUG_MSG("Auth Type string from combobox"
-                << utility::ToUtf8(authTypeWStr));
+                << TRIM_UTF8(authTypeWStr));
   LOG_DEBUG_MSG("AuthType::Type authType: " << static_cast< int >(authType));
   LOG_INFO_MSG("Role ARN:     " << roleArnStr);
   LOG_INFO_MSG("IdP User Name:     " << idPUserNameStr);
@@ -1090,23 +1112,36 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
   maxRetryCountClientEdit->GetText(maxRetryCountWStr);
   maxConnectionsEdit->GetText(maxConWStr);
 
-  std::string connectionTimeoutStr = utility::ToUtf8(connectionTimeoutWStr);
-  std::string reqTimeoutStr = utility::ToUtf8(reqTimeoutWStr);
-  std::string maxRetryCountStr = utility::ToUtf8(maxRetryCountWStr);
-  std::string maxConStr = utility::ToUtf8(maxConWStr);
+  std::string connectionTimeoutStr = TRIM_UTF8(connectionTimeoutWStr);
+  std::string reqTimeoutStr = TRIM_UTF8(reqTimeoutWStr);
+  std::string maxRetryCountStr = TRIM_UTF8(maxRetryCountWStr);
+  std::string maxConStr = TRIM_UTF8(maxConWStr);
 
   int32_t connectionTimeout =
       connectionTimeoutStr.empty()
           ? 0
           : timestream::odbc::common::LexicalCast< int32_t >(connectionTimeoutStr);
+  if (connectionTimeout < 0) {
+    connectionTimeout = config::Configuration::DefaultValue::connectionTimeout;
+  }
+
   int32_t reqTimeout =
       reqTimeoutStr.empty()
           ? 0
           : timestream::odbc::common::LexicalCast< int32_t >(reqTimeoutStr);
+  if (reqTimeout < 0) {
+    reqTimeout = config::Configuration::DefaultValue::reqTimeout;
+  }
+
   int32_t maxRetryCountClient =
       maxRetryCountStr.empty()
           ? 0
           : timestream::odbc::common::LexicalCast< int32_t >(maxRetryCountStr);
+  if (maxRetryCountClient < 0) {
+    maxRetryCountClient =
+        config::Configuration::DefaultValue::maxRetryCountClient;
+  }
+
   int32_t maxCon =
       maxConStr.empty()
           ? 0
@@ -1140,8 +1175,8 @@ void DsnConfigurationWindow::RetrieveLogParameters(
   logLevelComboBox->GetText(logLevelWStr);
   logPathEdit->GetText(logPathWStr);
 
-  std::string logLevelStr = utility::ToUtf8(logLevelWStr);
-  std::string logPathStr = utility::ToUtf8(logPathWStr);
+  std::string logLevelStr = TRIM_UTF8(logLevelWStr);
+  std::string logPathStr = TRIM_UTF8(logPathWStr);
 
   LogLevel::Type logLevel = 
       static_cast< LogLevel::Type >(logLevelComboBox->GetCBSelection());

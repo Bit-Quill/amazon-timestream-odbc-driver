@@ -261,6 +261,13 @@ IGNITE_IMPORT_EXPORT long StringToLong(const std::string& s, size_t* idx = 0, in
  * @return true if environment variable is set to "TRUE", false otherwise
  */
 IGNITE_IMPORT_EXPORT bool CheckEnvVarSetToTrue(const std::string& envVar);
+
+/**
+ * Get driver version based on DRIVER_VERSION_MAJOR, DRIVER_VERSION_MINOR and DRIVER_VERSION_PATCH
+ *
+ * @return the generated full driver version in string
+ */
+IGNITE_IMPORT_EXPORT std::string GetFormatedDriverVersion();
 }  // namespace utility
 }  // namespace odbc
 }  // namespace timestream

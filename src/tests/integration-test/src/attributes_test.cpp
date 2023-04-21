@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "timestream/odbc/connection.h"
+#include "timestream/odbc/utility.h"
 #include "odbc_test_suite.h"
 #include "test_utils.h"
 
