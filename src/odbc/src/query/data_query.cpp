@@ -340,7 +340,7 @@ int64_t DataQuery::AffectedRows() const {
 }
 
 int64_t DataQuery::RowNumber() const {
-  if (!cursor_.get()) {
+  if (!cursor_.get() || !cursor_->GetRow()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.",
                          timestream::odbc::LogLevel::Type::WARNING_LEVEL);

@@ -63,9 +63,9 @@ class TimestreamCursor {
   bool Increment();
 
   /**
-   * Check if the cursor has data.
+   * Check if the iterator has data.
    *
-   * @return True if the cursor has data.
+   * @return True if the iterator has data.
    */
   bool HasData() const;
 

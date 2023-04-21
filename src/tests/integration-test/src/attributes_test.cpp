@@ -586,21 +586,26 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLExecDirect) {
     BOOST_REQUIRE_EQUAL(rowNum, rowCount);
   } while (true);
 
-  // Get row number after SQLFetch returns SQL_NO_DATA. This behavior is controlled by the driver manager
+  // Total row count should be 6
+  BOOST_REQUIRE_EQUAL(rowNum, 6);
+
+	// Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
+  // controlled by the driver manager
   ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_NUMBER, &rowNum, 0, 0);
 
-  #ifdef __linux__
-    BOOST_REQUIRE_EQUAL(
-        "24000: [unixODBC][Driver Manager]Invalid cursor state",
-        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #elif defined(__APPLE__)
-    BOOST_REQUIRE_EQUAL("24000: [iODBC][Driver Manager]Invalid cursor state",
-                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #else
-    BOOST_REQUIRE_EQUAL(
-        "24000: [Microsoft][ODBC Driver Manager] Invalid cursor state",
-        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #endif
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  // iODBC driver manager does not return error message after calling SQLFetch
+  // returns SQL_NO_DATA. This behavior is controlled by the driver manager.
+  BOOST_REQUIRE(SQL_SUCCEEDED(ret));
+  BOOST_REQUIRE_EQUAL(rowNum, 0);
+#else
+  BOOST_REQUIRE_EQUAL(
+      "24000: [Microsoft][ODBC Driver Manager] Invalid cursor state",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLTables) {
@@ -644,6 +649,24 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLTables) {
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
     BOOST_REQUIRE_EQUAL(rowNum, rowCount);
   } while (true);
+
+	// Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
+  // controlled by the driver manager
+  ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_NUMBER, &rowNum, 0, 0);
+
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  // iODBC driver manager does not return error message after calling SQLFetch
+  // returns SQL_NO_DATA. This behavior is controlled by the driver manager.
+  BOOST_REQUIRE(SQL_SUCCEEDED(ret));
+  BOOST_REQUIRE_EQUAL(rowNum, 0);
+#else
+  BOOST_REQUIRE_EQUAL(
+      "24000: [Microsoft][ODBC Driver Manager] Invalid cursor state",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLColumns) {
@@ -685,6 +708,24 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLColumns) {
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
     BOOST_REQUIRE_EQUAL(rowNum, rowCount);
   } while (true);
+
+  // Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
+  // controlled by the driver manager
+  ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_NUMBER, &rowNum, 0, 0);
+
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  // iODBC driver manager does not return error message after calling SQLFetch
+  // returns SQL_NO_DATA. This behavior is controlled by the driver manager.
+  BOOST_REQUIRE(SQL_SUCCEEDED(ret));
+  BOOST_REQUIRE_EQUAL(rowNum, 0);
+#else
+  BOOST_REQUIRE_EQUAL(
+      "24000: [Microsoft][ODBC Driver Manager] Invalid cursor state",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLGetTypeInfo) {
@@ -718,6 +759,24 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLGetTypeInfo) {
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
     BOOST_REQUIRE_EQUAL(rowNum, rowCount);
   } while (true);
+
+  // Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
+  // controlled by the driver manager
+  ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_NUMBER, &rowNum, 0, 0);
+
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  // iODBC driver manager does not return error message after calling SQLFetch
+  // returns SQL_NO_DATA. This behavior is controlled by the driver manager.
+  BOOST_REQUIRE(SQL_SUCCEEDED(ret));
+  BOOST_REQUIRE_EQUAL(rowNum, 0);
+#else
+  BOOST_REQUIRE_EQUAL(
+      "24000: [Microsoft][ODBC Driver Manager] Invalid cursor state",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
 }
 
 /**
