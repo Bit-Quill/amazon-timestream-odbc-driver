@@ -5,6 +5,7 @@
 - [PowerBI Desktop cannot load the Timestream ODBC driver library](#powerbi-desktop-cannot-load-the-timestream-odbc-driver-library)
 - [Cannot connect on Linux using user DSN](#cannot-connect-on-linux-using-user-dsn)
 - [Root cause of "INVALID_ENDPOINT: Failed to discover endpoint"](#root-cause-of-invalid_endpoint-failed-to-discover-endpoint)
+- [Driver has issue with C++ Redistributable package on Windows](#driver-has-issue-with-c-redistributable-package-on-windows)
 
 ## Logs
 
@@ -88,3 +89,6 @@ Request ID: d0f595b2-c971-4718-b56b-c06d073d4e8a
 Exception name: InvalidSignatureException
 Error message: The request signature we calculated does not match the signature you provided. Check your AWS Secret Access Key and signing method. Consult the service documentation for details.
 ```
+
+## Driver has issue with C++ Redistributable package on Windows
+The Timestream ODBC driver has only been tested with `14.34.31938.0` version of Microsoft Visual C++ Redistributable (MSVC) package, and untested versions may not work with the driver. If you encounter undocumented problems with the driver, please first uninstall the current version of MSVC package on your machine, and then reinstall the driver using the driver installer. The driver installer will install the version of MSVC package that works with the driver onto the user's computer. For details, please see [Windows installation guide](../setup/windows-installation-guide.md).

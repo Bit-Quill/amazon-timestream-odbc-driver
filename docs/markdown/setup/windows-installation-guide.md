@@ -3,12 +3,14 @@
 ## Supported versions
 Windows 10 22H2, Windows 11 and Windows Server 2022
 
+`14.34.31938.0` Microsoft Visual C++ Redistributable (MSVC). Other versions of MSVC packages may work, but they are not tested with Timestream ODBC Driver.
+
 ## Install Timestream ODBC Driver
 1. Download the Timestream ODBC installer exe.
 2. Double-click the installer
 3. Follow the instructions and finish the installation.
 
-## Notes
+## Notes and Limitations
 ### Microsoft Visual C++ Redistributable (MSVC)
 Microsoft Visual C++ Redistributable (MSVC) Package version 14 will be installed automatically if you do not have already installed in your System.
 
@@ -21,7 +23,7 @@ Microsoft Visual C++ Redistributable (MSVC) Package could pop up with three opti
 If you choose "repair" the MSVC Package will be repaired or reinstalled and the Timestream ODBC driver will be removed. 
 The "uninstall" will uninstall the MSVC Package. If you choose "close", the Timestream ODBC driver uninstallation will be rolled back. 
 
-
+Skipping uninstallation of MSVC Package during driver uninstallation is not supported. This is a limitation of the installer.
 
 ### Installation Over Pre-Existing Deployment Is Not Supported
 The installer doesn't allow installation over pre-existing deployment. If a user would like to install a driver with newer or older 

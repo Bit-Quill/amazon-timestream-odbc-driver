@@ -6,8 +6,8 @@ The folder `src\PowerBIConnector\AmazonTimestreamConnector` contains Power BI co
 
 ## Building the Connector
 * Open PowerShell and run `.\AmazonTimestreamConnector.ps1` from within the `src\PowerBIConnector` directory. Then the `AmazonTimestreamConnector.mez` file will be created. 
-* Copy `AmazonTimestreamConnector.mez` to the `<User>\Documents\Power BI Desktop\Custom Connectors` directory (or to `<User>\OneDrive\Documents\Power BI Desktop\Custom Connectors` if using OneDrive), and create the directory if it is missing.
-* To use the connector with the `On-premises data gateway`, copy `AmazonTimestreamConnector.mez` to `C:\Windows\ServiceProfiles\PBIEgwService\Documents`, and create the directory if it is missing
+* Copy `AmazonTimestreamConnector.mez` to the `C:\Users\<User>\Documents\Power BI Desktop\Custom Connectors` directory (or to `<User>\OneDrive\Documents\Power BI Desktop\Custom Connectors` if using OneDrive), and create the directory if it is missing.
+* To use the connector with the `On-premises data gateway`, copy `AmazonTimestreamConnector.mez` to `C:\Windows\ServiceProfiles\PBIEgwService\Documents\Power BI Desktop\Custom Connectors`, and create the directory if it is missing.
 
 ## Prerequisites for Tests
 1. Install Visual Studio 2019 as currently [Power Query SDK](https://marketplace.visualstudio.com/items?itemName=Dakahn.PowerQuerySDK) only has supports for up to Visual Studio 2019.
