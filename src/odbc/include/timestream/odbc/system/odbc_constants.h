@@ -57,6 +57,9 @@
 #define DATABASE_AS_SCHEMA \
   timestream::odbc::utility::CheckEnvVarSetToTrue("DATABASE_AS_SCHEMA")
 
+#define ANSI_STRING_ONLY \
+  timestream::odbc::utility::CheckEnvVarSetToTrue("ANSI_STRING_ONLY")
+
 #include <odbcinst.h>
 #include <sqlext.h>
 

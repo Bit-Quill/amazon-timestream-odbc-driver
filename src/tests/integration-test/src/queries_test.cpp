@@ -1770,8 +1770,13 @@ BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataNarrowChar) {
                    &fieldString_len);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  BOOST_CHECK_NE(SQL_NULL_DATA, fieldString_len);
-  BOOST_CHECK_EQUAL(std::string("??-5"), std::string((char*)fieldString));
+  if (ANSI_STRING_ONLY) {
+    BOOST_CHECK_EQUAL(8, fieldString_len);
+    BOOST_CHECK_EQUAL(std::string("美西-5"), std::string((char*)fieldString));
+  } else {
+    BOOST_CHECK_EQUAL(4, fieldString_len);
+    BOOST_CHECK_EQUAL(std::string("??-5"), std::string((char*)fieldString));
+  }
 
   // Fetch 2nd row - does not exist
   ret = SQLFetch(stmt);

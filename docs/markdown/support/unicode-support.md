@@ -16,6 +16,8 @@ Here we pass the SQLWCHAR pointer to/from entry_point and odbc.
 
 However, from the `odbc` namespace to the rest of the driver, we encode data in UTF-8 encoding. The reason being is that all the strings in Timestream use UTF-8 encoding. So to minimize the number of conversions, we choose to use UTF-8 encoding at this layer.
 
+The environment variable `ANSI_STRING_ONLY` is used to indicate the data source has only ANSI characters by setting it to `TRUE`. As a result, characters will be copied from the data source to the user buffer directly without converting UTF8 to wstring and then do a mapping from unicode to ANSI characters. 
+
 ```mermaid
 graph TD
     A(BI Tool) -- SQLWCHAR --> B(ODBC Driver Adapter)

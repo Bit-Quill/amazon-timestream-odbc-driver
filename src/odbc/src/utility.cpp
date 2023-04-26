@@ -35,36 +35,60 @@ using namespace ignite::odbc::common;
 size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
                                      size_t outBufferLenBytes,
                                      bool& isTruncated) {
-  LOG_DEBUG_MSG("CopyUtf8StringToSqlCharString is called with outBufferLenBytes is " << outBufferLenBytes);
+  LOG_DEBUG_MSG(
+      "CopyUtf8StringToSqlCharString is called with outBufferLenBytes is "
+      << outBufferLenBytes);
   if (!inBuffer || (outBuffer && outBufferLenBytes == 0))
     return 0;
 
-  // Need to convert input string to wide-char to get the
-  // length in characters - as well as get .narrow() to work, as expected
-  // Otherwise, it would be impossible to safely determine the
-  // output buffer length needed.
-  static std::wstring_convert< std::codecvt_utf8< wchar_t >, wchar_t >
-      converter;
-  std::wstring inString = converter.from_bytes(inBuffer);
-  size_t inBufferLenChars = inString.size();
-  LOG_DEBUG_MSG("inBufferLenChars is " << inBufferLenChars);
+  if (ANSI_STRING_ONLY) {
+    // the inBuffer contains ANSI characters only
+    // If user are sure the strings in data source have only ANSI characters,
+    // this function will copy the UTF8 characters from data source to user 
+    // buffer directly without converting UTF8 to wstring and then do a mapping 
+    // from unicode to ANSI characters. 
+    size_t inBufLen = strlen(inBuffer);
+    if (inBufLen >= outBufferLenBytes) {
+      strncpy(reinterpret_cast< char* >(outBuffer), inBuffer,
+              outBufferLenBytes - 1);
+      outBuffer[outBufferLenBytes - 1] = 0;
+      isTruncated = true;
+    } else {
+      strncpy(reinterpret_cast< char* >(outBuffer), inBuffer, inBufLen);
+      outBuffer[inBufLen] = 0;
+      isTruncated = false;
+    }
+    return std::min(inBufLen, outBufferLenBytes-1);
+  } else {
+    // the inBuffer may contain unicode characters
+    // Need to convert input string to wide-char to get the
+    // length in characters - as well as get .narrow() to work, as expected
+    // Otherwise, it would be impossible to safely determine the
+    // output buffer length needed.
+    static std::wstring_convert< std::codecvt_utf8< wchar_t >, wchar_t >
+        converter;
+    std::wstring inString = converter.from_bytes(inBuffer);
+    size_t inBufferLenChars = inString.size();
+    LOG_DEBUG_MSG("inBufferLenChars is " << inBufferLenChars);
 
-  // If no output buffer, return REQUIRED length.
-  if (!outBuffer)
-    return inBufferLenChars;
+    // If no output buffer, return REQUIRED length.
+    if (!outBuffer)
+      return inBufferLenChars;
 
-  size_t outBufferLenActual = std::min(inBufferLenChars, outBufferLenBytes - 1);
+    size_t outBufferLenActual =
+        std::min(inBufferLenChars, outBufferLenBytes - 1);
 
-  std::locale currentLocale("");
-  std::use_facet< std::ctype< wchar_t > >(currentLocale)
-      .narrow(inString.data(), inString.data() + outBufferLenActual, '?',
-              reinterpret_cast< char* >(outBuffer));
+    std::locale currentLocale("");
+    std::use_facet< std::ctype< wchar_t > >(currentLocale)
+        .narrow(inString.data(), inString.data() + outBufferLenActual, '?',
+                reinterpret_cast< char* >(outBuffer));
 
-  outBuffer[outBufferLenActual] = 0;
-  isTruncated = (outBufferLenActual < inBufferLenChars);
+    outBuffer[outBufferLenActual] = 0;
+    isTruncated = (outBufferLenActual < inBufferLenChars);
 
-  LOG_DEBUG_MSG("outBufferLenActual is " << outBufferLenActual);
-  return outBufferLenActual;
+    LOG_DEBUG_MSG("outBufferLenActual is " << outBufferLenActual);
+    return outBufferLenActual;
+  }
 }
 
 template < typename OutCharT >

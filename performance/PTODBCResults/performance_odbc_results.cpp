@@ -53,6 +53,11 @@ typedef struct Col {
     SQLCHAR data_dat[BIND_SIZE];
 } Col;
 
+typedef struct WCol {
+    SQLLEN data_len;
+    SQLWCHAR data_dat[BIND_SIZE];
+} WCol;
+
 bool queryFinished = false;
 
 // The number of executed tests
@@ -75,32 +80,21 @@ void prepareOutFile() {
   return;
 }
 
-// Get the average and peak memory usage for any memory created in
-// excess of the current process' memory usage, assumed to be during a query
-void queryMemUsage(int currentMem, long long &averageMem, long long &peakMem) {
+// Get the average and peak memory usage, assumed to be during a query
+void queryMemUsage(long long &averageMem, long long &peakMem) {
     long long memSum = 0;
     long long memCalc;
     long long i = 0;
-    if (currentMem <= 0) {
-      return;
-    }
     do {
         memCalc = currentMemUsage();
-        if (memCalc > currentMem) {
-          memSum += (memCalc - currentMem);
-          if (memCalc > peakMem) {
-            peakMem = memCalc;
-          }
-          i++;
+        memSum += memCalc;
+        if (memCalc > peakMem) {
+          peakMem = memCalc;
         }
+        i++;
         // Attempt to limit the number of memory calculations
-        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
     } while(!queryFinished);
-
-    if (peakMem > currentMem) {
-      // Isolate query's memory usage from process total
-      peakMem = peakMem - currentMem;
-    }
 
     if (i > 0) {
       averageMem = (memSum / i);
@@ -109,7 +103,8 @@ void queryMemUsage(int currentMem, long long &averageMem, long long &peakMem) {
 
 auto RecordBindingFetching = [](SQLHSTMT& hstmt,
                                 std::vector< long long >& times,
-                                const testString& query) {
+                                const testString& query,
+				bool is_wchar) {
     SQLSMALLINT total_columns = 0;
     int row_count = 0;
 
@@ -123,18 +118,20 @@ auto RecordBindingFetching = [](SQLHSTMT& hstmt,
 
         // Get column count
         SQLNumResultCols(hstmt, &total_columns);
-        std::vector< std::vector< Col > > cols(total_columns);
-        for (size_t i = 0; i < cols.size(); i++)
-            cols[i].resize(SINGLE_ROW);
 
-        // Bind and fetch
-        for (size_t i = 0; i < cols.size(); i++)
-            ret = SQLBindCol(hstmt, static_cast< SQLUSMALLINT >(i + 1),
-                             SQL_C_CHAR,
-                             static_cast< SQLPOINTER >(&cols[i][0].data_dat[i]),
-                             255, &cols[i][0].data_len);
-        while (SQLFetch(hstmt) == SQL_SUCCESS)
-            row_count++;
+    // Performance tests use WCHAR exclusively since the Amazon Timestream ODBC driver
+    // is a unicode driver and CHAR is an uncommon real-life use case
+	if (is_wchar) {
+          std::vector< WCol > cols(total_columns);
+
+          // Bind and fetch
+          for (size_t i = 0; i < cols.size(); i++)
+              ret = SQLBindCol(hstmt, static_cast< SQLUSMALLINT >(i + 1),
+                               SQL_C_WCHAR,
+                               static_cast< SQLPOINTER >(&cols[i].data_dat),
+                               255, &cols[i].data_len);
+          while (SQLFetch(hstmt) == SQL_SUCCESS)
+              row_count++;
         auto end = std::chrono::steady_clock::now();
         std::cout << "Total rows: " << row_count << std::endl;
         times.push_back(
@@ -142,16 +139,35 @@ auto RecordBindingFetching = [](SQLHSTMT& hstmt,
                 .count());
         logDiagnostics(SQL_HANDLE_STMT, hstmt, ret);
         SQLCloseCursor(hstmt);
+	} else {
+          std::vector< Col > cols(total_columns);
+
+          // Bind and fetch
+          for (size_t i = 0; i < cols.size(); i++)
+              ret = SQLBindCol(hstmt, static_cast< SQLUSMALLINT >(i + 1),
+                               SQL_C_CHAR,
+                               static_cast< SQLPOINTER >(&cols[i].data_dat),
+                               255, &cols[i].data_len);
+          while (SQLFetch(hstmt) == SQL_SUCCESS)
+              row_count++;
+        auto end = std::chrono::steady_clock::now();
+        std::cout << "Total rows: " << row_count << std::endl;
+        times.push_back(
+            std::chrono::duration_cast< std::chrono::milliseconds >(end - start)
+                .count());
+        logDiagnostics(SQL_HANDLE_STMT, hstmt, ret);
+        SQLCloseCursor(hstmt);
+	}
     }
     queryFinished = true;
 };
 
 // Test template for Amazon queries
-#define TEST_PERF_TEST(test_name, query)                                        \
+#define TEST_PERF_TEST(test_name, query, is_wchar)                              \
     TEST_F(TestPerformance, test_name) {                                        \
         if (strcmp(                                                             \
               ::testing::UnitTest::GetInstance()->current_test_info()->name(),  \
-              "Q21_EXPECT_1500000_ROWS") == 0 &&                                \
+              "Q22_EXPECT_1500000_ROWS") == 0 &&                                \
               !enableLargeTest) {                                               \
             GTEST_SKIP();                                                       \
         }                                                                       \
@@ -160,10 +176,10 @@ auto RecordBindingFetching = [](SQLHSTMT& hstmt,
         long long averageMem = 0;                                               \
         long long peakMem = 0;                                                  \
         boost::thread queryThread([&] {                                         \
-            RecordBindingFetching(_hstmt, times, testString(query));            \
+            RecordBindingFetching(_hstmt, times, testString(query), is_wchar);  \
         });                                                                     \
         boost::thread memThread([&] {                                           \
-            queryMemUsage(currentMem, averageMem, peakMem);                     \
+            queryMemUsage(averageMem, peakMem);                                 \
         });                                                                     \
         queryThread.join();                                                     \
         memThread.join();                                                       \
@@ -311,7 +327,7 @@ TEST_F(TestPerformance, DISABLED_Time_Execute) {
     int currentMem = currentMemUsage();
     long long averageMem = 0;
     long long peakMem = 0;
-    boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+    boost::thread memoryThread([&]{ queryMemUsage(averageMem, peakMem); });
     boost::thread queryThread = boost::thread([&] {
         SQLRETURN ret =
            SQLExecDirect(_hstmt, TO_SQLTCHAR(_query.c_str()), SQL_NTS);
@@ -336,14 +352,14 @@ TEST_F(TestPerformance, DISABLED_Time_Execute) {
     Report("Execute Query", times, _query, averageMem, peakMem);
 }
 
-TEST_PERF_TEST(DISABLED_Time_BindColumn_FetchSingleRow, _query)
+TEST_PERF_TEST(DISABLED_Time_BindColumn_FetchSingleRow, _query, true)
 
 TEST_F(TestPerformance, DISABLED_Time_BindColumn_Fetch5Rows) {
   std::vector< long long > times;
   int currentMem = currentMemUsage();
   long long averageMem = 0;
   long long peakMem = 0;
-  boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+  boost::thread memoryThread([&]{ queryMemUsage(averageMem, peakMem); });
   boost::thread queryThread = boost::thread([&] {
     SQLROWSETSIZE row_count = 0;
     SQLSMALLINT total_columns = 0;
@@ -395,7 +411,7 @@ TEST_F(TestPerformance, DISABLED_Time_BindColumn_Fetch50Rows) {
   int currentMem = currentMemUsage();
   long long averageMem = 0;
   long long peakMem = 0;
-  boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+  boost::thread memoryThread([&]{ queryMemUsage(averageMem, peakMem); });
   boost::thread queryThread = boost::thread([&] {
     SQLROWSETSIZE row_count = 0;
     SQLSMALLINT total_columns = 0;
@@ -448,7 +464,7 @@ TEST_F(TestPerformance, DISABLED_Time_Execute_FetchSingleRow) {
   int currentMem = currentMemUsage();
   long long averageMem = 0;
   long long peakMem = 0;
-  boost::thread memoryThread([&]{ queryMemUsage(currentMem, averageMem, peakMem); });
+  boost::thread memoryThread([&]{ queryMemUsage(averageMem, peakMem); });
   boost::thread queryThread = boost::thread([&] {
     SQLSMALLINT total_columns = 0;
     int row_count = 0;
@@ -491,7 +507,8 @@ TEST_F(TestPerformance, DISABLED_Time_Execute_FetchSingleRow) {
 TEST_PERF_TEST(
     WARMING_UP,
     CREATE_STRING(
-        "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 1000"))
+        "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 10000"),
+    true)
 
 TEST_PERF_TEST(
     Q1_EXPECT_49_ROWS,
@@ -503,7 +520,8 @@ TEST_PERF_TEST(
         "AND availability_zone = 'us-east-1-1' AND microservice_name = "
         "'apollo' AND instance_type = 'r5.4xlarge' AND os_version = 'AL2' AND "
         "instance_name = 'i-AUa00Zt2-apollo-0000.amazonaws.com' GROUP BY "
-        "BIN(time, 1m) ORDER BY time_bin desc LIMIT 10000"))
+        "BIN(time, 1m) ORDER BY time_bin desc LIMIT 10000"),
+    true)
 
 TEST_PERF_TEST(
     Q2_EXPECT_1_ROW,
@@ -514,7 +532,9 @@ TEST_PERF_TEST(
         "'us-east-1-cell-1-silo-1' AND availability_zone = 'us-east-1-1' AND "
         "microservice_name = 'apollo' AND instance_name = "
         "'i-AUa00Zt2-apollo-0000.amazonaws.com' AND process_name = 'server' "
-        "AND jdk_version = 'JDK_11' ORDER BY time DESC LIMIT 1"))
+        "AND jdk_version = 'JDK_11' ORDER BY time DESC LIMIT 1"),
+    true)
+
 TEST_PERF_TEST(
     Q3_EXPECT_2_ROWS,
     CREATE_STRING(
@@ -530,7 +550,9 @@ TEST_PERF_TEST(
         "microservice_name = 'apollo' AND instance_type = 'r5.4xlarge' AND "
         "os_version = 'AL2' AND instance_name = "
         "'i-AUa00Zt2-apollo-0000.amazonaws.com' GROUP BY BIN(time, 1h) ORDER "
-        "BY hour desc LIMIT 10000"))
+        "BY hour desc LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q4_EXPECT_0_ROWS,
     CREATE_STRING(
@@ -553,7 +575,9 @@ TEST_PERF_TEST(
         "-> CAST(ROW(s.count_high + IF(x.value > 50, 1, 0), s.count_total + 1) "
         "AS ROW(count_high BIGINT, count_total BIGINT)), s -> IF(s.count_total "
         "= 0, NULL, CAST(s.count_high AS DOUBLE) / s.count_total)), 4) AS "
-        "fraction_gc_reclaimed_threshold FROM interpolated_ts LIMIT 10000"))
+        "fraction_gc_reclaimed_threshold FROM interpolated_ts LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q5_EXPECT_2_ROWS,
     CREATE_STRING(
@@ -569,7 +593,9 @@ TEST_PERF_TEST(
         "'us-east-1-cell-1-silo-1' AND availability_zone = 'us-east-1-1' AND "
         "microservice_name = 'apollo' AND instance_name = "
         "'i-AUa00Zt2-apollo-0000.amazonaws.com' AND process_name = 'server' "
-        "AND jdk_version = 'JDK_11' GROUP BY instance_name, BIN(time, 1h) LIMIT 10000"))
+        "AND jdk_version = 'JDK_11' GROUP BY instance_name, BIN(time, 1h) LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q6_EXPECT_1_ROW,
     CREATE_STRING(
@@ -589,7 +615,9 @@ TEST_PERF_TEST(
         "ROUND(APPROX_PERCENTILE(interval, 0.9), 2) AS p90_interval, "
         "ROUND(APPROX_PERCENTILE(interval, 0.99), 2) AS p99_interval FROM "
         "event_interval WHERE interval IS NOT NULL GROUP BY instance_name, "
-        "process_name, jdk_version LIMIT 10000"))
+        "process_name, jdk_version LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q7_EXPECT_49_ROWS,
     CREATE_STRING(
@@ -613,7 +641,9 @@ TEST_PERF_TEST(
         "'us-east-1-cell-1-silo-1' AND availability_zone = 'us-east-1-1' AND "
         "microservice_name = 'apollo' AND instance_type = 'r5.4xlarge' AND "
         "os_version = 'AL2' GROUP BY BIN(time, 1m) ORDER "
-        "BY time_bin desc LIMIT 10000"))
+        "BY time_bin desc LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q8_EXPECT_49_ROWS,
     CREATE_STRING(
@@ -626,7 +656,9 @@ TEST_PERF_TEST(
         "BIN(time, 1m)) SELECT mu.time_bin, IF(mu.mem_used > cu.cpu_used, "
         "'memory', 'cpu') AS bottleneck_resource FROM memory_used mu INNER "
         "JOIN cpu_user cu ON mu.time_bin = cu.time_bin ORDER BY mu.time_bin "
-        "DESC LIMIT 10000"))
+        "DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q9_EXPECT_2_ROWS,
     CREATE_STRING(
@@ -687,7 +719,9 @@ TEST_PERF_TEST(
         "'us-east-1-cell-1-silo-1' AND availability_zone = 'us-east-1-1' AND "
         "microservice_name = 'apollo' AND instance_type = 'r5.4xlarge' AND "
         "os_version = 'AL2' GROUP BY BIN(time, 1h) ORDER "
-        "BY hour DESC LIMIT 10000"))
+        "BY hour DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q10_EXPECT_2_ROWS,
     CREATE_STRING(
@@ -729,7 +763,9 @@ TEST_PERF_TEST(
         "avg_cpu, max_cpu, avg_memory, max_memory FROM gc_reclaimed_bins gc "
         "INNER JOIN high_utilization_bins hu ON gc.instance_name = "
         "hu.instance_name AND gc.time_bin = hu.time_bin ORDER BY hu.time_bin "
-        "DESC LIMIT 10000"))
+        "DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q11_EXPECT_441_ROWS,
     CREATE_STRING(
@@ -743,7 +779,9 @@ TEST_PERF_TEST(
         "now() - 100y AND now() AND measure_name = 'cpu_user' AND region = "
         "'us-east-1' AND cell = 'us-east-1-cell-1' AND microservice_name = "
         "'apollo' GROUP BY region, cell, silo, availability_zone, "
-        "microservice_name, BIN(time, 1m) ORDER BY p99_value DESC LIMIT 10000"))
+        "microservice_name, BIN(time, 1m) ORDER BY p99_value DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q12_EXPECT_410_ROWS,
     CREATE_STRING(
@@ -755,7 +793,9 @@ TEST_PERF_TEST(
         "p95_value, ROUND(APPROX_PERCENTILE(measure_value::double, 0.99), 2) "
         "AS p99_value FROM perfdb_hcltps.perftable_hcltps WHERE time BETWEEN "
         "now() - 100y AND now() AND measure_name = 'cpu_user' GROUP BY region, "
-        "cell, microservice_name, BIN(time, 1h) ORDER BY p99_value DESC LIMIT 10000"))
+        "cell, microservice_name, BIN(time, 1h) ORDER BY p99_value DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q13_EXPECT_441_ROWS,
     CREATE_STRING(
@@ -769,7 +809,9 @@ TEST_PERF_TEST(
         "now() - 100y AND now() AND measure_name = 'cpu_user' AND region = "
         "'us-east-1' AND cell = 'us-east-1-cell-1' AND microservice_name = "
         "'apollo' GROUP BY region, cell, silo, availability_zone, "
-        "microservice_name, BIN(time, 1m) ORDER BY p99_value DESC LIMIT 10000"))
+        "microservice_name, BIN(time, 1m) ORDER BY p99_value DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q14_EXPECT_10_ROWS,
     CREATE_STRING(
@@ -795,7 +837,9 @@ TEST_PERF_TEST(
         "p99_memory_free FROM interpolated_timeseries CROSS JOIN "
         "UNNEST(interpolated_memory_free) AS t(time, memory_free) GROUP BY "
         "region, cell, microservice_name, BIN(time, 1h) ORDER BY "
-        "p95_memory_free DESC LIMIT 10000"))
+        "p95_memory_free DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
     Q15_EXPECT_141_ROWS,
     CREATE_STRING(
@@ -814,7 +858,9 @@ TEST_PERF_TEST(
         "microservice_cell_avg m INNER JOIN instance_avg i ON i.region = "
         "m.region AND i.cell = m.cell AND i.microservice_name = "
         "m.microservice_name WHERE i.instance_avg_metric > (1 + 0) * "
-        "m.microservice_avg_metric ORDER BY i.instance_avg_metric DESC LIMIT 10000"))
+        "m.microservice_avg_metric ORDER BY i.instance_avg_metric DESC LIMIT 10000"),
+    true)
+
  TEST_PERF_TEST(
     Q16_EXPECT_505_ROWS,
     CREATE_STRING(
@@ -846,7 +892,9 @@ TEST_PERF_TEST(
         "2)) AS p95_max_memory, ROUND(ROUND(APPROX_PERCENTILE(max_memory_used, "
         "0.99), 2)) AS p99_max_memory FROM per_instance_max_use GROUP BY "
         "region, cell, silo, microservice_name, BIN(time_bin, 1d) ORDER BY "
-        "p95_max_cpu DESC LIMIT 10000"))
+        "p95_max_cpu DESC LIMIT 10000"),
+    true)
+
 TEST_PERF_TEST(
      Q17_EXPECT_236_ROWS,
      CREATE_STRING(
@@ -886,7 +934,9 @@ TEST_PERF_TEST(
          "t.microservice_name AND r.instance_name = t.instance_name WHERE time "
          "BETWEEN now() - 100y AND now() AND measure_name = 'gc_pause' AND rank "
          "<= 10 GROUP BY t.region, t.cell, t.silo, t.microservice_name, "
-         "t.instance_name, t.process_name, t.jdk_version LIMIT 10000"))
+         "t.instance_name, t.process_name, t.jdk_version LIMIT 10000"),
+    true)
+
  TEST_PERF_TEST(
     Q18_EXPECT_410_ROWS,
     CREATE_STRING(
@@ -905,7 +955,9 @@ TEST_PERF_TEST(
         "BY p95_avg_cpu DESC) AS rank FROM per_microservice_cpu) SELECT "
         "region, cell, microservice_name, hour AS hour, p95_avg_cpu FROM "
         "per_microservice_ranked WHERE rank <= 5 ORDER BY region, cell, "
-        "microservice_name, rank ASC LIMIT 10000"))
+        "microservice_name, rank ASC LIMIT 10000"),
+    true)
+
  TEST_PERF_TEST(
      Q19_EXPECT_3027_ROWS,
      CREATE_STRING(
@@ -935,7 +987,9 @@ TEST_PERF_TEST(
          "tes.jdk_version AND tc.time = tes.time GROUP BY tc.region, tc.cell, "
          "tc.silo, tc.microservice_name, tes.task_end_state ORDER BY "
          "tc.region, tc.cell, tc.silo, tc.microservice_name, "
-         "tes.task_end_state LIMIT 10000"))
+         "tes.task_end_state LIMIT 10000"),
+    true)
+
  TEST_PERF_TEST(
      Q20_EXPECT_141_ROWS,
      CREATE_STRING(
@@ -955,11 +1009,20 @@ TEST_PERF_TEST(
          "microservice_cell_avg m INNER JOIN instance_avg i ON i.region = "
          "m.region AND i.cell = m.cell AND i.microservice_name = "
          "m.microservice_name WHERE i.instance_avg_metric > (1 + 0) * "
-         "m.microservice_avg_metric ORDER BY i.instance_avg_metric DESC LIMIT 10000"))
+         "m.microservice_avg_metric ORDER BY i.instance_avg_metric DESC LIMIT 10000"),
+    true)
+
  TEST_PERF_TEST(
-     Q21_EXPECT_1500000_ROWS,
+     Q21_EXPECT_15000_ROWS,
      CREATE_STRING(
-       "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 1500000"))
+       "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 15000"),
+    true)
+
+ TEST_PERF_TEST(
+     Q22_EXPECT_1500000_ROWS,
+     CREATE_STRING(
+       "SELECT * FROM perfdb_hcltps.perftable_hcltps LIMIT 1500000"),
+    true)
 
  int main(int argc, char** argv) {
 #ifdef WIN32
