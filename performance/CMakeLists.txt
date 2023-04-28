@@ -31,7 +31,11 @@ endif()
 
 # gtest
 include(gtest/googletest.cmake)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -fPIC -Wno-error=maybe-uninitialized")
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -fPIC")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -fPIC -Wno-error=maybe-uninitialized")
+endif()
 fetch_googletest(
   ${PROJECT_SOURCE_DIR}/gtest
   ${PROJECT_BINARY_DIR}/googletest

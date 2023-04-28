@@ -8,9 +8,10 @@ Performance test framework for testing ODBC driver.
 NOTE: The continuous ingestor is non-deterministic, the performance tests are hardcoded to check values in an already-existing test database that will not match the data you generate for your test database. The only difference will be the number of rows returned by each query. The current dataset uses a very large time frame for the data (`WHERE time BETWEEN now() - 100y AND now()`) and the tests can be ran with no overhead apart from initial setup. If you wanted to run tests with "live" data you would need to change the time frame for tests to be within one hour (`WHERE time BETWEEN now() - 1h AND now()`) for all queries and run the continuous ingestor at the same time.
 
 # How to run with executable
-1. Build the performance tool:
+1. Build the performance tool, from the project root:
     - For Windows x86-64: run `.\build_performance_win64.ps1`.
     - For Linux: run `./build_performance_linux.sh`.
+    - For macOS: run `./build_performance_mac64.sh`. Note: building is supported on macOS but running the performance tests is not currently supported on macOS.
 2. Run executable: 
     - For Windows x86-64: run `.\performance\build\PTODBCResults\Release\performance_results.exe`.
     - For Linux: run `./performance/bin/performance_results`.

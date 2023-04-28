@@ -92,8 +92,8 @@ int currentMemUsage() {
       &t_info_count)) {
         return -1;
     }
-    // resident_size is in bytes, return KB
-    return static_cast<int>(t_info_count.resident_size / 1000);
+    // virtual_size is in bytes, return KB
+    return static_cast<int>(t_info.virtual_size / 1000);
 }
 #endif //__APPLE__
 
