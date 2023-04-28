@@ -29,6 +29,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/data/monomorphic.hpp>
 #include <string>
+#include <thread>
 
 #include "odbc_test_suite.h"
 #include "test_utils.h"
@@ -1065,22 +1066,21 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile, *disabled()) {
   Disconnect();
 }
 
-// This test hangs on Winodws self-hosted runn, so disable it now
-// Use AT-1323 to investigate the root cause
-BOOST_AUTO_TEST_CASE(TestConnectionConcurrency, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestConnectionConcurrency) {
   ConnectionTestSuiteFixture testConn[10];
+  
+  // use C++ thread object to do this multi-thread test instead of
+  // using boost::thread and boost::thread_group as boost may have
+  // bug in its thread implementation. The thread_group join_all()
+  // could hang on Windows, the reason is unknown.
+  std::vector< std::thread > threads;
 
-  // Create threads and add them to the thread group
-  boost::thread_group threads;
-
-  for (int i = 0; i < 10; i++) {
-    boost::thread* t = new boost::thread(
-        boost::bind(&ConnectionTestSuiteFixture::connect, testConn[i]));
-    threads.add_thread(t);
-  }
-
-  // Wait till the threads are finished
-  threads.join_all();
+  for (int i = 0; i < 10; ++i)
+    threads.push_back(
+        std::thread(&ConnectionTestSuiteFixture::connect, testConn[i]));
+  
+  for (auto& th : threads)
+    th.join();
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectionOnlyConnect) {
