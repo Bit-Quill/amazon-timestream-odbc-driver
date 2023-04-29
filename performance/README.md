@@ -28,6 +28,7 @@ e.g. output console:
 %%__MAX__%% 81 ms
 %%__MEAN__%% 67 ms
 %%__MEDIAN__%% 66 ms
+%%__90TH_PERCENTILE__%% 72 ms
 %%__AVERAGE_MEMORY_USAGE__%% 128 KB
 %%__PEAK_MEMORY_USAGE__%% 632 KB
 %%__PARSE__SYNC__END__%%
@@ -38,5 +39,5 @@ Time dump: 232 ms
 Results are written to `performance_results_report.csv` in the location that `performance_results` was ran from, overwriting any file with the same name.
 
 The output columns are as follows:  
-`Test Round,test_name,query,loop_count,Average Time (ms),Max Time (ms),Min Time (ms),Median Time (ms),Average Memory Usage (KB),Peak Memory Usage (KB)`.
+`Test Round,test_name,query,loop_count,Average Time (ms),Max Time (ms),Min Time (ms),Median Time (ms),90th Percentile (ms),Average Memory Usage (KB),Peak Memory Usage (KB)`.
 

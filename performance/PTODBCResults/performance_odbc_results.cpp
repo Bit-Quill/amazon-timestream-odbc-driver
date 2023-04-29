@@ -75,7 +75,7 @@ void prepareOutFile() {
   // Write header
   outFile << 
     "Test Round,test_name,query,loop_count,Average Time (ms),Max Time (ms),Min Time (ms),"
-    "Median Time (ms),Average Memory Usage (KB),Peak Memory Usage (KB)\n";
+    "Median Time (ms),90th Percentile (ms),Average Memory Usage (KB),Peak Memory Usage (KB)\n";
   outFile.close();
   return;
 }
@@ -251,6 +251,7 @@ const std::string sync_min = "%%__MIN__%%";
 const std::string sync_max = "%%__MAX__%%";
 const std::string sync_mean = "%%__MEAN__%%";
 const std::string sync_median = "%%__MEDIAN__%%";
+const std::string sync_percentile = "%%__90TH_PERCENTILE__%%";
 const std::string sync_average_memory_usage = "%%__AVERAGE_MEMORY_USAGE__%%";
 const std::string sync_peak_memory_usage = "%%__PEAK_MEMORY_USAGE__%%";
 const std::string sync_end = "%%__PARSE__SYNC__END__%%";
@@ -274,6 +275,14 @@ void Report(const std::string& test_case, std::vector< long long > data,
                                 ? data[size / 2]
                                 : ((data[(size / 2) - 1] + data[size / 2]) / 2);
 
+    // Calculate ordinal rank using nearest-rank method
+    int ordinalRank = static_cast<int>((90/100.0) * data.size());
+    // Find 90th percentile
+    long long percentile = 0;
+    if (ordinalRank > 0) {
+      percentile = data[ordinalRank - 1];
+    }
+
     // Output results
     std::cout << sync_start << std::endl;
     std::cout << sync_query;
@@ -283,6 +292,7 @@ void Report(const std::string& test_case, std::vector< long long > data,
     std::cout << sync_max << time_max << " ms" << std::endl;
     std::cout << sync_mean << time_mean << " ms" << std::endl;
     std::cout << sync_median << time_median << " ms" << std::endl;
+    std::cout << sync_percentile << percentile << " ms" << std::endl;
     std::cout << sync_average_memory_usage << averageMemoryUsage << " KB" << std::endl;
     std::cout << sync_peak_memory_usage << peakMemoryUsage << " KB" << std::endl;
     std::cout << sync_end << std::endl;
@@ -310,6 +320,7 @@ void Report(const std::string& test_case, std::vector< long long > data,
       << time_max << ","
       << time_min << ","
       << time_median << ","
+      << percentile << ","
       << averageMemoryUsage << ","
       << peakMemoryUsage
       << "\n";
