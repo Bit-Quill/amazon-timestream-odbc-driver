@@ -19,8 +19,6 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
-  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}  
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
   BIG_TABLE_PAGINATION_TEST_ENABLE: "TRUE"
@@ -145,6 +143,14 @@ jobs:
         chmod +r -R ${{env.ODBC_LIB_PATH}}
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
+
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
 
     # run unit tests
     - name: run-unit-tests
@@ -282,6 +288,14 @@ jobs:
         chmod +r -R ${{env.ODBC_LIB_PATH}}
         chmod +x scripts/register_driver_unix.sh
         sudo bash scripts/register_driver_unix.sh
+
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
 
     # run unit tests
     - name: run-unit-tests

@@ -7,8 +7,6 @@ env:
   ODBC_LIB_PATH: "${{github.workspace}}/build/odbc/lib"
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/build"
-  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}  
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
   ODBCINSTINI: "${{github.workspace}}/build/odbc/lib/timestream-odbc-install.ini"
@@ -100,6 +98,14 @@ jobs:
         chmod +x scripts/register_driver_unix.sh
         ./scripts/register_driver_unix.sh
         
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
     - name: run-tests
       id: runtests
       run: |
@@ -247,6 +253,14 @@ jobs:
       env:
         RUN_CODE_COVERAGE: ${{ true }}
         BOOST_TEST_CATCH_SYSTEM_ERRORS: no
+
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
 
     - name: run-tests
       id: runtests

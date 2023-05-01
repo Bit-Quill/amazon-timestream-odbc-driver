@@ -28,8 +28,6 @@ env:
   ODBC_BIN_PATH: "${{github.workspace}}/build/odbc/bin/Release"
   ODBC_DEBUG_PATH: "${{github.workspace}}/build/odbc/bin/Debug"
   ODBC_BUILD_PATH: "${{github.workspace}}/build/odbc/cmake"
-  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   VCPKG_ROOT: "c:/vcpkg"
   TIMESTREAM_LOG_PATH: "${{github.workspace}}/build/odbc/logs"
   TIMESTREAM_LOG_LEVEL: "4"
@@ -176,6 +174,14 @@ jobs:
     - name: register-driver
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll
+
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
 
     - name: run-unit-tests
       id: rununittests
@@ -387,6 +393,14 @@ jobs:
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll
 
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
     - name: run-unit-tests
       id: rununittests
       run: |
@@ -569,6 +583,14 @@ jobs:
     - name: register-driver
       run: |
         .\src\odbc\install\install_amd64.cmd ${{env.ODBC_DEBUG_PATH}}\timestream.odbc.dll
+
+    - name: configure-aws-credentials-for-tests
+      if: success()
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
 
     - name: run-tests
       run: |
