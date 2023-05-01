@@ -56,6 +56,14 @@ to your connection string to use log level DEBUG.
 
 - If you just want to change the log level, append `logLevel=<desired-log-level>;` to your connection string.
 
+### AWS Log File Location
+
+Timestream ODBC driver is using AWS SDK C++ to connect to AWS Timestream. AWS SDK has its own log files. When there is a problem, you may need to access AWS SDK logs. The AWS SDK log file name has `aws_sdk_year-month-day-hour.log` format. The AWS SDK log location is your executable directory, that is where you run your application. 
+
+Tips for AWS log file location
+- ODBC Data Sources(64-bit) on Windows, it is `%windir%\system32\`.
+- Excel on macOS, it is `/Users/<username>/Library/Containers/com.microsoft.Excel/Data`.
+
 ## PowerBI Desktop cannot load the Timestream ODBC driver library
 
 If you downloaded Power BI Desktop from the Microsoft Store, you may be unable to use the Amazon Timestream ODBC driver due to a loading issue. To address this, download Power BI Desktop from the [Download Center](https://www.microsoft.com/download/details.aspx?id=58494) instead of the Microsoft Store.
