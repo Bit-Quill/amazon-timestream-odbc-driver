@@ -75,6 +75,61 @@ void OdbcTestSuite::Prepare(int32_t odbcVer) {
   BOOST_REQUIRE(dbc != NULL);
 }
 
+// Designed for multi-thread test. It does not include boost macros
+// as boost unit test framework is not multi-thread safe.
+void OdbcTestSuite::Connect(const std::string& connectStr, int32_t odbcVer,
+                            bool& result) {
+  // Allocate an environment handle
+  SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+
+  if (!env) {
+    std::cerr << "Failed to allocate an environment handle" << std::endl;
+    result = false;
+    return;
+  }
+
+  // We want ODBC 3 support by default
+  SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, reinterpret_cast< void* >(odbcVer),
+                0);
+
+  // Allocate a connection handle
+  SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
+
+  if (!dbc) {
+    std::cerr << "Failed to allocate a connection handle" << std::endl;
+    result = false;
+    return;
+  }
+
+  // Connect string
+  std::vector< SQLWCHAR > connectStr0(connectStr.begin(), connectStr.end());
+
+  SQLWCHAR outstr[ODBC_BUFFER_SIZE];
+  SQLSMALLINT outstrlen;
+
+  // Connecting to ODBC server.
+  SQLRETURN ret =
+      SQLDriverConnect(dbc, NULL, &connectStr0[0],
+                       static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
+                       ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
+
+  if (!SQL_SUCCEEDED(ret)) {
+    std::cerr << GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc) << std::endl;
+    result = false;
+    return;
+  }
+
+  // Allocate a statement handle
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+  if (!stmt) {
+    std::cerr << "Failed to allocate a statement handle" << std::endl;
+    result = false;
+    return;
+  }
+  result = true;
+}
+
 void OdbcTestSuite::Connect(SQLHDBC& conn, SQLHSTMT& statement,
                             const std::string& connectStr) {
   // Allocate a connection handle

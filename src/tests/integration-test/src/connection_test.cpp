@@ -59,6 +59,13 @@ struct ConnectionTestSuiteFixture : OdbcTestSuite {
     Connect(connectionString);
     Disconnect();
   }
+
+  void connectForMultiThread(bool& result) {
+    std::string connectionString;
+    CreateDsnConnectionStringForAWS(connectionString);
+    Connect(connectionString, 3, result);
+    Disconnect();
+  }
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConnectionTestSuite, ConnectionTestSuiteFixture)
@@ -1068,19 +1075,23 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile, *disabled()) {
 
 BOOST_AUTO_TEST_CASE(TestConnectionConcurrency) {
   ConnectionTestSuiteFixture testConn[10];
+  bool result[10] = {false};
   
-  // use C++ thread object to do this multi-thread test instead of
-  // using boost::thread and boost::thread_group as boost may have
-  // bug in its thread implementation. The thread_group join_all()
-  // could hang on Windows, the reason is unknown.
   std::vector< std::thread > threads;
 
   for (int i = 0; i < 10; ++i)
     threads.push_back(
-        std::thread(&ConnectionTestSuiteFixture::connect, testConn[i]));
+        std::thread(&ConnectionTestSuiteFixture::connectForMultiThread,
+                    testConn[i], std::ref(result[i])));
   
   for (auto& th : threads)
     th.join();
+
+  // verify the thread execution result
+  // boost macro could be used as multi-thread execution is finished
+  for (int i = 0; i < 10; i++) {
+    BOOST_REQUIRE_EQUAL(result[i], true);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(TestConnectionOnlyConnect) {

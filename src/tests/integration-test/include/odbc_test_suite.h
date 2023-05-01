@@ -63,6 +63,17 @@ struct OdbcTestSuite {
 
   /**
    * Establish connection to node using provided handles.
+   * For multi-thread test use, no boost macro involved
+   *
+   * @param connectStr Connection string.
+   * @param odbcVer ODBC Version
+   * @param result the function execution result
+   */
+  void Connect(const std::string& connectStr, int32_t odbcVer,
+                              bool& result);
+
+  /**
+   * Establish connection to node using provided handles.
    *
    * @param conn Connection.
    * @param statement Statement to allocate.
