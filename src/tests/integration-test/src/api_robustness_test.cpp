@@ -872,6 +872,9 @@ BOOST_AUTO_TEST_CASE(TestSQLError) {
   if (ret != SQL_SUCCESS && ret != SQL_NO_DATA)
     BOOST_FAIL("Unexpected error");
 
+ #ifndef __APPLE__
+  // This code could lead to segment fault on macOS BigSur, but not on Ventura
+  // This is a limitaion of iODBC driver manger on BigSur
   ret = SQLError(0, 0, stmt, state, &nativeCode, message, ODBC_BUFFER_SIZE,
                  &messageLen);
   if (ret != SQL_SUCCESS && ret != SQL_NO_DATA)
@@ -892,6 +895,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError) {
   SQLError(0, 0, stmt, 0, 0, 0, 0, 0);
 
   SQLError(0, 0, 0, 0, 0, 0, 0, 0);
+#endif // __APPLE__
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords) {
