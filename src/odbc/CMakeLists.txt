@@ -159,8 +159,6 @@ else()
     target_link_libraries(${TARGET})
 endif()
 
-set(CPACK_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
-
 if (WIN32 AND ${WITH_ODBC_MSI})
     find_program(WIX_CANDLE candle)
     if(NOT WIX_CANDLE)
@@ -282,7 +280,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
     set(WIX_VC_RUNTIME_NAME "VC_redist.${WIX_PACKAGE_PLATFORM}.exe")
     set(WIX_INSTALLER_PREFIX ${CMAKE_BUILD_DIR}/timestream-odbc-${WIX_PACKAGE_PLATFORM})
     set(WIX_INSTALLER_BUNDLE_PREFIX ${CMAKE_BUILD_DIR}/timestream-odbc-bundle-${WIX_PACKAGE_PLATFORM})
-    set(WIX_INSTALLER_EXE_PREFIX ${CMAKE_BUILD_DIR}/timestream-odbc-installer-${WIX_PACKAGE_PLATFORM})
+    set(WIX_INSTALLER_EXE_PREFIX ${CMAKE_BUILD_DIR}/timestream-odbc-installer-${WIX_PACKAGE_PLATFORM}-${ODBC_DRIVER_VERSION})
 
     configure_file(
         "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc.wxs.in"
@@ -315,8 +313,8 @@ if (WIN32 AND ${WITH_ODBC_MSI})
 	COMMAND ${WIX_LIGHT} ${WIX_INSTALLER_BUNDLE_PREFIX}.wixobj -ext WixBalExtension -ext WixUtilExtension -out ${WIX_INSTALLER_EXE_PREFIX}.exe
     )
 elseif(APPLE)
-    set(CPACK_PACKAGE_FILE_NAME "AmazonTimestreamODBC-${CPACK_PACKAGE_VERSION}")
-    set(CPACK_PACKAGE_NAME "Amazon Timestream ODBC Driver ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_PACKAGE_FILE_NAME "AmazonTimestreamODBC-${ODBC_DRIVER_VERSION}")
+    set(CPACK_PACKAGE_NAME "Amazon Timestream ODBC Driver ${ODBC_DRIVER_VERSION}")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
     set(CPACK_GENERATOR "productbuild")
 
@@ -333,11 +331,11 @@ elseif(UNIX)
             set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE x86_64)
         endif()
         set(CPACK_GENERATOR "DEB")
-        set(CPACK_DEBIAN_FILE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}.deb")
+        set(CPACK_DEBIAN_FILE_NAME "AmazonTimestreamODBC_${ODBC_DRIVER_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}.deb")
 
         # Deb installers fail if there's a space in the directory or package name
         set(CPACK_PACKAGE_INSTALL_DIRECTORY "AmazonTimestreamODBCDriver${BITNESS}-bit")
-	set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+	set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${ODBC_DRIVER_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 
         # TODO: Need to update both of these.
         set(CPACK_PACKAGE_CONTACT "user@sample.com")
@@ -352,14 +350,13 @@ elseif(UNIX)
             set(CPACK_RPM_PACKAGE_ARCHITECTURE x86_64)
         endif()
         set(CPACK_GENERATOR RPM)
-        set(CPACK_RPM_FILE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_RPM_PACKAGE_ARCHITECTURE}.rpm")
 
         set(CPACK_PACKAGE_INSTALL_DIRECTORY "Amazon Timestream ODBC Driver ${BITNESS}-bit")
-        set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${CPACK_PACKAGE_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_RPM_PACKAGE_ARCHITECTURE}")
+        set(CPACK_PACKAGE_NAME "AmazonTimestreamODBC_${ODBC_DRIVER_VERSION}_${CMAKE_BUILD_TYPE}_${CPACK_RPM_PACKAGE_ARCHITECTURE}")
+        set(CPACK_RPM_FILE_NAME "${CPACK_PACKAGE_NAME}.rpm")
 
         set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE 1)
         set(CPACK_RPM_COMPONENT_INSTALL ON)
-        set(CPACK_TEMPORARY_PACKAGE_FILE_NAME "${CMAKE_BINARY_DIR}/_CPack_Packages/Linux/RPM/RPMS/${CMAKE_SYSTEM_PROCESSOR}/${CPACK_PACKAGE_FILE_NAME}.rpm")
     else()
         message(FATAL_ERROR "INSTALLER_TYPE '${INSTALLER_TYPE}' must be DEB or RPM for Linux installer." )
     endif()

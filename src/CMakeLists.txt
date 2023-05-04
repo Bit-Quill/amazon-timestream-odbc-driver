@@ -25,7 +25,7 @@ endif()
 
 # Linux 
 if (UNIX AND NOT APPLE)
-    if (${INSTALLER_TYPE} STREQUAL "RPM")
+    if (${INSTALLER_TYPE} STREQUAL "RPM" AND ${BITNESS} EQUAL 64)
         set(AWS_CMAKE_DIR ${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib64)
     else()
         set(AWS_CMAKE_DIR ${CMAKE_SOURCE_DIR}/aws-sdk-cpp/install/lib)
