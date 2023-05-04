@@ -251,7 +251,6 @@ AmazonTimestreamAADConnector = [
 
 // Data Source UI publishing description.
 AmazonTimestreamAADConnector.Publish = [
-    Beta = true,
     Category = "Other",
     SupportsDirectQuery = true,
 

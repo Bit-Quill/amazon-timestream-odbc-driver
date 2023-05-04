@@ -21,7 +21,7 @@ From Power BI Desktop, change the settings to allow Power BI to use custom conne
 
 ## Connecting using the Amazon Timestream custom connector
 
-1. Select `Amazon Timestream (Beta)` from `Get Data` and click `Connect`. You may get a warning for using third-party service. Click on `Continue`.
+1. Select `Amazon Timestream` from `Get Data` and click `Connect`. You may get a warning for using third-party service. Click on `Continue`.
 
     ![](../../images/powerbi-connector/get_data_custom_connector.png)
 
