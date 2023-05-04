@@ -188,6 +188,9 @@ class Logger {
 
   /**
    * Gets the current stream to use for logging.
+   * Be careful to use this ostream. It is not 
+   * multi-thread safe. Any modification to it shoud
+   * be protected by lock.
    */
   std::ostream* GetLogStream() {
     return stream;
@@ -204,13 +207,14 @@ class Logger {
    * If there is no instance, create new instance.
    * @return Logger instance.
    */
-  static std::shared_ptr< Logger > GetLoggerInstance() {
-    // TODO add locks to prevent 2 or more instances being
-    // created at once
-    // [AD-716](https://bitquill.atlassian.net/browse/AD-716)
-
-    if (!logger_)
-      logger_ = std::shared_ptr< Logger >(new Logger());
+  static std::shared_ptr< Logger > GetLoggerInstance() {    
+    if (!logger_) {
+      // avoid to be created multiple times for multi-thread execution
+      ignite::odbc::common::concurrent::CsLockGuard guard(mutexForCreation);
+      if (!logger_) {
+        logger_ = std::shared_ptr< Logger >(new Logger());
+      }
+    }
 
     return logger_;
   }
@@ -289,7 +293,13 @@ class Logger {
   /** Mutex for writes synchronization. */
   CriticalSection mutex;
 
-  /** File stream. */
+  /** Mutex for singleton creation. */
+  static CriticalSection mutexForCreation;
+
+  /** 
+   * File stream, it is not multi-thread safe.
+   * Any modification to it should be protected by lock.
+   */
   std::ofstream fileStream;
 
   /** Reference to logging stream */

@@ -40,6 +40,7 @@ using timestream::odbc::config::Configuration;
 
 // logger_ pointer will  initialized in first call to GetLoggerInstance
 std::shared_ptr< Logger > Logger::logger_;
+CriticalSection Logger::mutexForCreation;
 
 namespace timestream {
 namespace odbc {
@@ -119,9 +120,12 @@ void Logger::SetLogPath(const std::string& path) {
     LOG_INFO_MSG("Reset log path: Log path is changed to " + logPath
                  + ". Log file is in format timestream_odbc_YYYYMMDD.log");
 
-    // close file stream and erase log file name to allow new log file path
-    fileStream.close();
-    logFileName.erase();
+    {
+      // close file stream and erase log file name to allow new log file path
+      CsLockGuard guard(mutex);
+      fileStream.close();
+      logFileName.erase();
+    }
 
     LOG_INFO_MSG("Previously logged information is stored in log file "
                  + oldLogFilePath);
@@ -152,6 +156,8 @@ bool Logger::EnableLog() {
 
   if (!IsEnabled() && logLevel != LogLevel::Type::OFF
       && stream == &fileStream) {
+    // The filename creation and stream open is not multi-thread safe
+    CsLockGuard guard(mutex);
     if (logFileName.empty()) {
       logFileName = CreateFileName();
       std::stringstream tmpStream;
@@ -164,6 +170,7 @@ bool Logger::EnableLog() {
       }
       std::cout << "logFilePath: " << logFilePath << '\n';
     }
+
     fileStream.open(logFilePath, std::ios_base::app);
   }
   return IsEnabled();
