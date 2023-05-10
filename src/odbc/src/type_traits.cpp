@@ -460,6 +460,12 @@ boost::optional< int32_t > SqlTypeDisplaySize(boost::optional< int16_t > type) {
 
     case SQL_TYPE_TIMESTAMP:
       return 20;
+    
+    case SQL_INTERVAL_DAY_TO_SECOND:
+      return 25;
+
+    case SQL_INTERVAL_YEAR_TO_MONTH:
+      return 12;
 
     case SQL_GUID:
       return 36;
@@ -526,6 +532,12 @@ boost::optional< int32_t > SqlTypeColumnSize(boost::optional< int16_t > type) {
     case SQL_GUID:
       return 36;
 
+    case SQL_INTERVAL_DAY_TO_SECOND:
+      return 25;
+
+    case SQL_INTERVAL_YEAR_TO_MONTH:
+      return 12;
+
     // Binary types are not supported in Timestream, return 0
     default:
       return 0;
@@ -585,6 +597,10 @@ boost::optional< int32_t > SqlTypeTransferLength(
     case SQL_GUID:
       return 16;
 
+    case SQL_INTERVAL_DAY_TO_SECOND:
+    case SQL_INTERVAL_YEAR_TO_MONTH:
+      return 34;
+
     // Binary types are not supported in Timestream, return 0
     default:
       return 0;
@@ -629,9 +645,6 @@ boost::optional< int32_t > BinaryTypeNumPrecRadix(
 
 boost::optional< int16_t > SqlTypeDecimalDigits(
     boost::optional< int16_t > type) {
-  // Not implemented for the NUMERIC and DECIMAL data types.
-  // All exact numeric types other than SQL_DECIMAL and SQL_NUMERIC should
-  // return 0
   if (!type)
     return boost::none;
   switch (*type) {
@@ -640,6 +653,9 @@ boost::optional< int16_t > SqlTypeDecimalDigits(
     case SQL_INTEGER:
     case SQL_BIGINT:
       return 0;
+
+    case SQL_DOUBLE:
+      return 308;
 
     default:
       return -1;

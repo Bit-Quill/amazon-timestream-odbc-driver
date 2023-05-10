@@ -347,7 +347,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
                                       -1, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLDescribeCol(stmt, 3, "flag", SQL_BIT, 1, -1,
                                       SQL_NULLABLE_UNKNOWN);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE, 15, -1, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE, 15, 308, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLDescribeCol(stmt, 5, "video_startup_time",
                                       SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
   }
@@ -437,7 +437,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     CheckColumnMetaWithSQLColAttribute(stmt, 3, "flag", SQL_BIT, 1, -1,
                                        SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLColAttribute(stmt, 4, "rebuffering_ratio", SQL_DOUBLE,
-                                       15, -1, SQL_NULLABLE_UNKNOWN);
+                                       15, 308, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLColAttribute(stmt, 5, "video_startup_time",
                                        SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
   }
@@ -668,7 +668,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLength) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 4);
+  BOOST_CHECK_EQUAL(intVal, 11);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicion) {
@@ -932,27 +932,27 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescLength) {
       "select cast(video_startup_time as int) from "
       "meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_INTEGER should have length 4
-  callSQLColAttribute(stmt, req2, SQL_DESC_LENGTH, 4);
+  // SQL_INTEGER should have length 11
+  callSQLColAttribute(stmt, req2, SQL_DESC_LENGTH, 11);
 
   const SQLCHAR req3[] =
       "select video_startup_time from "
       "meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_BIGINT should have length 8
-  callSQLColAttribute(stmt, req3, SQL_DESC_LENGTH, 8);
+  // SQL_BIGINT should have length 20
+  callSQLColAttribute(stmt, req3, SQL_DESC_LENGTH, 20);
 
   const SQLCHAR req4[] =
       "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_DOUBLE should have length 8
-  callSQLColAttribute(stmt, req4, SQL_DESC_LENGTH, 8);
+  // SQL_DOUBLE should have length 24
+  callSQLColAttribute(stmt, req4, SQL_DESC_LENGTH, 24);
 
   const SQLCHAR req5[] =
       "select time from meta_queries_test_db.TestColumnsMetadata1";
 
-  // SQL_TYPE_TIMESTAMP should have length 16
-  callSQLColAttribute(stmt, req5, SQL_DESC_LENGTH, 16);
+  // SQL_TYPE_TIMESTAMP should have length 20
+  callSQLColAttribute(stmt, req5, SQL_DESC_LENGTH, 20);
 
   const SQLCHAR req6[] =
       "select flag from meta_queries_test_db.TestColumnsMetadata1";
@@ -1083,8 +1083,6 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescNumPrecRadix) {
 BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
   ConnectToTS();
 
-  size_t size_of_char = sizeof(char);
-
   const SQLCHAR req1[] =
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
@@ -1095,26 +1093,26 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
       "select flag from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BIT should have octet length 1 * sizeof(char)
-  callSQLColAttribute(stmt, req2, SQL_DESC_OCTET_LENGTH, 1 * size_of_char);
+  callSQLColAttribute(stmt, req2, SQL_DESC_OCTET_LENGTH, 1);
 
   const SQLCHAR req3[] =
       "select video_startup_time from "
       "meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_BIGINT should have octet length 8 * sizeof(char)
-  callSQLColAttribute(stmt, req3, SQL_DESC_OCTET_LENGTH, 8 * size_of_char);
+  callSQLColAttribute(stmt, req3, SQL_DESC_OCTET_LENGTH, 8);
 
   const SQLCHAR req4[] =
       "select rebuffering_ratio from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_DOUBLE should have octet length 8 * sizeof(char)
-  callSQLColAttribute(stmt, req4, SQL_DESC_OCTET_LENGTH, 8 * size_of_char);
+  callSQLColAttribute(stmt, req4, SQL_DESC_OCTET_LENGTH, 8);
 
   const SQLCHAR req5[] =
       "select time from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_TYPE_TIMESTAMP should have octet length 16 * sizeof(char)
-  callSQLColAttribute(stmt, req5, SQL_DESC_OCTET_LENGTH, 16 * size_of_char);
+  callSQLColAttribute(stmt, req5, SQL_DESC_OCTET_LENGTH, 16);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision) {
@@ -1287,7 +1285,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 8);
+  BOOST_CHECK_EQUAL(intVal, 20);
 
   ret = SQLExecute(stmt);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
@@ -1298,7 +1296,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesColumnLengthPrepare) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(intVal, 8);
+  BOOST_CHECK_EQUAL(intVal, 20);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesColumnPresicionPrepare) {
