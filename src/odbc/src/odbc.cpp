@@ -1469,4 +1469,23 @@ SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
+#if defined(__APPLE__)
+SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
+                                  SQLUSMALLINT* valueBuf) {
+  using odbc::Connection;
+
+  LOG_DEBUG_MSG("SQLGetFunctions called with funcId " << funcId);
+
+  Connection* connection = reinterpret_cast< Connection* >(conn);
+
+  if (!connection) {
+    LOG_ERROR_MSG("connection is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  connection->GetFunctions(funcId, valueBuf);
+
+  return connection->GetDiagnosticRecords().GetReturnCode();
+}
+#endif
 }  // namespace timestream

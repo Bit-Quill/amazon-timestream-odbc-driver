@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <string>
 #include <vector>
+#include <array>
 
 #include "odbc_test_suite.h"
 #include "test_utils.h"
@@ -80,8 +81,8 @@ BOOST_AUTO_TEST_CASE(TestSQLBrowseConnect) {
   SQLWCHAR OutConnectionString[ODBC_BUFFER_SIZE];
   SQLSMALLINT reslen;
 
-  SQLRETURN ret =
-      SQLBrowseConnect(dbc, InConnectionString, 0, InConnectionString, 0, &reslen);
+  SQLRETURN ret = SQLBrowseConnect(dbc, InConnectionString, 0,
+                                   InConnectionString, 0, &reslen);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLConnectionDiagnosticError("IM002");
@@ -101,14 +102,14 @@ BOOST_AUTO_TEST_CASE(TestSQLCancelHandle) {
 #endif
 
 BOOST_AUTO_TEST_CASE(TestSQLTransact) {
-  // SQLTransact is deprecated function and will be mapped to SQLEndTran 
+  // SQLTransact is deprecated function and will be mapped to SQLEndTran
   // by driver manager.
   ConnectToTS();
 
   SQLRETURN ret =
       SQLSetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF, 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-  
+
   ret = SQLTransact(env, dbc, SQL_COMMIT);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLConnectionDiagnosticError("HYC00");
@@ -128,7 +129,6 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeParam) {
   SQLRETURN ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-
 
   ret = SQLDescribeParam(stmt, 1, &sqlType, &paramNum, &scale, &nullable);
 
@@ -151,21 +151,21 @@ BOOST_AUTO_TEST_CASE(TestSQLParamData) {
   ret = SQLParamData(stmt, &val);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 
-  // "Function sequence error" from the driver manager (DM) is returned.
-  // This is because SQL_NEED_DATA (unsupported state) is not returned by
-  // SQLExecDirect prior to calling SQLParamData.
-  #ifdef __linux__
-    BOOST_REQUIRE_EQUAL(
-        "HY010: [unixODBC][Driver Manager]Function sequence error",
-        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #elif defined(__APPLE__)
-    BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
-                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #else
-    BOOST_REQUIRE_EQUAL(
-        "HY010: [Microsoft][ODBC Driver Manager] Function sequence error",
-        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #endif
+// "Function sequence error" from the driver manager (DM) is returned.
+// This is because SQL_NEED_DATA (unsupported state) is not returned by
+// SQLExecDirect prior to calling SQLParamData.
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL(
+      "HY010: [unixODBC][Driver Manager]Function sequence error",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#else
+  BOOST_REQUIRE_EQUAL(
+      "HY010: [Microsoft][ODBC Driver Manager] Function sequence error",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLNumParams) {
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(TestSQLNumParams) {
   SQLRETURN ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  
+
   ret = SQLNumParams(stmt, &num);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
@@ -194,19 +194,21 @@ BOOST_AUTO_TEST_CASE(TestSQLPutData) {
   SQLRETURN ret = SQLPutData(stmt, &value, 0);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 
-  // "Function sequence error" from the driver manager (DM) is returned.
-  // This is because the previous function call must be a successful call to
-  // SQLParamData(), and SQL_NEED_DATA (unsupported state) needs to be returned.
-  #ifdef __linux__
-   BOOST_REQUIRE_EQUAL("HY010: [unixODBC][Driver Manager]Function sequence error",
+// "Function sequence error" from the driver manager (DM) is returned.
+// This is because the previous function call must be a successful call to
+// SQLParamData(), and SQL_NEED_DATA (unsupported state) needs to be returned.
+#ifdef __linux__
+  BOOST_REQUIRE_EQUAL(
+      "HY010: [unixODBC][Driver Manager]Function sequence error",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#elif defined(__APPLE__)
+  BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #elif defined(__APPLE__)
-   BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #else
-  BOOST_REQUIRE_EQUAL("HY010: [Microsoft][ODBC Driver Manager] Function sequence error",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #endif
+#else
+  BOOST_REQUIRE_EQUAL(
+      "HY010: [Microsoft][ODBC Driver Manager] Function sequence error",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLBindParameter) {
@@ -220,34 +222,30 @@ BOOST_AUTO_TEST_CASE(TestSQLBindParameter) {
 
   BOOST_REQUIRE(!SQL_SUCCEEDED(ret));
 
-  #ifdef __APPLE__
-  // SQLBindParameter is not a supported function. 
-  // On GitHub runner, iODBC returns SQL_INVALID_HANDLE when SQLBindParameter is
-  // called after a connection is made. This behavior is outside of driver's
-  // control.
-
-  // TODO [AT-1354] Check if making SQLGetFunctions return TRUE for SQLBindParameter will resolve
-  // the issue of SQL_INVALID_HANDLE being returned
-  // https://bitquill.atlassian.net/browse/AT-1354
+#ifdef __APPLE__
+  // On macOS BigSur calling SQLBindParameter returns SQL_INVALID_HANDLE
+  // even SQLGetFunctions returns true for SQLBindParameter. This behavior
+  // is determined by iODBC driver manager.
   if (ret != SQL_ERROR)
     BOOST_REQUIRE_EQUAL(ret, SQL_INVALID_HANDLE);
   else {
-    // On Ventura (macOS 13), iODBC calls SQLBindParameter normally and returns SQL_ERROR
-    // as expected.
+    // On Ventura (macOS 13), iODBC calls SQLBindParameter normally and returns
+    // SQL_ERROR as expected.
     CheckSQLStatementDiagnosticError("HYC00");
     BOOST_REQUIRE_EQUAL("HYC00: SQLBindParameter is not supported.",
                         GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
-  #else
+#else
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLBindParameter is not supported.",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
-  #endif //__APPLE__
+#endif  //__APPLE__
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLSetParam) {
-  // SQLSetParam is deprecated function and will be mapped to SQLBindParameter by driver manager.
+  // SQLSetParam is deprecated function and will be mapped to SQLBindParameter
+  // by driver manager.
   ConnectToTS();
 
   SQLINTEGER int1;
@@ -258,7 +256,8 @@ BOOST_AUTO_TEST_CASE(TestSQLSetParam) {
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 }
 
-// TODO [AT-1344] Check error message from SQLBulkOperations is "HYC00: SQLBulkOperations is not supported."
+// TODO [AT-1344] Check error message from SQLBulkOperations is "HYC00:
+// SQLBulkOperations is not supported."
 // https://bitquill.atlassian.net/browse/AT-1344
 BOOST_AUTO_TEST_CASE(TestSQLBulkOperations) {
   ConnectToTS();
@@ -267,21 +266,21 @@ BOOST_AUTO_TEST_CASE(TestSQLBulkOperations) {
 
   BOOST_REQUIRE(!SQL_SUCCEEDED(ret));
 
-  #ifdef __APPLE__
-  // SQLBulkOperations is not a supported function, this is indicated in SQLGetInfo.
-  // iODBC returns SQL_INVALID_HANDLE when SQLBulkOperations is called after a connection is made. 
-  // This behavior is outside of driver's control.
+#ifdef __APPLE__
+  // SQLBulkOperations is not a supported function, this is indicated in
+  // SQLGetInfo. iODBC returns SQL_INVALID_HANDLE when SQLBulkOperations is
+  // called after a connection is made. This behavior is outside of driver's
+  // control.
   BOOST_REQUIRE_EQUAL(ret, SQL_INVALID_HANDLE);
-  #else
+#else
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-  #endif // __APPLE__
+#endif  // __APPLE__
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLSetPos) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > request =
-      MakeSqlBuffer("SELECT 1");
+  std::vector< SQLWCHAR > request = MakeSqlBuffer("SELECT 1");
 
   SQLRETURN ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret))
@@ -294,9 +293,8 @@ BOOST_AUTO_TEST_CASE(TestSQLSetPos) {
   ret = SQLSetPos(stmt, 0, SQL_POSITION, SQL_LOCK_NO_CHANGE);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("HYC00");
-  BOOST_REQUIRE_EQUAL(
-      "HYC00: SQLSetPos is not supported.",
-      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("HYC00: SQLSetPos is not supported.",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
 // TODO enable descriptor tests as part of AT-1217
@@ -305,11 +303,10 @@ BOOST_AUTO_TEST_CASE(TestSQLSetPos) {
 BOOST_AUTO_TEST_CASE(TestSQLSetDescRec, *disabled()) {
   SQLHDESC desc;
   SQLINTEGER data = 10;
-  SQLRETURN ret =
-      SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &desc, 0, NULL);
-    
-  ret = SQLSetDescRec(NULL, 2, SQL_INTEGER, 0, 0, 0, 0, (SQLPOINTER)&data,
-                      NULL, NULL);
+  SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &desc, 0, NULL);
+
+  ret = SQLSetDescRec(NULL, 2, SQL_INTEGER, 0, 0, 0, 0, (SQLPOINTER)&data, NULL,
+                      NULL);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLSetDescRec is not supported.",
@@ -328,6 +325,203 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDescRec, *disabled()) {
   CheckSQLStatementDiagnosticError("HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLGetDescRec is not supported.",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+}
+
+// SQLGetFunctions is from driver manager for Windows and Linux
+// For macOS SQLGetFunctions is using our own implementation due to
+// iODBC driver mangaer does not provide SQLGetFunctions on BigSur
+BOOST_AUTO_TEST_CASE(TestSQLGetFunctions) {
+  ConnectToTS();
+  SQLUSMALLINT fExists[SQL_API_ODBC3_ALL_FUNCTIONS_SIZE];
+  std::array< int, 58 > supportedFuncArray = {SQL_API_SQLALLOCHANDLE,
+                                              SQL_API_SQLGETDESCFIELD,
+                                              SQL_API_SQLBINDCOL,
+                                              SQL_API_SQLGETDESCREC,
+                                              SQL_API_SQLCANCEL,
+                                              SQL_API_SQLGETDIAGFIELD,
+                                              SQL_API_SQLCLOSECURSOR,
+                                              SQL_API_SQLGETDIAGREC,
+                                              SQL_API_SQLCOLATTRIBUTE,
+                                              SQL_API_SQLGETENVATTR,
+                                              SQL_API_SQLCONNECT,
+                                              SQL_API_SQLGETFUNCTIONS,
+                                              SQL_API_SQLCOPYDESC,
+                                              SQL_API_SQLGETINFO,
+                                              SQL_API_SQLDATASOURCES,
+                                              SQL_API_SQLGETSTMTATTR,
+                                              SQL_API_SQLDESCRIBECOL,
+                                              SQL_API_SQLGETTYPEINFO,
+                                              SQL_API_SQLDISCONNECT,
+                                              SQL_API_SQLNUMRESULTCOLS,
+                                              SQL_API_SQLDRIVERS,
+                                              SQL_API_SQLPARAMDATA,
+                                              SQL_API_SQLENDTRAN,
+                                              SQL_API_SQLPREPARE,
+                                              SQL_API_SQLEXECDIRECT,
+                                              SQL_API_SQLPUTDATA,
+                                              SQL_API_SQLEXECUTE,
+                                              SQL_API_SQLROWCOUNT,
+                                              SQL_API_SQLFETCH,
+                                              SQL_API_SQLSETCONNECTATTR,
+                                              SQL_API_SQLFETCHSCROLL,
+                                              SQL_API_SQLSETCURSORNAME,
+                                              SQL_API_SQLFREEHANDLE,
+                                              SQL_API_SQLSETDESCFIELD,
+                                              SQL_API_SQLFREESTMT,
+                                              SQL_API_SQLSETDESCREC,
+                                              SQL_API_SQLGETCONNECTATTR,
+                                              SQL_API_SQLSETENVATTR,
+                                              SQL_API_SQLGETCURSORNAME,
+                                              SQL_API_SQLSETSTMTATTR,
+                                              SQL_API_SQLGETDATA,
+                                              SQL_API_SQLCOLUMNS,
+                                              SQL_API_SQLSTATISTICS,
+                                              SQL_API_SQLSPECIALCOLUMNS,
+                                              SQL_API_SQLTABLES,
+                                              SQL_API_SQLNATIVESQL,
+                                              SQL_API_SQLBROWSECONNECT,
+                                              SQL_API_SQLNUMPARAMS,
+                                              SQL_API_SQLPRIMARYKEYS,
+                                              SQL_API_SQLCOLUMNPRIVILEGES,
+                                              SQL_API_SQLPROCEDURECOLUMNS,
+                                              SQL_API_SQLDESCRIBEPARAM,
+                                              SQL_API_SQLPROCEDURES,
+                                              SQL_API_SQLDRIVERCONNECT,
+                                              SQL_API_SQLSETPOS,
+                                              SQL_API_SQLFOREIGNKEYS,
+                                              SQL_API_SQLTABLEPRIVILEGES,
+                                              SQL_API_SQLMORERESULTS};
+
+  RETCODE retcode = SQLGetFunctions(dbc, SQL_API_ODBC3_ALL_FUNCTIONS, fExists);
+  if (retcode != SQL_SUCCESS) {
+    BOOST_FAIL("Failed for SQL_API_ODBC3_ALL_FUNCTIONS, error is "
+               + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+  }
+
+  // verify result for SQL_API_ODBC3_ALL_FUNCTIONS
+  for (int i = 0; i < 58; i++) {
+    BOOST_CHECK_EQUAL(SQL_FUNC_EXISTS(fExists, supportedFuncArray[i]), true);
+  }
+  // SQL_API_SQLBULKOPERATIONS result is different on different platforms
+#if defined(_WIN32) || defined(__APPLE__)
+  BOOST_CHECK_EQUAL(SQL_FUNC_EXISTS(fExists, SQL_API_SQLBULKOPERATIONS), true);
+#else
+  BOOST_CHECK_EQUAL(SQL_FUNC_EXISTS(fExists, SQL_API_SQLBULKOPERATIONS), false);
+#endif
+
+  // test for each function Id
+  SQLUSMALLINT exists;
+  for (int i = 0; i < 58; i++) {
+    retcode = SQLGetFunctions(dbc, supportedFuncArray[i], &exists);
+    if (retcode != SQL_SUCCESS) {
+      BOOST_FAIL("Failed for " + timestream::odbc::common::LongToString(i)
+                 + ", error is " + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+    }
+    BOOST_CHECK_EQUAL(exists, true);
+  }
+
+  // SQL_API_SQLBULKOPERATIONS result is different on different platforms
+  retcode = SQLGetFunctions(dbc, SQL_API_SQLBULKOPERATIONS, &exists);
+  if (retcode != SQL_SUCCESS) {
+    BOOST_FAIL("Failed for SQL_API_SQLBULKOPERATIONS, error is "
+               + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+  }
+#if defined(_WIN32) || defined(__APPLE__)
+  BOOST_CHECK_EQUAL(exists, true);
+#else
+  BOOST_CHECK_EQUAL(exists, false);
+#endif
+}
+
+// For Windows and Linux, SQLGetFunctions implementation from driver manager is used.
+// For macOS, the driver's implementation of SQLGetFunctions is used due to
+// iODBC driver mangaer not providing SQLGetFunctions on BigSur
+BOOST_AUTO_TEST_CASE(TestSQLGetFunctionsForODBC2) {
+  ConnectToTS();
+  SQLUSMALLINT fExists[SQL_API_ALL_FUNCTIONS_SIZE];
+  std::array< int, 54 > supportedFuncArray = {
+      SQL_API_SQLALLOCCONNECT,     SQL_API_SQLALLOCENV,
+      SQL_API_SQLALLOCSTMT,        SQL_API_SQLBINDCOL,
+      SQL_API_SQLBINDPARAMETER,    SQL_API_SQLBROWSECONNECT,
+      SQL_API_SQLCANCEL,           SQL_API_SQLCOLATTRIBUTES,
+      SQL_API_SQLCOLUMNPRIVILEGES, SQL_API_SQLCOLUMNS,
+      SQL_API_SQLCONNECT,          SQL_API_SQLDATASOURCES,
+      SQL_API_SQLDESCRIBECOL,      SQL_API_SQLDESCRIBEPARAM,
+      SQL_API_SQLDISCONNECT,       SQL_API_SQLDRIVERCONNECT,
+      SQL_API_SQLDRIVERS,          SQL_API_SQLERROR,
+      SQL_API_SQLEXECDIRECT,       SQL_API_SQLEXECUTE,
+      SQL_API_SQLEXTENDEDFETCH,    SQL_API_SQLFETCH,
+      SQL_API_SQLFOREIGNKEYS,      SQL_API_SQLFREECONNECT,
+      SQL_API_SQLFREEENV,          SQL_API_SQLFREESTMT,
+      SQL_API_SQLGETCURSORNAME,    SQL_API_SQLGETDATA,
+      SQL_API_SQLGETFUNCTIONS,     SQL_API_SQLGETINFO,
+      SQL_API_SQLGETSTMTOPTION,    SQL_API_SQLGETTYPEINFO,
+      SQL_API_SQLMORERESULTS,      SQL_API_SQLNATIVESQL,
+      SQL_API_SQLNUMPARAMS,        SQL_API_SQLNUMRESULTCOLS,
+      SQL_API_SQLPARAMDATA,        SQL_API_SQLPARAMOPTIONS,
+      SQL_API_SQLPREPARE,          SQL_API_SQLPRIMARYKEYS,
+      SQL_API_SQLPROCEDURECOLUMNS, SQL_API_SQLPROCEDURES,
+      SQL_API_SQLPUTDATA,          SQL_API_SQLROWCOUNT,
+      SQL_API_SQLSETCURSORNAME,    SQL_API_SQLSETPARAM,
+      SQL_API_SQLSETPOS,           SQL_API_SQLSETSCROLLOPTIONS,
+      SQL_API_SQLSETSTMTOPTION,    SQL_API_SQLSPECIALCOLUMNS,
+      SQL_API_SQLSTATISTICS,       SQL_API_SQLTABLEPRIVILEGES,
+      SQL_API_SQLTABLES,           SQL_API_SQLTRANSACT};
+
+  RETCODE retcode = SQLGetFunctions(dbc, SQL_API_ALL_FUNCTIONS, fExists);
+  if (retcode != SQL_SUCCESS) {
+    BOOST_FAIL("Failed for SQL_API_ALL_FUNCTIONS, error is "
+               + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+  }
+
+  // verify result for SQL_API_ALL_FUNCTIONS
+  for (int i = 0; i < 54; i++) {
+    BOOST_CHECK_EQUAL(fExists[supportedFuncArray[i]], true);
+  }
+  // SQL_API_SQLGETCONNECTOPTION and SQL_API_SQLSETCONNECTOPTION result are
+  // different on different platforms
+#if defined(_WIN32) || defined(__APPLE__)
+  BOOST_CHECK_EQUAL(fExists[SQL_API_SQLGETCONNECTOPTION], true);
+  BOOST_CHECK_EQUAL(fExists[SQL_API_SQLSETCONNECTOPTION], true);
+#else
+  BOOST_CHECK_EQUAL(fExists[SQL_API_SQLGETCONNECTOPTION], false);
+  BOOST_CHECK_EQUAL(fExists[SQL_API_SQLSETCONNECTOPTION], false);
+#endif
+
+  // test for each function Id
+  SQLUSMALLINT exists;
+  for (int i = 0; i < 54; i++) {
+    retcode = SQLGetFunctions(dbc, supportedFuncArray[i], &exists);
+    if (retcode != SQL_SUCCESS) {
+      BOOST_FAIL("Failed for " + timestream::odbc::common::LongToString(i)
+                 + ", error is " + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+    }
+    BOOST_CHECK_EQUAL(exists, true);
+  }
+
+  // SQL_API_SQLGETCONNECTOPTION result is different on different platforms
+  retcode = SQLGetFunctions(dbc, SQL_API_SQLGETCONNECTOPTION, &exists);
+  if (retcode != SQL_SUCCESS) {
+    BOOST_FAIL("Failed for SQL_API_SQLGETCONNECTOPTION, error is "
+               + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+  }
+#if defined(_WIN32) || defined(__APPLE__)
+  BOOST_CHECK_EQUAL(exists, true);
+#else
+  BOOST_CHECK_EQUAL(exists, false);
+#endif
+
+  // SQL_API_SQLSETCONNECTOPTION result is different on different platforms
+  retcode = SQLGetFunctions(dbc, SQL_API_SQLSETCONNECTOPTION, &exists);
+  if (retcode != SQL_SUCCESS) {
+    BOOST_FAIL("Failed for SQL_API_SQLSETCONNECTOPTION, error is "
+               + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
+  }
+#if defined(_WIN32) || defined(__APPLE__)
+  BOOST_CHECK_EQUAL(exists, true);
+#else
+  BOOST_CHECK_EQUAL(exists, false);
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

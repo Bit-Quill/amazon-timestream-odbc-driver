@@ -212,6 +212,10 @@ SQLRETURN SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 
 SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
                                     SQLPOINTER value, SQLINTEGER valueLen);
+#if defined(__APPLE__)
+SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
+                                  SQLUSMALLINT* valueBuf);
+#endif
 }  // namespace timestream
 
 #endif  //_TIMESTREAM_ODBC

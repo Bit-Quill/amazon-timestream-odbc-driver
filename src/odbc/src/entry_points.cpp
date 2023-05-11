@@ -375,6 +375,16 @@ SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
   return timestream::SQLSetConnectAttr(conn, attr, value, valueLen);
 }
 
+#if defined(__APPLE__)
+// only for macOS as iODBC driver manger on BigSur does not 
+// implement this function
+SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn,
+                                  SQLUSMALLINT funcId,
+                                  SQLUSMALLINT* valueBuf) {
+  return timestream::SQLGetFunctions(conn, funcId, valueBuf);
+}
+#endif
+
 //
 // ==== Not implemented ====
 //

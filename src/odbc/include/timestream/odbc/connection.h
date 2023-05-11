@@ -191,6 +191,16 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   void SetAttribute(int attr, void* value, SQLINTEGER valueLen);
 
+#if defined(__APPLE__)
+  /**
+   * Set function supportability.
+   *
+   * @param funcId Function Id.
+   * @param valueBuf Value array or value.
+   */
+  void GetFunctions(SQLUSMALLINT funcId, SQLUSMALLINT* valueBuf);
+#endif
+
   /**
    * Return the ODBC Version from env_
    */
@@ -418,6 +428,31 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalSetAttribute(int attr, void* value,
                                        SQLINTEGER valueLen);
+#if defined(__APPLE__)
+  /**
+   * Set function supportability.
+   * Internal call.
+   * 
+   * @param funcId Function Id.
+   * @param valueBuf Value array or value.
+   * @return Operation result.
+   */
+  SqlResult::Type InternalGetFunctions(SQLUSMALLINT funcId,
+                                       SQLUSMALLINT* valueBuf);
+  /**
+   * Set ODBC3 function support array for SQL_API_ODBC3_ALL_FUNCTIONS.
+   *
+   * @param valueBuf Value array.
+   */
+  void SetODBC3FunctionsValue(SQLUSMALLINT* valueBuf);
+
+  /**
+   * Set ODBC2 function support array for SQL_API_ALL_FUNCTIONS.
+   *
+   * @param valueBuf Value array.
+   */
+  void SetODBC2FunctionsValue(SQLUSMALLINT* valueBuf);
+#endif
 
   /**
    * Try to restore connection to the cluster.

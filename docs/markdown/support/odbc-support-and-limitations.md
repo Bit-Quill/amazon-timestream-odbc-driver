@@ -42,7 +42,7 @@ Note that the following table describes the planned functionality for the GA rel
 | SQLGetStmtAttr | yes |
 | SQLSetConnectAttr | yes |
 | SQLSetStmtAttr | yes |
-| SQLGetFunctions | yes |
+| SQLGetFunctions | yes | Supported by driver manger for Windows and Linux, supported by driver for macOS as iODBC driver manager does not provide support for it on Big Sur
 | SQLGetInfo | yes |
 | SQLGetTypeInfo | yes |
 | SQLDisconnect | yes |

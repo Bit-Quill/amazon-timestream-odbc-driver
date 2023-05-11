@@ -132,7 +132,6 @@ SqlResult::Type Connection::InternalGetInfo(
     std::stringstream ss;
     ss << "SQLGetInfo input " << type << " is not implemented.";
 
-    std::string s = ss.str();
     AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, ss.str(),
                     timestream::odbc::LogLevel::Type::INFO_LEVEL);
   }
@@ -748,5 +747,530 @@ Connection::CreateTSQueryClient(
   return std::make_shared< Aws::TimestreamQuery::TimestreamQueryClient >(
       credentials, clientCfg);
 }
+
+#if defined(__APPLE__)
+void Connection::GetFunctions(SQLUSMALLINT funcId, SQLUSMALLINT* valueBuf) {
+  IGNITE_ODBC_API_CALL(InternalGetFunctions(funcId, valueBuf));
+}
+
+SqlResult::Type Connection::InternalGetFunctions(SQLUSMALLINT funcId,
+                                                 SQLUSMALLINT* valueBuf) {
+  LOG_DEBUG_MSG("InternalGetFunctions is called, funcId is " << funcId);
+  switch (funcId) {
+    case SQL_API_ODBC3_ALL_FUNCTIONS: {
+      memset(valueBuf, 0, sizeof(UWORD) * SQL_API_ODBC3_ALL_FUNCTIONS_SIZE);
+      SetODBC3FunctionsValue(valueBuf);
+      break;
+    }
+
+    case SQL_API_ALL_FUNCTIONS: {
+      memset(valueBuf, 0, sizeof(valueBuf[0]) * 100);
+      SetODBC2FunctionsValue(valueBuf);
+      break;
+    }
+
+    case SQL_API_SQLALLOCHANDLE: {
+      *valueBuf = true;
+      break;
+    }
+    case SQL_API_SQLGETDESCFIELD: {
+      *valueBuf = true;
+      break;
+    }
+    case SQL_API_SQLBINDCOL: {
+      *valueBuf = true;
+      break;
+    }
+    case SQL_API_SQLGETDESCREC: {
+      *valueBuf = true;
+      break;
+    }
+    case SQL_API_SQLCANCEL: {
+      *valueBuf = true;
+      break;
+    }
+    case SQL_API_SQLGETDIAGFIELD: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLCLOSECURSOR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETDIAGREC: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLCOLATTRIBUTE: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETENVATTR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLCONNECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETFUNCTIONS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLCOPYDESC: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETINFO: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLDATASOURCES: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETSTMTATTR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLDESCRIBECOL: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETTYPEINFO: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLDISCONNECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLNUMRESULTCOLS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLDRIVERS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPARAMDATA: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLENDTRAN: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPREPARE: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLEXECDIRECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPUTDATA: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLEXECUTE: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLROWCOUNT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFETCH: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETCONNECTATTR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFETCHSCROLL: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETCURSORNAME: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFREEHANDLE: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETDESCFIELD: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFREESTMT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETDESCREC: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETCONNECTATTR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETENVATTR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETCURSORNAME: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETSTMTATTR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETDATA: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLCOLUMNS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSTATISTICS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSPECIALCOLUMNS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLTABLES: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLNATIVESQL: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLBROWSECONNECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLNUMPARAMS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLBULKOPERATIONS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPRIMARYKEYS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLCOLUMNPRIVILEGES: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPROCEDURECOLUMNS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLDESCRIBEPARAM: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPROCEDURES: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLDRIVERCONNECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETPOS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFOREIGNKEYS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLTABLEPRIVILEGES: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLMORERESULTS: {
+      *valueBuf = true;
+      break;
+    }
+
+    /* ODBC 2.* functions */
+    case SQL_API_SQLALLOCCONNECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLALLOCENV: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLALLOCSTMT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLBINDPARAMETER: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLERROR: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLEXTENDEDFETCH: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFREECONNECT: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLFREEENV: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETCONNECTOPTION: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLGETSTMTOPTION: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLPARAMOPTIONS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETCONNECTOPTION: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETPARAM: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETSCROLLOPTIONS: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLSETSTMTOPTION: {
+      *valueBuf = true;
+      break;
+    }
+
+    case SQL_API_SQLTRANSACT: {
+      *valueBuf = true;
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+
+  return SqlResult::AI_SUCCESS;
+}
+
+#define SQL_FUNC_SET(pfExists, uwAPI) \
+  (*(((UWORD*)(pfExists)) + ((uwAPI) >> 4)) |= (1 << ((uwAPI)&0x000F)))
+
+void Connection::SetODBC3FunctionsValue(SQLUSMALLINT* valueBuf) {
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLALLOCHANDLE);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETDESCFIELD);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLBINDCOL);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETDESCREC);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCANCEL);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETDIAGFIELD);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCLOSECURSOR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETDIAGREC);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCOLATTRIBUTE);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETENVATTR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCONNECT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETFUNCTIONS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCOPYDESC);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETINFO);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLDATASOURCES);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETSTMTATTR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLDESCRIBECOL);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETTYPEINFO);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLDISCONNECT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLNUMRESULTCOLS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLDRIVERS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLPARAMDATA);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLENDTRAN);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLPREPARE);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLEXECDIRECT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLPUTDATA);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLEXECUTE);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLROWCOUNT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLFETCH);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETCONNECTATTR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLFETCHSCROLL);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETCURSORNAME);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLFREEHANDLE);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETDESCFIELD);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLFREESTMT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETDESCREC);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETCONNECTATTR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETENVATTR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETCURSORNAME);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETSTMTATTR);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLGETDATA);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCOLUMNS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSTATISTICS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSPECIALCOLUMNS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLTABLES);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLBINDPARAMETER);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLNATIVESQL);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLBROWSECONNECT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLNUMPARAMS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLBULKOPERATIONS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLPRIMARYKEYS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLCOLUMNPRIVILEGES);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLPROCEDURECOLUMNS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLDESCRIBEPARAM);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLPROCEDURES);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLDRIVERCONNECT);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLSETPOS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLFOREIGNKEYS);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLTABLEPRIVILEGES);
+  SQL_FUNC_SET(valueBuf, SQL_API_SQLMORERESULTS);
+}
+
+void Connection::SetODBC2FunctionsValue(SQLUSMALLINT* valueBuf) {
+  valueBuf[SQL_API_SQLALLOCCONNECT] = true;
+  valueBuf[SQL_API_SQLALLOCENV] = true;
+  valueBuf[SQL_API_SQLALLOCSTMT] = true;
+  valueBuf[SQL_API_SQLBINDCOL] = true;
+  valueBuf[SQL_API_SQLBINDPARAMETER] = true;
+  valueBuf[SQL_API_SQLBROWSECONNECT] = true;
+  valueBuf[SQL_API_SQLCANCEL] = true;
+  valueBuf[SQL_API_SQLCOLATTRIBUTES] = true;
+  valueBuf[SQL_API_SQLCOLUMNPRIVILEGES] = true;
+  valueBuf[SQL_API_SQLCOLUMNS] = true;
+  valueBuf[SQL_API_SQLCONNECT] = true;
+  valueBuf[SQL_API_SQLDATASOURCES] = true;
+  valueBuf[SQL_API_SQLDESCRIBECOL] = true;
+  valueBuf[SQL_API_SQLDESCRIBEPARAM] = true;
+  valueBuf[SQL_API_SQLDISCONNECT] = true;
+  valueBuf[SQL_API_SQLDRIVERCONNECT] = true;
+  valueBuf[SQL_API_SQLDRIVERS] = true;
+  valueBuf[SQL_API_SQLERROR] = true;
+  valueBuf[SQL_API_SQLEXECDIRECT] = true;
+  valueBuf[SQL_API_SQLEXECUTE] = true;
+  valueBuf[SQL_API_SQLEXTENDEDFETCH] = true;
+  valueBuf[SQL_API_SQLFETCH] = true;
+  valueBuf[SQL_API_SQLFOREIGNKEYS] = true;
+  valueBuf[SQL_API_SQLFREECONNECT] = true;
+  valueBuf[SQL_API_SQLFREEENV] = true;
+  valueBuf[SQL_API_SQLFREESTMT] = true;
+  valueBuf[SQL_API_SQLGETCONNECTOPTION] = true;
+  valueBuf[SQL_API_SQLGETCURSORNAME] = true;
+  valueBuf[SQL_API_SQLGETDATA] = true;
+  valueBuf[SQL_API_SQLGETFUNCTIONS] = true;
+  valueBuf[SQL_API_SQLGETINFO] = true;
+  valueBuf[SQL_API_SQLGETSTMTOPTION] = true;
+  valueBuf[SQL_API_SQLGETTYPEINFO] = true;
+  valueBuf[SQL_API_SQLMORERESULTS] = true;
+  valueBuf[SQL_API_SQLNATIVESQL] = true;
+  valueBuf[SQL_API_SQLNUMPARAMS] = true;
+  valueBuf[SQL_API_SQLNUMRESULTCOLS] = true;
+  valueBuf[SQL_API_SQLPARAMDATA] = true;
+  valueBuf[SQL_API_SQLPARAMOPTIONS] = true;
+  valueBuf[SQL_API_SQLPREPARE] = true;
+  valueBuf[SQL_API_SQLPRIMARYKEYS] = true;
+  valueBuf[SQL_API_SQLPROCEDURECOLUMNS] = true;
+  valueBuf[SQL_API_SQLPROCEDURES] = true;
+  valueBuf[SQL_API_SQLPUTDATA] = true;
+  valueBuf[SQL_API_SQLROWCOUNT] = true;
+  valueBuf[SQL_API_SQLSETCONNECTOPTION] = true;
+  valueBuf[SQL_API_SQLSETCURSORNAME] = true;
+  valueBuf[SQL_API_SQLSETPARAM] = true;
+  valueBuf[SQL_API_SQLSETPOS] = true;
+  valueBuf[SQL_API_SQLSETSCROLLOPTIONS] = true;
+  valueBuf[SQL_API_SQLSETSTMTOPTION] = true;
+  valueBuf[SQL_API_SQLSPECIALCOLUMNS] = true;
+  valueBuf[SQL_API_SQLSTATISTICS] = true;
+  valueBuf[SQL_API_SQLTABLEPRIVILEGES] = true;
+  valueBuf[SQL_API_SQLTABLES] = true;
+  valueBuf[SQL_API_SQLTRANSACT] = true;
+}
+#endif __APPLE__
 }  // namespace odbc
 }  // namespace timestream
