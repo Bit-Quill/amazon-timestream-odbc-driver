@@ -188,7 +188,7 @@ jobs:
 
     - name: upload-unit-test-report
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2.7.0
       with:
         check_name: "Windows x32 Build Unit Test Results Check"
         comment_title: "Windows 2022 (x32) Build Unit Test Results"
@@ -210,7 +210,7 @@ jobs:
 
     - name: upload-integration-test-report
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2.7.0
       with:
         check_name: "Windows x32 Build Integration Test Results Check"
         comment_title: "Windows 2022 (x32) Build Integration Test Results"
@@ -409,7 +409,7 @@ jobs:
 
     - name: upload-unit-test-report
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2.7.0
       with:
         check_name: "Windows 2022 (x64) Build Unit Test Results Check"
         comment_title: "Windows 2022 (x64) Build Unit Test Results"
@@ -431,7 +431,7 @@ jobs:
 
     - name: upload-integration-test-report
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2.7.0
       with:
         check_name: "Windows 2022 (x64) Build Integration Test Results Check"
         comment_title: "Windows 2022 (x64) Build Integration Test Results"

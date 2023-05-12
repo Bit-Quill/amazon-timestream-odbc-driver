@@ -114,7 +114,7 @@ jobs:
 
   #   - name: upload-test-report
   #     if: always()
-  #     uses: EnricoMi/publish-unit-test-result-action/composite@v1.30
+  #     uses: EnricoMi/publish-unit-test-result-action/composite@v2.7.0
   #     with:
   #       check_name: "Windows x32 Build Unit Test Results Check"
   #       comment_title: "Windows 2022 (x32) Build Unit Test Results"
@@ -424,7 +424,7 @@ jobs:
 
     - name: upload-test-report
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action@v2
+      uses: EnricoMi/publish-unit-test-result-action@v2.7.0
       with:
         check_name: "Windows 2022 (x64) Build (Self Hosted Runner) Code Coverage Unit and Integration Test Results Check"
         comment_title: "Windows 2022 (x64) Build (Self Hosted Runner) Code Coverage Unit and Integration Test Results"
