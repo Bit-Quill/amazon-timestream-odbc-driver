@@ -748,6 +748,56 @@ Connection::CreateTSQueryClient(
       credentials, clientCfg);
 }
 
+std::string Connection::GetCursorName(const Statement* stmt) {
+  LOG_DEBUG_MSG("GetCursorName is called");
+
+  std::map< const Statement*, std::string >::iterator itr =
+      cursorNameMap_.find(stmt);
+  if (itr != cursorNameMap_.end()) {
+    return itr->second;
+  }
+  return "";
+}
+
+bool Connection::CursorNameExists(std::string& cursorName) {
+  LOG_DEBUG_MSG("CursorNameExists is called");
+
+  bool retval = false;
+  if (cursorNames_.find(cursorName) != cursorNames_.end()) {
+    retval = true;
+  }
+  return retval;
+}
+
+SqlResult::Type Connection::AddCursorName(const Statement* stmt,
+                                          std::string& cursorName) {
+  LOG_DEBUG_MSG("AddCursorName is called");
+
+  // in case multiple statement in different threads
+  std::lock_guard< std::mutex > lock(cursorNameMutex_);
+  std::map< const Statement*, std::string >::iterator itr = cursorNameMap_.find(stmt);
+  if (itr != cursorNameMap_.end()) {
+    cursorNames_.erase(itr->second);
+  }
+  cursorNameMap_[stmt] = cursorName;
+  cursorNames_.insert(cursorName);
+
+  return SqlResult::AI_SUCCESS;
+}
+
+void Connection::RemoveCursorName(const Statement* stmt) {
+  LOG_DEBUG_MSG("RemoveCursorName is called");
+
+  // locks to support having multiple statement in different threads
+  std::lock_guard< std::mutex > lock(cursorNameMutex_);
+  std::map< const Statement*, std::string >::iterator itr =
+      cursorNameMap_.find(stmt);
+  if (itr != cursorNameMap_.end()) {
+    cursorNames_.erase(itr->second);
+    cursorNameMap_.erase(itr);
+  }
+}
+
 #if defined(__APPLE__)
 void Connection::GetFunctions(SQLUSMALLINT funcId, SQLUSMALLINT* valueBuf) {
   IGNITE_ODBC_API_CALL(InternalGetFunctions(funcId, valueBuf));

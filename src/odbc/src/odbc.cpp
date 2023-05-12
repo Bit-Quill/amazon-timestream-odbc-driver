@@ -59,6 +59,7 @@ bool HandleParentWindow(SQLHWND windowHandle,
 }
 
 using namespace timestream::odbc::utility;
+using timestream::odbc::Statement;
 
 namespace timestream {
 SQLRETURN SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType, SQLPOINTER infoValue,
@@ -165,7 +166,6 @@ SQLRETURN SQLAllocConnect(SQLHENV env, SQLHDBC* conn) {
 
 SQLRETURN SQLAllocStmt(SQLHDBC conn, SQLHSTMT* stmt) {
   using odbc::Connection;
-  using odbc::Statement;
 
   LOG_DEBUG_MSG("SQLAllocStmt called");
 
@@ -243,8 +243,6 @@ SQLRETURN SQLFreeConnect(SQLHDBC conn) {
 }
 
 SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLFreeStmt called [option=" << option << ']');
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -255,6 +253,8 @@ SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option) {
   }
 
   if (option == SQL_DROP) {
+    // cursor name should be removed from the connection that the cursor name was set for
+    statement->GetConnection().RemoveCursorName(statement);
     delete statement;
     return SQL_SUCCESS;
   }
@@ -265,8 +265,6 @@ SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option) {
 }
 
 SQLRETURN SQLCloseCursor(SQLHSTMT stmt) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLCloseCursor called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -377,8 +375,6 @@ SQLRETURN SQLDisconnect(SQLHDBC conn) {
 }
 
 SQLRETURN SQLPrepare(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLPrepare called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -398,8 +394,6 @@ SQLRETURN SQLPrepare(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
 }
 
 SQLRETURN SQLExecute(SQLHSTMT stmt) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLExecute called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -415,8 +409,6 @@ SQLRETURN SQLExecute(SQLHSTMT stmt) {
 }
 
 SQLRETURN SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLExecDirect called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -436,8 +428,6 @@ SQLRETURN SQLExecDirect(SQLHSTMT stmt, SQLWCHAR* query, SQLINTEGER queryLen) {
 }
 
 SQLRETURN SQLCancel(SQLHSTMT stmt) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLCancel called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -456,8 +446,6 @@ SQLRETURN SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
                      SQLPOINTER targetValue, SQLLEN bufferLength,
                      SQLLEN* strLengthOrIndicator) {
   using namespace odbc::type_traits;
-
-  using odbc::Statement;
   using odbc::app::ApplicationDataBuffer;
 
   LOG_DEBUG_MSG("SQLBindCol called: index="
@@ -480,8 +468,6 @@ SQLRETURN SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
 }
 
 SQLRETURN SQLFetch(SQLHSTMT stmt) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLFetch called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -498,8 +484,6 @@ SQLRETURN SQLFetch(SQLHSTMT stmt) {
 
 SQLRETURN SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orientation,
                          SQLLEN offset) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLFetchScroll called with Orientation "
                 << orientation << " Offset " << offset);
 
@@ -545,7 +529,6 @@ SQLRETURN SQLExtendedFetch(SQLHSTMT stmt, SQLUSMALLINT orientation,
 }
 
 SQLRETURN SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT* columnNum) {
-  using odbc::Statement;
   using odbc::meta::ColumnMetaVector;
 
   LOG_DEBUG_MSG("SQLNumResultCols called");
@@ -572,8 +555,6 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
                      SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                      SQLSMALLINT tableNameLen, SQLWCHAR* columnName,
                      SQLSMALLINT columnNameLen) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLColumns called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -641,8 +622,6 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
                     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                     SQLSMALLINT tableNameLen, SQLWCHAR* tableType,
                     SQLSMALLINT tableTypeLen) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLTables called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -700,8 +679,6 @@ SQLRETURN SQLTablePrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
 }
 
 SQLRETURN SQLMoreResults(SQLHSTMT stmt) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLMoreResults called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -745,7 +722,6 @@ SQLRETURN SQLColAttribute(SQLHSTMT stmt, SQLUSMALLINT columnNum,
                           SQLUSMALLINT fieldId, SQLPOINTER strAttr,
                           SQLSMALLINT bufferLen, SQLSMALLINT* strAttrLen,
                           SQLLEN* numericAttr) {
-  using odbc::Statement;
   using odbc::meta::ColumnMeta;
   using odbc::meta::ColumnMetaVector;
 
@@ -785,7 +761,6 @@ SQLRETURN SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT columnNum,
                          SQLULEN* columnSize, SQLSMALLINT* decimalDigits,
                          SQLSMALLINT* nullable) {
   using odbc::SqlLen;
-  using odbc::Statement;
 
   LOG_DEBUG_MSG("SQLDescribeCol called with columnNum "
                 << columnNum << ", columnNameBuf " << columnNameBuf
@@ -879,8 +854,6 @@ SQLRETURN SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT columnNum,
 }
 
 SQLRETURN SQLRowCount(SQLHSTMT stmt, SQLLEN* rowCnt) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLRowCount called");
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -908,8 +881,6 @@ SQLRETURN SQLForeignKeys(
     SQLSMALLINT foreignCatalogNameLen, SQLWCHAR* foreignSchemaName,
     SQLSMALLINT foreignSchemaNameLen, SQLWCHAR* foreignTableName,
     SQLSMALLINT foreignTableNameLen) {
-  using odbc::Statement;
-  
   LOG_DEBUG_MSG("SQLForeignKeys called");
 
   IGNITE_UNUSED(primaryCatalogName);
@@ -941,8 +912,6 @@ SQLRETURN SQLForeignKeys(
 
 SQLRETURN SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER valueBuf,
                          SQLINTEGER valueBufLen, SQLINTEGER* valueResLen) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLGetStmtAttr called");
 
 #ifdef _DEBUG
@@ -966,7 +935,6 @@ SQLRETURN SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER valueBuf,
 
 SQLRETURN SQLSetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER value,
                          SQLINTEGER valueLen) {
-  using odbc::Statement;
   LOG_DEBUG_MSG("SQLSetStmtAttr called: " << attr);
 
 #ifdef _DEBUG
@@ -991,8 +959,6 @@ SQLRETURN SQLPrimaryKeys(SQLHSTMT stmt, SQLWCHAR* catalogName,
                          SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
                          SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
                          SQLSMALLINT tableNameLen) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLPrimaryKeys called");
 
   IGNITE_UNUSED(catalogName);
@@ -1160,8 +1126,6 @@ SQLRETURN SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
 }
 
 SQLRETURN SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT type) {
-  using odbc::Statement;
-
   LOG_DEBUG_MSG("SQLGetTypeInfo called: [type=" << type << ']');
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -1181,7 +1145,6 @@ SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
                      SQLLEN* strLengthOrIndicator) {
   using namespace odbc::type_traits;
 
-  using odbc::Statement;
   using odbc::app::ApplicationDataBuffer;
 
   LOG_DEBUG_MSG("SQLGetData called with colNum " << colNum << ", targetType "
@@ -1467,6 +1430,38 @@ SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
   connection->SetAttribute(attr, value, valueLen);
 
   return connection->GetDiagnosticRecords().GetReturnCode();
+}
+
+SQLRETURN SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
+                                   SQLSMALLINT nameBufLen,
+                                   SQLSMALLINT* nameResLen) {
+  LOG_DEBUG_MSG("SQLGetCursorName called with nameBufLen " << nameBufLen);
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG("statement is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+  statement->GetCursorName(nameBuf, nameBufLen, nameResLen);
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
+}
+
+SQLRETURN SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
+                                   SQLSMALLINT nameLen) {
+  LOG_DEBUG_MSG("SQLSetCursorName called with name " << name << ", nameLen " << nameLen);
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG("statement is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  statement->SetCursorName(name, nameLen);
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
 #if defined(__APPLE__)

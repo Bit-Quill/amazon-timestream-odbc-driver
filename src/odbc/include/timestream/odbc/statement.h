@@ -302,6 +302,32 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SQLUSMALLINT* GetRowStatusesPtr();
 
+  /**
+   * Get cursor name.
+   *
+   * @param nameBuf Buffer pointer to hold the returned cursor name.
+   * @param nameBufLen Cursor name buffer length.
+   * @param nameResLen Returned cursor name result length.
+   */
+  void GetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen, SQLSMALLINT* nameResLen);
+
+  /**
+   * Set cursor name.
+   *
+   * @param name Cursor name.
+   * @param nameLen Cursor name length.
+   */
+  void SetCursorName(SQLWCHAR* name, SQLSMALLINT nameLen);
+
+  /**
+   * Get connection that creates the statement
+   *
+   * @return connection object reference.
+   */
+  Connection& GetConnection() {
+    return connection;
+  }
+
  protected:
   /**
    * Constructor.
@@ -592,6 +618,11 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @return Operation result.
    */
   SqlResult::Type InternalAffectedRows(int64_t& rowCnt);
+
+  SqlResult::Type InternalGetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen,
+               SQLSMALLINT* nameResLen);
+
+  SqlResult::Type InternalSetCursorName(SQLWCHAR* name, SQLSMALLINT nameLen);
 
   /**
    * Convert SQLRESULT to SQL_ROW_RESULT.

@@ -212,6 +212,12 @@ SQLRETURN SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 
 SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
                                     SQLPOINTER value, SQLINTEGER valueLen);
+
+SQLRETURN SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
+                           SQLSMALLINT nameBufLen, SQLSMALLINT* nameResLen);
+
+SQLRETURN SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name, SQLSMALLINT nameLen);
+
 #if defined(__APPLE__)
 SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
                                   SQLUSMALLINT* valueBuf);

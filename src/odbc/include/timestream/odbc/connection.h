@@ -234,6 +234,41 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   static Aws::Utils::Logging::LogLevel GetAWSLogLevelFromString(std::string awsLogLvl);
 
+  /**
+   * Get cursor name for a statement
+   *
+   * @param stmt Statement pointer
+   *
+   * @return cursor name for a statement
+   */
+  std::string GetCursorName(const Statement* stmt);
+
+  /**
+   * Add a cursor name for a statement
+   *
+   * @param stmt Statement pointer
+   * @param cursorName Cursor name
+   *
+   * @return operation result
+   */
+  SqlResult::Type AddCursorName(const Statement* stmt, std::string& cursorName);
+
+  /**
+   * Remove a cursor name for a statement
+   *
+   * @param stmt Statement pointer
+   */
+  void RemoveCursorName(const Statement* stmt);
+
+  /**
+   * Check if a cursor name exists for a connection
+   *
+   * @param cursorName Cursor name
+   * 
+   * @return true if the cursor name exists for a connection.
+   */
+  bool CursorNameExists(std::string& cursorName);
+
  protected:
   /**
    * Constructor.
@@ -505,6 +540,15 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
 
   /** This class object count */
   static std::atomic< int > refCount_;
+
+  /** mutex for cursor names update */
+  std::mutex cursorNameMutex_;
+
+  /** cursor name set */
+  std::set< std::string > cursorNames_;
+
+  /** map for statement and cursor name mapping */
+  std::map< const Statement*, std::string > cursorNameMap_;
 };
 }  // namespace odbc
 }  // namespace timestream

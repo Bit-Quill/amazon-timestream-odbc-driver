@@ -1025,5 +1025,71 @@ uint16_t Statement::SqlResultToRowResult(SqlResult::Type value) {
       return SQL_ROW_ERROR;
   }
 }
+
+void Statement::GetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen,
+                   SQLSMALLINT* nameResLen) {
+  IGNITE_ODBC_API_CALL(InternalGetCursorName(nameBuf, nameBufLen, nameResLen));
+}
+
+SqlResult::Type Statement::InternalGetCursorName(SQLWCHAR* nameBuf,
+                                                 SQLSMALLINT nameBufLen,
+                                                 SQLSMALLINT* nameResLen) {
+  std::string cursorName = connection.GetCursorName(this);
+
+  bool isTruncated;
+  // nameBufLen is the number of characters in nameBuf, not include the ending '\0'
+  size_t resultLen = timestream::odbc::utility::CopyUtf8StringToSqlWcharString(
+      cursorName.c_str(), nameBuf, (nameBufLen +1) * sizeof(SQLWCHAR), isTruncated);
+  *nameResLen = resultLen / sizeof(SQLWCHAR);
+
+  if (isTruncated) {
+    AddStatusRecord(SqlState::S01000_GENERAL_WARNING, "Buffer is too small for the cursor name.");
+    return SqlResult::AI_SUCCESS_WITH_INFO;
+  }
+
+  return SqlResult::AI_SUCCESS;
+}
+
+void Statement::SetCursorName(SQLWCHAR* name, SQLSMALLINT nameLen)
+{
+  IGNITE_ODBC_API_CALL(InternalSetCursorName(name, nameLen));
+}
+
+#define CURSOR_NAME_MAX_LENGTH 18
+
+SqlResult::Type Statement::InternalSetCursorName(SQLWCHAR* name,
+                                               SQLSMALLINT nameLen) {
+  if (nameLen > CURSOR_NAME_MAX_LENGTH) {
+    std::stringstream ss;
+    ss << "The number of characters in cursor name (" << nameLen << ") exceeds the maximum allowed number ("
+       << CURSOR_NAME_MAX_LENGTH << ")";
+    AddStatusRecord(SqlState::S3C000_DUPLICATE_CURSOR_NAME, ss.str());
+
+    return SqlResult::AI_ERROR;
+  }
+
+  std::string cursorName = timestream::odbc::utility::SqlWcharToString(name, nameLen);
+  std::string pattern("SQL_CUR");
+  if (cursorName.length() >= pattern.length()
+      && Aws::Utils::StringUtils::ToUpper(cursorName.substr(0, pattern.length()).data())
+             == pattern) {
+    std::stringstream ss;
+    ss << "Cursor name should not start with " << pattern;
+    AddStatusRecord(SqlState::S34000_INVALID_CURSOR_NAME, ss.str());
+
+    return SqlResult::AI_ERROR;
+  }
+
+  // cursor name must be unique for a connection
+  if (connection.CursorNameExists(cursorName)) {
+    std::stringstream ss;
+    ss << "Cursor name \"" << cursorName << "\" has already been used.";
+    AddStatusRecord(SqlState::S3C000_DUPLICATE_CURSOR_NAME, ss.str());
+
+    return SqlResult::AI_ERROR;
+  }
+
+  return connection.AddCursorName(this, cursorName);
+}
 }  // namespace odbc
 }  // namespace timestream

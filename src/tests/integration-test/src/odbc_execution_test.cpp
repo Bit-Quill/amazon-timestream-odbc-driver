@@ -32,6 +32,7 @@
 
 #include "odbc_test_suite.h"
 #include "test_utils.h"
+#include <timestream/odbc/utility.h>
 
 using namespace timestream;
 using namespace timestream_test;
@@ -325,6 +326,124 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDescRec, *disabled()) {
   CheckSQLStatementDiagnosticError("HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLGetDescRec is not supported.",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+}
+
+BOOST_AUTO_TEST_CASE(TestSetGetCursorName) {
+  ConnectToTS();
+  std::vector< SQLWCHAR > cursorName = MakeSqlBuffer("cursor1");
+
+  SQLRETURN ret = SQLSetCursorName(stmt, cursorName.data(), 7);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  SQLWCHAR cursorNameRes[20];
+  SQLSMALLINT resLen;
+
+  ret = SQLGetCursorName(stmt, cursorNameRes, 7, &resLen);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  BOOST_CHECK_EQUAL(timestream::odbc::utility::SqlWcharToString(cursorName.data()),
+                    timestream::odbc::utility::SqlWcharToString(cursorNameRes));
+  BOOST_CHECK_EQUAL(resLen, 7);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLGetCursorNameTruncated) {
+  ConnectToTS();
+  std::vector< SQLWCHAR > cursorName = MakeSqlBuffer("cursor1");
+
+  SQLRETURN ret = SQLSetCursorName(stmt, cursorName.data(), 7);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  SQLWCHAR cursorNameRes[20];
+  SQLSMALLINT resLen;
+
+  // cursor name is truncated when call SQLGetCursorName 
+  ret = SQLGetCursorName(stmt, cursorNameRes, 6, &resLen);
+
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
+  CheckSQLStatementDiagnosticError("01000");
+  BOOST_CHECK_EQUAL("01000: Buffer is too small for the cursor name.",
+                    GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_CHECK_EQUAL(resLen, 6);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLSetCursorNameTruncated) {
+  ConnectToTS();
+  std::vector< SQLWCHAR > cursorName = MakeSqlBuffer("cursor1");
+
+  // cursor name is truncated when call SQLSetCursorName
+  SQLRETURN ret = SQLSetCursorName(stmt, cursorName.data(), 5);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  SQLWCHAR cursorNameRes[20];
+  SQLSMALLINT resLen;
+
+  ret = SQLGetCursorName(stmt, cursorNameRes, 10, &resLen);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  BOOST_CHECK_EQUAL(
+      timestream::odbc::utility::SqlWcharToString(cursorNameRes), "curso");
+  BOOST_CHECK_EQUAL(resLen, 5);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLSetCursorNameMultipleTimes) {
+  ConnectToTS();
+  std::vector< SQLWCHAR > cursorName = MakeSqlBuffer("cursor1");
+
+  SQLRETURN ret = SQLSetCursorName(stmt, cursorName.data(), 10);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  // duplicated cursor name could not be set
+  ret = SQLSetCursorName(stmt, cursorName.data(), 10);
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+  CheckSQLStatementDiagnosticError("3C000");
+  BOOST_CHECK_EQUAL("3C000: Cursor name \"cursor1\" has already been used.",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  std::vector< SQLWCHAR > cursorName2 = MakeSqlBuffer("cursor2");
+  ret = SQLSetCursorName(stmt, cursorName2.data(), 10);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  SQLWCHAR cursorNameRes[20];
+  SQLSMALLINT resLen;
+
+  ret = SQLGetCursorName(stmt, cursorNameRes, 20, &resLen);
+  if (!SQL_SUCCEEDED(ret))
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  BOOST_CHECK_EQUAL(
+      timestream::odbc::utility::SqlWcharToString(cursorName2.data()),
+      timestream::odbc::utility::SqlWcharToString(cursorNameRes));
+  BOOST_CHECK_EQUAL(resLen, 7);
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLSetCursorNameErrorCase) {
+  ConnectToTS();
+  std::vector< SQLWCHAR > cursorName = MakeSqlBuffer("veryverylongcursorname");
+
+  // cursor name should not exceed 18 characters
+  SQLRETURN ret = SQLSetCursorName(stmt, cursorName.data(), 20);
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+  CheckSQLStatementDiagnosticError("3C000");
+  BOOST_CHECK_EQUAL(
+      "3C000: The number of characters in cursor name (20) exceeds the maximum "
+      "allowed "
+      "number (18)",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+  // cursor name should not start with SQL_CUR
+  std::vector< SQLWCHAR > cursorName2 = MakeSqlBuffer("SQL_CUR1");
+  ret = SQLSetCursorName(stmt, cursorName2.data(), 10);
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+  CheckSQLStatementDiagnosticError("34000");
+  BOOST_CHECK_EQUAL("34000: Cursor name should not start with SQL_CUR",
+                    GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
 // SQLGetFunctions is from driver manager for Windows and Linux

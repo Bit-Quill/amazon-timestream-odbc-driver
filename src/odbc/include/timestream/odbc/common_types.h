@@ -102,6 +102,12 @@ struct SqlState {
     /** Invalid transaction state. */
     S25000_INVALID_TRANSACTION_STATE,
 
+    /** Invalid cursor name */
+    S34000_INVALID_CURSOR_NAME,
+
+    /** Duplicated cursor name. */
+    S3C000_DUPLICATE_CURSOR_NAME,
+
     /** Invalid schema name. */
     S3F000_INVALID_SCHEMA_NAME,
 

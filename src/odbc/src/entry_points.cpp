@@ -375,6 +375,17 @@ SQLRETURN SQL_API SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
   return timestream::SQLSetConnectAttr(conn, attr, value, valueLen);
 }
 
+SQLRETURN SQL_API SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
+                                   SQLSMALLINT nameBufLen,
+                                   SQLSMALLINT* nameResLen) {
+  return timestream::SQLGetCursorName(stmt, nameBuf, nameBufLen, nameResLen);
+}
+
+SQLRETURN SQL_API SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
+                                   SQLSMALLINT nameLen) {
+  return timestream::SQLSetCursorName(stmt, name, nameLen);
+}
+
 #if defined(__APPLE__)
 // only for macOS as iODBC driver manger on BigSur does not 
 // implement this function
@@ -405,32 +416,6 @@ SQLRETURN SQL_API SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
   LOG_DEBUG_MSG("unsupported function SQLColAttributes called");
 
   STMT_UNSUPPORTED_FUNC(stmt, "SQLColAttributes is not supported.");
-  return SQL_ERROR;
-}
-
-SQLRETURN SQL_API SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
-                                   SQLSMALLINT nameBufLen,
-                                   SQLSMALLINT* nameResLen) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(nameBuf);
-  IGNITE_UNUSED(nameBufLen);
-  IGNITE_UNUSED(nameResLen);
-
-  LOG_DEBUG_MSG("unsupported function SQLGetCursorName called");
-
-  STMT_UNSUPPORTED_FUNC(stmt, "SQLGetCursorName is not supported.");
-  return SQL_ERROR;
-}
-
-SQLRETURN SQL_API SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
-                                   SQLSMALLINT nameLen) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(name);
-  IGNITE_UNUSED(nameLen);
-
-  LOG_DEBUG_MSG("unsupported function SQLSetCursorName called");
-
-  STMT_UNSUPPORTED_FUNC(stmt, "SQLSetCursorName is not supported.");
   return SQL_ERROR;
 }
 

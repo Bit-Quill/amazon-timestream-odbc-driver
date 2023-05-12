@@ -87,6 +87,12 @@ const std::string STATE_24000 = "24000";
 /** SQL state 25000 constant. */
 const std::string STATE_25000 = "25000";
 
+/** SQL state 34000 constant. */
+const std::string STATE_34000 = "34000";
+
+/** SQL state 3C000 constant. */
+const std::string STATE_3C000 = "3C000";
+
 /** SQL state 3F000 constant. */
 const std::string STATE_3F000 = "3F000";
 
@@ -313,6 +319,12 @@ const std::string& DiagnosticRecord::GetSqlState() const {
 
     case SqlState::S25000_INVALID_TRANSACTION_STATE:
       return STATE_25000;
+
+    case SqlState::S34000_INVALID_CURSOR_NAME:
+      return STATE_34000;
+
+    case SqlState::S3C000_DUPLICATE_CURSOR_NAME:
+      return STATE_3C000;
 
     case SqlState::S3F000_INVALID_SCHEMA_NAME:
       return STATE_3F000;
