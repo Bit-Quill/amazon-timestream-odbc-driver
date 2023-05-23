@@ -38,7 +38,7 @@ fi
     
 # build AWS SDK
 cd src
-git clone --recurse-submodules -b "1.11.48" "https://github.com/aws/aws-sdk-cpp.git"
+git clone --recurse-submodules -b "1.11.80" "https://github.com/aws/aws-sdk-cpp.git"
 cd aws-sdk-cpp
 mkdir install
 mkdir build

@@ -73,14 +73,8 @@ Connection::Connection(Environment* env)
           ignite::odbc::common::GetEnv("TS_AWS_LOG_LEVEL"));
       options_.loggingOptions.logLevel = awsLogLvl;
 
-      // Aws::Utils::Logging::GetLogLevelName aborts the program with parameter `LogLevel::Off`
-      // https://github.com/aws/aws-sdk-cpp/issues/2436 is created to track the AWS SDK issue.
-      if (awsLogLvl != Aws::Utils::Logging::LogLevel::Off) {
-        LOG_INFO_MSG("AWS SDK log level is set to: "
-                     << Aws::Utils::Logging::GetLogLevelName(awsLogLvl));
-      } else {
-        LOG_INFO_MSG("AWS SDK log level is set to: Off");
-      }
+      LOG_INFO_MSG("AWS SDK log level is set to: "
+                   << Aws::Utils::Logging::GetLogLevelName(awsLogLvl));
 
       Aws::InitAPI(options_);
       awsSDKReady_ = true;
