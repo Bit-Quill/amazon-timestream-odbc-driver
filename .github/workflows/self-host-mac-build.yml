@@ -318,7 +318,7 @@ jobs:
 
     - name: upload-test-report
       if: always()
-      uses: EnricoMi/publish-unit-test-result-action@v2.7.0
+      uses: EnricoMi/publish-unit-test-result-action@v2
       with:
         check_name: "MacOS Big Sur 11 Debug Build (Self Hosted Runner) Unit and Integration Test Results Check"
         comment_title: "MacOS Big Sur 11 Debug Build (Self Hosted Runner) Unit and Integration Test Results"
