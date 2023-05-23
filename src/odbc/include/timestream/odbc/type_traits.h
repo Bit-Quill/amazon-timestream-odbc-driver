@@ -315,6 +315,24 @@ boost::optional< int32_t > SqlTypeTransferLength(
     boost::optional< int16_t > type);
 
 /**
+ * Get SQL type precision.
+ *
+ * @param type SQL type.
+ * @return Precision.
+ */
+boost::optional< int32_t > SqlTypePrecision(
+    boost::optional< int16_t > type);
+
+/**
+ * Get SQL type scale.
+ *
+ * @param type SQL type.
+ * @return Scale.
+ */
+boost::optional< int32_t > SqlTypeScale(
+    boost::optional< int16_t > type);
+
+/**
  * Get binary type transfer octet length.
  *
  * @param type Binary type.

@@ -386,6 +386,20 @@ SQLRETURN SQL_API SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
   return timestream::SQLSetCursorName(stmt, name, nameLen);
 }
 
+SQLRETURN SQL_API SQLSetDescField(SQLHDESC descr, SQLSMALLINT recNum,
+                                  SQLSMALLINT fieldId, SQLPOINTER buffer,
+                                  SQLINTEGER bufferLen) {
+  return timestream::SQLSetDescField(descr, recNum, fieldId, buffer, bufferLen);
+
+}
+
+SQLRETURN SQL_API SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
+                                  SQLSMALLINT fieldId, SQLPOINTER buffer,
+                                  SQLINTEGER bufferLen, SQLINTEGER* resLen) {
+  return timestream::SQLGetDescField(descr, recNum, fieldId, buffer, bufferLen,
+                                     resLen);
+}
+
 #if defined(__APPLE__)
 // only for macOS as iODBC driver manger on BigSur does not 
 // implement this function
@@ -537,20 +551,6 @@ SQLRETURN SQL_API SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
   return SQL_ERROR;
 }
 
-SQLRETURN SQL_API SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
-                                  SQLSMALLINT fieldId, SQLPOINTER buffer,
-                                  SQLINTEGER bufferLen, SQLINTEGER* resLen) {
-  IGNITE_UNUSED(descr);
-  IGNITE_UNUSED(recNum);
-  IGNITE_UNUSED(fieldId);
-  IGNITE_UNUSED(buffer);
-  IGNITE_UNUSED(bufferLen);
-  IGNITE_UNUSED(resLen);
-
-  LOG_DEBUG_MSG("Unsupported function SQLGetDescField called");
-  return SQL_ERROR;
-}
-
 SQLRETURN SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
                                 SQLSMALLINT RecNumber, SQLWCHAR* nameBuffer,
                                 SQLSMALLINT nameBufferLen, SQLSMALLINT* strLen,
@@ -569,19 +569,6 @@ SQLRETURN SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
   IGNITE_UNUSED(nullable);
 
   LOG_DEBUG_MSG("unsupported function SQLGetDescRec called");
-  return SQL_ERROR;
-}
-
-SQLRETURN SQL_API SQLSetDescField(SQLHDESC descr, SQLSMALLINT recNum,
-                                  SQLSMALLINT fieldId, SQLPOINTER buffer,
-                                  SQLINTEGER bufferLen) {
-  IGNITE_UNUSED(descr);
-  IGNITE_UNUSED(recNum);
-  IGNITE_UNUSED(fieldId);
-  IGNITE_UNUSED(buffer);
-  IGNITE_UNUSED(bufferLen);
-
-  LOG_DEBUG_MSG("unsupported function SQLSetDescField called");
   return SQL_ERROR;
 }
 

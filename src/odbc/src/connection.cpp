@@ -742,6 +742,32 @@ Connection::CreateTSQueryClient(
       credentials, clientCfg);
 }
 
+Descriptor* Connection::CreateDescriptor() {
+  Descriptor* desc;
+
+  IGNITE_ODBC_API_CALL(InternalCreateDescriptor(desc));
+
+  return desc;
+}
+
+SqlResult::Type Connection::InternalCreateDescriptor(Descriptor*& desc) {
+  LOG_DEBUG_MSG("InternalCreateDescriptor is called");
+  desc = new Descriptor();
+
+  if (!desc) {
+    AddStatusRecord(SqlState::SHY001_MEMORY_ALLOCATION, "Not enough memory.");
+
+    return SqlResult::AI_ERROR;
+  }
+
+  // The explicit descriptor is created by SQLAllocHandle..
+  // It must belong to a connection. It is an application descriptor.
+  desc->SetConnection(this);
+  desc->InitAppHead(false);
+
+  return SqlResult::AI_SUCCESS;
+}
+
 std::string Connection::GetCursorName(const Statement* stmt) {
   LOG_DEBUG_MSG("GetCursorName is called");
 

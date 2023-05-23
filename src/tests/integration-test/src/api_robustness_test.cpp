@@ -898,24 +898,6 @@ BOOST_AUTO_TEST_CASE(TestSQLError) {
 #endif // __APPLE__
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLDiagnosticRecords) {
-  ConnectToTS();
-
-  SQLHANDLE hnd;
-
-  SQLRETURN ret = SQLAllocHandle(SQL_HANDLE_DESC, dbc, &hnd);
-  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-  CheckSQLConnectionDiagnosticError("IM001");
-
-  ret = SQLFreeStmt(stmt, 4);
-  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-#ifdef __APPLE__
-  CheckSQLStatementDiagnosticError("S1092");
-#else
-  CheckSQLStatementDiagnosticError("HY092");
-#endif
-}
-
 BOOST_AUTO_TEST_CASE(TestSQLCancelForTypeInfo) {
   ConnectToTS();
 
@@ -968,6 +950,32 @@ BOOST_AUTO_TEST_CASE(TestSQLCloseCursorForTypeInfo) {
   BOOST_REQUIRE_EQUAL("24000: No cursor was open",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #endif
+}
+
+BOOST_AUTO_TEST_CASE(TestSQLAllocFreeDesc) {
+  ConnectToTS();
+
+  SQLHANDLE desc;
+
+  SQLRETURN ret = SQLAllocHandle(SQL_HANDLE_DESC, dbc, &desc);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  //Set the allocated desciptor to statement ARD
+  ret = SQLSetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, desc, 0);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+
+  ret = SQLFreeHandle(SQL_HANDLE_DESC, desc);
+  BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
+
+  SQLHDESC ard = nullptr;   
+  SQLINTEGER resLen = 0;
+
+  //Implicit ARD should be returned when the explicit ARD is freed
+  ret = SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &ard, 0, NULL);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+
+  //Implicit ARD is not equal to explicit ARD
+  BOOST_CHECK(ard != 0 && ard != desc);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -34,9 +34,9 @@ Note that the following table describes the planned functionality for the GA rel
 | SQLTables | yes |
 | SQLCopyDesc | yes |
 | SQLGetDescField | yes |
-| SQLGetDescRec | yes |
+| SQLGetDescRec | no |
 | SQLSetDescField | yes |
-| SQLSetDescRec | yes |
+| SQLSetDescRec | no |
 | SQLGetConnectAttr | yes |
 | SQLGetEnvAttr | yes |
 | SQLGetStmtAttr | yes |
@@ -310,6 +310,37 @@ Attributes that are only supported in `SQLGetStmtAttr`
 |SQL_ATTR_CURSOR_SENSITIVITY| SQL_INSENSITIVE |
 |SQL_ATTR_ENABLE_AUTO_IPD|SQL_FALSE|
 |SQL_ATTR_ROW_NUMBER| current row number, 0 if cannot be determined |
+
+## Supported Descriptor Fields 
+Table of descriptor fields supported by the Amazon Timestream ODBC driver.\
+Currently only ARD is supported, these are fields supported in `SQLSetDescField`
+| Descriptor Field |
+|--------|
+|SQL_DESC_CONCISE_TYPE|
+|SQL_DESC_DATA_PTR|
+|SQL_DESC_DATETIME_INTERVAL_CODE|
+|SQL_DESC_DATETIME_INTERVAL_PRECISION|
+|SQL_DESC_INDICATOR_PTR|
+|SQL_DESC_OCTET_LENGTH_PTR|
+|SQL_DESC_OCTET_LENGTH|
+|SQL_DESC_LENGTH|
+|SQL_DESC_TYPE|
+
+Currently only ARD is supported, these are fields supported in `SQLGetDescField`
+| Descriptor Field | Default |
+|--------|------|
+|SQL_DESC_CONCISE_TYPE| SQL_C_DEFAULT |
+|SQL_DESC_DATA_PTR| Null ptr |
+|SQL_DESC_DATETIME_INTERVAL_CODE| No default |
+|SQL_DESC_DATETIME_INTERVAL_PRECISION| No default |
+|SQL_DESC_INDICATOR_PTR| Null ptr |
+|SQL_DESC_LENGTH| No default |
+|SQL_DESC_NUM_PREC_RADIX| No default |
+|SQL_DESC_OCTET_LENGTH| No default |
+|SQL_DESC_OCTET_LENGTH_PTR| Null ptr |
+|SQL_DESC_PRECISION| No default |
+|SQL_DESC_SCALE| No default |
+|SQL_DESC_TYPE| SQL_C_DEFAULT |
 
 ## SQLColumns
 

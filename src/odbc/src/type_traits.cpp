@@ -607,6 +607,64 @@ boost::optional< int32_t > SqlTypeTransferLength(
   }
 }
 
+boost::optional< int32_t > SqlTypePrecision(
+    boost::optional< int16_t > type) {
+  if (!type)
+    return boost::none;
+  switch (*type) {
+    case SQL_DECIMAL:
+    case SQL_NUMERIC:
+      return 15;
+
+    case SQL_TINYINT:
+      return 3;
+
+    case SQL_SMALLINT:
+      return 5;
+
+    case SQL_INTEGER:
+      return 10;
+
+    case SQL_BIGINT:
+      return 19;
+
+    case SQL_FLOAT:
+    case SQL_REAL:
+    case SQL_DOUBLE:
+      return 15;
+
+    case SQL_TYPE_TIME:
+      return 6;
+
+
+    case SQL_INTERVAL_DAY_TO_SECOND:
+      return 11;
+    case SQL_INTERVAL_YEAR_TO_MONTH:
+      return 9;
+
+    // return 0 for all other cases
+    default:
+      return 0;
+  }
+}
+
+boost::optional< int32_t > SqlTypeScale(boost::optional< int16_t > type) {
+  if (!type)
+    return boost::none;
+  switch (*type) {
+    case SQL_DECIMAL:
+    case SQL_NUMERIC:
+    case SQL_FLOAT:
+    case SQL_REAL:
+    case SQL_DOUBLE:
+      return 15;
+
+    // return 0 for all other cases
+    default:
+      return 0;
+  }
+}
+
 boost::optional< int32_t > BinaryTypeTransferLength(
     boost::optional< int16_t > type) {
   boost::optional< int16_t > sqlType = BinaryToSqlType(type);
@@ -655,7 +713,7 @@ boost::optional< int16_t > SqlTypeDecimalDigits(
       return 0;
 
     case SQL_DOUBLE:
-      return 308;
+      return 15;
 
     default:
       return -1;

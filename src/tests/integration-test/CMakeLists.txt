@@ -51,6 +51,7 @@ set(SOURCES
 	src/attributes_test.cpp
 	src/connection_info_test.cpp
         src/connection_test.cpp
+	src/descriptors_test.cpp
 	src/meta_queries_test.cpp
         src/odbc_test_suite.cpp
 	src/odbc_execution_test.cpp

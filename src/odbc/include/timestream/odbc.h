@@ -48,6 +48,8 @@ SQLRETURN SQLAllocConnect(SQLHENV env, SQLHDBC* conn);
 
 SQLRETURN SQLAllocStmt(SQLHDBC conn, SQLHSTMT* stmt);
 
+SQLRETURN SQLAllocDesc(SQLHDBC conn, SQLHDESC* desc);
+
 SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle);
 
 SQLRETURN SQLFreeEnv(SQLHENV env);
@@ -55,6 +57,8 @@ SQLRETURN SQLFreeEnv(SQLHENV env);
 SQLRETURN SQLFreeConnect(SQLHDBC conn);
 
 SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option);
+
+SQLRETURN SQLFreeDescriptor(SQLHDESC desc);
 
 SQLRETURN SQLCloseCursor(SQLHSTMT stmt);
 
@@ -217,6 +221,14 @@ SQLRETURN SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
                            SQLSMALLINT nameBufLen, SQLSMALLINT* nameResLen);
 
 SQLRETURN SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name, SQLSMALLINT nameLen);
+
+SQLRETURN SQLSetDescField(SQLHDESC descr, SQLSMALLINT recNum,
+                                  SQLSMALLINT fieldId, SQLPOINTER buffer,
+                                  SQLINTEGER bufferLen);
+
+SQLRETURN SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
+                                  SQLSMALLINT fieldId, SQLPOINTER buffer,
+                                  SQLINTEGER bufferLen, SQLINTEGER* resLen);
 
 #if defined(__APPLE__)
 SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,

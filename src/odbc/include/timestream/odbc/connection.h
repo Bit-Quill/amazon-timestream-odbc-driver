@@ -32,6 +32,7 @@
 #include "timestream/odbc/ignite_error.h"
 #include "ignite/odbc/odbc_error.h"
 #include "timestream/odbc/authentication/saml.h"
+#include "timestream/odbc/descriptor.h"
 
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
@@ -224,6 +225,13 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   GetSAMLCredentialsProvider() {
     return samlCredProvider_;
   }
+
+  /**
+   * Create a descriptor.
+   *
+   * @return New created descriptor pointer.
+   */
+  Descriptor* CreateDescriptor();
 
   /**
    * Get AWS Log Level from string
@@ -463,6 +471,16 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalSetAttribute(int attr, void* value,
                                        SQLINTEGER valueLen);
+
+  /**
+   * Create a descriptor.
+   * Internal call
+   *
+   * @param desc Descriptor pointer.
+   * @return Operation result.
+   */
+  SqlResult::Type InternalCreateDescriptor(Descriptor*& desc);
+
 #if defined(__APPLE__)
   /**
    * Set function supportability.

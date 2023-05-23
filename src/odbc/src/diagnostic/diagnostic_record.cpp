@@ -144,6 +144,9 @@ const std::string STATE_HY024 = "HY024";
 /** SQL state HY090 constant. */
 const std::string STATE_HY090 = "HY090";
 
+/** SQL state HY091 constant. */
+const std::string STATE_HY091 = "HY091";
+
 /** SQL state HY092 constant. */
 const std::string STATE_HY092 = "HY092";
 
@@ -391,6 +394,9 @@ const std::string& DiagnosticRecord::GetSqlState() const {
 
     case SqlState::SHY090_INVALID_STRING_OR_BUFFER_LENGTH:
       return STATE_HY090;
+
+    case SqlState::SHY091_INVALID_DESCR_FIELD_ID:
+      return STATE_HY091; 
 
     case SqlState::SHY092_OPTION_TYPE_OUT_OF_RANGE:
       return STATE_HY092;

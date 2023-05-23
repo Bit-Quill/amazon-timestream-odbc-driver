@@ -347,7 +347,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
                                       -1, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLDescribeCol(stmt, 3, "flag", SQL_BIT, 1, -1,
                                       SQL_NULLABLE_UNKNOWN);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE, 15, 308, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE, 15, 15, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLDescribeCol(stmt, 5, "video_startup_time",
                                       SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
   }
@@ -437,7 +437,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     CheckColumnMetaWithSQLColAttribute(stmt, 3, "flag", SQL_BIT, 1, -1,
                                        SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLColAttribute(stmt, 4, "rebuffering_ratio", SQL_DOUBLE,
-                                       15, 308, SQL_NULLABLE_UNKNOWN);
+                                       15, 15, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLColAttribute(stmt, 5, "video_startup_time",
                                        SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
   }

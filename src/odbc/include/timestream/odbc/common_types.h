@@ -199,6 +199,11 @@ struct SqlState {
     SHY090_INVALID_STRING_OR_BUFFER_LENGTH,
 
     /**
+     * Invalid descriptor field identifier.
+     */
+    SHY091_INVALID_DESCR_FIELD_ID,
+
+    /**
      * Option type was out of range.
      */
     SHY092_OPTION_TYPE_OUT_OF_RANGE,

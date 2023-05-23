@@ -31,6 +31,7 @@
 #include "timestream/odbc/diagnostic/diagnosable_adapter.h"
 #include "timestream/odbc/meta/column_meta.h"
 #include "timestream/odbc/query/query.h"
+#include "timestream/odbc/descriptor.h"
 
 using timestream::odbc::query::Query;
 
@@ -303,6 +304,13 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   SQLUSMALLINT* GetRowStatusesPtr();
 
   /**
+   * Set current active ARD descriptor
+   *
+   * @param desc Descriptor pointer.
+   */
+  void SetARDDesc(Descriptor* desc);
+
+  /**
    * Get cursor name.
    *
    * @param nameBuf Buffer pointer to hold the returned cursor name.
@@ -328,6 +336,20 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
     return connection;
   }
 
+  /**
+   * Unbind specified column buffer.
+   *
+   * @param columnIdx Column index.
+   */
+  void SafeUnbindColumn(uint16_t columnIdx);
+
+  /**
+   * Restore the descriptor to be implicit created one
+   *
+   * @param type Descriptor type that will be restored.
+   */
+  void RestoreDescriptor(DescType type);
+
  protected:
   /**
    * Constructor.
@@ -350,13 +372,6 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
                       const app::ApplicationDataBuffer& buffer);
 
   /**
-   * Unbind specified column buffer.
-   *
-   * @param columnIdx Column index.
-   */
-  void SafeUnbindColumn(uint16_t columnIdx);
-
-  /**
    * Unbind all column buffers.
    */
   void SafeUnbindAllColumns();
@@ -372,6 +387,19 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @return Operation result.
    */
   SqlResult::Type InternalBindColumn(uint16_t columnIdx, int16_t targetType,
+                                     void* targetValue, SqlLen bufferLength,
+                                     SqlLen* strLengthOrIndicator);
+
+  /**
+   * Set descriptor field when InternalBindColumn is executed
+   *
+   * @param columnIdx Column index.
+   * @param targetType Type of target buffer.
+   * @param targetValue Pointer to target buffer.
+   * @param bufferLength Length of target buffer.
+   * @param strLengthOrIndicator Pointer to the length/indicator buffer.
+   */
+  void SetDescriptorFields(uint16_t columnIdx, int16_t targetType,
                                      void* targetValue, SqlLen bufferLength,
                                      SqlLen* strLengthOrIndicator);
 
@@ -651,6 +679,24 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
 
   /** Row array size. */
   SqlUlen rowArraySize;
+
+  /** implicitly allocated ARD */
+  std::unique_ptr< Descriptor > ardi;
+
+  /** implicitly allocated APD(not in use now) */
+  std::unique_ptr< Descriptor > apdi;
+  
+  /** implicitly allocated IRD(not in use now) */
+  std::unique_ptr< Descriptor > irdi;
+
+  /** implicitly allocated IPD(not in use now) */
+  std::unique_ptr< Descriptor > ipdi;
+
+  /** ARD current in use */
+  Descriptor* ard;
+
+  /** IRD current in use */
+  Descriptor* ird;
 };
 }  // namespace odbc
 }  // namespace timestream

@@ -865,7 +865,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeScale) {
                      0),
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::DOUBLE),
-                     308),
+                     15),
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::TIMESTAMP),
                      -1),

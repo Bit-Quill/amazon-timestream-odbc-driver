@@ -98,25 +98,7 @@ SQLRETURN SQLAllocHandle(SQLSMALLINT type, SQLHANDLE parent,
       return SQLAllocStmt(parent, result);
 
     case SQL_HANDLE_DESC: {
-      using odbc::Connection;
-
-      Connection* connection = reinterpret_cast< Connection* >(parent);
-
-      if (!connection) {
-        LOG_ERROR_MSG("SQLAllocHandle exiting with SQL_INVALID_HANDLE");
-        return SQL_INVALID_HANDLE;
-      }
-
-      if (result)
-        *result = 0;
-
-      connection->GetDiagnosticRecords().Reset();
-      connection->AddStatusRecord(
-          odbc::SqlState::SIM001_FUNCTION_NOT_SUPPORTED,
-          "The HandleType argument was SQL_HANDLE_DESC, and "
-          "the driver does not support allocating a descriptor handle");
-
-      return SQL_ERROR;
+      return SQLAllocDesc(parent, result);
     }
     default:
       break;
@@ -185,7 +167,24 @@ SQLRETURN SQLAllocStmt(SQLHDBC conn, SQLHSTMT* stmt) {
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle) {
+SQLRETURN SQLAllocDesc(SQLHDBC conn, SQLHDESC* desc) {
+  using odbc::Connection;
+
+  Connection* connection = reinterpret_cast< Connection* >(conn);
+
+  if (!connection) {
+    LOG_ERROR_MSG("connection is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  Descriptor* descriptor = connection->CreateDescriptor();
+
+  *desc = reinterpret_cast< SQLHDESC >(descriptor); 
+
+  return connection->GetDiagnosticRecords().GetReturnCode();
+}
+
+  SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle) {
   LOG_DEBUG_MSG("SQLFreeHandle called with type " << type);
 
   switch (type) {
@@ -199,6 +198,8 @@ SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle) {
       return SQLFreeStmt(handle, SQL_DROP);
 
     case SQL_HANDLE_DESC:
+      return SQLFreeDescriptor(handle);
+
     default:
       break;
   }
@@ -262,6 +263,26 @@ SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option) {
   statement->FreeResources(option);
 
   return statement->GetDiagnosticRecords().GetReturnCode();
+}
+
+SQLRETURN SQLFreeDescriptor(SQLHDESC desc) {
+  using odbc::Statement;
+
+  LOG_DEBUG_MSG("SQLFreeDescriptor called");
+
+  Descriptor* descriptor = reinterpret_cast< Descriptor* >(desc);
+
+  if (!descriptor) {
+    LOG_ERROR_MSG("descriptor is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  // restore the statement implicit descriptors to be active descriptors
+  descriptor->Deregister();
+
+  delete descriptor;
+
+  return SQL_SUCCESS;
 }
 
 SQLRETURN SQLCloseCursor(SQLHSTMT stmt) {
@@ -1050,7 +1071,8 @@ SQLRETURN SQLGetDiagRec(SQLSMALLINT handleType, SQLHANDLE handle,
   switch (handleType) {
     case SQL_HANDLE_ENV:
     case SQL_HANDLE_DBC:
-    case SQL_HANDLE_STMT: {
+    case SQL_HANDLE_STMT:
+    case SQL_HANDLE_DESC: {
       Diagnosable* diag = reinterpret_cast< Diagnosable* >(handle);
 
       if (!diag) {
@@ -1462,6 +1484,41 @@ SQLRETURN SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
   statement->SetCursorName(name, nameLen);
 
   return statement->GetDiagnosticRecords().GetReturnCode();
+}
+SQLRETURN SQLSetDescField(SQLHDESC descr, SQLSMALLINT recNum,
+                          SQLSMALLINT fieldId, SQLPOINTER buffer,
+                          SQLINTEGER bufferLen) {
+  LOG_DEBUG_MSG("SQLSetDescField called with recNum " << recNum << ", fieldId "
+                                                      << fieldId);
+
+  Descriptor* descriptor = reinterpret_cast< Descriptor* >(descr);
+
+  if (!descriptor) {
+    LOG_ERROR_MSG("descriptor is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  descriptor->SetField(recNum, fieldId, buffer, bufferLen);
+
+  return descriptor->GetDiagnosticRecords().GetReturnCode();
+}
+
+SQLRETURN SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
+                          SQLSMALLINT fieldId, SQLPOINTER buffer,
+                          SQLINTEGER bufferLen, SQLINTEGER* resLen) {
+  LOG_DEBUG_MSG("SQLGetDescField called with recNum " << recNum << ", fieldId "
+                                                      << fieldId);
+  Descriptor* descriptor = reinterpret_cast< Descriptor* >(descr);
+
+  if (!descriptor) {
+    LOG_ERROR_MSG("descriptor is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  descriptor->GetField(recNum, fieldId, buffer, bufferLen, resLen);
+
+  return descriptor->GetDiagnosticRecords().GetReturnCode();
+
 }
 
 #if defined(__APPLE__)

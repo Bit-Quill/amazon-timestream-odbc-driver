@@ -316,36 +316,19 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowArraySize) {
 
   // check that statement array size cannot be set to values not equal to 1
   // repeat test for different values
-  SQLULEN valList[5] = {0, 2, 3, 4, 5};
-  for (SQLULEN val : valList) {
-    SQLRETURN ret =
-        SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE,
-                       reinterpret_cast< SQLPOINTER >(val), sizeof(val));
-
-    BOOST_CHECK_EQUAL(ret, SQL_ERROR);
-
-    ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, &actual_row_array_size,
-                         sizeof(actual_row_array_size), &resLen);
-
-    ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
-
-    BOOST_CHECK_EQUAL(actual_row_array_size, 1);
-  }
-
-  // check that setting row array size to 1 is successful
-  SQLULEN val = 1;
+  SQLULEN val = 5;
   SQLRETURN ret =
       SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE,
                      reinterpret_cast< SQLPOINTER >(val), sizeof(val));
 
-  BOOST_CHECK_EQUAL(ret, SQL_SUCCESS);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, &actual_row_array_size,
                        sizeof(actual_row_array_size), &resLen);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  BOOST_CHECK_EQUAL(actual_row_array_size, val);
+  BOOST_CHECK_EQUAL(actual_row_array_size, 5);
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeRetrieveData) {

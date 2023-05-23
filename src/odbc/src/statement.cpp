@@ -51,10 +51,48 @@ Statement::Statement(Connection& parent)
       rowStatuses(0),
       columnBindOffset(0),
       rowArraySize(1) {
+  // Create and initialize implicit descriptors. Here we created the 4 implicit descriptors.
+  // But besides implicit ARD, they are not in use because there is no clear document about
+  // how to set and use them. This could be done in future when there is a need or clear 
+  // guide about how to use them.
+  ardi = std::unique_ptr< Descriptor >(new Descriptor);
+  ardi->SetType(ARD);
+  ardi->SetStatement(this);
+  ardi->InitAppHead(true);
+
+  // set active ARD to this implicit one
+  ard = ardi.get(); 
+
+  apdi = std::unique_ptr< Descriptor >(new Descriptor);
+  apdi->SetType(APD);
+  apdi->SetStatement(this);
+  apdi->InitAppHead(true);
+
+  irdi = std::unique_ptr< Descriptor >(new Descriptor);
+  irdi->SetType(IRD);
+  irdi->SetStatement(this);
+  irdi->InitImpHead();
+
+  // set active IRD to this implicit one
+  ird = irdi.get();
+
+  ipdi = std::unique_ptr< Descriptor >(new Descriptor);
+  ipdi->SetType(IPD);
+  ipdi->SetStatement(this);
+  ipdi->InitImpHead();
 }
 
 Statement::~Statement() {
-  // No-op.
+}
+
+void Statement::RestoreDescriptor(DescType type) {
+  if (type == ARD) {
+    ard = ardi.get();
+  } else if (type == IRD) {
+    ird = irdi.get();
+  } else {
+    LOG_DEBUG_MSG("Unsupported descriptor type " << type);
+  }
 }
 
 void Statement::BindColumn(uint16_t columnIdx, int16_t targetType,
@@ -100,10 +138,67 @@ SqlResult::Type Statement::InternalBindColumn(uint16_t columnIdx,
                                           strLengthOrIndicator);
 
     SafeBindColumn(columnIdx, dataBuffer);
-  } else
+    SetDescriptorFields(columnIdx, targetType, targetValue, bufferLength,
+                        strLengthOrIndicator);
+  } else {
     SafeUnbindColumn(columnIdx);
+  }
 
   return SqlResult::AI_SUCCESS;
+}
+
+void Statement::SetDescriptorFields(uint16_t columnIdx, int16_t targetType,
+                                    void* targetValue, SqlLen bufferLength,
+                                    SqlLen* strLengthOrIndicator) {
+  // Set ARD fields based on Microsoft document for SQLBindCol.
+  if (ard->GetHeader().count < columnIdx) {
+    ard->GetHeader().count = columnIdx;
+  }
+
+  DescriptorRecord& record = ard->GetRecords()[columnIdx];
+  if (targetType == SQL_C_TYPE_DATE || targetType == SQL_TYPE_TIME
+      || targetType == SQL_TYPE_TIMESTAMP) {
+    record.type = SQL_DATETIME;
+    if (targetType == SQL_C_TYPE_DATE) {
+      record.conciseType = SQL_TYPE_DATE;
+      record.datetimeIntervalCode = SQL_CODE_DATE;
+    } else if (targetType == SQL_TYPE_TIME) {
+      record.conciseType = SQL_TYPE_TIME;
+      record.datetimeIntervalCode = SQL_CODE_TIME;
+    } else {
+      record.conciseType = SQL_TYPE_TIMESTAMP;
+      record.datetimeIntervalCode = SQL_CODE_TIMESTAMP;
+    }
+  } else if (targetType == SQL_C_INTERVAL_YEAR_TO_MONTH
+             || targetType == SQL_C_INTERVAL_DAY_TO_SECOND) {
+    record.type = SQL_INTERVAL;
+    if (targetType == SQL_C_INTERVAL_YEAR_TO_MONTH) {
+      record.conciseType = SQL_INTERVAL_YEAR_TO_MONTH;
+      record.datetimeIntervalCode = SQL_CODE_YEAR_TO_MONTH;
+    } else {
+      record.conciseType = SQL_INTERVAL_DAY_TO_SECOND;
+      record.datetimeIntervalCode = SQL_CODE_DAY_TO_SECOND;
+    }
+  } else {
+    record.type = targetType;
+    record.conciseType = targetType;
+  }
+
+  boost::optional< int16_t > type(targetType);
+  if (targetType == SQL_VARCHAR || targetType == SQL_WVARCHAR || 
+      targetType == SQL_CHAR ||targetType == SQL_WCHAR || 
+      targetType == SQL_LONGVARCHAR || targetType == SQL_WLONGVARCHAR) {
+    record.length = bufferLength;  
+  } else {
+    record.length = type_traits::SqlTypeTransferLength(type).get();
+  }
+  record.precision = type_traits::SqlTypePrecision(type).get();
+  record.scale = type_traits::SqlTypeScale(type).get();
+
+  record.octetLength = bufferLength;
+  record.dataPtr = targetValue;
+  record.indicatorPtr = strLengthOrIndicator;
+  record.octetLengthPtr = strLengthOrIndicator;
 }
 
 void Statement::SafeBindColumn(uint16_t columnIdx,
@@ -200,31 +295,6 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       break;
     }
 
-    case SQL_ATTR_ROW_ARRAY_SIZE: {
-      SqlUlen val = reinterpret_cast< SqlUlen >(value);
-
-      LOG_DEBUG_MSG("SQL_ATTR_ROW_ARRAY_SIZE: " << val);
-
-      if (val != 1) {
-        AddStatusRecord(
-            SqlState::SIM001_FUNCTION_NOT_SUPPORTED,
-            "Array size value cannot be set to a value other than 1");
-
-        return SqlResult::AI_ERROR;
-      } else if (rowArraySize != 1) {
-        // val is 1
-        rowArraySize = 1;
-        LOG_DEBUG_MSG(
-            "else if (rowArraySize != 1) branch is executed."
-            "This branch should not be executed as we currently do not support "
-            "rowArraySize to have values other than 1.");
-      }
-
-      LOG_DEBUG_MSG("rowArraySize: " << rowArraySize);
-
-      break;
-    }
-
     case SQL_ATTR_RETRIEVE_DATA: {
       SqlUlen retrievData = reinterpret_cast< SqlUlen >(value);
 
@@ -234,31 +304,6 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 
         return SqlResult::AI_ERROR;
       }
-
-      break;
-    }
-
-    case SQL_ATTR_ROW_BIND_TYPE: {
-      SqlUlen rowBindType = reinterpret_cast< SqlUlen >(value);
-
-      if (rowBindType != SQL_BIND_BY_COLUMN) {
-        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                        "Only binding by column is currently supported");
-
-        return SqlResult::AI_ERROR;
-      }
-
-      break;
-    }
-
-    case SQL_ATTR_ROWS_FETCHED_PTR: {
-      SetRowsFetchedPtr(reinterpret_cast< SQLULEN* >(value));
-
-      break;
-    }
-
-    case SQL_ATTR_ROW_STATUS_PTR: {
-      SetRowStatusesPtr(reinterpret_cast< SQLUSMALLINT* >(value));
 
       break;
     }
@@ -276,9 +321,99 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       break;
     }
 
+    case SQL_ATTR_APP_ROW_DESC: {
+      Descriptor* desc = reinterpret_cast< Descriptor* >(value);
+      if (desc) 
+      {
+        if (desc->GetConnection() != &connection) {
+          AddStatusRecord(SqlState::SHY024_INVALID_ATTRIBUTE_VALUE,
+                          "Descriptor does not belong to the statement connection.");
+          return SqlResult::AI_ERROR;
+        }
+
+        Statement* stmt = desc->GetStatement();
+        if (stmt && stmt != this) {
+          AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
+                          "Descriptor has been set to another statement.");
+
+          return SqlResult::AI_ERROR;
+        }
+      }
+      SetARDDesc(desc);
+      break;
+    }
+
+    case SQL_ATTR_ROW_ARRAY_SIZE: {
+      SqlUlen val = reinterpret_cast< SqlUlen >(value);
+
+      LOG_DEBUG_MSG("SQL_ATTR_ROW_ARRAY_SIZE: " << val);
+
+      if (val > 1000) {
+        AddStatusRecord(
+            SqlState::SIM001_FUNCTION_NOT_SUPPORTED,
+            "Array size value cannot be set to a value other than 1000");
+
+        return SqlResult::AI_ERROR;
+      }
+
+      rowArraySize = val;
+
+      ard->GetHeader().arraySize = rowArraySize;
+
+      LOG_DEBUG_MSG("rowArraySize: " << rowArraySize);
+
+      break;
+    }
+
     case SQL_ATTR_ROW_BIND_OFFSET_PTR: {
       SetColumnBindOffsetPtr(reinterpret_cast< int* >(value));
 
+      SQLLEN offset = *(reinterpret_cast< SQLLEN* >(value));
+      ard->GetHeader().bindOffsetPtr = reinterpret_cast< SQLLEN* >(value);
+      for (auto& itr : ard->GetRecords()) {
+        itr.second.dataPtr = reinterpret_cast< SQLCHAR* >(itr.second.dataPtr)
+            + offset;
+        itr.second.indicatorPtr += offset;
+        itr.second.octetLengthPtr += offset;
+      }
+      break;
+    }
+
+    case SQL_ATTR_ROW_BIND_TYPE: {
+      SqlUlen rowBindType = reinterpret_cast< SqlUlen >(value);
+
+      if (rowBindType != SQL_BIND_BY_COLUMN) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Only binding by column is currently supported");
+
+        return SqlResult::AI_ERROR;
+      }
+      ard->GetHeader().bindType = rowBindType;
+
+      break;
+    }
+
+    case SQL_ATTR_ROW_OPERATION_PTR: {
+      SQLUSMALLINT* array = reinterpret_cast< SQLUSMALLINT* >(value);
+    
+      ard->GetHeader().arrayStatusPtr = array;
+
+      break;
+    }
+
+    case SQL_ATTR_ROW_STATUS_PTR: {
+      SQLUSMALLINT* array = reinterpret_cast< SQLUSMALLINT* >(value);
+      SetRowStatusesPtr(array);
+
+      ird->GetHeader().arrayStatusPtr = array;
+      break;
+    }
+
+    case SQL_ATTR_ROWS_FETCHED_PTR: {
+      SQLULEN* buf = reinterpret_cast< SQLULEN* >(value);
+      SetRowsFetchedPtr(buf);    
+
+      ird->GetHeader().rowsProcessedPtr = buf;
       break;
     }
 
@@ -308,13 +443,42 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
   }
 
   switch (attr) {
-    case SQL_ATTR_APP_ROW_DESC:
-    case SQL_ATTR_APP_PARAM_DESC:
-    case SQL_ATTR_IMP_ROW_DESC:
+    case SQL_ATTR_APP_ROW_DESC: {
+      SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
+
+      *val = static_cast< SQLPOINTER >(ard);
+
+      if (valueLen)
+        *valueLen = SQL_IS_POINTER;
+
+      break;
+    }
+
+    case SQL_ATTR_IMP_ROW_DESC: {
+      SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
+
+      *val = static_cast< SQLPOINTER >(ird);
+
+      if (valueLen)
+        *valueLen = SQL_IS_POINTER;
+
+      break;
+    }
+    case SQL_ATTR_APP_PARAM_DESC: {
+      SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
+
+      *val = static_cast< SQLPOINTER >(apdi.get());
+
+      if (valueLen)
+        *valueLen = SQL_IS_POINTER;
+
+      break;
+    }
+
     case SQL_ATTR_IMP_PARAM_DESC: {
       SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
 
-      *val = static_cast< SQLPOINTER >(this);
+      *val = static_cast< SQLPOINTER >(ipdi.get());
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -1023,6 +1187,16 @@ uint16_t Statement::SqlResultToRowResult(SqlResult::Type value) {
 
     default:
       return SQL_ROW_ERROR;
+  }
+}
+
+void Statement::SetARDDesc(Descriptor* desc) {
+  if (!desc) {
+    ard = ardi.get();
+  } else {
+    desc->SetType(ARD);
+    desc->SetStatement(this);
+    ard = desc;
   }
 }
 
