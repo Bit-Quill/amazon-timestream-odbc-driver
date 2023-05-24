@@ -230,6 +230,8 @@ SQLRETURN SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
                                   SQLSMALLINT fieldId, SQLPOINTER buffer,
                                   SQLINTEGER bufferLen, SQLINTEGER* resLen);
 
+SQLRETURN SQLCopyDesc(SQLHDESC src, SQLHDESC dst);
+
 #if defined(__APPLE__)
 SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
                                   SQLUSMALLINT* valueBuf);

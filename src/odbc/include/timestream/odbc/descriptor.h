@@ -137,6 +137,15 @@ class IGNITE_IMPORT_EXPORT Descriptor : public diagnostic::DiagnosableAdapter {
   }
 
   /**
+   * Get descriptor type.
+   *
+   * @return Descriptor type enum value.
+   */
+  DescType GetType() {
+    return type_;
+  }
+
+  /**
    * Deregister from the statement, where the descriptor is bound
    */
   void Deregister();
@@ -201,6 +210,13 @@ class IGNITE_IMPORT_EXPORT Descriptor : public diagnostic::DiagnosableAdapter {
                 SQLINTEGER bufferLen, SQLINTEGER* resLen);
 
   /**
+   * Copy current descriptor content to destination descriptor
+   *
+   * @param dst Destination descriptor.
+   */
+  void CopyDesc(Descriptor* dst);
+
+  /**
    * Convert descriptor type from enum to string.
    *
    * @param type Descriptor type.
@@ -259,6 +275,15 @@ class IGNITE_IMPORT_EXPORT Descriptor : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalGetField(int recNum, int fieldId, SQLPOINTER buffer,
                                    SQLINTEGER bufferLen, SQLINTEGER* resLen);
+
+  /**
+   * Copy current descriptor content to destination descriptor
+   * Internal call
+   *
+   * @param dst Destination descriptor.
+   * @return Operation result.
+   */
+  SqlResult::Type InternalCopyDesc(Descriptor* dst);
 
   /**
    * Check if the value is a valid concise type.

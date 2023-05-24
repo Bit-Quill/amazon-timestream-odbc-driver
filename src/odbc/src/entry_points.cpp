@@ -400,6 +400,10 @@ SQLRETURN SQL_API SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
                                      resLen);
 }
 
+SQLRETURN SQL_API SQLCopyDesc(SQLHDESC src, SQLHDESC dst) {
+  return timestream::SQLCopyDesc(src, dst);
+}
+
 #if defined(__APPLE__)
 // only for macOS as iODBC driver manger on BigSur does not 
 // implement this function
@@ -524,15 +528,6 @@ SQLRETURN SQL_API SQLBulkOperations(SQLHSTMT stmt, SQLUSMALLINT operation) {
   LOG_DEBUG_MSG("Unsupported function SQLBulkOperations called");
 
   STMT_UNSUPPORTED_FUNC(stmt, "SQLBulkOperations is not supported.");
-  return SQL_ERROR;
-}
-
-SQLRETURN SQL_API SQLCopyDesc(SQLHDESC src, SQLHDESC dst) {
-  IGNITE_UNUSED(src);
-  IGNITE_UNUSED(dst);
-
-  LOG_DEBUG_MSG("Unsupported function SQLCopyDesc called");
-
   return SQL_ERROR;
 }
 

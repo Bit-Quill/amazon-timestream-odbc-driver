@@ -190,6 +190,9 @@ struct SqlState {
     /** Function sequence error. */
     SHY010_SEQUENCE_ERROR,
 
+    /** Can not modify IRD. */
+    SHY016_MODIFY_IRD,
+
     /** Invalid attribute value. */
     SHY024_INVALID_ATTRIBUTE_VALUE,    
 

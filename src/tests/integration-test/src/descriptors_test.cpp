@@ -611,4 +611,59 @@ BOOST_AUTO_TEST_CASE(TestDescriptorGetRainyCase) {
   CHECK_DESC_GET_FIELD_FAILURE(SQL_DESC_UPDATABLE);
 }
 
+// Test SQLCopyDesc for ARD
+BOOST_AUTO_TEST_CASE(TestCopyDescriptor) {
+  const int32_t buf_size = 1024;
+  SQLWCHAR id[buf_size]{};
+  SQLLEN id_len = 0;
+
+  SQLRETURN ret = SQLBindCol(stmt, 1, SQL_C_WCHAR, id, sizeof(id), &id_len);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLHANDLE dst;
+  ret = SQLAllocHandle(SQL_HANDLE_DESC, dbc, &dst);
+  BOOST_CHECK_EQUAL(ret, SQL_SUCCESS);
+
+  ret = SQLCopyDesc(ard, dst);
+  BOOST_CHECK_EQUAL(ret, SQL_SUCCESS);
+
+  SQLSMALLINT siSrc;
+  ret = SQLGetDescField(ard, 1, SQL_DESC_CONCISE_TYPE, &siSrc, 0, NULL);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  SQLSMALLINT siDst;
+  ret = SQLGetDescField(dst, 1, SQL_DESC_CONCISE_TYPE, &siDst, 0, NULL);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  BOOST_CHECK_EQUAL(siSrc, siDst);
+
+  ret = SQLFreeHandle(SQL_HANDLE_DESC, dst);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+}
+
+// Test SQLCopyDesc rainy case
+BOOST_AUTO_TEST_CASE(TestCopyDescriptorRainyCase) {
+  SQLHANDLE ird;
+
+  SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_IMP_ROW_DESC, &ird, 0, nullptr);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+
+  ret = SQLCopyDesc(ard, ird);
+  BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+
+// For Linux driver manager SQLGetDiagRec is called instead of our SQLGetDiagRec.
+// Driver manager SQLGetDiagRec does not return any error info. So no error check for Linux.
+#if defined(_WIN32)
+  OdbcClientError error = GetOdbcError(SQL_HANDLE_DESC, ird);
+  BOOST_CHECK_EQUAL(error.sqlstate, "HY016");
+  BOOST_CHECK_EQUAL(error.message,
+                    "[Microsoft][ODBC Driver Manager] Cannot modify an IRD");
+#elif defined(__APPLE__)
+  OdbcClientError error = GetOdbcError(SQL_HANDLE_DESC, ard);
+  BOOST_CHECK_EQUAL(error.sqlstate, "HY016");
+  BOOST_CHECK_EQUAL(error.message,
+                    "Cannot modify an implementation row descriptor");  
+#endif
+}
+
 BOOST_AUTO_TEST_SUITE_END()

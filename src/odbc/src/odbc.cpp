@@ -1518,7 +1518,28 @@ SQLRETURN SQLGetDescField(SQLHDESC descr, SQLSMALLINT recNum,
   descriptor->GetField(recNum, fieldId, buffer, bufferLen, resLen);
 
   return descriptor->GetDiagnosticRecords().GetReturnCode();
+}
 
+SQLRETURN SQLCopyDesc(SQLHDESC src, SQLHDESC dst) {
+  LOG_DEBUG_MSG("SQLCopyDesc called");
+
+  Descriptor* srcDesc = reinterpret_cast< Descriptor* >(src);
+
+  if (!srcDesc) {
+    LOG_ERROR_MSG("source descriptor is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  Descriptor* dstDesc = reinterpret_cast< Descriptor* >(dst);
+
+  if (!dstDesc) {
+    LOG_ERROR_MSG("destination descriptor is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  srcDesc->CopyDesc(dstDesc);
+ 
+  return srcDesc->GetDiagnosticRecords().GetReturnCode();
 }
 
 #if defined(__APPLE__)

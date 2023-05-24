@@ -423,6 +423,34 @@ SqlResult::Type Descriptor::InternalGetField(int recNum, int fieldId,
   return SqlResult::AI_SUCCESS;
 }
 
+void Descriptor::CopyDesc(Descriptor* dst) {
+  IGNITE_ODBC_API_CALL(InternalCopyDesc(dst));
+}
+
+SqlResult::Type Descriptor::InternalCopyDesc(Descriptor* dst) {
+  if (dst->GetType() == DescType::IRD) {
+    AddStatusRecord(SqlState::SHY016_MODIFY_IRD, "Cannot modify an implementation row descriptor");
+    return SqlResult::AI_ERROR;
+  }
+
+  // reset destination descriptor
+  memset(&(dst->GetHeader()), 0, sizeof(DescriptorHeader));
+  dst->GetRecords().clear();
+
+  // copy current descriptor
+  if (type_ == ARD || type_ == APD) {
+    dst->InitAppHead(true);
+  } else {
+    dst->InitImpHead();
+  }
+  dst->SetType(type_);
+  dst->SetConnection(conn_);
+  dst->SetStatement(stmt_);
+
+  dst->GetRecords() = records_;
+  return SqlResult::AI_SUCCESS;
+}
+
 bool Descriptor::IsValidConciseType(int value) {
   switch (value) {
     case SQL_CHAR:
