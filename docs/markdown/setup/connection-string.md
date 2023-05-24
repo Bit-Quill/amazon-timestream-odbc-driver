@@ -38,7 +38,7 @@
 
 | Option | Description | Default |
 |--------|-------------|---------------|
-| `ProfileName` | The profile name on the [AWS config file](https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/creds-file.html). This is optional. | `NONE` 
+| `ProfileName` | The profile name on the [AWS config file](https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/creds-file.html). | `NONE` 
 
 ### AWS IAM Authentication Options
 

@@ -1062,14 +1062,15 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
   Disconnect();
 }
 
-// TODO modify & enable this test as part of AT-1048
-// https://bitquill.atlassian.net/browse/AT-1048
-BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile) {
   const std::string profile = "";
   std::string connectionString;
   CreateDsnConnectionStringForAWS(connectionString, AuthType::Type::AWS_PROFILE,
                                   profile);
 
+  ExpectConnectionReject(connectionString, "08001",
+                         "Failed to establish connection to Timestream.\n"
+                         "Empty or expired credentials");
   Disconnect();
 }
 

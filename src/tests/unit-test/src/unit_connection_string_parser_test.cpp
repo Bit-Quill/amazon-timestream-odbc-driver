@@ -81,28 +81,6 @@ BOOST_AUTO_TEST_CASE(TestParsingNoProvider) {
     BOOST_FAIL(diag.GetStatusRecord(1).GetMessageText());
 }
 
-// TODO modify & enable this test as part of AT-1048
-// https://bitquill.atlassian.net/browse/AT-1048
-BOOST_AUTO_TEST_CASE(TestParsingNoCredentials, *disabled()) {
-  timestream::odbc::config::Configuration cfg;
-
-  ConnectionStringParser parser(cfg);
-
-  diagnostic::DiagnosticRecordStorage diag;
-
-  std::string connectionString =
-      "driver={Amazon Timestream ODBC Driver};"
-      "auth="
-      + AuthType::ToString(testAuthType) + ";";
-
-  BOOST_CHECK_NO_THROW(parser.ParseConnectionString(connectionString, &diag));
-
-  BOOST_CHECK_GE(diag.GetStatusRecordsNumber(), 1);
-  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetSqlState(), "08001");
-  BOOST_CHECK_EQUAL(diag.GetStatusRecord(1).GetMessageText(),
-                    "Credentials file is empty");
-}
-
 BOOST_AUTO_TEST_CASE(TestParsingEmptyCredentials) {
   timestream::odbc::config::Configuration cfg;
 
