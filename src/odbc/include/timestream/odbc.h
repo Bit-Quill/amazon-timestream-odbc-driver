@@ -236,6 +236,11 @@ SQLRETURN SQLCopyDesc(SQLHDESC src, SQLHDESC dst);
 SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
                                   SQLUSMALLINT* valueBuf);
 #endif
+
+SQLRETURN SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
+                           SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,
+                           SQLSMALLINT strAttrBufLen,
+                           SQLSMALLINT* strAttrResLen, SQLLEN* numAttrBuf);
 }  // namespace timestream
 
 #endif  //_TIMESTREAM_ODBC

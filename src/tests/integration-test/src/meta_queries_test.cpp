@@ -274,6 +274,69 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK_EQUAL(intVal, expectedVal);
   }
 
+ /**
+   * Check attribute using SQLColAttributes.
+   * The value returned from SQLColAttributes should match the expected value.
+   *
+   * @param stmt Statement.
+   * @param query SQL Query.
+   * @param fieldId Field Identifier.
+   * @param expectedVal Expected string data.
+   */
+  void callSQLColAttributes(SQLHSTMT stmt, const SQLCHAR *query,
+                           SQLSMALLINT fieldId,
+                           const std::string &expectedVal) {
+    SQLWCHAR strBuf[1024] = {0};
+    std::vector< SQLWCHAR > wQuery =
+        MakeSqlBuffer(reinterpret_cast< const char * >(query));
+
+    SQLRETURN ret = SQLExecDirect(stmt, wQuery.data(), SQL_NTS);
+
+    if (!SQL_SUCCEEDED(ret) && ret != SQL_NO_DATA)
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    // resLen (6th parameter of SQLColAttributes) is unused, but it needs to be
+    // defined for macOS, as iODBC will attempt to access resLen when strBuf is
+    // non-empty string. This behavior is out of the driver's control.
+    SQLSMALLINT resLen = 0;
+    ret = SQLColAttributes(stmt, 1, fieldId, strBuf, sizeof(strBuf), &resLen,
+                          nullptr);
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    std::string buf = utility::SqlWcharToString(strBuf);
+
+    BOOST_CHECK(expectedVal == buf);
+  }
+
+  /**
+   * Check attribute using SQLColAttributes.
+   * The value returned from SQLColAttributes should match the expected value.
+   *
+   * @param stmt Statement.
+   * @param query SQL Query.
+   * @param fieldId Field Identifier.
+   * @param expectedVal Expected int data.
+   */
+  void callSQLColAttributes(SQLHSTMT stmt, const SQLCHAR *query,
+                           SQLSMALLINT fieldId, const int &expectedVal) {
+    SQLLEN intVal;
+    std::vector< SQLWCHAR > wQuery =
+        MakeSqlBuffer(reinterpret_cast< const char * >(query));
+
+    SQLRETURN ret = SQLExecDirect(stmt, wQuery.data(), SQL_NTS);
+
+    if (!SQL_SUCCEEDED(ret) && ret != SQL_NO_DATA)
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    ret = SQLColAttributes(stmt, 1, fieldId, nullptr, 0, nullptr, &intVal);
+
+    if (!SQL_SUCCEEDED(ret))
+      BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+
+    BOOST_CHECK_EQUAL(intVal, expectedVal);
+  }
+
   /**
    * Check result set column metadata using SQLDescribeCol.
    *
@@ -829,6 +892,14 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescCatalogName) {
 
   // check that catalog should be empty
   callSQLColAttribute(stmt, req, SQL_DESC_CATALOG_NAME, std::string(""));
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributeDescTypeName) {
+  ConnectToTS();
+
+  const SQLCHAR req[] = "select time from meta_queries_test_db.IoTMulti";
+
+  callSQLColAttribute(stmt, req, SQL_DESC_TYPE_NAME, std::string("TIMESTAMP"));
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributeDescConciseType) {
@@ -4141,6 +4212,226 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterPrepare) {
  * 5. Check precision and scale of every column using SQLColAttribute. */
 BOOST_AUTO_TEST_CASE(TestSQLColAttributePrecisionAndScaleAfterExec) {
   CheckSQLColAttributePrecisionAndScale(&OdbcTestSuite::ExecQuery);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnAutoUniqueValue) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] = "select load from meta_queries_test_db.IoTMulti";
+
+  // only "NO" is returned for AUTO_INCREMENT field
+  callSQLColAttributes(stmt, req, SQL_COLUMN_AUTO_INCREMENT, SQL_FALSE);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnCaseSensitive) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  // test that case sensitive returns true for string field.
+  const SQLCHAR req1[] = "select location from meta_queries_test_db.IoTMulti";
+
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_CASE_SENSITIVE, SQL_TRUE);
+
+  // test that case sensitive returns false for int field.
+  const SQLCHAR req2[] = "select speed from meta_queries_test_db.IoTMulti";
+
+  callSQLColAttributes(stmt, req2, SQL_COLUMN_CASE_SENSITIVE, SQL_FALSE);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnCount) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] = "select hostname from meta_queries_test_db.DevOpsMulti";
+
+  // count should be 1
+  callSQLColAttributes(stmt, req, SQL_COLUMN_COUNT, 1);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnDisplaySize) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // SQL_VARCHAR should have display size TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_DISPLAY_SIZE,
+                      TIMESTREAM_SQL_MAX_LENGTH);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnLabel) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req, SQL_COLUMN_LABEL, std::string("flag"));
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnLength) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // SQL_VARCHAR should have length TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_LENGTH, TIMESTREAM_SQL_MAX_LENGTH);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnFixedPrecScale) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] = "select speed from meta_queries_test_db.IoTMulti";
+
+  // only SQL_FALSE is returned
+  callSQLColAttributes(stmt, req, SQL_COLUMN_MONEY, SQL_FALSE);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnName) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req, SQL_COLUMN_NAME,
+                      std::string("video_startup_time"));
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnNullable) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_NULLABLE, SQL_NULLABLE_UNKNOWN);
+
+  const SQLCHAR req2[] =
+      "select flag from meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req2, SQL_COLUMN_NULLABLE, SQL_NULLABLE_UNKNOWN);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnSchemaName) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] = "select location from meta_queries_test_db.IoTMulti";
+
+  // schema name is empty
+  callSQLColAttributes(stmt, req, SQL_COLUMN_OWNER_NAME, std::string(""));
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnPrecision) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // SQL_VARCHAR should have precision TIMESTREAM_SQL_MAX_LENGTH
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_PRECISION,
+                      TIMESTREAM_SQL_MAX_LENGTH);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnQualifierName) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] = "select time from meta_queries_test_db.IoTMulti";
+
+  // check that qualifier should be empty
+  callSQLColAttributes(stmt, req, SQL_COLUMN_QUALIFIER_NAME, std::string(""));
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnScale) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
+
+  // default scale value is 0
+  callSQLColAttributes(stmt, req, SQL_COLUMN_SCALE, 0);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnSearchable) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // only SQL_PRED_BASIC is returned
+  callSQLColAttributes(stmt, req, SQL_COLUMN_SEARCHABLE, SQL_PRED_BASIC);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnTableName) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // table name is not set for a column
+  callSQLColAttributes(stmt, req, SQL_COLUMN_TABLE_NAME, "");
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnType) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req1[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_TYPE, SQL_VARCHAR);
+
+  const SQLCHAR req2[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req2, SQL_COLUMN_TYPE, SQL_BIGINT);
+
+  const SQLCHAR req3[] =
+      "select time from meta_queries_test_db.TestColumnsMetadata1";
+
+  callSQLColAttributes(stmt, req3, SQL_COLUMN_TYPE, SQL_TIMESTAMP);
+
+  const SQLCHAR req4[] = "select time '12:42:13'";
+  callSQLColAttributes(stmt, req4, SQL_COLUMN_TYPE, SQL_TIME);
+
+  const SQLCHAR req5[] =
+      "select date(time) from meta_queries_test_db.TestColumnsMetadata2";
+  callSQLColAttributes(stmt, req5, SQL_COLUMN_TYPE, SQL_DATE);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnUnsigned) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req1[] =
+      "select video_startup_time from "
+      "meta_queries_test_db.TestColumnsMetadata1";
+
+  // numeric type should be signed
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_UNSIGNED, SQL_FALSE);
+
+  const SQLCHAR req2[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // non-numeric types should be unsigned
+  callSQLColAttributes(stmt, req2, SQL_COLUMN_UNSIGNED, SQL_TRUE);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnUpdatable) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] =
+      "select device_id from meta_queries_test_db.TestColumnsMetadata1";
+
+  // only SQL_ATTR_READWRITE_UNKNOWN is returned
+  callSQLColAttributes(stmt, req, SQL_COLUMN_UPDATABLE,
+                      SQL_ATTR_READWRITE_UNKNOWN);
+}
+
+BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnTypeName) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  const SQLCHAR req[] = "select time from meta_queries_test_db.IoTMulti";
+
+  callSQLColAttributes(stmt, req, SQL_COLUMN_TYPE_NAME,
+                       std::string("TIMESTAMP"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

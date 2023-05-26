@@ -414,28 +414,18 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn,
 }
 #endif
 
-//
-// ==== Not implemented ====
-//
 
 SQLRETURN SQL_API SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
                                    SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,
                                    SQLSMALLINT strAttrBufLen,
                                    SQLSMALLINT* strAttrResLen,
                                    SQLLEN* numAttrBuf) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(colNum);
-  IGNITE_UNUSED(fieldId);
-  IGNITE_UNUSED(strAttrBuf);
-  IGNITE_UNUSED(strAttrBufLen);
-  IGNITE_UNUSED(strAttrResLen);
-  IGNITE_UNUSED(numAttrBuf);
-
-  LOG_DEBUG_MSG("unsupported function SQLColAttributes called");
-
-  STMT_UNSUPPORTED_FUNC(stmt, "SQLColAttributes is not supported.");
-  return SQL_ERROR;
+  return timestream::SQLColAttributes(stmt, colNum, fieldId, strAttrBuf, strAttrBufLen, strAttrResLen, numAttrBuf);
 }
+
+//
+// ==== Not implemented ====
+//
 
 #if defined(__APPLE__) // TODO remove this #if line in AT-1224
 // SQLSetConnectOption is called by Excel 16 on macOS to change the login timeout,

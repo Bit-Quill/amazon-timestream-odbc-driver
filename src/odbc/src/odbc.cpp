@@ -1561,4 +1561,44 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 #endif
+
+SQLRETURN SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
+                           SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,
+                           SQLSMALLINT strAttrBufLen,
+                           SQLSMALLINT* strAttrResLen, SQLLEN* numAttrBuf) {
+  LOG_DEBUG_MSG("SQLColAttributes called: "
+                << fieldId << " ("
+                << odbc::meta::ColumnMeta::AttrIdToString(fieldId) << ")");
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG("statement is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  if (fieldId == SQL_COLUMN_NAME) {
+    fieldId = SQL_DESC_NAME;
+  } else if (fieldId == SQL_COLUMN_NULLABLE) {
+    fieldId = SQL_DESC_NULLABLE;
+  } else if (fieldId == SQL_COLUMN_COUNT) {
+    fieldId = SQL_DESC_COUNT;
+  }
+
+  SQLRETURN ret = SQLColAttribute(stmt, colNum, fieldId, strAttrBuf,
+                          strAttrBufLen, strAttrResLen, numAttrBuf);
+
+  int32_t odbcVer = statement->GetConnection().GetEnvODBCVer();
+  if (odbcVer == SQL_OV_ODBC2) {
+    if (fieldId == SQL_COLUMN_TYPE) {
+      if (*numAttrBuf == SQL_TYPE_DATE)
+        *numAttrBuf = SQL_DATE;
+      else if (*numAttrBuf == SQL_TYPE_TIME)
+        *numAttrBuf = SQL_TIME;
+      else if (*numAttrBuf == SQL_TYPE_TIMESTAMP)
+        *numAttrBuf = SQL_TIMESTAMP;
+    }
+  }
+  return ret;
+}
 }  // namespace timestream
