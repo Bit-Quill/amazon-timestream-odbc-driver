@@ -826,4 +826,51 @@ BOOST_AUTO_TEST_CASE(EnvironmentAttributeCPMatchDefault) {
   BOOST_CHECK_EQUAL(cpMatch, SQL_CP_STRICT_MATCH);
 }
 
+BOOST_AUTO_TEST_CASE(StatementOptionSupported) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLULEN value = 0;
+  SQLRETURN ret = SQLGetStmtOption(stmt, SQL_ROWSET_SIZE, (SQLPOINTER)&value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  BOOST_CHECK_EQUAL(value, 1);
+
+  ret = SQLGetStmtOption(stmt, SQL_BIND_TYPE, (SQLPOINTER)&value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  BOOST_CHECK_EQUAL(value, SQL_BIND_BY_COLUMN);
+
+  ret = SQLGetStmtOption(stmt, SQL_CONCURRENCY, (SQLPOINTER)&value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  BOOST_CHECK_EQUAL(value, SQL_CONCUR_READ_ONLY);
+
+  ret = SQLGetStmtOption(stmt, SQL_CURSOR_TYPE, (SQLPOINTER)&value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  BOOST_CHECK_EQUAL(value, SQL_CURSOR_FORWARD_ONLY);
+
+  ret = SQLGetStmtOption(stmt, SQL_RETRIEVE_DATA, (SQLPOINTER)&value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+  BOOST_CHECK_EQUAL(value, SQL_RD_ON);
+}
+
+#define CHECK_GET_OPTION_NOTSUPPORTED(option)                           \
+  {                                                                     \
+    SQLULEN value = 0;                                                  \
+    SQLRETURN ret = SQLGetStmtOption(stmt, option, (SQLPOINTER)&value); \
+    BOOST_CHECK_EQUAL(ret, SQL_ERROR);                                  \
+  }
+
+BOOST_AUTO_TEST_CASE(StatementOptionNotSupported) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  // These unsupported options are blocked by driver manager
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_GET_BOOKMARK);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_ROW_NUMBER);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_ASYNC_ENABLE);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_KEYSET_SIZE);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_MAX_LENGTH);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_MAX_ROWS);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_NOSCAN);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_QUERY_TIMEOUT);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_SIMULATE_CURSOR);
+  CHECK_GET_OPTION_NOTSUPPORTED(SQL_USE_BOOKMARKS);
+}
 BOOST_AUTO_TEST_SUITE_END()

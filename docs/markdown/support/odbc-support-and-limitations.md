@@ -5,6 +5,7 @@
 - [Supported Connection Information Types](#supported-connection-information-types)
 - [Supported Connection Attributes](#supported-connection-attributes)
 - [Supported Statements Attributes](#supported-statements-attributes)
+- [Supported Statements Options for SQLGetStmtOption](#supported-statements-options-for-sqlgetstmtoption) 
 - [SQLPrepare, SQLExecute and SQLExecDirect](#sqlprepare-sqlexecute-and-sqlexecdirect)
 - [SQLTables](#sqltables)
 - [Database Reporting Differences Between Timestream JDBC Driver and ODBC Driver](#database-reporting-differences-between-timestream-jdbc-driver-and-odbc-driver)
@@ -293,7 +294,7 @@ In both `SQLSetStmtAttr` and `SQLGetStmtAttr`
 |SQL_ATTR_RETRIEVE_DATA|SQL_RD_ON| no |
 |SQL_ATTR_METADATA_ID|SQL_FALSE| yes |
 |SQL_ATTR_PARAM_BIND_TYPE| SQL_BIND_BY_COLUMN | no |
-|SQL_ATTR_ROW_ARRAY_SIZE| 1 | no |
+|SQL_ATTR_ROW_ARRAY_SIZE| 1 | yes |
 |SQL_ATTR_ROW_BIND_OFFSET_PTR| column bind offset pointer | yes |
 |SQL_ATTR_ROW_BIND_TYPE| SQL_BIND_BY_COLUMN | no |
 |SQL_ATTR_ROW_STATUS_PTR| row status pointer | yes| 
@@ -310,6 +311,17 @@ Attributes that are only supported in `SQLGetStmtAttr`
 |SQL_ATTR_CURSOR_SENSITIVITY| SQL_INSENSITIVE |
 |SQL_ATTR_ENABLE_AUTO_IPD|SQL_FALSE|
 |SQL_ATTR_ROW_NUMBER| current row number, 0 if cannot be determined |
+
+## Supported Statements Options for SQLGetStmtOption 
+| Statement attribute | Return value |
+|--------|------|
+|SQL_BIND_TYPE| SQL_BIND_BY_COLUMN |
+|SQL_CONCURRENCY| SQL_CONCUR_READ_ONLY |
+|SQL_CURSOR_TYPE| SQL_CURSOR_FORWARD_ONLY |
+|SQL_RETRIEVE_DATA| SQL_RD_ON |
+|SQL_ROWSET_SIZE| number of rows in the rowset |
+
+Note: SQLGetStmtOption is an ODBC 2.x function. It also supports [statement attributes](#supported-statements-attributes) if it is called from an ODBC 3 application.
 
 ## Supported Descriptor Fields 
 Table of descriptor fields supported by the Amazon Timestream ODBC driver.\

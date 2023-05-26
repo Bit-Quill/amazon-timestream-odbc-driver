@@ -106,6 +106,14 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
                     SQLINTEGER* valueLen);
 
   /**
+   * Get statement option.
+   *
+   * @param option Option type.
+   * @param value Option value.
+   */
+  void GetStmtOption(SQLUSMALLINT option, SQLPOINTER value);
+
+  /**
    * Get value of the column in the result set.
    *
    * @param columnIdx Column index.
@@ -427,6 +435,16 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalGetAttribute(int attr, void* buf, SQLINTEGER bufLen,
                                        SQLINTEGER* valueLen);
+
+  /**
+   * Get statement option.
+   * Internal call.
+   *
+   * @param option Option type.
+   * @param value Option value.
+   * @return Operation result.
+   */
+  SqlResult::Type InternalGetStmtOption(SQLUSMALLINT option, SQLPOINTER value);
 
   /**
    * Get number parameters required by the prepared statement.

@@ -237,6 +237,9 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
                                   SQLUSMALLINT* valueBuf);
 #endif
 
+SQLRETURN SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
+                                   SQLPOINTER value);
+    
 SQLRETURN SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
                            SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,
                            SQLSMALLINT strAttrBufLen,

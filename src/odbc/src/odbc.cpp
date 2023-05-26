@@ -1562,6 +1562,22 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
 }
 #endif
 
+SQLRETURN SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
+                           SQLPOINTER value) {
+  LOG_DEBUG_MSG("SQLGetStmtOption called with option " << option);
+
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+    LOG_ERROR_MSG("statement is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  statement->GetStmtOption(option, value);
+
+  return statement->GetDiagnosticRecords().GetReturnCode();
+}
+
 SQLRETURN SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
                            SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,
                            SQLSMALLINT strAttrBufLen,

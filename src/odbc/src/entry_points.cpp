@@ -414,6 +414,10 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn,
 }
 #endif
 
+SQLRETURN SQL_API SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
+                                   SQLPOINTER value) {
+  return timestream::SQLGetStmtOption(stmt, option, value);
+}
 
 SQLRETURN SQL_API SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
                                    SQLUSMALLINT fieldId, SQLPOINTER strAttrBuf,
@@ -443,18 +447,6 @@ SQLRETURN SQL_API SQLSetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
   return SQL_SUCCESS;
 }
 #endif //defined(__APPLE__)
-
-SQLRETURN SQL_API SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
-                                   SQLPOINTER value) {
-  IGNITE_UNUSED(stmt);
-  IGNITE_UNUSED(option);
-  IGNITE_UNUSED(value);
-
-  LOG_DEBUG_MSG("unsupported function SQLGetStmtOption called");
-
-  STMT_UNSUPPORTED_FUNC(stmt, "SQLGetStmtOption is not supported.");
-  return SQL_ERROR;
-}
 
 SQLRETURN SQL_API SQLSetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
                                    SQLULEN value) {

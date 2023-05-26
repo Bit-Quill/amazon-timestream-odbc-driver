@@ -636,6 +636,35 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
   return SqlResult::AI_SUCCESS;
 }
 
+void Statement::GetStmtOption(SQLUSMALLINT option, SQLPOINTER value) {
+  IGNITE_ODBC_API_CALL(InternalGetStmtOption(option, value));
+}
+
+SqlResult::Type Statement::InternalGetStmtOption(SQLUSMALLINT option,
+                                                 SQLPOINTER value) {
+  LOG_DEBUG_MSG("InternalGetStmtOption is called");
+
+  if (!value) {
+    AddStatusRecord("Data buffer is NULL.");
+
+    return SqlResult::AI_ERROR;
+  }
+
+  switch (option) {
+    case SQL_ROWSET_SIZE: {
+      return InternalGetAttribute(SQL_ATTR_ROW_ARRAY_SIZE, value, 0, nullptr);
+    }
+
+    case SQL_BIND_TYPE:
+    case SQL_CONCURRENCY:
+    case SQL_CURSOR_TYPE:   
+    case SQL_RETRIEVE_DATA:
+    default: {
+      return InternalGetAttribute(option, value, 0, nullptr);
+    }
+  }
+}
+
 void Statement::GetColumnData(uint16_t columnIdx,
                               app::ApplicationDataBuffer& buffer) {
   IGNITE_ODBC_API_CALL(InternalGetColumnData(columnIdx, buffer));
