@@ -37,6 +37,7 @@ using timestream::odbc::query::Query;
 
 namespace timestream {
 namespace odbc {
+struct StatementAttributes;
 class Connection;
 
 /**
@@ -93,6 +94,13 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @param valueLen Value length.
    */
   void SetAttribute(int attr, void* value, SQLINTEGER valueLen);
+
+  /**
+   * Set statement attribute.
+   *
+   * @param stmtAttr StatementAttributes struct.
+   */
+  void SetAttribute(StatementAttributes& stmtAttr);
 
   /**
    * Get statement attribute.

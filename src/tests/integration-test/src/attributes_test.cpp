@@ -206,24 +206,6 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeTSLogDebug) {
   BOOST_REQUIRE_EQUAL(id, static_cast<SQLUINTEGER>(LogLevel::Type::DEBUG_LEVEL));
 }
 
-// Test SQLGetConnectOption/SQLSetConnectOption
-// TODO [AT-1224] enable this test on macOS
-// https://bitquill.atlassian.net/browse/AT-1224
-#if !defined(__APPLE__)
-BOOST_AUTO_TEST_CASE(ConnectionSetAndGetConnectOption) {
-  ConnectToTS();
-
-  SQLRETURN ret = SQLSetConnectOption(dbc, SQL_ATTR_METADATA_ID, SQL_TRUE);
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-
-  SQLUINTEGER id = 0;
-  ret = SQLGetConnectOption(dbc, SQL_ATTR_METADATA_ID, &id);
-
-  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-  BOOST_REQUIRE_EQUAL(id, SQL_TRUE);
-}
-#endif // #if !defined(__APPLE__)
-
 BOOST_AUTO_TEST_CASE(StatementAttributeCursorScrollable) {
   ConnectToTS();
   
@@ -572,7 +554,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLExecDirect) {
   // Total row count should be 6
   BOOST_REQUIRE_EQUAL(rowNum, 6);
 
-	// Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
+  // Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
   // controlled by the driver manager
   ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_NUMBER, &rowNum, 0, 0);
 
@@ -633,7 +615,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLTables) {
     BOOST_REQUIRE_EQUAL(rowNum, rowCount);
   } while (true);
 
-	// Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
+  // Get row number after SQLFetch returns SQL_NO_DATA. This behavior is
   // controlled by the driver manager
   ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_NUMBER, &rowNum, 0, 0);
 
@@ -826,6 +808,227 @@ BOOST_AUTO_TEST_CASE(EnvironmentAttributeCPMatchDefault) {
   BOOST_CHECK_EQUAL(cpMatch, SQL_CP_STRICT_MATCH);
 }
 
+#if defined(__APPLE__)
+#define CHECK_SET_IGNORED_OPTION(option, value)              \
+  {                                                          \
+    SQLRETURN ret = SQLSetConnectOption(dbc, option, value); \
+    BOOST_CHECK_EQUAL(ret, SQL_SUCCESS_WITH_INFO);           \
+    CheckSQLConnectionDiagnosticError("01000");              \
+  }
+#else
+#define CHECK_SET_IGNORED_OPTION(option, value)                  \
+  {                                                              \
+    SQLRETURN ret = SQLSetConnectOption(dbc, option, value);     \
+    BOOST_CHECK_EQUAL(ret, SQL_SUCCESS_WITH_INFO);               \
+    CheckSQLConnectionDiagnosticError("01000");                  \
+    BOOST_CHECK_EQUAL("01000: Specified attribute is ignored.",  \
+                      GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc)); \
+  }
+#endif
+
+// Test options that could be set
+BOOST_AUTO_TEST_CASE(ConnectionSetConnectOption) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLRETURN ret = SQLSetConnectOption(dbc, SQL_BIND_TYPE, SQL_BIND_BY_COLUMN);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  ret = SQLSetConnectOption(dbc, SQL_CONCURRENCY, SQL_CONCUR_READ_ONLY);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  ret = SQLSetConnectOption(dbc, SQL_CURSOR_TYPE, SQL_CURSOR_FORWARD_ONLY);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  ret = SQLSetConnectOption(dbc, SQL_RETRIEVE_DATA, SQL_RD_ON);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  ret = SQLSetConnectOption(dbc, SQL_ROWSET_SIZE, 100);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionSetConnectOptionUnsupportedValue) {
+  ConnectToTS(SQL_OV_ODBC2);
+  // error messages are hidden by driver manager
+  SQLRETURN ret = SQLSetConnectOption(dbc, SQL_BIND_TYPE, 1);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+  ret = SQLSetConnectOption(dbc, SQL_CONCURRENCY, SQL_CONCUR_LOCK);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+  ret = SQLSetConnectOption(dbc, SQL_CURSOR_TYPE, SQL_CURSOR_KEYSET_DRIVEN);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+  ret = SQLSetConnectOption(dbc, SQL_RETRIEVE_DATA, SQL_RD_OFF);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+
+  ret = SQLSetConnectOption(dbc, SQL_ROWSET_SIZE, 2000);
+  BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
+}
+
+// Test not supported connection options
+BOOST_AUTO_TEST_CASE(ConnectionSetConnectOptionUnsupportedOption) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLRETURN ret = SQLSetConnectOption(dbc, SQL_USE_BOOKMARKS, SQL_TRUE);
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+#if defined(__linux__)
+  CheckSQLConnectionDiagnosticError("S1C00");
+#else
+  CheckSQLConnectionDiagnosticError("HYC00");
+#endif
+
+#if defined(__APPLE__)
+  std::string pattern = "Cannot find ODBC error message";
+#else
+  std::string pattern = "Specified attribute is not supported";
+#endif
+
+  BOOST_CHECK(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc).find(pattern)
+              != std::string::npos);
+
+  ret = SQLSetConnectOption(dbc, SQL_SIMULATE_CURSOR, SQL_TRUE);
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+#if defined(__linux__)
+  CheckSQLConnectionDiagnosticError("S1C00");
+#else
+  CheckSQLConnectionDiagnosticError("HYC00");
+#endif
+  BOOST_CHECK(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc).find(pattern)
+              != std::string::npos);
+}
+
+// Test ignored connection options
+BOOST_AUTO_TEST_CASE(ConnectionSetConnectOptionIgnored) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  CHECK_SET_IGNORED_OPTION(SQL_NOSCAN, SQL_TRUE);
+  CHECK_SET_IGNORED_OPTION(SQL_QUERY_TIMEOUT, 10);
+  CHECK_SET_IGNORED_OPTION(SQL_MAX_ROWS, 20);
+  CHECK_SET_IGNORED_OPTION(SQL_MAX_LENGTH, 20);
+  CHECK_SET_IGNORED_OPTION(SQL_KEYSET_SIZE, 100);
+  CHECK_SET_IGNORED_OPTION(SQL_ASYNC_ENABLE, SQL_TRUE);
+  CHECK_SET_IGNORED_OPTION(SQL_TXN_ISOLATION, SQL_TXN_READ_COMMITTED);
+  CHECK_SET_IGNORED_OPTION(SQL_ACCESS_MODE, SQL_MODE_READ_ONLY);
+  CHECK_SET_IGNORED_OPTION(SQL_CURRENT_QUALIFIER,
+                       reinterpret_cast< SQLULEN >("test"));
+  CHECK_SET_IGNORED_OPTION(SQL_PACKET_SIZE, 100);
+  CHECK_SET_IGNORED_OPTION(SQL_QUIET_MODE, NULL);
+  CHECK_SET_IGNORED_OPTION(SQL_LOGIN_TIMEOUT, 10);
+  CHECK_SET_IGNORED_OPTION(SQL_TRANSLATE_DLL,
+                           reinterpret_cast< SQLULEN >("trace"));
+  CHECK_SET_IGNORED_OPTION(SQL_TRANSLATE_OPTION, SQL_FALSE);
+}
+
+// Test connection options set by driver manager
+BOOST_AUTO_TEST_CASE(ConnectionSetConnectOptionDMCase) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLRETURN ret =
+      SQLSetConnectOption(dbc, SQL_ODBC_CURSORS, SQL_CUR_USE_DRIVER);
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+
+  ret = SQLSetConnectOption(dbc, SQL_OPT_TRACE, SQL_OPT_TRACE_ON);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  ret = SQLSetConnectOption(dbc, SQL_OPT_TRACEFILE,
+                            reinterpret_cast< SQLULEN >("trace"));
+#if defined(__APPLE__)
+  BOOST_CHECK_EQUAL(ret, SQL_ERROR);
+  CheckSQLConnectionDiagnosticError("IM013");
+  BOOST_CHECK(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc).find("Trace file error")
+              != std::string::npos);
+#else
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+#endif
+}
+
+//SQL_ATTR_METADATA_ID could not be set/get by SQLSetConnectOption/SQLGetConnectOption on macOS
+#if !defined(__APPLE__)
+BOOST_AUTO_TEST_CASE(ConnectionSetAndGetConnectOption) {
+  ConnectToTS();
+
+  SQLRETURN ret = SQLSetConnectOption(dbc, SQL_ATTR_METADATA_ID, SQL_TRUE);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+  SQLUINTEGER id = 0;
+  ret = SQLGetConnectOption(dbc, SQL_ATTR_METADATA_ID, &id);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(id, SQL_TRUE);
+}
+#endif
+
+#if defined(__APPLE__)
+#define CHECK_GET_IGNORED_OPTION(option)                      \
+  {                                                           \
+    SQLULEN value = 0;                                        \
+    SQLRETURN ret = SQLGetConnectOption(dbc, option, &value); \
+    BOOST_CHECK_EQUAL(ret, SQL_SUCCESS_WITH_INFO);            \
+    CheckSQLConnectionDiagnosticError("01000");               \
+  }
+#else
+#define CHECK_GET_IGNORED_OPTION(option)                         \
+  {                                                              \
+    SQLULEN value = 0;                                           \
+    SQLRETURN ret = SQLGetConnectOption(dbc, option, &value);    \
+    BOOST_CHECK_EQUAL(ret, SQL_SUCCESS_WITH_INFO);               \
+    CheckSQLConnectionDiagnosticError("01000");                  \
+    BOOST_CHECK_EQUAL("01000: Specified attribute is ignored.",  \
+                      GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc)); \
+  }
+#endif
+
+// Test options returned from driver
+BOOST_AUTO_TEST_CASE(ConnectionGetConnectOption) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLUINTEGER value;
+
+  SQLRETURN ret = SQLGetConnectOption(dbc, SQL_AUTOCOMMIT, &value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(value, SQL_AUTOCOMMIT_ON);
+
+  ret = SQLGetConnectOption(dbc, SQL_ATTR_CONNECTION_DEAD, &value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+  BOOST_REQUIRE_EQUAL(value, SQL_FALSE);
+}
+
+// Test ignored connection options
+BOOST_AUTO_TEST_CASE(ConnectionGetConnectOptionIgnored) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  CHECK_GET_IGNORED_OPTION(SQL_QUERY_TIMEOUT);
+  CHECK_GET_IGNORED_OPTION(SQL_ACCESS_MODE);
+  CHECK_GET_IGNORED_OPTION(SQL_TXN_ISOLATION);
+  CHECK_GET_IGNORED_OPTION(SQL_CURRENT_QUALIFIER);
+  CHECK_GET_IGNORED_OPTION(SQL_PACKET_SIZE);
+  CHECK_GET_IGNORED_OPTION(SQL_QUIET_MODE);
+  CHECK_GET_IGNORED_OPTION(SQL_LOGIN_TIMEOUT);
+  CHECK_GET_IGNORED_OPTION(SQL_TRANSLATE_DLL);
+  CHECK_GET_IGNORED_OPTION(SQL_TRANSLATE_OPTION);
+#if defined(__APPLE__)
+  CHECK_GET_IGNORED_OPTION(SQL_ODBC_CURSORS);
+#endif
+}
+
+// Test connection options returned from driver manager
+BOOST_AUTO_TEST_CASE(ConnectionGetConnectOptionDMCase) {
+  ConnectToTS(SQL_OV_ODBC2);
+
+  SQLULEN value = 0;
+
+  SQLRETURN ret = SQLGetConnectOption(dbc, SQL_OPT_TRACE, &value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+
+#if defined(_WIN32) || defined(__linux__)
+  ret = SQLGetConnectOption(dbc, SQL_ODBC_CURSORS, &value);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+#endif
+
+  SQLCHAR strvalue[1024];
+  ret = SQLGetConnectOption(dbc, SQL_OPT_TRACEFILE, strvalue);
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
+}
+
 BOOST_AUTO_TEST_CASE(StatementOptionSupported) {
   ConnectToTS(SQL_OV_ODBC2);
 
@@ -873,4 +1076,5 @@ BOOST_AUTO_TEST_CASE(StatementOptionNotSupported) {
   CHECK_GET_OPTION_NOTSUPPORTED(SQL_SIMULATE_CURSOR);
   CHECK_GET_OPTION_NOTSUPPORTED(SQL_USE_BOOKMARKS);
 }
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -267,6 +267,8 @@ SqlResult::Type Connection::InternalCreateStatement(Statement*& statement) {
     return SqlResult::AI_ERROR;
   }
 
+  // set statement attributes that are set to this connection
+  statement->SetAttribute(stmtAttr_);
   return SqlResult::AI_SUCCESS;
 }
 
@@ -1342,5 +1344,170 @@ void Connection::SetODBC2FunctionsValue(SQLUSMALLINT* valueBuf) {
   valueBuf[SQL_API_SQLTRANSACT] = true;
 }
 #endif __APPLE__
+
+void Connection::SetStmtAttribute(SQLUSMALLINT option, SQLULEN value) {
+  IGNITE_ODBC_API_CALL(InternalSetStmtAttribute(option, value));
+}
+
+SqlResult::Type Connection::InternalSetStmtAttribute(SQLUSMALLINT option,
+                                                     SQLULEN value) {
+  switch (option) {
+    case SQL_BIND_TYPE: {
+      if (value != SQL_BIND_BY_COLUMN) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Only binding by column is currently supported");
+
+        return SqlResult::AI_ERROR;
+      }
+      stmtAttr_.bindType = value;
+      break;
+    }
+    case SQL_CONCURRENCY: {
+      if (value != SQL_CONCUR_READ_ONLY) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Only read-only cursors are supported");
+
+        return SqlResult::AI_ERROR;
+      }
+      stmtAttr_.concurrency = value;
+      break;
+    }
+    case SQL_CURSOR_TYPE: {
+      if (value != SQL_CURSOR_FORWARD_ONLY) {
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Only forward cursors are currently supported");
+
+        return SqlResult::AI_ERROR;
+      }
+      stmtAttr_.cursorType = value;
+      break;
+    }
+
+    case SQL_RETRIEVE_DATA: {
+      if (value != SQL_RD_ON) {
+        AddStatusRecord(
+            SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+            "SQLFetch can only retrieve data after it positions the cursor");
+
+        return SqlResult::AI_ERROR;
+      }
+      stmtAttr_.retrievData = value;
+      break;
+    }
+    case SQL_ROWSET_SIZE: {
+      if (value > 1000) {
+        AddStatusRecord(
+            SqlState::SIM001_FUNCTION_NOT_SUPPORTED,
+            "Array size value cannot be set to a value other than 1000");
+
+        return SqlResult::AI_ERROR;
+      }
+      stmtAttr_.rowsetSize = value;
+      break;
+    }
+
+    // ignored attributes
+    case SQL_NOSCAN:
+    case SQL_QUERY_TIMEOUT:
+    case SQL_MAX_ROWS:
+    case SQL_MAX_LENGTH:
+    case SQL_KEYSET_SIZE:
+    case SQL_ASYNC_ENABLE: {
+      AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                      "Specified attribute is ignored.",
+                      timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+
+      return SqlResult::AI_SUCCESS_WITH_INFO;
+    }
+
+    // not supported attributes
+    case SQL_USE_BOOKMARKS:
+    case SQL_SIMULATE_CURSOR:
+    default: {
+      AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                      "Specified attribute is not supported");
+
+      return SqlResult::AI_ERROR;
+    }
+  }
+  return SqlResult::AI_SUCCESS;
+}
+
+void Connection::SetConnectOption(SQLUSMALLINT option, SQLULEN value) {
+  IGNITE_ODBC_API_CALL(InternalSetConnectOption(option, value));
+}
+
+SqlResult::Type Connection::InternalSetConnectOption(SQLUSMALLINT option,
+                                                     SQLULEN value) {
+  switch (option) {
+    case SQL_ASYNC_ENABLE:
+    case SQL_BIND_TYPE:
+    case SQL_CONCURRENCY:
+    case SQL_CURSOR_TYPE:
+    case SQL_KEYSET_SIZE:
+    case SQL_MAX_LENGTH:
+    case SQL_MAX_ROWS:
+    case SQL_NOSCAN:
+    case SQL_QUERY_TIMEOUT:
+    case SQL_RETRIEVE_DATA:
+    case SQL_ROWSET_SIZE:
+    case SQL_SIMULATE_CURSOR:
+    case SQL_USE_BOOKMARKS:
+      return InternalSetStmtAttribute(option, value);
+
+    // ignored options
+    case SQL_TRANSLATE_DLL:
+    case SQL_TRANSLATE_OPTION:
+    case SQL_TXN_ISOLATION:
+    case SQL_ACCESS_MODE:
+    case SQL_CURRENT_QUALIFIER:
+    case SQL_PACKET_SIZE:
+    case SQL_QUIET_MODE:
+    case SQL_LOGIN_TIMEOUT: {
+      AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                       "Specified attribute is ignored.",
+                       timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+      return SqlResult::AI_SUCCESS_WITH_INFO;
+    }
+
+    case SQL_AUTOCOMMIT:
+    default:
+      return InternalSetAttribute(option, reinterpret_cast< SQLPOINTER >(value),
+                                  0);
+  }
+}
+
+void Connection::GetConnectOption(SQLUSMALLINT option, SQLPOINTER value) {
+  IGNITE_ODBC_API_CALL(InternalGetConnectOption(option, value));
+}
+
+SqlResult::Type Connection::InternalGetConnectOption(SQLUSMALLINT option,
+                                                     SQLPOINTER value) {
+  switch (option) {
+    // ignored options
+#if defined(__APPLE__)
+    case SQL_ODBC_CURSORS:
+#endif
+    case SQL_TRANSLATE_DLL:
+    case SQL_TRANSLATE_OPTION:
+    case SQL_QUERY_TIMEOUT:
+    case SQL_ACCESS_MODE:
+    case SQL_TXN_ISOLATION:
+    case SQL_CURRENT_QUALIFIER:
+    case SQL_PACKET_SIZE:
+    case SQL_QUIET_MODE:
+    case SQL_LOGIN_TIMEOUT: {
+      AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                      "Specified attribute is ignored.",
+                      timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+
+      return SqlResult::AI_SUCCESS_WITH_INFO;
+    }
+
+    case SQL_AUTOCOMMIT:
+    default:
+      return InternalGetAttribute(option, value, 0, nullptr);
+  }
+}
 }  // namespace odbc
 }  // namespace timestream

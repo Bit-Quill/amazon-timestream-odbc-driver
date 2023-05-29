@@ -4,6 +4,8 @@
 - [ODBC API Support](#odbc-api-support)
 - [Supported Connection Information Types](#supported-connection-information-types)
 - [Supported Connection Attributes](#supported-connection-attributes)
+- [Supported Connection Options for SQLSetConnectOption](#Supported-Connection-Options-for-SQLSetConnectOption)
+- [Supported Connection Options for SQLGetConnectOption](#Supported-Connection-Options-for-SQLGetConnectOption)
 - [Supported Statements Attributes](#supported-statements-attributes)
 - [Supported Statements Options for SQLGetStmtOption](#supported-statements-options-for-sqlgetstmtoption) 
 - [SQLPrepare, SQLExecute and SQLExecDirect](#sqlprepare-sqlexecute-and-sqlexecdirect)
@@ -283,6 +285,25 @@ Note that the following table describes the planned functionality for the GA rel
 | SQL_ATTR_METADATA_ID | false | yes |
 
 Note: SQL_ATTR_TSLOG_DEBUG is an internal connection attribute. It can be used to change logging level after a connection is established.
+
+## Supported Connection Options for SQLSetConnectOption
+| Connection Options |
+|--------|
+| SQL_BIND_TYPE |
+| SQL_CONCURRENCY |
+| SQL_CURSOR_TYPE |
+| SQL_RETRIEVE_DATA |
+| SQL_ROWSET_SIZE |
+| SQL_AUTOCOMMIT |
+
+Note: SQLSetConnectOption is an ODBC 2.x function. It also supports [connection attributes](#supported-connection-attributes) if it is called from an ODBC 3 application.
+
+## Supported Connection Options for SQLGetConnectOption
+| Connection Information Types | Default |
+|--------|------|
+| SQL_AUTOCOMMIT | - |
+
+Note: SQLGetConnectOption is an ODBC 2.x function. It also supports [connection attributes](#supported-connection-attributes) if it is called from an ODBC 3 application.
 
 ## Supported Statements Attributes 
 Table of statement attributes supported by the Amazon Timestream ODBC driver.\

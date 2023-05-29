@@ -45,6 +45,18 @@ class Environment;
 class Statement;
 
 /**
+ * Statement attributes that could be set by ODBC2 SQLSetConnectOption.
+ * These attributes will be passed to statement when a statement is created.
+ */
+struct StatementAttributes {
+  SqlUlen bindType;
+  SqlUlen concurrency;
+  SqlUlen cursorType;
+  SqlUlen retrievData;
+  SqlUlen rowsetSize;
+};
+
+/**
  * ODBC node connection.
  */
 class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
@@ -277,6 +289,30 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    */
   bool CursorNameExists(std::string& cursorName);
 
+  /**
+   * Set a statement attribute
+   *
+   * @param option Statement option
+   * @param value  Option value
+   */
+  void SetStmtAttribute(SQLUSMALLINT option, SQLULEN value);
+
+  /**
+   * Set a connection option
+   *
+   * @param option Connection option
+   * @param value  Option value
+   */
+  void SetConnectOption(SQLUSMALLINT option, SQLULEN value);
+
+  /**
+   * Get a connection option value
+   *
+   * @param option Connection option
+   * @param value  Option value to be returned
+   */
+  void GetConnectOption(SQLUSMALLINT option, SQLPOINTER value);
+
  protected:
   /**
    * Constructor.
@@ -473,6 +509,36 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
                                        SQLINTEGER valueLen);
 
   /**
+   * Set a statement attribute
+   * Internal call.
+   *
+   * @param option Statement option
+   * @param value  Option value
+   * @return Operation result.
+   */
+  SqlResult::Type InternalSetStmtAttribute(SQLUSMALLINT option, SQLULEN value);
+
+  /**
+   * Set a connection option
+   * Internal call.
+   *
+   * @param option Connection option
+   * @param value  Option value
+   * @return Operation result.
+   */
+  SqlResult::Type InternalSetConnectOption(SQLUSMALLINT option, SQLULEN value);
+
+  /**
+   * Get a connection option value
+   * Internal call.
+   * 
+   * @param option Connection option
+   * @param value  Option value to be returned
+   * @return Operation result.
+   */
+  SqlResult::Type InternalGetConnectOption(SQLUSMALLINT option, SQLPOINTER value);
+
+  /**
    * Create a descriptor.
    * Internal call
    *
@@ -567,6 +633,9 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
 
   /** map for statement and cursor name mapping */
   std::map< const Statement*, std::string > cursorNameMap_;
+
+  /** statement attributes struct */
+  StatementAttributes stmtAttr_;
 };
 }  // namespace odbc
 }  // namespace timestream

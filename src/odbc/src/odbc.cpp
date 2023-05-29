@@ -1562,6 +1562,40 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn, SQLUSMALLINT funcId,
 }
 #endif
 
+SQLRETURN SQLSetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
+                              SQLULEN value) {
+  using odbc::Connection;
+
+  LOG_DEBUG_MSG("SQLSetConnectOption called(" << option << ", " << value << ")");
+
+  Connection* connection = reinterpret_cast< Connection* >(conn);
+
+  if (!connection) {
+    LOG_ERROR_MSG("connection is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  connection->SetConnectOption(option, value);
+  return connection->GetDiagnosticRecords().GetReturnCode();
+}
+
+SQLRETURN SQLGetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
+                              SQLPOINTER value) {
+  using odbc::Connection;
+
+  LOG_DEBUG_MSG("SQLGetConnectOption called(" << option << ")");
+
+  Connection* connection = reinterpret_cast< Connection* >(conn);
+
+  if (!connection) {
+    LOG_ERROR_MSG("connection is nullptr");
+    return SQL_INVALID_HANDLE;
+  }
+
+  connection->GetConnectOption(option, value);
+  return connection->GetDiagnosticRecords().GetReturnCode();
+}
+
 SQLRETURN SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
                            SQLPOINTER value) {
   LOG_DEBUG_MSG("SQLGetStmtOption called with option " << option);

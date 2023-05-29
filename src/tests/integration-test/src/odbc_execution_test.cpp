@@ -597,15 +597,9 @@ BOOST_AUTO_TEST_CASE(TestSQLGetFunctionsForODBC2) {
   for (int i = 0; i < 54; i++) {
     BOOST_CHECK_EQUAL(fExists[supportedFuncArray[i]], true);
   }
-  // SQL_API_SQLGETCONNECTOPTION and SQL_API_SQLSETCONNECTOPTION result are
-  // different on different platforms
-#if defined(_WIN32) || defined(__APPLE__)
+
   BOOST_CHECK_EQUAL(fExists[SQL_API_SQLGETCONNECTOPTION], true);
   BOOST_CHECK_EQUAL(fExists[SQL_API_SQLSETCONNECTOPTION], true);
-#else
-  BOOST_CHECK_EQUAL(fExists[SQL_API_SQLGETCONNECTOPTION], false);
-  BOOST_CHECK_EQUAL(fExists[SQL_API_SQLSETCONNECTOPTION], false);
-#endif
 
   // test for each function Id
   SQLUSMALLINT exists;
@@ -624,11 +618,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetFunctionsForODBC2) {
     BOOST_FAIL("Failed for SQL_API_SQLGETCONNECTOPTION, error is "
                + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
   }
-#if defined(_WIN32) || defined(__APPLE__)
   BOOST_CHECK_EQUAL(exists, true);
-#else
-  BOOST_CHECK_EQUAL(exists, false);
-#endif
 
   // SQL_API_SQLSETCONNECTOPTION result is different on different platforms
   retcode = SQLGetFunctions(dbc, SQL_API_SQLSETCONNECTOPTION, &exists);
@@ -636,11 +626,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetFunctionsForODBC2) {
     BOOST_FAIL("Failed for SQL_API_SQLSETCONNECTOPTION, error is "
                + GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
   }
-#if defined(_WIN32) || defined(__APPLE__)
   BOOST_CHECK_EQUAL(exists, true);
-#else
-  BOOST_CHECK_EQUAL(exists, false);
-#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

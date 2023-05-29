@@ -428,6 +428,14 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
   return SqlResult::AI_SUCCESS;
 }
 
+void Statement::SetAttribute(StatementAttributes& stmtAttr) {
+  SetAttribute(SQL_ATTR_ROW_BIND_TYPE, &stmtAttr.bindType, 0);
+  SetAttribute(SQL_ATTR_CONCURRENCY, &stmtAttr.concurrency, 0);
+  SetAttribute(SQL_ATTR_CURSOR_TYPE, &stmtAttr.cursorType, 0);
+  SetAttribute(SQL_ATTR_RETRIEVE_DATA, &stmtAttr.retrievData, 0);
+  SetAttribute(SQL_ATTR_ROW_ARRAY_SIZE, &stmtAttr.rowsetSize, 0);
+}
+
 void Statement::GetAttribute(int attr, void* buf, SQLINTEGER bufLen,
                              SQLINTEGER* valueLen) {
   IGNITE_ODBC_API_CALL(InternalGetAttribute(attr, buf, bufLen, valueLen));

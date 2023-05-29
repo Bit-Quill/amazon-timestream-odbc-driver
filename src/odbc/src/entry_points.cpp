@@ -414,6 +414,16 @@ SQLRETURN SQL_API SQLGetFunctions(SQLHDBC conn,
 }
 #endif
 
+SQLRETURN SQL_API SQLSetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
+                                      SQLULEN value) {
+  return timestream::SQLSetConnectOption(conn, option, value);
+}
+
+SQLRETURN SQL_API SQLGetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
+                                      SQLPOINTER value) {
+  return timestream::SQLGetConnectOption(conn, option, value);
+}
+
 SQLRETURN SQL_API SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
                                    SQLPOINTER value) {
   return timestream::SQLGetStmtOption(stmt, option, value);
@@ -427,27 +437,10 @@ SQLRETURN SQL_API SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
   return timestream::SQLColAttributes(stmt, colNum, fieldId, strAttrBuf, strAttrBufLen, strAttrResLen, numAttrBuf);
 }
 
+
 //
 // ==== Not implemented ====
 //
-
-#if defined(__APPLE__) // TODO remove this #if line in AT-1224
-// SQLSetConnectOption is called by Excel 16 on macOS to change the login timeout,
-// but Timestream does not support login timeout. Therefore, the function is 
-// defined but not implemented. 
-// TODO [AT-1224] implement SQLSetConnectOption
-// https://bitquill.atlassian.net/browse/AT-1224
-SQLRETURN SQL_API SQLSetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
-                                      SQLULEN value) {
-  IGNITE_UNUSED(conn);
-  IGNITE_UNUSED(option);
-  IGNITE_UNUSED(value);
-
-  LOG_INFO_MSG("SQLSetConnectOption called");
-  return SQL_SUCCESS;
-}
-#endif //defined(__APPLE__)
-
 SQLRETURN SQL_API SQLSetStmtOption(SQLHSTMT stmt, SQLUSMALLINT option,
                                    SQLULEN value) {
   IGNITE_UNUSED(stmt);
