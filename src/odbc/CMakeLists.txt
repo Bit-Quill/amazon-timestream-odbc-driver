@@ -250,7 +250,7 @@ if (WIN32 AND ${WITH_ODBC_MSI})
         set(WIX_BIT_SUFFIX "32-bit")
         set(WIX_PROGRAM_FILES_FOLDER_ID "Program Files")
         set(WIX_COMPONENT_IS_WIN64 "no")
-	    set(WIX_INSTALLER_BUNDLE_SRC "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc-bundle.wxs.in.x86")
+	set(WIX_INSTALLER_BUNDLE_SRC "${CMAKE_CURRENT_LIST_DIR}/install/timestream-odbc-bundle.wxs.in.x86")
         
 
         set(WIX_PRODUCT_ID "9FAACB44-B1D9-4E9B-B22E-44FB20C083E2")

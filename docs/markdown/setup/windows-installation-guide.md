@@ -18,12 +18,7 @@ If you already have the MSVC Package installed in your system, the Timestream OD
 upgrade the package for you. If you want to upgrade the package to the MSVC version that comes with the Timestream ODBC driver 
 during driver installation, please uninstall the existing MSVC package first, and then run the driver installer.
 
-For dependency uninstallation after Timestream ODBC driver is uninstalled, a **Modify Setup** window for 
-Microsoft Visual C++ Redistributable (MSVC) Package could pop up with three options, "repair", "uninstall" and "close". 
-If you choose "repair" the MSVC Package will be repaired or reinstalled and the Timestream ODBC driver will be removed. 
-The "uninstall" will uninstall the MSVC Package. If you choose "close", the Timestream ODBC driver uninstallation will be rolled back. 
-
-Skipping uninstallation of MSVC Package during driver uninstallation is not supported. This is a limitation of the installer.
+After the Timestream ODBC driver is uninstalled, MSVC package is kept as it might be needed by other applications. If it is not needed, user could manually uninstall it separately. 
 
 ### Installation Over Pre-Existing Deployment Is Not Supported
 The installer doesn't allow installation over pre-existing deployment. If a user would like to install a driver with newer or older 

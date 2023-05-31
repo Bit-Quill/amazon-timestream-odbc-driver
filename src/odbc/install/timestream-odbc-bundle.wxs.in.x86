@@ -32,9 +32,11 @@
 
     <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]Amazon Timestream\ODBC Driver" />
 
+    <util:RegistrySearchRef Id='SearchForVCRuntime' />
+
     <Chain>
       <ExePackage SourceFile='@WIX_VC_RUNTIME_NAME@'
-                  DetectCondition="VCRuntimeInstalled"
+	          InstallCondition="NOT VCRuntimeInstalled"
                   InstallCommand="/q /ACTION=Install"
                   RepairCommand="/q ACTION=Repair /hideconsole" />
 

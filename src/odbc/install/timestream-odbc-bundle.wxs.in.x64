@@ -36,7 +36,7 @@
     
     <Chain>
       <ExePackage SourceFile='@WIX_VC_RUNTIME_NAME@'
-                  DetectCondition="VCRuntimeInstalled"
+                  InstallCondition="NOT VCRuntimeInstalled"
                   InstallCommand="/q /ACTION=Install"
                   RepairCommand="/q ACTION=Repair /hideconsole" />
 
