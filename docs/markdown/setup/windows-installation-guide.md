@@ -30,6 +30,8 @@ The installer doesn't allow installation over pre-existing deployment. If a user
 release and there is already a Timestream ODBC driver installed on their machine, then the user will need to manually uninstall the 
 existing driver before attempting to install a driver with a different version. 
 
+## Debug Version Installer
+When there is a need for debug version driver, user could build a debug version installer using `build_win_debug32.ps1` or `build_win_debug64.ps1` following [developer guide](developer-guide.md#windows). If the debug version driver will be used on another machine, it needs Microsoft Visual Studio to work successfully. The latest MSVC, C++ ATL and Windows SDK need to be installed as part of Desktop Development for C++ in Visual Studio.
 
 ## Next Steps
 
