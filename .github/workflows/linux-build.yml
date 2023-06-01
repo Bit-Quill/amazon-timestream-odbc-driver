@@ -376,17 +376,5 @@ jobs:
         name: code-coverage-Linux
         path: cmake-build64/ccov/all-merged
 
-  build-linux-docker-image:
-    runs-on: ubuntu-20.04
-    needs: check
-    if: contains(needs.check.outputs.status, 'continue')
-    steps:
-    - uses: actions/checkout@v2
-    - name: build-image
-      run: |
-        cd docker/linux-environment
-        docker build -t timestream-dev-linux . 
-
-
 # TODO Linux build enhacements 
 #https://bitquill.atlassian.net/browse/AD-688

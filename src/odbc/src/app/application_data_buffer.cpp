@@ -615,7 +615,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
       if (buffer) {
         char tmpStr[32]{};
-        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year + 1900,
+        snprintf(tmpStr, 32, "%4d-%02d-%02d", tmTime.tm_year + 1900,
                 tmTime.tm_mon + 1, tmTime.tm_mday);
         strncpy(buffer, tmpStr,
                 std::min(buflen, static_cast< SqlLen >(valLen + 1)));
@@ -640,7 +640,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
 
       if (buffer) {
         char tmpStr[32]{};
-        sprintf(tmpStr, "%4d-%02d-%02d", tmTime.tm_year + 1900,
+        snprintf(tmpStr, 32, "%4d-%02d-%02d", tmTime.tm_year + 1900,
                 tmTime.tm_mon + 1, tmTime.tm_mday);
 
         LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
@@ -699,9 +699,9 @@ std::string ApplicationDataBuffer::GetTimestampString(tm& tmTime,
                                                       const char* pattern) {
   LOG_DEBUG_MSG("GetTimestampString is called with pattern " << pattern);
   char result[64]{};
-  size_t writtenLen = strftime(result, 64, pattern, &tmTime);
+  size_t writtenLen = strftime(result, 48, pattern, &tmTime);
 
-  sprintf(result + writtenLen, "%09d", fraction);
+  snprintf(result + writtenLen, 16, "%09d", fraction);
 
   LOG_DEBUG_MSG("result is " << result);
   return std::string(result);
@@ -970,7 +970,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
   switch (type) {
     case OdbcNativeType::AI_CHAR: {
       char tmp[32]{};
-      sprintf(tmp, "%d-%d", value.GetYear(), value.GetMonth());
+      snprintf(tmp, 32, "%d-%d", value.GetYear(), value.GetMonth());
       SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 
       if (resLenPtr)
@@ -993,7 +993,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
 
     case OdbcNativeType::AI_WCHAR: {
       char tmp[32]{};
-      sprintf(tmp, "%d-%d", value.GetYear(), value.GetMonth());
+      snprintf(tmp, 32, "%d-%d", value.GetYear(), value.GetMonth());
       SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 
       if (resLenPtr)
@@ -1054,7 +1054,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
   switch (type) {
     case OdbcNativeType::AI_CHAR: {
       char tmp[32]{};
-      sprintf(tmp, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
+      snprintf(tmp, 32, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
               value.GetMinute(), value.GetSecond(), value.GetFraction());
       SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 
@@ -1078,7 +1078,7 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
 
     case OdbcNativeType::AI_WCHAR: {
       char tmp[32]{};
-      sprintf(tmp, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
+      snprintf(tmp, 32, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
               value.GetMinute(), value.GetSecond(), value.GetFraction());
       SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 

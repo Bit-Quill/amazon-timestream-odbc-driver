@@ -119,36 +119,6 @@ have all been set correctly:
 
 ## Linux
 
-### Using docker
-
-#### Pre-requisites
-
-1. Build docker image
-   1. Navigate Dockerfile folder `cd docker/linux-environment`
-   2. Build the docker image E.g.: `docker build -t timestream-dev-linux .`
-2. Ensure DockerHub application is opened.
-
-#### Using the dev image
-
-1. Run docker container with interactive mode. E.g.: `docker run --add-host host.docker.internal:host-gateway -v "<path-to-repo>:/timestream-odbc" -it timestream-dev-linux`
-2. Next steps all are from inside the container
-   1. Set environment variables for testing and double-check if all dev environmnet variables are set by running `scripts/env_variables_check.sh`. More info [Environment Variables for Testing Accounts/Secrets ](#environment-variables-for-testing-accounts/secrets)
-      Note. Since the environment variable `ODBC_LIB_PATH` is already set in the container, it is not recommended to change it.
-   2. Run one of the build scripts to create an initial compilation. E.g. `./build_linux_debug64_deb.sh` or `./build_linux_release64_deb.sh`
-   3. Run the following command to register the ODBC driver. 
-   
-      `./scripts/register_driver_unix.sh`
-   4. You are ready to run the tests.
-   E.g. `./build/odbc/bin/timestream-odbc-integration-tests --catch_system_errors=false`
-   E.g. `./build/odbc/bin/timestream-odbc-unit-tests --catch_system_errors=false`
-
-#### Known issues
-
-If a windows host machine is used, it is possible to have an issue with end of line character in the *.sh files.
-There are two ways to fix the issue.
-   1. Ensure that your GitHub is checking out the files as Unix-style https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
-   2. Alternatively you can convert the end-of-line using the following command `tr -d '\015' < build_linux_debug64_deb.sh > build_linux_debug64_deb_lf.sh` and run `./build_linux_debug64_deb_lf.sh` to build.
-      1. Note that the command will need to be executed for all scripts that you will run in the container (register_driver_unix.sh,env_variables_check.sh and any other that you might need).
 ### Using Ubuntu 64bit
 
 1. Install all dependencies

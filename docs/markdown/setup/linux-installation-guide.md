@@ -31,13 +31,6 @@ sudo yum update
 sudo yum install unixODBC
 ```
 
-### Installing on Linux via Docker 64 bit
-
-```
-[sudo] apt update
-[sudo] apt install unixodbc unixodbc-dev
-```
-
 ## Install Timestream ODBC Driver
 1. Download the Timestream ODBC installer deb package according to your Linux distro and architecture.
 2. Install the package

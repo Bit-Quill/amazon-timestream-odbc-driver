@@ -355,14 +355,5 @@ jobs:
         name: code-coverage-Linux
         path: cmake-build64/ccov/all-merged
 
-  build-linux-docker-image:
-    runs-on: [self-hosted, Linux, x64]
-    steps:
-    - uses: actions/checkout@v2
-    - name: build-image
-      run: |
-        cd docker/linux-environment
-        docker build -t timestream-dev-linux . 
-
 # TODO Linux build enhacements 
 #https://bitquill.atlassian.net/browse/AD-688
