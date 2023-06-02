@@ -103,9 +103,6 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
 BOOST_FIXTURE_TEST_SUITE(ApiRobustnessTestSuite, ApiRobustnessTestSuiteFixture)
 
 #ifndef __APPLE__
-// only enable for Windows and Linux as it crashes on Mac
-// with iODBC, traced by AD-820
-// https://bitquill.atlassian.net/browse/AD-820
 BOOST_AUTO_TEST_CASE(TestSQLDriverConnect) {
   // There are no checks because we do not really care what is the result of
   // these calls as long as they do not cause segmentation fault.
@@ -833,7 +830,6 @@ BOOST_AUTO_TEST_CASE(TestSQLGetEnvAttr) {
   SQLGetEnvAttr(env, SQL_ATTR_ODBC_VERSION, nullptr, 0, nullptr);
 }
 
-// TODO: Memory leak, traced by https://bitquill.atlassian.net/browse/AD-813
 BOOST_AUTO_TEST_CASE(TestFetchScrollLast) {
   CheckFetchScrollUnsupportedOrientation(SQL_FETCH_LAST);
 }

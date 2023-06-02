@@ -35,7 +35,6 @@ if (WIN32)
     )
 
 else ()
-    # TODO: Ensure MacOS is portable. https://bitquill.atlassian.net/browse/AD-525
     include_directories(../../odbc/os/linux/include)
 endif()
 

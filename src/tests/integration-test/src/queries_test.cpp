@@ -1555,7 +1555,6 @@ BOOST_AUTO_TEST_CASE(TestExecuteAfterCursorClose) {
   BOOST_CHECK_EQUAL(ret, SQL_NO_DATA);
 }
 
-// TODO: Memory leak, traced by https://bitquill.atlassian.net/browse/AD-813
 BOOST_AUTO_TEST_CASE(TestCloseNonFullFetch) {
   ConnectToTS();
 
@@ -1637,7 +1636,6 @@ BOOST_AUTO_TEST_CASE(TestManyCursors) {
   }
 }
 
-// TODO: Memory leak, traced by https://bitquill.atlassian.net/browse/AD-813
 BOOST_AUTO_TEST_CASE(TestManyCursors2) {
   ConnectToTS();
 

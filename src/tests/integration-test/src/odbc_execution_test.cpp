@@ -257,9 +257,6 @@ BOOST_AUTO_TEST_CASE(TestSQLSetParam) {
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 }
 
-// TODO [AT-1344] Check error message from SQLBulkOperations is "HYC00:
-// SQLBulkOperations is not supported."
-// https://bitquill.atlassian.net/browse/AT-1344
 BOOST_AUTO_TEST_CASE(TestSQLBulkOperations) {
   ConnectToTS();
 
@@ -298,34 +295,35 @@ BOOST_AUTO_TEST_CASE(TestSQLSetPos) {
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
-// TODO enable descriptor tests as part of AT-1217
-// after SQL_ATTR_APP_ROW_DESC is supported
-// https://bitquill.atlassian.net/browse/AT-1217
-BOOST_AUTO_TEST_CASE(TestSQLSetDescRec, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLSetDescRec) {
+  ConnectToTS();
+
   SQLHDESC desc;
   SQLINTEGER data = 10;
   SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &desc, 0, NULL);
 
-  ret = SQLSetDescRec(NULL, 2, SQL_INTEGER, 0, 0, 0, 0, (SQLPOINTER)&data, NULL,
+  ret = SQLSetDescRec(desc, 2, SQL_INTEGER, 0, 0, 0, 0, (SQLPOINTER)&data, NULL,
                       NULL);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-  CheckSQLStatementDiagnosticError("HYC00");
+  CheckSQLDiagnosticError(SQL_HANDLE_DESC, desc, "HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLSetDescRec is not supported.",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+                      GetOdbcErrorMessage(SQL_HANDLE_DESC, desc));
 }
 
-BOOST_AUTO_TEST_CASE(TestSQLGetDescRec, *disabled()) {
+BOOST_AUTO_TEST_CASE(TestSQLGetDescRec) {
+  ConnectToTS();
+
   SQLHDESC desc;
   SQLINTEGER data = 10;
   SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &desc, 0, NULL);
 
   std::vector< SQLWCHAR > column = MakeSqlBuffer("Region");
-  ret = SQLGetDescRec(desc, 1, column.data(), SQL_NTS, NULL, NULL, NULL, NULL,
+  ret = SQLGetDescRec(desc, 1, column.data(), 10, NULL, NULL, NULL, NULL,
                       NULL, NULL, NULL);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
-  CheckSQLStatementDiagnosticError("HYC00");
+  CheckSQLDiagnosticError(SQL_HANDLE_DESC, desc, "HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLGetDescRec is not supported.",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+                      GetOdbcErrorMessage(SQL_HANDLE_DESC, desc));
 }
 
 BOOST_AUTO_TEST_CASE(TestSetGetCursorName) {

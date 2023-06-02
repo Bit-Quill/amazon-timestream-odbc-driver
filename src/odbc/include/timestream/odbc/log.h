@@ -86,11 +86,6 @@ using ignite::odbc::common::concurrent::CriticalSection;
     }                                                                         \
   }
 
-// TODO replace and remove LOG_MSG
-// https://bitquill.atlassian.net/browse/AD-703
-// @Deprecated
-#define LOG_MSG(param) LOG_INFO_MSG(param)
-
 // Debug messages are messages that are useful for debugging
 #define LOG_DEBUG_MSG(param) \
   WRITE_LOG_MSG(param, timestream::odbc::LogLevel::Type::DEBUG_LEVEL)

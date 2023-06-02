@@ -375,8 +375,6 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK_EQUAL(nullability, expNullability);
   }
 
-// TODO [AT-1339] Change this test to enable SQLDescribeCol tests
-// https://bitquill.atlassian.net/browse/AT-1339
   /**
    * @param func Function to call before tests. May be PrepareQuery or
    * ExecQuery.
@@ -2840,10 +2838,6 @@ BOOST_AUTO_TEST_CASE(TestGetDatabasesWithSQLTables) {
   // tests special case: get a list of databases with SQLTables
   // To avoid test failures due to unrelated database changes,
   // this test checks the specified three databases only.
-
-  // TODO [AT-1163] Check all databases after we make sure that
-  // there will be no more database changes
-  // https://bitquill.atlassian.net/browse/AT-1163
   std::vector< SQLWCHAR > empty = {0};
   SQLUSMALLINT columnIndex;
   SQLRETURN ret;

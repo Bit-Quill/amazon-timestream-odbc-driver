@@ -381,8 +381,6 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToString) {
   BOOST_CHECK(std::string(strBuf, reslen) == "-53.5");
 }
 
-// Decimal is not in use in our code, all related tests could be removed
-// see https://bitquill.atlassian.net/browse/AT-1360
 BOOST_AUTO_TEST_CASE(TestPutDecimalToWString) {
   SQLWCHAR strBuf[64];
   SqlLen reslen = 0;

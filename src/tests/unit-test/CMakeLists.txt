@@ -33,7 +33,6 @@ include_directories(include ../../odbc/include ../integration-test/include ${AWS
 if (WIN32)
     include_directories(../../odbc/os/ignite/common/os/win/include ../../odbc/os/timestream/win/include)
 else ()
-    # TODO: Ensure MacOS is portable. https://bitquill.atlassian.net/browse/AD-525
     include_directories(../../odbc/os/ignite/common/os/linux/include ../../odbc/os/timestream/linux/include)
 endif()
 

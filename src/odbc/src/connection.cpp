@@ -535,8 +535,6 @@ Aws::Utils::Logging::LogLevel Connection::GetAWSLogLevelFromString(
   return Aws::Utils::Logging::LogLevel::Warn;
 }
 
-// TODO: [AT-1256] replace these environment variables with data from
-// config::Configuration https://bitquill.atlassian.net/browse/AT-1256
 void Connection::SetClientProxy(Aws::Client::ClientConfiguration& clientCfg) {
   LOG_DEBUG_MSG("SetClientProxy is called");
   // proxy host

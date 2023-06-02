@@ -74,8 +74,6 @@ SqlResult::Type Environment::InternalSetAttribute(int32_t attr, void* value,
   EnvironmentAttribute::Type attribute = EnvironmentAttributeToInternal(attr);
 
   switch (attribute) {
-    // TODO Investigate the correct return behavior of ODBC_VERSION
-    // https://bitquill.atlassian.net/browse/AT-1180
     case EnvironmentAttribute::ODBC_VERSION: {
       int32_t version =
           static_cast< int32_t >(reinterpret_cast< intptr_t >(value));

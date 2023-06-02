@@ -45,6 +45,12 @@
   statement->AddStatusRecord(                                  \
       SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, diagStr);
 
+#define DESC_UNSUPPORTED_FUNC(desc, diagStr)                   \
+  using timestream::odbc::Descriptor;                           \
+  Descriptor* descriptor = reinterpret_cast< Descriptor* >(desc); \
+  descriptor->AddStatusRecord(                                  \
+      SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED, diagStr);
+
 SQLRETURN SQL_API SQLGetInfo(SQLHDBC conn, SQLUSMALLINT infoType,
                              SQLPOINTER infoValue, SQLSMALLINT infoValueMax,
                              SQLSMALLINT* length) {
@@ -521,7 +527,7 @@ SQLRETURN SQL_API SQLEndTran(SQLSMALLINT handleType, SQLHANDLE handle,
   return SQL_ERROR;
 }
 
-SQLRETURN SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
+SQLRETURN SQL_API SQLGetDescRec(SQLHDESC desc,
                                 SQLSMALLINT RecNumber, SQLWCHAR* nameBuffer,
                                 SQLSMALLINT nameBufferLen, SQLSMALLINT* strLen,
                                 SQLSMALLINT* type, SQLSMALLINT* subType,
@@ -539,10 +545,12 @@ SQLRETURN SQL_API SQLGetDescRec(SQLHDESC DescriptorHandle,
   IGNITE_UNUSED(nullable);
 
   LOG_DEBUG_MSG("unsupported function SQLGetDescRec called");
+
+  DESC_UNSUPPORTED_FUNC(desc, "SQLGetDescRec is not supported.");
   return SQL_ERROR;
 }
 
-SQLRETURN SQL_API SQLSetDescRec(SQLHDESC descr, SQLSMALLINT recNum,
+SQLRETURN SQL_API SQLSetDescRec(SQLHDESC desc, SQLSMALLINT recNum,
                                 SQLSMALLINT type, SQLSMALLINT subType,
                                 SQLLEN len, SQLSMALLINT precision,
                                 SQLSMALLINT scale, SQLPOINTER buffer,
@@ -558,6 +566,8 @@ SQLRETURN SQL_API SQLSetDescRec(SQLHDESC descr, SQLSMALLINT recNum,
   IGNITE_UNUSED(id);
 
   LOG_DEBUG_MSG("unsupported function SQLSetDescRec called");
+
+  DESC_UNSUPPORTED_FUNC(desc, "SQLSetDescRec is not supported.");
   return SQL_ERROR;
 }
 

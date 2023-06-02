@@ -122,11 +122,11 @@ BOOL INSTAPI ConfigDSN(HWND hwndParent, WORD req, LPCSTR driver,
                        LPCSTR attributes) {
   using namespace timestream::odbc;
 
-  LOG_MSG("ConfigDSN called");
+  LOG_INFO_MSG("ConfigDSN called");
 
   Configuration config;
 
-  LOG_MSG("Attributes: " << attributes);
+  LOG_INFO_MSG("Attributes: " << attributes);
 
   config::ConnectionStringParser parser(config);
 
@@ -137,12 +137,12 @@ BOOL INSTAPI ConfigDSN(HWND hwndParent, WORD req, LPCSTR driver,
   if (!SQLValidDSN(utility::FromUtf8(config.GetDsn()).c_str()))
     return FALSE;
 
-  LOG_MSG("Driver: " << driver);
-  LOG_MSG("DSN: " << config.GetDsn());
+  LOG_INFO_MSG("Driver: " << driver);
+  LOG_INFO_MSG("DSN: " << config.GetDsn());
 
   switch (req) {
     case ODBC_ADD_DSN: {
-      LOG_MSG("ODBC_ADD_DSN");
+      LOG_INFO_MSG("ODBC_ADD_DSN");
 
 #ifdef _WIN32
       if (!DisplayConnectionWindow(hwndParent, config))

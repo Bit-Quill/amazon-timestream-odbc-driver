@@ -1,8 +1,5 @@
 name: ODBC Driver for Windows (Self-Hosted Runner)
 
-# TODO Sync with Linux workflow to make Debug build work
-# https://bitquill.atlassian.net/browse/AT-1060
-
 on:   
   push:
     branches:
@@ -43,143 +40,11 @@ env:
   # OKTA_IDP_ARN: ${{secrets.OKTA_IDP_ARN}}
   
 jobs:
-  # TODO enable windows 32 and make it run on github-hosted runners
-  # https://bitquill.atlassian.net/browse/AT-1067
-  # build-windows32-self-host:
-  #   # runs-on: windows-2022
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   # TODO Reactivate cppcheck
-  #   # https://bitquill.atlassian.net/browse/AD-752
-  #   # - name: setup-cppcheck
-  #   #   id: setup_cppcheck
-  #   #   run: |
-  #   #     choco install cppcheck -y -d
-  #   #     echo "C:\Program Files\Cppcheck" >> $env:GITHUB_PATH
-  #   # - name: run-cppcheck
-  #   #   id: run-cppcheck
-  #   #   run: |
-  #   #     .\run_cppcheck.ps1
-  #   # - name: upload-cppcheck-results
-  #   #   if: failure()
-  #   #   uses: actions/upload-artifact@v3
-  #   #   with:
-  #   #     name: cppcheck-results
-  #   #     path: cppcheck-results.log 
-
-  #   - name: "Update path for WIX Toolset"
-  #     run: |
-  #       echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-  #   - name: Get latest version of CMake
-  #     uses: lukka/get-cmake@latest
-
-  #   - name: add-msbuild-to-path
-  #     uses: microsoft/setup-msbuild@v1.0.2
-
-  #   - name: Cache dependencies Windows 32
-  #     id: cache-dependencies-windows-32
-  #     uses: actions/cache@v3
-  #     with:
-  #       path: | 
-  #         ${{ env.VCPKG_ROOT }}
-  #       key: ${{ runner.os }}-cache-dependencies-windows-32-v1
-
-  #   - name: Install dependencies Windows
-  #     run: vcpkg integrate install; vcpkg install boost-test:x86-windows boost-asio:x86-windows boost-chrono:x86-windows boost-interprocess:x86-windows boost-regex:x86-windows boost-system:x86-windows boost-thread:x86-windows --recurse
-  #     env:
-  #       VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
-
-  #   - name: configure-and-build-driver
-  #     run: |
-  #       .\build_win_release32.ps1
-
-  #   - name: register-driver
-  #     run: |
-  #       .\src\odbc\install\install_amd64.cmd ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll ${{env.ODBC_BIN_PATH}}\timestream.odbc.dll
-
-  #   - name: configure-aws-credentials-for-tests
-  #     if: success()
-  #     uses: aws-actions/configure-aws-credentials@v2
-  #     with:
-  #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #       aws-region: us-west-2
-
-  #   - name: run-tests
-  #     id: runtests
-  #     run: |
-  #       mkdir -p "${{env.TIMESTREAM_LOG_PATH}}"
-  #       ${{env.ODBC_BIN_PATH}}/timestream-odbc-integration-tests.exe
-
-  #   - name: upload-test-report
-  #     if: always()
-  #     uses: EnricoMi/publish-unit-test-result-action/composite@v2.7.0
-  #     with:
-  #       check_name: "Windows x32 Build Unit Test Results Check"
-  #       comment_title: "Windows 2022 (x32) Build Unit Test Results"
-  #       files: ./odbc_test_result.xml
-
-  #   - name: upload-test-file
-  #     if: always() && (steps.runtests.outcome == 'failure')
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: odbc-test-results
-  #       path: |
-  #         ./odbc_test_result.xml
-  #         ./build/odbc/logs/timestream_odbc_*.log
-  #   # - name: build-installer
-  #   #   if: success()
-  #   #   run: |
-  #   #     .\scripts\build_installer.ps1 Release Win32 .\src $Env:ODBC_BUILD_PATH $Env:AWS_SDK_INSTALL_PATH
-  #   # - name: prepare-output
-  #   #   if: success()
-  #   #   run: |
-  #   #     .\scripts\prepare_ci_output.ps1 $Env:ODBC_BIN_PATH $Env:ODBC_LIB_PATH $Env:ODBC_BUILD_PATH
-  #   # - name: upload-build
-  #   #   if: always()
-  #   #   uses: actions/upload-artifact@v3
-  #   #   with:
-  #   #     name: windows32-build
-  #   #     path: ci-output/build
-  #   # - name: upload-installer
-  #   #   if: success()
-  #   #   uses: actions/upload-artifact@v3
-  #   #   with:
-  #   #     name: windows32-installer
-  #   #     path: ci-output/installer
-  #   # - name: upload-test-results
-  #   #   if: always()
-  #   #   uses: actions/upload-artifact@v3
-  #   #   with:
-  #   #     name: windows-test-results
-  #   #     path: $CI_OUTPUT_PATH/test
-
   build-windows64-self-host:
     runs-on: [self-hosted, windows, x64]
 
-    # TODO replace self-hosted runners with Github-hosted runners
-    # https://bitquill.atlassian.net/browse/AT-1066
-
     steps:
     - uses: actions/checkout@v2
-    # TODO Reactivate cppcheck
-    # https://bitquill.atlassian.net/browse/AD-752
-    # - name: run-cppcheck
-    #   id: setup_cppcheck
-    #   run: |
-    #     choco install cppcheck -y -d
-    #     echo "C:\Program Files\Cppcheck" >> $env:GITHUB_PATH
-    # - name: run-cppcheck
-    #   id: run-cppcheck
-    #   run: |
-    #     .\run_cppcheck.ps1
-    # - name: upload-cppcheck-results
-    #   if: failure()
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: cppcheck-results
-    #     path: cppcheck-results.log
 
     - name: Install Chocolatey
       run: |
@@ -238,8 +103,6 @@ jobs:
         name: AmazonTimestreamConnector.mez
         path: ./src/PowerBIConnector/AmazonTimestreamConnector.mez
 
-    # [TODO] Migrate old driver performance tool into the new repository
-    # https://bitquill.atlassian.net/browse/AT-1288
     # - name: Upload performance test at push to main
     #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     #   uses: actions/upload-artifact@v3
@@ -311,8 +174,6 @@ jobs:
 
   build-windows64_coverage-self-host:
     runs-on: [self-hosted, windows, x64]
-    # TODO replace self-hosted runners with Github-hosted runners
-    # https://bitquill.atlassian.net/browse/AT-1066
 
     steps:
     - uses: actions/checkout@v2

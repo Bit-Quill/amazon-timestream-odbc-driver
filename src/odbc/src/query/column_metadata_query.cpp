@@ -355,8 +355,6 @@ SqlResult::Type ColumnMetadataQuery::GetColumn(
     }
 
     case ResultColumn::DECIMAL_DIGITS: {
-      // todo implement the function for getting the decimal digits:
-      // https://bitquill.atlassian.net/browse/AD-615
       boost::optional< int16_t > decDigits =
           type_traits::BinaryTypeDecimalDigits(columnType);
       if (!decDigits || *decDigits < 0)
@@ -398,8 +396,6 @@ SqlResult::Type ColumnMetadataQuery::GetColumn(
 
     case ResultColumn::SQL_DATETIME_SUB: {
       buffer.PutNull();
-      // todo implement the function for getting the datetime sub code:
-      // https://bitquill.atlassian.net/browse/AD-609
       break;
     }
 
