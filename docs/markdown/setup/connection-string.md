@@ -14,6 +14,9 @@
 - [Connecting to an Amazon Timestream Database](#connecting-to-an-amazon-timestream-database)
     - [Connecting With IAM Credentials](#connecting-with-iam-credentials)
     - [Connecting With Profile](#connecting-with-profile)
+    - [Connecting With OKTA](#connecting-with-okta)
+    - [Connecting With AAD](#connecting-with-aad)
+    - [Connecting With Specified Endpoint with Log Level Warning](#connecting-with-specified-endpoint-with-log-level-warning)
 - [Troubleshooting](#troubleshooting)
 - [Window Dialog](#window-dialog)
 
@@ -117,13 +120,59 @@ Driver={Amazon Timestream ODBC Driver};Auth=IAM;AccessKeyId=myAccessKeyId;secret
 #### Connecting With Profile
 
 ```
-Driver={Amazon Timestream ODBC Driver};ProfileName=myProfileName;
+Driver={Amazon Timestream ODBC Driver};ProfileName=myProfileName;region=us-west-2;
 ```
 
 #### Notes
 
 1. Authentication type (Auth) is AWS Profile by default if not specified.
 2. ProfileName is `myProfileName`. The driver will attempt to connect with credentials provided in `~/.aws/credentials` (or, if provided, the file in the environment variable `AWS_SHARED_CREDENTIALS_FILE`).
+
+#### Connecting with Okta
+
+```
+driver={Amazon Timestream ODBC Driver};auth=okta;region=us-west-2;idPHost=myHostAtOkta;idPUsername=myUserName;idPPassword=myPassword;OktaApplicationID=myOktaAppId;roleARN=myRoleArn;idPARN=myIdpArn;
+```
+
+#### Notes
+
+1. Authentication type (Auth) is OKTA.
+2. IdPHost is `myHostAtOkta`.
+3. IdPUserName is `myUserName`.
+4. IdPPassword is `myPassword`.
+5. OktaApplicationID is `myOktaAppId`.
+6. RoleARN is `myRoleArn`.
+7. IdPARN is `myIdpARN`.
+
+#### Connecting with AAD
+
+```
+driver={Amazon Timestream ODBC Driver};auth=aad;region=us-west-2;idPUsername=myUserName;idPPassword=myPassword;aadApplicationID=myAadAppId;aadClientSecret=myAadClientSecret;aadTenant=myAadTenant;roleARN=myRoleArn;idPARN=myIdpArn;
+```
+
+#### Notes
+
+1. Authentication type (Auth) is AAD.
+3. IdPUserName is `myUserName`.
+4. IdPPassword is `myPassword`.
+4. AADApplicationID is `myAadAppId`.
+5. AADClientSecret is `myAadClientSecret`.
+5. AADTenant is `myAadTenant`.
+6. RoleARN is `myRoleArn`.
+7. IdPARN is `myIdpARN`.
+
+#### Connecting With Specified Endpoint with Log Level Warning
+
+```
+Driver={Amazon Timestream ODBC Driver};Auth=IAM;AccessKeyId=myAccessKeyId;secretKey=mySecretKey;EndpointOverride=ingest.timestream.us-west-2.amazonaws.com;Region=us-east-2;LogLevel=2;
+```
+
+#### Notes
+
+1. Authentication type (Auth) is AWS IAM credentials.
+2. Endpoint is `ingest.timestream.us-west-2.amazonaws.com`.
+3. Region is `us-east-2`. 
+4. Log lever is set to 2 which is `Warning`.
 
 ## Troubleshooting
 

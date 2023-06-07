@@ -35,36 +35,36 @@ sudo yum install unixODBC
 1. Download the Timestream ODBC installer deb package according to your Linux distro and architecture.
 2. Install the package
 
-#### Sample command for Debian 64 bit 
-```
-sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.deb
-```
+    #### Sample command for Debian 64 bit 
+    ```
+    sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.deb
+    ```
 
-#### Sample command for Debian 32 bit 
-```
-sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.deb
-```
+    #### Sample command for Debian 32 bit 
+    ```
+    sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.deb
+    ```
 
-#### Sample command for RPM based 64 bit
-```
-sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.rpm
-```
+    #### Sample command for RPM based 64 bit
+    ```
+    sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.rpm
+    ```
 
-#### Sample command for RPM based 32 bit
-```
-sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.rpm
-```
+    #### Sample command for RPM based 32 bit
+    ```
+    sudo rpm -i AmazonTimestreamODBC_2.0.0_RELEASE_i386.rpm
+    ```
 
 3. Register the ODBC driver by running the following script.
-#### Command for Linux 32 bit
-```
-sudo /usr/lib/timestream-odbc32/postinst_unix32.sh
-```
+    #### Command for Linux 32 bit
+    ```
+    sudo /usr/lib/timestream-odbc32/postinst_unix32.sh
+    ```
 
-#### Command for Linux 64 bit
-```
-sudo /usr/lib64/timestream-odbc64/postinst_unix64.sh
-```
+    #### Command for Linux 64 bit
+    ```
+    sudo /usr/lib64/timestream-odbc64/postinst_unix64.sh
+    ```
 
 ## Next Steps
 
@@ -74,42 +74,42 @@ sudo /usr/lib64/timestream-odbc64/postinst_unix64.sh
 There is no automatical way to uninstall it. It has to be done manually.
 1. Remove the package from repository
 
-#### Command for RPM based 64 bit
-```
-sudo zypper remove amazontimestreamodbc_2.0.0_release_x86_64
-```
+    #### Command for RPM based 64 bit
+    ```
+    sudo zypper remove amazontimestreamodbc_2.0.0_release_x86_64
+    ```
 
-#### Command for RPM based 32 bit
-```
-sudo zypper remove amazontimestreamodbc_2.0.0_release_i386
-```
+    #### Command for RPM based 32 bit
+    ```
+    sudo zypper remove amazontimestreamodbc_2.0.0_release_i386
+    ```
 
-#### Command for Debian 64 bit
-```
-sudo apt remove amazontimestreamodbc_2.0.0_release_x86_64
-```
+    #### Command for Debian 64 bit
+    ```
+    sudo apt remove amazontimestreamodbc_2.0.0_release_x86_64
+    ```
 
-#### Command for Debian 32 bit
-```
-sudo apt remove amazontimestreamodbc_2.0.0_release_i386
-```
+    #### Command for Debian 32 bit
+    ```
+    sudo apt remove amazontimestreamodbc_2.0.0_release_i386
+    ```
 
 2. If "Amazon Timestream ODBC Driver" entry still exists in /etc/odbcinst.ini or /etc/unixODBC/odbcinst.ini, remove it.
 3. Remove the driver residence directory
-#### Command for Linux 32 bit
-```
-sudo rm -rf /usr/lib/timestream-odbc32
-```
+    #### Command for Linux 32 bit
+    ```
+    sudo rm -rf /usr/lib/timestream-odbc32
+    ```
 
-#### Command for Linux 64 bit
-```
-sudo rm -rf /usr/lib64/timestream-odbc64
-```
+    #### Command for Linux 64 bit
+    ```
+    sudo rm -rf /usr/lib64/timestream-odbc64
+    ```
 
 4. Remove the libraries installed to /usr/lib if they exist
-```
-sudo rm /usr/lib/libtimestream-odbc.so /usr/lib/libtimestream-odbc.so.2.0.0
-```
+    ```
+    sudo rm /usr/lib/libtimestream-odbc.so /usr/lib/libtimestream-odbc.so.2.0.0
+    ```
 
 
 

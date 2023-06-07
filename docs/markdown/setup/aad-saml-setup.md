@@ -266,3 +266,27 @@ Connection properties for Azure AD
 
     Double check that the Azure AD (AAD) credentials are entered correctly in the DSN. If all credentials are correct, note that it may take some time for Azure AD account to properly work after set up. Try sign in again in 1 hour after the Azure AD account set up is complete. 
 
+3. Error `Request to Azure Active Directory for access token failed` is seen when connect to Timestream.
+
+    Try to create [a test user](https://learn.microsoft.com/en-us/azure/active-directory/saas-apps/amazon-web-service-tutorial#create-an-azure-ad-test-user) and [assign IAM Identity Provider and Roles](https://learn.microsoft.com/en-us/azure/active-directory/saas-apps/amazon-web-service-tutorial#assign-the-azure-ad-test-user) to the user. Use the test user to connect to Timestream.
+
+    To verify the test user could work, follow the steps below.
+
+    1. In the Azure portal, select `Enterprise Applications`, and then select `All applications`.
+    
+    2. In the applications list, select `AWS Single-Account Access`.
+
+    3. In the app's overview page, find the `Manage` section and select `Single sign-on`.
+
+    4. Scroll down and click `Test` under section `Test single sign-on with AWS Single-Account Access`.
+
+    5. Select `Sign in as someone else` (requires browser extension) and sign-in with A.Elena’s credentials. 
+
+       a. Download the browser extension that is needed to enable `Sign in as someone else` function.
+
+       b.  
+           ![](../images/azuread/sso_test_user.png)
+       
+       c. When signing in the user for the first time, Microsoft will ask you to reset the password. Reset the password as asked.
+
+    6. After sign-in succeed, you can use the test user’s credentials for testing. 

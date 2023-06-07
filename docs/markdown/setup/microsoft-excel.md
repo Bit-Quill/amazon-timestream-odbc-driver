@@ -36,7 +36,7 @@ Before you get started, [configure the Amazon Timestream ODBC driver DSN](window
 6. You're now successfully connected on Excel
 
 ## Trouble-shooting Guide
-I am experiencing data-loading issues with Excel after version update or updating environment variable `DATABASE_AS_SCHEMA`. For example, Excel is not prefixing the database name to the table name in the from clause on the query.
+I am experiencing data-loading issues with Excel after version update or updating environment variable [`DATABASE_AS_SCHEMA`](developer-guide.md#database-reporting). For example, Excel is not prefixing the database name to the table name in the from clause on the query.
 
 We suggest to remove saved cache and try loading data again.
 
