@@ -94,7 +94,6 @@ bool InternalRegisterDsn(const Configuration& config, LPCSTR driver) {
   return false;
 }
 
-
 /**
  * Unregister specified DSN.
  *

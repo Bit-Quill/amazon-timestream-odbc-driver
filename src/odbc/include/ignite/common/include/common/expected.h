@@ -260,7 +260,8 @@ class Expected {
   }
 
   /** Storage. */
-  int8_t storage[sizeof(typename timestream::odbc::common::Bigger< ResultType, ErrorType >::type)];
+  int8_t storage[sizeof(typename timestream::odbc::common::Bigger<
+                        ResultType, ErrorType >::type)];
 
   /** Result flag. Set to @c false if the value is an error. */
   bool ok;

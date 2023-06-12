@@ -39,7 +39,6 @@ using namespace timestream_test;
 
 using namespace boost::unit_test;
 
-
 /**
  * Test setup fixture.
  */
@@ -112,7 +111,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeConnectionTimeoutSet) {
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc);
   std::string pattern = "Specified attribute is not supported.";
   if (error.find(pattern) == std::string::npos)
-      BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
+    BOOST_FAIL("'" + error + "' does not match '" + pattern + "'");
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommit) {
@@ -126,8 +125,9 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeAutoCommit) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
   BOOST_REQUIRE_EQUAL(autoCommit, SQL_AUTOCOMMIT_ON);
 
-  ret = SQLSetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT,
-                          reinterpret_cast< SQLPOINTER >(SQL_AUTOCOMMIT_OFF), 0);
+  ret =
+      SQLSetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT,
+                        reinterpret_cast< SQLPOINTER >(SQL_AUTOCOMMIT_OFF), 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeMetadataId) {
   BOOST_REQUIRE_EQUAL(id, SQL_FALSE);
 
   ret = SQLSetConnectAttr(dbc, SQL_ATTR_METADATA_ID,
-                       reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
+                          reinterpret_cast< SQLPOINTER >(SQL_TRUE), 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
@@ -181,8 +181,7 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeAsyncEnable) {
 
   ret =
       SQLSetConnectAttr(dbc, SQL_ATTR_ASYNC_ENABLE,
-                          reinterpret_cast< SQLPOINTER >(SQL_ASYNC_ENABLE_ON),
-                          0);
+                        reinterpret_cast< SQLPOINTER >(SQL_ASYNC_ENABLE_ON), 0);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   std::string error = GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc);
@@ -195,22 +194,24 @@ BOOST_AUTO_TEST_CASE(ConnectionAttributeTSLogDebug) {
   ConnectToTS();
 
   SQLUINTEGER id = -1;
-  SQLRETURN ret =
-      SQLSetConnectAttr(dbc, SQL_ATTR_TSLOG_DEBUG,
+  SQLRETURN ret = SQLSetConnectAttr(
+      dbc, SQL_ATTR_TSLOG_DEBUG,
       reinterpret_cast< SQLPOINTER >(LogLevel::Type::DEBUG_LEVEL), 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
 
   ret = SQLGetConnectAttr(dbc, SQL_ATTR_TSLOG_DEBUG, &id, 0, 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_DBC, dbc);
-  BOOST_REQUIRE_EQUAL(id, static_cast<SQLUINTEGER>(LogLevel::Type::DEBUG_LEVEL));
+  BOOST_REQUIRE_EQUAL(id,
+                      static_cast< SQLUINTEGER >(LogLevel::Type::DEBUG_LEVEL));
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeCursorScrollable) {
   ConnectToTS();
-  
+
   SQLULEN scrollable = -1;
-  SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_CURSOR_SCROLLABLE, &scrollable, 0, 0);
+  SQLRETURN ret =
+      SQLGetStmtAttr(stmt, SQL_ATTR_CURSOR_SCROLLABLE, &scrollable, 0, 0);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
   BOOST_REQUIRE_EQUAL(scrollable, SQL_NONSCROLLABLE);
@@ -250,8 +251,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeConcurrency) {
 
   // Attempt to set to supported value
   ret = SQLSetStmtAttr(stmt, SQL_ATTR_CONCURRENCY,
-                       reinterpret_cast< SQLPOINTER >(SQL_CONCUR_READ_ONLY),
-                       0);
+                       reinterpret_cast< SQLPOINTER >(SQL_CONCUR_READ_ONLY), 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Attempt to set to unsupported value
@@ -334,8 +334,9 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRetrieveData) {
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("HYC00");
-  BOOST_REQUIRE_EQUAL("HYC00: SQLFetch can only retrieve data after it positions the cursor",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL(
+      "HYC00: SQLFetch can only retrieve data after it positions the cursor",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeRowBindType) {
@@ -359,9 +360,8 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowBindType) {
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("HYC00");
-  BOOST_REQUIRE_EQUAL(
-      "HYC00: Only binding by column is currently supported",
-      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("HYC00: Only binding by column is currently supported",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 }
 
 BOOST_AUTO_TEST_CASE(StatementAttributeRowBindOffset) {
@@ -381,7 +381,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowBindOffset) {
                        reinterpret_cast< SQLPOINTER >(&rowBindOffset1), 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  // Check pointer is set successfully 
+  // Check pointer is set successfully
   SQLULEN* rowBindOffset2;
   ret =
       SQLGetStmtAttr(stmt, SQL_ATTR_ROW_BIND_OFFSET_PTR, &rowBindOffset2, 0, 0);
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowsFetchedPtr) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Test setting rowsFetchedPtr has worked and its value is updated
-  BOOST_REQUIRE_EQUAL(rowsFetchedPtr1[0], 1); 
+  BOOST_REQUIRE_EQUAL(rowsFetchedPtr1[0], 1);
 
   // Test non-default value is returned
   SQLULEN* rowsFetchedPtr2;
@@ -447,8 +447,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowsStatusesPtr) {
                        reinterpret_cast< SQLPOINTER >(&rowsStatusesPtr1), 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  std::vector< SQLWCHAR > request =
-      MakeSqlBuffer("SELECT 1");
+  std::vector< SQLWCHAR > request = MakeSqlBuffer("SELECT 1");
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
@@ -462,7 +461,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowsStatusesPtr) {
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
 
   BOOST_REQUIRE_EQUAL(rowsStatusesPtr1[0], SQL_ROW_NOROW);
-  
+
   // Test non-default value is returned
   SQLUSMALLINT* rowsStatusesPtr2;
   ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_STATUS_PTR, &rowsStatusesPtr2, 0, 0);
@@ -521,8 +520,8 @@ BOOST_AUTO_TEST_CASE(StatementAttributeMetadataId) {
 BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLExecDirect) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      "SELECT * FROM data_queries_test_db.TestScalarTypes");
+  std::vector< SQLWCHAR > request =
+      MakeSqlBuffer("SELECT * FROM data_queries_test_db.TestScalarTypes");
   SQLRETURN ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
@@ -578,8 +577,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLTables) {
 
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > testTableName = MakeSqlBuffer("IoTMulti");
-  std::vector< SQLWCHAR > databaseName =
-      MakeSqlBuffer("meta_queries_test_db");
+  std::vector< SQLWCHAR > databaseName = MakeSqlBuffer("meta_queries_test_db");
   SQLRETURN ret;
 
   if (DATABASE_AS_SCHEMA) {
@@ -709,7 +707,6 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowNumberSQLGetTypeInfo) {
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
   BOOST_REQUIRE_EQUAL(rowNum, 1);
 
-  
   SQLULEN rowCount = 1;
   do {
     ret = SQLFetch(stmt);
@@ -781,8 +778,7 @@ BOOST_AUTO_TEST_CASE(EnvironmentAttributeCPMatch) {
 
   // We want ODBC 3 support
   SQLRETURN ret = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION,
-                                reinterpret_cast< void* >(SQL_OV_ODBC3),
-                0);
+                                reinterpret_cast< void* >(SQL_OV_ODBC3), 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_ENV, env);
 
   // Attempt to set SQL_ATTR_CP_MATCH to non-default value
@@ -910,7 +906,7 @@ BOOST_AUTO_TEST_CASE(ConnectionSetConnectOptionIgnored) {
   CHECK_SET_IGNORED_OPTION(SQL_TXN_ISOLATION, SQL_TXN_READ_COMMITTED);
   CHECK_SET_IGNORED_OPTION(SQL_ACCESS_MODE, SQL_MODE_READ_ONLY);
   CHECK_SET_IGNORED_OPTION(SQL_CURRENT_QUALIFIER,
-                       reinterpret_cast< SQLULEN >("test"));
+                           reinterpret_cast< SQLULEN >("test"));
   CHECK_SET_IGNORED_OPTION(SQL_PACKET_SIZE, 100);
   CHECK_SET_IGNORED_OPTION(SQL_QUIET_MODE, NULL);
   CHECK_SET_IGNORED_OPTION(SQL_LOGIN_TIMEOUT, 10);
@@ -942,7 +938,8 @@ BOOST_AUTO_TEST_CASE(ConnectionSetConnectOptionDMCase) {
 #endif
 }
 
-//SQL_ATTR_METADATA_ID could not be set/get by SQLSetConnectOption/SQLGetConnectOption on macOS
+// SQL_ATTR_METADATA_ID could not be set/get by
+// SQLSetConnectOption/SQLGetConnectOption on macOS
 #if !defined(__APPLE__)
 BOOST_AUTO_TEST_CASE(ConnectionSetAndGetConnectOption) {
   ConnectToTS();

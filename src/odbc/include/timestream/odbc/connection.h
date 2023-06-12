@@ -247,12 +247,13 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
 
   /**
    * Get AWS Log Level from string
-   * 
+   *
    * @param awsLogLvl AWS Log Level String
    *
    * @return awsLogLevel AWS Log Level, default is Warn.
    */
-  static Aws::Utils::Logging::LogLevel GetAWSLogLevelFromString(std::string awsLogLvl);
+  static Aws::Utils::Logging::LogLevel GetAWSLogLevelFromString(
+      std::string awsLogLvl);
 
   /**
    * Get cursor name for a statement
@@ -284,7 +285,7 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
    * Check if a cursor name exists for a connection
    *
    * @param cursorName Cursor name
-   * 
+   *
    * @return true if the cursor name exists for a connection.
    */
   bool CursorNameExists(std::string& cursorName);
@@ -482,7 +483,6 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
     return SqlResult::AI_SUCCESS;
   }
 
-
   /**
    * Get connection attribute.
    * Internal call.
@@ -531,12 +531,13 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   /**
    * Get a connection option value
    * Internal call.
-   * 
+   *
    * @param option Connection option
    * @param value  Option value to be returned
    * @return Operation result.
    */
-  SqlResult::Type InternalGetConnectOption(SQLUSMALLINT option, SQLPOINTER value);
+  SqlResult::Type InternalGetConnectOption(SQLUSMALLINT option,
+                                           SQLPOINTER value);
 
   /**
    * Create a descriptor.
@@ -551,7 +552,7 @@ class IGNITE_IMPORT_EXPORT Connection : public diagnostic::DiagnosableAdapter {
   /**
    * Set function supportability.
    * Internal call.
-   * 
+   *
    * @param funcId Function Id.
    * @param valueBuf Value array or value.
    * @return Operation result.

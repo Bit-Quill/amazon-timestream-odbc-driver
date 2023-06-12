@@ -262,8 +262,7 @@ class ApplicationDataBuffer {
    * @param value Value to put.
    * @return Conversion result.
    */
-  ConversionResult::Type PutDecimal(
-      const boost::optional< Decimal >& value);
+  ConversionResult::Type PutDecimal(const boost::optional< Decimal >& value);
 
   /**
    * Put decimal value to buffer.
@@ -295,7 +294,8 @@ class ApplicationDataBuffer {
    * @param value Value to put.
    * @return Conversion result.
    */
-  ConversionResult::Type PutTimestamp(const boost::optional< Timestamp >& value);
+  ConversionResult::Type PutTimestamp(
+      const boost::optional< Timestamp >& value);
 
   /**
    * Put timestamp to buffer.
@@ -335,8 +335,7 @@ class ApplicationDataBuffer {
    * @param value Value to put.
    * @return Conversion result.
    */
-  ConversionResult::Type PutInterval(
-      const IntervalDaySecond& value);
+  ConversionResult::Type PutInterval(const IntervalDaySecond& value);
   /**
    * Get string.
    *
@@ -571,12 +570,13 @@ class ApplicationDataBuffer {
 
   /**
    * Get Timestamp in string format
-   * @param tmTime The timestamp data without nanosecond 
+   * @param tmTime The timestamp data without nanosecond
    * @param fraction The nanosecond
    * @param pattern The result string format pattern
    * @return timestamp in string format "YYYY-MM--DD hh:mm:ss.xxxxxxxxx"
    */
-  std::string GetTimestampString(tm& tmTime, int32_t fraction, const char* pattern);
+  std::string GetTimestampString(tm& tmTime, int32_t fraction,
+                                 const char* pattern);
 
   /**
    * Set the interval buffer type.
@@ -591,7 +591,8 @@ class ApplicationDataBuffer {
    * @param buffer The interval buffer for output
    * @param value The value retrieved from Timestream
    */
-  void SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer, const IntervalYearMonth& value);
+  void SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
+                              const IntervalYearMonth& value);
 
   /**
    * Set the interval buffer interval value.
@@ -599,7 +600,8 @@ class ApplicationDataBuffer {
    * @param buffer The interval buffer for output
    * @param value The value retrieved from Timestream
    */
-  void SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer, const IntervalDaySecond& value);
+  void SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
+                              const IntervalDaySecond& value);
 
   /** Underlying data type. */
   type_traits::OdbcNativeType::Type type;

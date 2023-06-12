@@ -521,7 +521,8 @@ void Configuration::Validate() const {
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
         "The following is required to connect:\n"
         "AUTH is \"OKTA\" and "
-        "IdpHost, UID or IdpUserName, PWD or IdpPassword, OktaAppId, RoleArn and IdpArn");
+        "IdpHost, UID or IdpUserName, PWD or IdpPassword, OktaAppId, RoleArn "
+        "and IdpArn");
   }
 
   if ((GetAuthType() == timestream::odbc::AuthType::Type::AAD)
@@ -531,20 +532,20 @@ void Configuration::Validate() const {
           || GetAADClientSecret().empty())) {
     throw ignite::odbc::OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-                    "The following is required to connect:\n"
-                    "AUTH is \"AAD\" and "
-                    "UID or IdpUserName, PWD or IdpPassword, and "
-                    "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
+        "The following is required to connect:\n"
+        "AUTH is \"AAD\" and "
+        "UID or IdpUserName, PWD or IdpPassword, and "
+        "AADAppId, RoleArn, IdpArn, AADTenant and AADClientSecret");
   }
 
   if ((GetAuthType() == timestream::odbc::AuthType::Type::IAM)
       && (GetDSNUserName().empty() || GetDSNPassword().empty())) {
     throw ignite::odbc::OdbcError(
         SqlState::S01S00_INVALID_CONNECTION_STRING_ATTRIBUTE,
-                    "The following is required to connect:\n"
-                    "AUTH is \"IAM\" and "
-                    "UID and PWD or "
-                    "AccessKeyId and Secretkey");
+        "The following is required to connect:\n"
+        "AUTH is \"IAM\" and "
+        "UID and PWD or "
+        "AccessKeyId and Secretkey");
   }
 }
 

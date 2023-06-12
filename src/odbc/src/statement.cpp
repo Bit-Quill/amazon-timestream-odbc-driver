@@ -51,17 +51,17 @@ Statement::Statement(Connection& parent)
       rowStatuses(0),
       columnBindOffset(0),
       rowArraySize(1) {
-  // Create and initialize implicit descriptors. Here we created the 4 implicit descriptors.
-  // But besides implicit ARD, they are not in use because there is no clear document about
-  // how to set and use them. This could be done in future when there is a need or clear 
-  // guide about how to use them.
+  // Create and initialize implicit descriptors. Here we created the 4 implicit
+  // descriptors. But besides implicit ARD, they are not in use because there is
+  // no clear document about how to set and use them. This could be done in
+  // future when there is a need or clear guide about how to use them.
   ardi = std::unique_ptr< Descriptor >(new Descriptor);
   ardi->SetType(ARD);
   ardi->SetStatement(this);
   ardi->InitAppHead(true);
 
   // set active ARD to this implicit one
-  ard = ardi.get(); 
+  ard = ardi.get();
 
   apdi = std::unique_ptr< Descriptor >(new Descriptor);
   apdi->SetType(APD);
@@ -185,10 +185,10 @@ void Statement::SetDescriptorFields(uint16_t columnIdx, int16_t targetType,
   }
 
   boost::optional< int16_t > type(targetType);
-  if (targetType == SQL_VARCHAR || targetType == SQL_WVARCHAR || 
-      targetType == SQL_CHAR ||targetType == SQL_WCHAR || 
-      targetType == SQL_LONGVARCHAR || targetType == SQL_WLONGVARCHAR) {
-    record.length = bufferLength;  
+  if (targetType == SQL_VARCHAR || targetType == SQL_WVARCHAR
+      || targetType == SQL_CHAR || targetType == SQL_WCHAR
+      || targetType == SQL_LONGVARCHAR || targetType == SQL_WLONGVARCHAR) {
+    record.length = bufferLength;
   } else {
     record.length = type_traits::SqlTypeTransferLength(type).get();
   }
@@ -257,9 +257,8 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       SqlUlen concurrency = reinterpret_cast< SqlUlen >(value);
 
       if (concurrency != SQL_CONCUR_READ_ONLY) {
-        AddStatusRecord(
-            SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-            "Only read-only cursors are supported");
+        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+                        "Only read-only cursors are supported");
 
         return SqlResult::AI_ERROR;
       }
@@ -290,7 +289,8 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
         return SqlResult::AI_ERROR;
       }
 
-      connection.SetAttribute(SQL_ATTR_METADATA_ID, reinterpret_cast< SQLPOINTER >(id), 0);
+      connection.SetAttribute(SQL_ATTR_METADATA_ID,
+                              reinterpret_cast< SQLPOINTER >(id), 0);
 
       break;
     }
@@ -299,8 +299,9 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       SqlUlen retrievData = reinterpret_cast< SqlUlen >(value);
 
       if (retrievData != SQL_RD_ON) {
-        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-                        "SQLFetch can only retrieve data after it positions the cursor");
+        AddStatusRecord(
+            SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+            "SQLFetch can only retrieve data after it positions the cursor");
 
         return SqlResult::AI_ERROR;
       }
@@ -323,11 +324,11 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 
     case SQL_ATTR_APP_ROW_DESC: {
       Descriptor* desc = reinterpret_cast< Descriptor* >(value);
-      if (desc) 
-      {
+      if (desc) {
         if (desc->GetConnection() != &connection) {
-          AddStatusRecord(SqlState::SHY024_INVALID_ATTRIBUTE_VALUE,
-                          "Descriptor does not belong to the statement connection.");
+          AddStatusRecord(
+              SqlState::SHY024_INVALID_ATTRIBUTE_VALUE,
+              "Descriptor does not belong to the statement connection.");
           return SqlResult::AI_ERROR;
         }
 
@@ -371,8 +372,8 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       SQLLEN offset = *(reinterpret_cast< SQLLEN* >(value));
       ard->GetHeader().bindOffsetPtr = reinterpret_cast< SQLLEN* >(value);
       for (auto& itr : ard->GetRecords()) {
-        itr.second.dataPtr = reinterpret_cast< SQLCHAR* >(itr.second.dataPtr)
-            + offset;
+        itr.second.dataPtr =
+            reinterpret_cast< SQLCHAR* >(itr.second.dataPtr) + offset;
         itr.second.indicatorPtr += offset;
         itr.second.octetLengthPtr += offset;
       }
@@ -395,7 +396,7 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 
     case SQL_ATTR_ROW_OPERATION_PTR: {
       SQLUSMALLINT* array = reinterpret_cast< SQLUSMALLINT* >(value);
-    
+
       ard->GetHeader().arrayStatusPtr = array;
 
       break;
@@ -411,7 +412,7 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 
     case SQL_ATTR_ROWS_FETCHED_PTR: {
       SQLULEN* buf = reinterpret_cast< SQLULEN* >(value);
-      SetRowsFetchedPtr(buf);    
+      SetRowsFetchedPtr(buf);
 
       ird->GetHeader().rowsProcessedPtr = buf;
       break;
@@ -587,7 +588,8 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
       if (!currentQuery.get()) {
-        std::string warnMsg = "Cursor is not in the open state, cannot determine row number";
+        std::string warnMsg =
+            "Cursor is not in the open state, cannot determine row number";
         AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, warnMsg,
                         LogLevel::Type::WARNING_LEVEL);
 
@@ -665,7 +667,7 @@ SqlResult::Type Statement::InternalGetStmtOption(SQLUSMALLINT option,
 
     case SQL_BIND_TYPE:
     case SQL_CONCURRENCY:
-    case SQL_CURSOR_TYPE:   
+    case SQL_CURSOR_TYPE:
     case SQL_RETRIEVE_DATA:
     default: {
       return InternalGetAttribute(option, value, 0, nullptr);
@@ -705,8 +707,7 @@ SqlResult::Type Statement::InternalPrepareSqlQuery(const std::string& query) {
   if (currentQuery.get())
     currentQuery->Close();
 
-  currentQuery.reset(
-      new query::DataQuery(*this, connection, query));
+  currentQuery.reset(new query::DataQuery(*this, connection, query));
 
   return SqlResult::AI_SUCCESS;
 }
@@ -738,8 +739,9 @@ SqlResult::Type Statement::InternalExecuteSqlQuery() {
   }
 
   SqlResult::Type retval = currentQuery->Execute();
-  // For SQLExecute() when the query result is empty according to Microsoft document it should be SUCCESS.
-  // SQL_NO_DATA is only used for DML statements. The DataQuery::Execute() needs to keep AI_NO_DATA as it is needed by 
+  // For SQLExecute() when the query result is empty according to Microsoft
+  // document it should be SUCCESS. SQL_NO_DATA is only used for DML statements.
+  // The DataQuery::Execute() needs to keep AI_NO_DATA as it is needed by
   // TableMetadataQuery::getMatchedTables().
   if (retval == SqlResult::AI_NO_DATA) {
     AddStatusRecord(SqlState::S01000_GENERAL_WARNING, "Query result is empty");
@@ -1238,7 +1240,7 @@ void Statement::SetARDDesc(Descriptor* desc) {
 }
 
 void Statement::GetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen,
-                   SQLSMALLINT* nameResLen) {
+                              SQLSMALLINT* nameResLen) {
   IGNITE_ODBC_API_CALL(InternalGetCursorName(nameBuf, nameBufLen, nameResLen));
 }
 
@@ -1248,41 +1250,46 @@ SqlResult::Type Statement::InternalGetCursorName(SQLWCHAR* nameBuf,
   std::string cursorName = connection.GetCursorName(this);
 
   bool isTruncated;
-  // nameBufLen is the number of characters in nameBuf, not include the ending '\0'
+  // nameBufLen is the number of characters in nameBuf, not include the ending
+  // '\0'
   size_t resultLen = timestream::odbc::utility::CopyUtf8StringToSqlWcharString(
-      cursorName.c_str(), nameBuf, (nameBufLen +1) * sizeof(SQLWCHAR), isTruncated);
+      cursorName.c_str(), nameBuf, (nameBufLen + 1) * sizeof(SQLWCHAR),
+      isTruncated);
   *nameResLen = resultLen / sizeof(SQLWCHAR);
 
   if (isTruncated) {
-    AddStatusRecord(SqlState::S01000_GENERAL_WARNING, "Buffer is too small for the cursor name.");
+    AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                    "Buffer is too small for the cursor name.");
     return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
   return SqlResult::AI_SUCCESS;
 }
 
-void Statement::SetCursorName(SQLWCHAR* name, SQLSMALLINT nameLen)
-{
+void Statement::SetCursorName(SQLWCHAR* name, SQLSMALLINT nameLen) {
   IGNITE_ODBC_API_CALL(InternalSetCursorName(name, nameLen));
 }
 
 #define CURSOR_NAME_MAX_LENGTH 18
 
 SqlResult::Type Statement::InternalSetCursorName(SQLWCHAR* name,
-                                               SQLSMALLINT nameLen) {
+                                                 SQLSMALLINT nameLen) {
   if (nameLen > CURSOR_NAME_MAX_LENGTH) {
     std::stringstream ss;
-    ss << "The number of characters in cursor name (" << nameLen << ") exceeds the maximum allowed number ("
-       << CURSOR_NAME_MAX_LENGTH << ")";
+    ss << "The number of characters in cursor name (" << nameLen
+       << ") exceeds the maximum allowed number (" << CURSOR_NAME_MAX_LENGTH
+       << ")";
     AddStatusRecord(SqlState::S3C000_DUPLICATE_CURSOR_NAME, ss.str());
 
     return SqlResult::AI_ERROR;
   }
 
-  std::string cursorName = timestream::odbc::utility::SqlWcharToString(name, nameLen);
+  std::string cursorName =
+      timestream::odbc::utility::SqlWcharToString(name, nameLen);
   std::string pattern("SQL_CUR");
   if (cursorName.length() >= pattern.length()
-      && Aws::Utils::StringUtils::ToUpper(cursorName.substr(0, pattern.length()).data())
+      && Aws::Utils::StringUtils::ToUpper(
+             cursorName.substr(0, pattern.length()).data())
              == pattern) {
     std::stringstream ss;
     ss << "Cursor name should not start with " << pattern;

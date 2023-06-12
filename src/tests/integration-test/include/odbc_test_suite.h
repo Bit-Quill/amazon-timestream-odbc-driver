@@ -69,8 +69,7 @@ struct OdbcTestSuite {
    * @param odbcVer ODBC Version
    * @param result the function execution result
    */
-  void Connect(const std::string& connectStr, int32_t odbcVer,
-                              bool& result);
+  void Connect(const std::string& connectStr, int32_t odbcVer, bool& result);
 
   /**
    * Establish connection to node using provided handles.
@@ -139,7 +138,7 @@ struct OdbcTestSuite {
 
   /**
    * Expect SQLTables to fail.
-   * 
+   *
    * @param catalogName Catalog name
    * @param catalogNameLen Catalog name len
    * @param schemaName Schema name
@@ -150,7 +149,7 @@ struct OdbcTestSuite {
    * @param tableTypeLen Table type len
    * @param expectedState Expected error state
    * @param expectedError Expected error message
-   * @return SQL State. 
+   * @return SQL State.
    */
   std::string ExpectSQLTablesReject(
       SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
@@ -206,7 +205,7 @@ struct OdbcTestSuite {
    * Destructor.
    */
   virtual ~OdbcTestSuite();
-  
+
   /**
    * Get test i8Field.
    *

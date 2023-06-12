@@ -132,13 +132,15 @@ Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamService::HandleQueryReq(
 
     result.AddRows(row);
     return Aws::TimestreamQuery::Model::QueryOutcome(result);
-  } else if (request.GetQueryString() == "select measure, time from mockDB.mockTable") {
+  } else if (request.GetQueryString()
+             == "select measure, time from mockDB.mockTable") {
     Aws::TimestreamQuery::Model::QueryResult result;
     SetupResultForMockTable(result);
     return Aws::TimestreamQuery::Model::QueryOutcome(result);
-  } else if (request.GetQueryString() == "select measure, time from mockDB.mockTable10000") {
+  } else if (request.GetQueryString()
+             == "select measure, time from mockDB.mockTable10000") {
     Aws::TimestreamQuery::Model::QueryResult result;
-    SetupResultForMockTable(result); 
+    SetupResultForMockTable(result);
 
     // for pagination test
     result.SetNextToken(std::to_string(++token));

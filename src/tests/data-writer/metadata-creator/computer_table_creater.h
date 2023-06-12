@@ -32,24 +32,26 @@ class ComputerTableCreater : public MeasureMetadataCreater {
   virtual ~ComputerTableCreater() = default;
 
   virtual void CreateDimensions(Aws::Vector< Dimension >& dimensions) {
-      Dimension region;
-      region.WithName("region").WithValue("us-east-1");
-    
-      Dimension az;
-      az.WithName("az").WithValue("az1");
-    
-      Dimension hostname;
-      hostname.WithName("hostname").WithValue("host1");
-    
-      dimensions.push_back(region);
-      dimensions.push_back(az);
-      dimensions.push_back(hostname);
+    Dimension region;
+    region.WithName("region").WithValue("us-east-1");
+
+    Dimension az;
+    az.WithName("az").WithValue("az1");
+
+    Dimension hostname;
+    hostname.WithName("hostname").WithValue("host1");
+
+    dimensions.push_back(region);
+    dimensions.push_back(az);
+    dimensions.push_back(hostname);
   }
 
-  virtual void CreateRecords(
-      Aws::Vector< Dimension >& dimensions, Aws::Vector< Record >& values) {
+  virtual void CreateRecords(Aws::Vector< Dimension >& dimensions,
+                             Aws::Vector< Record >& values) {
     Record index;
-    index.WithDimensions(dimensions).WithMeasureName("index").WithMeasureValueType(MeasureValueType::BIGINT);
+    index.WithDimensions(dimensions)
+        .WithMeasureName("index")
+        .WithMeasureValueType(MeasureValueType::BIGINT);
 
     Record cpuUtilization;
     cpuUtilization.WithDimensions(dimensions)
@@ -67,22 +69,23 @@ class ComputerTableCreater : public MeasureMetadataCreater {
   }
 
   virtual void CreateMeasureValues(Aws::Vector< MeasureValue >& values) {
-      MeasureValue index;
-      index.WithName("index").WithType(MeasureValueType::BIGINT);
-    
-      MeasureValue cpuUtilization;
-      cpuUtilization.WithName("cpu_utilization").WithType(MeasureValueType::DOUBLE);
-    
-      MeasureValue memoryUtilization;
-      memoryUtilization.WithName("memory_utilization")
-          .WithType(MeasureValueType::DOUBLE);
-    
-      values.push_back(index);
-      values.push_back(cpuUtilization);
-      values.push_back(memoryUtilization);
+    MeasureValue index;
+    index.WithName("index").WithType(MeasureValueType::BIGINT);
+
+    MeasureValue cpuUtilization;
+    cpuUtilization.WithName("cpu_utilization")
+        .WithType(MeasureValueType::DOUBLE);
+
+    MeasureValue memoryUtilization;
+    memoryUtilization.WithName("memory_utilization")
+        .WithType(MeasureValueType::DOUBLE);
+
+    values.push_back(index);
+    values.push_back(cpuUtilization);
+    values.push_back(memoryUtilization);
   }
 
-  virtual const char* GetMetricName(){
+  virtual const char* GetMetricName() {
     return "computer_metrics";
   }
 
@@ -91,7 +94,8 @@ class ComputerTableCreater : public MeasureMetadataCreater {
     return fMin + f * (fMax - fMin);
   }
 
-  static void AssignMeasureValues(Aws::Vector< MeasureValue >& values, int index) {
+  static void AssignMeasureValues(Aws::Vector< MeasureValue >& values,
+                                  int index) {
     values[0].WithValue(std::to_string(index));
     values[1].WithValue(std::to_string(fRand(0, 100)));
     values[2].WithValue(std::to_string(rand() % 1024));

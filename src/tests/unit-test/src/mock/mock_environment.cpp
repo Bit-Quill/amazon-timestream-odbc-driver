@@ -19,8 +19,7 @@
 
 namespace timestream {
 namespace odbc {
-MockEnvironment::MockEnvironment()
-    : Environment() {
+MockEnvironment::MockEnvironment() : Environment() {
   // No-op.
 }
 
@@ -28,7 +27,8 @@ MockEnvironment::~MockEnvironment() {
   // No-op.
 }
 
-SqlResult::Type MockEnvironment::InternalCreateConnection(Connection*& connection) {
+SqlResult::Type MockEnvironment::InternalCreateConnection(
+    Connection*& connection) {
   connection = new MockConnection(this);
 
   if (!connection) {

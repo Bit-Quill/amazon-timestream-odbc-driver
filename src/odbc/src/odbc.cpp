@@ -179,12 +179,12 @@ SQLRETURN SQLAllocDesc(SQLHDBC conn, SQLHDESC* desc) {
 
   Descriptor* descriptor = connection->CreateDescriptor();
 
-  *desc = reinterpret_cast< SQLHDESC >(descriptor); 
+  *desc = reinterpret_cast< SQLHDESC >(descriptor);
 
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
-  SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle) {
+SQLRETURN SQLFreeHandle(SQLSMALLINT type, SQLHANDLE handle) {
   LOG_DEBUG_MSG("SQLFreeHandle called with type " << type);
 
   switch (type) {
@@ -254,7 +254,8 @@ SQLRETURN SQLFreeStmt(SQLHSTMT stmt, SQLUSMALLINT option) {
   }
 
   if (option == SQL_DROP) {
-    // cursor name should be removed from the connection that the cursor name was set for
+    // cursor name should be removed from the connection that the cursor name
+    // was set for
     statement->GetConnection().RemoveCursorName(statement);
     delete statement;
     return SQL_SUCCESS;
@@ -539,12 +540,12 @@ SQLRETURN SQLExtendedFetch(SQLHSTMT stmt, SQLUSMALLINT orientation,
   LOG_DEBUG_MSG("res is " << res);
 
   // If the SQL function SQLExtendedFetch is called with RowCountPtr
-  // setting to 0, the RowCountPtr is a null pointer. The rowCount here 
+  // setting to 0, the RowCountPtr is a null pointer. The rowCount here
   // is passed from driver manager based on RowCountPtr value.
   // The rowCount is nullptr on Linux but not nullptr on Windows.
-  // This behavior is determined by driver manager.   
+  // This behavior is determined by driver manager.
   if (rowCount)
-      LOG_DEBUG_MSG("*rowCount is " << *rowCount);
+    LOG_DEBUG_MSG("*rowCount is " << *rowCount);
 
   return res;
 }
@@ -609,10 +610,11 @@ SQLRETURN SQLColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLColumnPrivileges(
-    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
-    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
-    SQLSMALLINT tableNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
+SQLRETURN SQLColumnPrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                              SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+                              SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+                              SQLSMALLINT tableNameLen, SQLWCHAR* columnName,
+                              SQLSMALLINT columnNameLen) {
   LOG_DEBUG_MSG("SQLColumnPrivileges called");
 
   IGNITE_UNUSED(catalogName);
@@ -669,13 +671,10 @@ SQLRETURN SQLTables(SQLHSTMT stmt, SQLWCHAR* catalogName,
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-
 SQLRETURN SQLTablePrivileges(SQLHSTMT stmt, SQLWCHAR* catalogName,
-                                     SQLSMALLINT catalogNameLen,
-                                     SQLWCHAR* schemaName,
-                                     SQLSMALLINT schemaNameLen,
-                                     SQLWCHAR* tableName,
-                                     SQLSMALLINT tableNameLen) {
+                             SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+                             SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+                             SQLSMALLINT tableNameLen) {
   LOG_DEBUG_MSG("SQLTablePrivileges called");
 
   IGNITE_UNUSED(catalogName);
@@ -960,8 +959,7 @@ SQLRETURN SQLSetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER value,
 
 #ifdef _DEBUG
   LOG_DEBUG_MSG("Attr: " << odbc::type_traits::StatementAttrIdToString(attr)
-                         << " (" << attr
-                         << ")");
+                         << " (" << attr << ")");
 #endif  //_DEBUG
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -1267,10 +1265,10 @@ SQLRETURN SQLSpecialColumns(SQLHSTMT stmt, SQLSMALLINT idType,
 }
 
 SQLRETURN SQLStatistics(SQLHSTMT stmt, SQLWCHAR* catalogName,
-                                SQLSMALLINT catalogNameLen,
-                                SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen,
-                                SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
-                                SQLUSMALLINT unique, SQLUSMALLINT reserved) {
+                        SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+                        SQLSMALLINT schemaNameLen, SQLWCHAR* tableName,
+                        SQLSMALLINT tableNameLen, SQLUSMALLINT unique,
+                        SQLUSMALLINT reserved) {
   LOG_DEBUG_MSG("SQLStatistics called");
 
   IGNITE_UNUSED(catalogName);
@@ -1296,10 +1294,11 @@ SQLRETURN SQLStatistics(SQLHSTMT stmt, SQLWCHAR* catalogName,
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLProcedureColumns(
-    SQLHSTMT stmt, SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen,
-    SQLWCHAR* schemaName, SQLSMALLINT schemaNameLen, SQLWCHAR* procName,
-    SQLSMALLINT procNameLen, SQLWCHAR* columnName, SQLSMALLINT columnNameLen) {
+SQLRETURN SQLProcedureColumns(SQLHSTMT stmt, SQLWCHAR* catalogName,
+                              SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
+                              SQLSMALLINT schemaNameLen, SQLWCHAR* procName,
+                              SQLSMALLINT procNameLen, SQLWCHAR* columnName,
+                              SQLSMALLINT columnNameLen) {
   LOG_DEBUG_MSG("SQLProcedureColumns called");
 
   IGNITE_UNUSED(catalogName);
@@ -1414,9 +1413,8 @@ SQLRETURN SQLError(SQLHENV env, SQLHDBC conn, SQLHSTMT stmt, SQLWCHAR* state,
   return SQL_SUCCESS;
 }
 
-SQLRETURN SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
-                                    SQLPOINTER valueBuf, SQLINTEGER valueBufLen,
-                                    SQLINTEGER* valueResLen) {
+SQLRETURN SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr, SQLPOINTER valueBuf,
+                            SQLINTEGER valueBufLen, SQLINTEGER* valueResLen) {
   using namespace odbc;
   using namespace type_traits;
 
@@ -1436,8 +1434,8 @@ SQLRETURN SQLGetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
   return connection->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
-                                    SQLPOINTER value, SQLINTEGER valueLen) {
+SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr, SQLPOINTER value,
+                            SQLINTEGER valueLen) {
   using odbc::Connection;
 
   LOG_DEBUG_MSG("SQLSetConnectAttr called(" << attr << ", " << value << ")");
@@ -1455,8 +1453,7 @@ SQLRETURN SQLSetConnectAttr(SQLHDBC conn, SQLINTEGER attr,
 }
 
 SQLRETURN SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
-                                   SQLSMALLINT nameBufLen,
-                                   SQLSMALLINT* nameResLen) {
+                           SQLSMALLINT nameBufLen, SQLSMALLINT* nameResLen) {
   LOG_DEBUG_MSG("SQLGetCursorName called with nameBufLen " << nameBufLen);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
@@ -1470,9 +1467,9 @@ SQLRETURN SQLGetCursorName(SQLHSTMT stmt, SQLWCHAR* nameBuf,
   return statement->GetDiagnosticRecords().GetReturnCode();
 }
 
-SQLRETURN SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name,
-                                   SQLSMALLINT nameLen) {
-  LOG_DEBUG_MSG("SQLSetCursorName called with name " << name << ", nameLen " << nameLen);
+SQLRETURN SQLSetCursorName(SQLHSTMT stmt, SQLWCHAR* name, SQLSMALLINT nameLen) {
+  LOG_DEBUG_MSG("SQLSetCursorName called with name " << name << ", nameLen "
+                                                     << nameLen);
 
   Statement* statement = reinterpret_cast< Statement* >(stmt);
 
@@ -1538,7 +1535,7 @@ SQLRETURN SQLCopyDesc(SQLHDESC src, SQLHDESC dst) {
   }
 
   srcDesc->CopyDesc(dstDesc);
- 
+
   return srcDesc->GetDiagnosticRecords().GetReturnCode();
 }
 
@@ -1566,7 +1563,8 @@ SQLRETURN SQLSetConnectOption(SQLHDBC conn, SQLUSMALLINT option,
                               SQLULEN value) {
   using odbc::Connection;
 
-  LOG_DEBUG_MSG("SQLSetConnectOption called(" << option << ", " << value << ")");
+  LOG_DEBUG_MSG("SQLSetConnectOption called(" << option << ", " << value
+                                              << ")");
 
   Connection* connection = reinterpret_cast< Connection* >(conn);
 
@@ -1636,7 +1634,7 @@ SQLRETURN SQLColAttributes(SQLHSTMT stmt, SQLUSMALLINT colNum,
   }
 
   SQLRETURN ret = SQLColAttribute(stmt, colNum, fieldId, strAttrBuf,
-                          strAttrBufLen, strAttrResLen, numAttrBuf);
+                                  strAttrBufLen, strAttrResLen, numAttrBuf);
 
   int32_t odbcVer = statement->GetConnection().GetEnvODBCVer();
   if (odbcVer == SQL_OV_ODBC2) {

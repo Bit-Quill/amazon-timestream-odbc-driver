@@ -26,8 +26,8 @@
 #include "timestream/odbc/meta/column_meta.h"
 #include <aws/timestream-query/model/Row.h>
 
-using Aws::TimestreamQuery::Model::Row;
 using Aws::TimestreamQuery::Model::Datum;
+using Aws::TimestreamQuery::Model::Row;
 using timestream::odbc::app::ApplicationDataBuffer;
 using timestream::odbc::app::ConversionResult;
 
@@ -45,8 +45,8 @@ class TimestreamColumn {
    * @param columnIdx The column index, start from 0.
    * @param columnMetadata The column metadata.
    */
-  TimestreamColumn(const Row& row,
-                   uint32_t columnIdx, const meta::ColumnMeta& columnMetadata);
+  TimestreamColumn(const Row& row, uint32_t columnIdx,
+                   const meta::ColumnMeta& columnMetadata);
 
   /**
    * Copy constructor.
@@ -85,7 +85,7 @@ class TimestreamColumn {
  private:
   /**
    * Parse Aws Datum data and save result to dataBuf
-   * 
+   *
    * @param datum Aws datum which contains the result data
    * @param dataBuf Application data buffer.
    * @return Operation result.
@@ -100,9 +100,8 @@ class TimestreamColumn {
    * @param dataBuf Application data buffer.
    * @return Operation result.
    */
-  ConversionResult::Type ParseScalarType(
-      const Datum& datum,
-      ApplicationDataBuffer& dataBuf) const;
+  ConversionResult::Type ParseScalarType(const Datum& datum,
+                                         ApplicationDataBuffer& dataBuf) const;
 
   /**
    * Parse TimeSeries data type in datum and save result to dataBuf.
@@ -112,8 +111,7 @@ class TimestreamColumn {
    * @return Operation result.
    */
   ConversionResult::Type ParseTimeSeriesType(
-      const Datum& datum,
-      ApplicationDataBuffer& dataBuf) const;
+      const Datum& datum, ApplicationDataBuffer& dataBuf) const;
 
   /**
    * Parse Array data type in datum and save result to dataBuf.
@@ -122,9 +120,8 @@ class TimestreamColumn {
    * @param dataBuf Application data buffer.
    * @return Operation result.
    */
-  ConversionResult::Type ParseArrayType(
-      const Datum& datum,
-      ApplicationDataBuffer& dataBuf) const;
+  ConversionResult::Type ParseArrayType(const Datum& datum,
+                                        ApplicationDataBuffer& dataBuf) const;
 
   /**
    * Parse Row data type in datum and save result to dataBuf.
@@ -133,9 +130,8 @@ class TimestreamColumn {
    * @param dataBuf Application data buffer.
    * @return Operation result.
    */
-  ConversionResult::Type ParseRowType(
-      const Datum& datum,
-      ApplicationDataBuffer& dataBuf) const;
+  ConversionResult::Type ParseRowType(const Datum& datum,
+                                      ApplicationDataBuffer& dataBuf) const;
 
   /** The row that owns this column */
   Row row_;

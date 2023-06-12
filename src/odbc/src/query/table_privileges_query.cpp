@@ -26,10 +26,8 @@
 namespace timestream {
 namespace odbc {
 namespace query {
-TablePrivilegesQuery::TablePrivilegesQuery(
-    diagnostic::DiagnosableAdapter& diag)
-    : Query(diag, QueryType::TABLE_PRIVILEGES),
-      columnsMeta() {
+TablePrivilegesQuery::TablePrivilegesQuery(diagnostic::DiagnosableAdapter& diag)
+    : Query(diag, QueryType::TABLE_PRIVILEGES), columnsMeta() {
   using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -52,9 +50,8 @@ TablePrivilegesQuery::TablePrivilegesQuery(
                                    Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "PRIVILEGE", ScalarType::VARCHAR,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "IS_GRANTABLE", ScalarType::VARCHAR,
-                                   Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "IS_GRANTABLE",
+                                   ScalarType::VARCHAR, Nullability::NULLABLE));
 }
 
 TablePrivilegesQuery::~TablePrivilegesQuery() {
@@ -80,19 +77,20 @@ const meta::ColumnMetaVector* TablePrivilegesQuery::GetMeta() {
 
 SqlResult::Type TablePrivilegesQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLTablePrivileges is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLTablePrivileges is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }
 
 SqlResult::Type TablePrivilegesQuery::GetColumn(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
-
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLTablePrivileges is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLTablePrivileges is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }

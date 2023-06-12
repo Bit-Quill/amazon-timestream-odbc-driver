@@ -156,7 +156,8 @@ void ColumnMeta::Read(app::ColumnBindingMap& columnBindings, int32_t position) {
     return;
   }
 
-  dataType = static_cast<int16_t>(GetScalarDataType(itr->second.GetString(STRING_BUFFER_SIZE)));
+  dataType = static_cast< int16_t >(
+      GetScalarDataType(itr->second.GetString(STRING_BUFFER_SIZE)));
 
   itr = columnBindings.find(3);
   if (itr == columnBindings.end()) {
@@ -187,8 +188,8 @@ void ColumnMeta::ReadMetadata(const ColumnInfo& tsMetadata) {
   if (columnType.ScalarTypeHasBeenSet()) {
     dataType = static_cast< int16_t >(columnType.GetScalarType());
   } else {
-    dataType =
-        static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::VARCHAR);
+    dataType = static_cast< int16_t >(
+        Aws::TimestreamQuery::Model::ScalarType::VARCHAR);
   }
 }
 
@@ -260,8 +261,9 @@ bool ColumnMeta::GetAttribute(uint16_t fieldId, std::string& value) const {
     case SQL_COLUMN_PRECISION: {
       if (!precision || *precision == -1)
         retval = false;
-      else 
-        value = timestream::odbc::common::LexicalCast< std::string >(*precision);
+      else
+        value =
+            timestream::odbc::common::LexicalCast< std::string >(*precision);
 
       break;
     }

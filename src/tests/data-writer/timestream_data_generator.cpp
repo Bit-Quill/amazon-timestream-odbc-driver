@@ -21,8 +21,10 @@
 
 #include "timestream_writer.h"
 
-bool verifyParameters(std::string& accessKeyId, std::string& secretKey, std::string& database, std::string& table, std::string& tableType,
-                      int recordNum, std::string usage) {
+bool verifyParameters(std::string& accessKeyId, std::string& secretKey,
+                      std::string& database, std::string& table,
+                      std::string& tableType, int recordNum,
+                      std::string usage) {
   if (accessKeyId.empty() || secretKey.empty() || database.empty()
       || table.empty() || tableType.empty() || recordNum == 0) {
     std::cerr << "Invalid parameters, please check";
@@ -45,7 +47,8 @@ int main(int argc, char* argv[]) {
   std::string usage("Usage: ");
   usage += argv[0];
   usage +=
-      " [-u access_key_id -p secret_access_key -s] -d database -t table -ty table_type -l record_number";
+      " [-u access_key_id -p secret_access_key -s] -d database -t table -ty "
+      "table_type -l record_number";
 
   if (argc < 9) {
     std::cerr << "Invalid parameters" << std::endl;
@@ -62,8 +65,8 @@ int main(int argc, char* argv[]) {
   bool singleValue = false;
 
   // read options
-  for (int i=1; i < argc; i++) {
-    if ((i < argc -1) && !strcmp(argv[i], "-u"))
+  for (int i = 1; i < argc; i++) {
+    if ((i < argc - 1) && !strcmp(argv[i], "-u"))
       accessKeyId = argv[++i];
     else if ((i < argc - 1) && !strcmp(argv[i], "-p"))
       secretKey = argv[++i];
@@ -117,14 +120,16 @@ int main(int argc, char* argv[]) {
   bool result = false;
 
   if (singleValue) {
-    result = writer.WriteSingleValueRecords(tableType, database, table, recordNum);  
+    result =
+        writer.WriteSingleValueRecords(tableType, database, table, recordNum);
   } else {
-    result = writer.WriteMultiValueRecords(tableType, database, table, recordNum);
+    result =
+        writer.WriteMultiValueRecords(tableType, database, table, recordNum);
   }
 
   if (result) {
-    std::cout << "Wrote " << recordNum
-              << " records to Timestream successfully " << std::endl;
+    std::cout << "Wrote " << recordNum << " records to Timestream successfully "
+              << std::endl;
   } else {
     std::cerr << "Failed to write to Timestream" << std::endl;
   }

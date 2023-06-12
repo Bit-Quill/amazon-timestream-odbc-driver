@@ -24,9 +24,9 @@
 #include "timestream/odbc/diagnostic/diagnostic_record_storage.h"
 #include "timestream/odbc/log_level.h"
 
-using timestream::odbc::diagnostic::DiagnosticRecordStorage;
-using timestream::odbc::SqlState;
 using timestream::odbc::LogLevel;
+using timestream::odbc::SqlState;
+using timestream::odbc::diagnostic::DiagnosticRecordStorage;
 
 namespace ignite {
 namespace odbc {
@@ -69,8 +69,7 @@ class Diagnosable {
    */
   virtual void AddStatusRecord(SqlState::Type sqlState,
                                const std::string& message,
-                               LogLevel::Type logLevel,
-                               int32_t rowNum,
+                               LogLevel::Type logLevel, int32_t rowNum,
                                int32_t columnNum) = 0;
 
   /**
@@ -79,9 +78,9 @@ class Diagnosable {
    * @param sqlState SQL state.
    * @param message Message.
    */
-  virtual void AddStatusRecord(SqlState::Type sqlState,
-                               const std::string& message,
-                               LogLevel::Type logLevel = LogLevel::Type::ERROR_LEVEL) = 0;
+  virtual void AddStatusRecord(
+      SqlState::Type sqlState, const std::string& message,
+      LogLevel::Type logLevel = LogLevel::Type::ERROR_LEVEL) = 0;
 
   /**
    * Add new status record.

@@ -44,9 +44,9 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
   if (ANSI_STRING_ONLY) {
     // the inBuffer contains ANSI characters only
     // If user are sure the strings in data source have only ANSI characters,
-    // this function will copy the UTF8 characters from data source to user 
-    // buffer directly without converting UTF8 to wstring and then do a mapping 
-    // from unicode to ANSI characters. 
+    // this function will copy the UTF8 characters from data source to user
+    // buffer directly without converting UTF8 to wstring and then do a mapping
+    // from unicode to ANSI characters.
     size_t inBufLen = strlen(inBuffer);
     if (inBufLen >= outBufferLenBytes) {
       strncpy(reinterpret_cast< char* >(outBuffer), inBuffer,
@@ -58,7 +58,7 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
       outBuffer[inBufLen] = 0;
       isTruncated = false;
     }
-    return std::min(inBufLen, outBufferLenBytes-1);
+    return std::min(inBufLen, outBufferLenBytes - 1);
   } else {
     // the inBuffer may contain unicode characters
     // Need to convert input string to wide-char to get the
@@ -95,7 +95,9 @@ template < typename OutCharT >
 size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
                                    size_t outBufferLenBytes,
                                    bool& isTruncated) {
-  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with outBufferLenBytes is " << outBufferLenBytes);
+  LOG_DEBUG_MSG(
+      "CopyUtf8StringToWcharString is called with outBufferLenBytes is "
+      << outBufferLenBytes);
   if (!inBuffer || (outBuffer && outBufferLenBytes == 0))
     return 0;
 
@@ -181,7 +183,9 @@ size_t CopyUtf8StringToWcharString(const char* inBuffer, OutCharT* outBuffer,
 size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
                                       size_t outBufferLenBytes,
                                       bool& isTruncated) {
-  LOG_DEBUG_MSG("CopyUtf8StringToWcharString is called with outBufferLenBytes is " << outBufferLenBytes);
+  LOG_DEBUG_MSG(
+      "CopyUtf8StringToWcharString is called with outBufferLenBytes is "
+      << outBufferLenBytes);
   if (!inBuffer)
     return 0;
 
@@ -207,8 +211,8 @@ size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
 // High-level entry point to handle buffer size in either bytes or characters
 size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
                           bool& isTruncated, bool isLenInBytes) {
-  LOG_DEBUG_MSG("CopyStringToBuffer is called with buflen is " << buflen << ", isLenInBytes is "
-                << isLenInBytes);
+  LOG_DEBUG_MSG("CopyStringToBuffer is called with buflen is "
+                << buflen << ", isLenInBytes is " << isLenInBytes);
   size_t wCharSize = sizeof(SQLWCHAR);
 
   // Ensure non-zero length in bytes is a multiple of wide char size.
@@ -400,8 +404,9 @@ std::string ConvertPatternToRegex(const std::string& pattern) {
 }
 
 int StringToInt(const std::string& s, size_t* idx, int base) {
-  LOG_DEBUG_MSG("StringToInt is called with s is " << s << ", idx is " << (idx ? *idx : -1)
-                                                   << ", base is " << base);
+  LOG_DEBUG_MSG("StringToInt is called with s is "
+                << s << ", idx is " << (idx ? *idx : -1) << ", base is "
+                << base);
   if (s.empty())
     return 0;
 

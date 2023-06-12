@@ -26,10 +26,8 @@
 namespace timestream {
 namespace odbc {
 namespace query {
-PrimaryKeysQuery::PrimaryKeysQuery(
-    diagnostic::DiagnosableAdapter& diag)
-    : Query(diag, QueryType::PRIMARY_KEYS),
-      columnsMeta() {
+PrimaryKeysQuery::PrimaryKeysQuery(diagnostic::DiagnosableAdapter& diag)
+    : Query(diag, QueryType::PRIMARY_KEYS), columnsMeta() {
   using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -48,11 +46,9 @@ PrimaryKeysQuery::PrimaryKeysQuery(
                                    Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", ScalarType::VARCHAR,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "KEY_SEQ", ScalarType::INTEGER,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "KEY_SEQ", ScalarType::INTEGER,
                                    Nullability::NO_NULL));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "PK_NAME", ScalarType::VARCHAR,
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PK_NAME", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
 }
 
@@ -88,7 +84,6 @@ SqlResult::Type PrimaryKeysQuery::FetchNextRow(
 
 SqlResult::Type PrimaryKeysQuery::GetColumn(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
-
   diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                        "SQLPrimaryKeys is not supported. No data is returned.",
                        LogLevel::Type::WARNING_LEVEL);

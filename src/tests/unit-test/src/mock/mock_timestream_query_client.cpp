@@ -28,8 +28,8 @@ namespace timestream {
 namespace odbc {
 // All the working logic is done by the singleton MockTimestreamService object.
 Aws::TimestreamQuery::Model::QueryOutcome MockTimestreamQueryClient::Query(
-   const Aws::TimestreamQuery::Model::QueryRequest &request) const {
-  // authenticate first 
+    const Aws::TimestreamQuery::Model::QueryRequest &request) const {
+  // authenticate first
   if (!MockTimestreamService::GetInstance()->Authenticate(
           credentials_.GetAWSAccessKeyId(), credentials_.GetAWSSecretKey())) {
     Aws::TimestreamQuery::TimestreamQueryError error(

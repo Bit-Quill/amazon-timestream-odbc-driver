@@ -27,10 +27,10 @@
 namespace timestream {
 namespace odbc {
 namespace diagnostic {
-void DiagnosableAdapter::AddStatusRecord(SqlState::Type sqlState,
-                                         const std::string& message,
-                                         timestream::odbc::LogLevel::Type logLevel,
-                                         int32_t rowNum, int32_t columnNum) {
+void DiagnosableAdapter::AddStatusRecord(
+    SqlState::Type sqlState, const std::string& message,
+    timestream::odbc::LogLevel::Type logLevel, int32_t rowNum,
+    int32_t columnNum) {
   WRITE_LOG_MSG("Adding new record: " << message << ", rowNum: " << rowNum
                                       << ", columnNum: " << columnNum,
                 logLevel);

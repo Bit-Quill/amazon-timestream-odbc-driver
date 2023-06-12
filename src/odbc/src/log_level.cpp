@@ -40,7 +40,6 @@ LogLevel::Type LogLevel::FromString(const std::string& val, Type dflt) {
     return LogLevel::Type::OFF;
 
   return dflt;
-
 }
 
 std::string LogLevel::ToString(Type val) {
@@ -52,7 +51,7 @@ std::string LogLevel::ToString(Type val) {
       return "3";
 
     case LogLevel::Type::WARNING_LEVEL:
-      return "2";      
+      return "2";
 
     case LogLevel::Type::ERROR_LEVEL:
       return "1";
@@ -74,7 +73,7 @@ std::wstring LogLevel::ToCBString(Type val) {
       return L"Info";
 
     case LogLevel::Type::WARNING_LEVEL:
-      return L"Warning";      
+      return L"Warning";
 
     case LogLevel::Type::ERROR_LEVEL:
       return L"Error";

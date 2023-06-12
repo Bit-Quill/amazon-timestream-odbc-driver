@@ -26,11 +26,12 @@ Time::Time() : seconds(0), fractionNs(0) {
   // No-op.
 }
 
-Time::Time(const Time& another) : seconds(another.seconds), fractionNs(another.fractionNs) {
+Time::Time(const Time& another)
+    : seconds(another.seconds), fractionNs(another.fractionNs) {
   // No-op.
 }
 
-Time::Time(int64_t ms) : seconds(ms / 1000), fractionNs((ms%1000)*100000) {
+Time::Time(int64_t ms) : seconds(ms / 1000), fractionNs((ms % 1000) * 100000) {
   // No-op.
 }
 
@@ -46,7 +47,7 @@ Time& Time::operator=(const Time& another) {
 }
 
 int64_t Time::GetMilliseconds() const {
-  return seconds * 1000 + fractionNs/1000;
+  return seconds * 1000 + fractionNs / 1000;
 }
 
 int32_t Time::GetSeconds() const {
@@ -58,8 +59,7 @@ int32_t Time::GetSecondFraction() const {
 }
 
 bool operator==(const Time& val1, const Time& val2) {
-  return val1.seconds == val2.seconds
-         && val1.fractionNs == val2.fractionNs;
+  return val1.seconds == val2.seconds && val1.fractionNs == val2.fractionNs;
 }
 
 bool operator!=(const Time& val1, const Time& val2) {

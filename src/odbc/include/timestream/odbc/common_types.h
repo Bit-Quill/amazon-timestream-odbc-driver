@@ -194,7 +194,7 @@ struct SqlState {
     SHY016_MODIFY_IRD,
 
     /** Invalid attribute value. */
-    SHY024_INVALID_ATTRIBUTE_VALUE,    
+    SHY024_INVALID_ATTRIBUTE_VALUE,
 
     /**
      * Invalid string or buffer length
@@ -394,7 +394,8 @@ struct ResponseStatus {
     /** Attempt to INSERT or MERGE {@code null} value. */
     NULL_VALUE = 4004,
 
-    /** EntryProcessor has thrown an exception during TIMESTREAMCache::invokeAll. */
+    /** EntryProcessor has thrown an exception during
+       TIMESTREAMCache::invokeAll. */
     ENTRY_PROCESSING = 4005,
 
     /** Cache not found. */
@@ -419,7 +420,7 @@ int SqlResultToReturnCode(SqlResult::Type result);
 /**
  * Convert ODBC SQL return code into internal TIMESTREAM type.
  *
- * @param ODBC result type. 
+ * @param ODBC result type.
  * @return result Internal result type.
  */
 SqlResult::Type ReturnCodeToSqlResult(int retCode);

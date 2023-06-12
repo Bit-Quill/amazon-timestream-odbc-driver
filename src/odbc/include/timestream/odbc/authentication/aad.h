@@ -32,16 +32,17 @@ class IGNITE_IMPORT_EXPORT TimestreamAADCredentialsProvider
    * @param httpClient Shared pointer to httpClient
    * @param stsClient Shared pointer to STSClient
    */
-  TimestreamAADCredentialsProvider(const config::Configuration& config,
+  TimestreamAADCredentialsProvider(
+      const config::Configuration& config,
       std::shared_ptr< Aws::Http::HttpClient > httpClient,
       std::shared_ptr< Aws::STS::STSClient > stsClient)
       : TimestreamSAMLCredentialsProvider(config, httpClient, stsClient) {
-    //No-op.
+    // No-op.
   }
 
  protected:
   /*
-   * Get SAML assertion response. Called by SAMLCredentialsProvider 
+   * Get SAML assertion response. Called by SAMLCredentialsProvider
    * @param errInfo Error message when there is a failure
    */
   virtual std::string GetSAMLAssertion(std::string& errInfo);
@@ -58,4 +59,4 @@ class IGNITE_IMPORT_EXPORT TimestreamAADCredentialsProvider
 }  // namespace odbc
 }  // namespace timestream
 
-#endif //_TIMESTREAM_ODBC_AUTHENTICATION_AAD
+#endif  //_TIMESTREAM_ODBC_AUTHENTICATION_AAD

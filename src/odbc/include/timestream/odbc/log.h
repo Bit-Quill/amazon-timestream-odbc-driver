@@ -40,28 +40,28 @@ using ignite::odbc::common::concurrent::CriticalSection;
 
 #define WRITE_MSG_TO_STREAM(param, logLevel, logStream)                       \
   {                                                                           \
-    std::shared_ptr< timestream::odbc::Logger > p =                               \
-        timestream::odbc::Logger::GetLoggerInstance();                            \
+    std::shared_ptr< timestream::odbc::Logger > p =                           \
+        timestream::odbc::Logger::GetLoggerInstance();                        \
     if (p->GetLogLevel() >= logLevel && (p->IsEnabled() || p->EnableLog())) { \
       std::ostream* prevStream = p.get()->GetLogStream();                     \
       if (logStream != nullptr) {                                             \
         /* Override the stream temporarily */                                 \
         p.get()->SetLogStream(logStream);                                     \
       }                                                                       \
-      std::unique_ptr< timestream::odbc::LogStream > lstream(                     \
-          new timestream::odbc::LogStream(p.get()));                              \
+      std::unique_ptr< timestream::odbc::LogStream > lstream(                 \
+          new timestream::odbc::LogStream(p.get()));                          \
       std::string msg_prefix;                                                 \
       switch (logLevel) {                                                     \
-        case timestream::odbc::LogLevel::Type::DEBUG_LEVEL:                       \
+        case timestream::odbc::LogLevel::Type::DEBUG_LEVEL:                   \
           msg_prefix = "DEBUG MSG: ";                                         \
           break;                                                              \
-        case timestream::odbc::LogLevel::Type::INFO_LEVEL:                        \
+        case timestream::odbc::LogLevel::Type::INFO_LEVEL:                    \
           msg_prefix = "INFO MSG: ";                                          \
           break;                                                              \
-        case timestream::odbc::LogLevel::Type::WARNING_LEVEL:                     \
+        case timestream::odbc::LogLevel::Type::WARNING_LEVEL:                 \
           msg_prefix = "WARNING MSG: ";                                       \
           break;                                                              \
-        case timestream::odbc::LogLevel::Type::ERROR_LEVEL:                       \
+        case timestream::odbc::LogLevel::Type::ERROR_LEVEL:                   \
           msg_prefix = "ERROR MSG: ";                                         \
           break;                                                              \
         default:                                                              \
@@ -73,10 +73,9 @@ using ignite::odbc::common::concurrent::CriticalSection;
       strftime(tStr, 1000, "%T %x ", locTime);                                \
       /* Write the formatted message to the stream */                         \
       *lstream << "TID: " << std::this_thread::get_id() << " " << tStr        \
-               << msg_prefix << " " << timestream::odbc::Logger::GetBaseFileName(__FILE__)      \
-               << ":" << __LINE__ << " "                                      \
-               << __FUNCTION__                                                \
-               << ": " << param;                                              \
+               << msg_prefix << " "                                           \
+               << timestream::odbc::Logger::GetBaseFileName(__FILE__) << ":"  \
+               << __LINE__ << " " << __FUNCTION__ << ": " << param;           \
       /* This will trigger the write to stream */                             \
       lstream = nullptr;                                                      \
       if (logStream != nullptr) {                                             \
@@ -90,7 +89,7 @@ using ignite::odbc::common::concurrent::CriticalSection;
 #define LOG_DEBUG_MSG(param) \
   WRITE_LOG_MSG(param, timestream::odbc::LogLevel::Type::DEBUG_LEVEL)
 
-#define LOG_DEBUG_MSG_TO_STREAM(param, logStream)                       \
+#define LOG_DEBUG_MSG_TO_STREAM(param, logStream)                           \
   WRITE_MSG_TO_STREAM(param, timestream::odbc::LogLevel::Type::DEBUG_LEVEL, \
                       logStream)
 
@@ -98,7 +97,7 @@ using ignite::odbc::common::concurrent::CriticalSection;
 #define LOG_INFO_MSG(param) \
   WRITE_LOG_MSG(param, timestream::odbc::LogLevel::Type::INFO_LEVEL)
 
-#define LOG_INFO_MSG_TO_STREAM(param, logStream)                       \
+#define LOG_INFO_MSG_TO_STREAM(param, logStream)                           \
   WRITE_MSG_TO_STREAM(param, timestream::odbc::LogLevel::Type::INFO_LEVEL, \
                       logStream)
 
@@ -106,7 +105,7 @@ using ignite::odbc::common::concurrent::CriticalSection;
 #define LOG_WARNING_MSG(param) \
   WRITE_LOG_MSG(param, timestream::odbc::LogLevel::Type::WARNING_LEVEL)
 
-#define LOG_WARNING_MSG_TO_STREAM(param, logStream)                       \
+#define LOG_WARNING_MSG_TO_STREAM(param, logStream)                           \
   WRITE_MSG_TO_STREAM(param, timestream::odbc::LogLevel::Type::WARNING_LEVEL, \
                       logStream)
 
@@ -114,7 +113,7 @@ using ignite::odbc::common::concurrent::CriticalSection;
 #define LOG_ERROR_MSG(param) \
   WRITE_LOG_MSG(param, timestream::odbc::LogLevel::Type::ERROR_LEVEL)
 
-#define LOG_ERROR_MSG_TO_STREAM(param, logStream)                       \
+#define LOG_ERROR_MSG_TO_STREAM(param, logStream)                           \
   WRITE_MSG_TO_STREAM(param, timestream::odbc::LogLevel::Type::ERROR_LEVEL, \
                       logStream)
 
@@ -183,7 +182,7 @@ class Logger {
 
   /**
    * Gets the current stream to use for logging.
-   * Be careful to use this ostream. It is not 
+   * Be careful to use this ostream. It is not
    * multi-thread safe. Any modification to it shoud
    * be protected by lock.
    */
@@ -202,7 +201,7 @@ class Logger {
    * If there is no instance, create new instance.
    * @return Logger instance.
    */
-  static std::shared_ptr< Logger > GetLoggerInstance() {    
+  static std::shared_ptr< Logger > GetLoggerInstance() {
     if (!logger_) {
       // avoid to be created multiple times for multi-thread execution
       ignite::odbc::common::concurrent::CsLockGuard guard(mutexForCreation);
@@ -221,7 +220,7 @@ class Logger {
   static std::string GetBaseFileName(const std::string& s) {
 #ifdef _WIN32
     char sep = '\\';
-#else 
+#else
     char sep = '/';
 #endif
 
@@ -291,7 +290,7 @@ class Logger {
   /** Mutex for singleton creation. */
   static CriticalSection mutexForCreation;
 
-  /** 
+  /**
    * File stream, it is not multi-thread safe.
    * Any modification to it should be protected by lock.
    */

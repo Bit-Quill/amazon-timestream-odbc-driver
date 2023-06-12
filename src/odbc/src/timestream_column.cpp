@@ -26,8 +26,8 @@
 #include <aws/timestream-query/model/ColumnInfo.h>
 #include <aws/timestream-query/model/TimeSeriesDataPoint.h>
 
-using Aws::TimestreamQuery::Model::TimeSeriesDataPoint;
 using Aws::TimestreamQuery::Model::ScalarType;
+using Aws::TimestreamQuery::Model::TimeSeriesDataPoint;
 using timestream::odbc::type_traits::OdbcNativeType;
 
 namespace timestream {
@@ -38,17 +38,16 @@ void TimestreamColumn::Update(const Row& row) {
   row_ = row;
 }
 
-TimestreamColumn::TimestreamColumn(const Row& row,
-                                   uint32_t columnIdx,
+TimestreamColumn::TimestreamColumn(const Row& row, uint32_t columnIdx,
                                    const meta::ColumnMeta& columnMeta)
-    : row_(row),
-      columnIdx_(columnIdx), 
-      columnMeta_(columnMeta) {
+    : row_(row), columnIdx_(columnIdx), columnMeta_(columnMeta) {
 }
 
-ConversionResult::Type TimestreamColumn::ReadToBuffer(ApplicationDataBuffer& dataBuf) const {
+ConversionResult::Type TimestreamColumn::ReadToBuffer(
+    ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ReadToBuffer is called");
-  const boost::optional< Aws::TimestreamQuery::Model::ColumnInfo >& columnInfo = columnMeta_.GetColumnInfo();
+  const boost::optional< Aws::TimestreamQuery::Model::ColumnInfo >& columnInfo =
+      columnMeta_.GetColumnInfo();
 
   if (!columnInfo || !columnInfo->TypeHasBeenSet()) {
     LOG_ERROR_MSG("ColumnInfo is not found or type is not set");
@@ -62,8 +61,7 @@ ConversionResult::Type TimestreamColumn::ReadToBuffer(ApplicationDataBuffer& dat
 }
 
 ConversionResult::Type TimestreamColumn::ParseDatum(
-    const Datum& datum,
-    ApplicationDataBuffer& dataBuf) const {
+    const Datum& datum, ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseDatum is called");
 
   ConversionResult::Type retval = ConversionResult::Type::AI_FAILURE;
@@ -72,9 +70,9 @@ ConversionResult::Type TimestreamColumn::ParseDatum(
   } else if (datum.TimeSeriesValueHasBeenSet()) {
     retval = ParseTimeSeriesType(datum, dataBuf);
   } else if (datum.ArrayValueHasBeenSet()) {
-    retval = ParseArrayType(datum, dataBuf); 
+    retval = ParseArrayType(datum, dataBuf);
   } else if (datum.RowValueHasBeenSet()) {
-    retval = ParseRowType(datum, dataBuf); 
+    retval = ParseRowType(datum, dataBuf);
   } else if (datum.NullValueHasBeenSet()) {
     dataBuf.PutString("-");
     retval = ConversionResult::Type::AI_SUCCESS;
@@ -87,12 +85,12 @@ ConversionResult::Type TimestreamColumn::ParseDatum(
 
 ConversionResult::Type TimestreamColumn::ParseScalarType(
     const Aws::TimestreamQuery::Model::Datum& datum,
-                     ApplicationDataBuffer& dataBuf) const {
+    ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseScalarType is called");
 
   Aws::String value = datum.GetScalarValue();
   LOG_DEBUG_MSG("value is " << value << ", scalar type is "
-                            << static_cast<int>(columnMeta_.GetScalarType()));
+                            << static_cast< int >(columnMeta_.GetScalarType()));
 
   ConversionResult::Type convRes = ConversionResult::Type::AI_SUCCESS;
 
@@ -101,11 +99,11 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
       convRes = dataBuf.PutString(value);
       break;
     case ScalarType::DOUBLE:
-      // There could be a precision problem for stod as double can not be 
-      // represented in binary form using finite precision. For example for 
-      // double value 35.2 in string, std::stod("35.2") could return 35.200000000000003
-      // on Windows. These rounding errors are a common issue in floating-point arithmetic 
-      // and can not be avoided.
+      // There could be a precision problem for stod as double can not be
+      // represented in binary form using finite precision. For example for
+      // double value 35.2 in string, std::stod("35.2") could
+      // return 35.200000000000003 on Windows. These rounding errors are a
+      // common issue in floating-point arithmetic and can not be avoided.
       convRes = dataBuf.PutDouble(std::stod(value));
       break;
     case ScalarType::BOOLEAN:
@@ -121,8 +119,7 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
     case ScalarType::UNKNOWN:
       convRes = dataBuf.PutNull();
       break;
-    case ScalarType::TIMESTAMP: 
-    {
+    case ScalarType::TIMESTAMP: {
       tm tmTime;
       memset(&tmTime, 0, sizeof(tm));
       int32_t fractionNs;
@@ -135,7 +132,7 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
       int64_t seconds = _mkgmtime(&tmTime);
 #else
       int64_t seconds = timegm(&tmTime);
-#endif     
+#endif
       LOG_DEBUG_MSG("timestamp is " << tmTime.tm_year << " " << tmTime.tm_mon
                                     << " " << tmTime.tm_mday << " "
                                     << tmTime.tm_hour << ":" << tmTime.tm_min
@@ -146,49 +143,46 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
       convRes = dataBuf.PutTimestamp(Timestamp(seconds, fractionNs));
       break;
     }
-    case ScalarType::DATE: 
-    {
+    case ScalarType::DATE: {
       tm tmTime;
-      memset(&tmTime, 0 , sizeof(tm));
+      memset(&tmTime, 0, sizeof(tm));
       int32_t fractionNs;
-      std::sscanf(value.c_str(), "%4d-%2d-%2d", &tmTime.tm_year,
-                  &tmTime.tm_mon, &tmTime.tm_mday);
+      std::sscanf(value.c_str(), "%4d-%2d-%2d", &tmTime.tm_year, &tmTime.tm_mon,
+                  &tmTime.tm_mday);
       tmTime.tm_year -= 1900;
       tmTime.tm_mon--;
 #ifdef _WIN32
-      int64_t milliSecond = _mkgmtime(&tmTime)*1000;
+      int64_t milliSecond = _mkgmtime(&tmTime) * 1000;
 #else
       int64_t milliSecond = timegm(&tmTime);
       milliSecond *= 1000;
-#endif     
+#endif
       convRes = dataBuf.PutDate(Date(milliSecond));
       break;
     }
-    case ScalarType::TIME: 
-    {
-      uint32_t hour; 
+    case ScalarType::TIME: {
+      uint32_t hour;
       uint32_t minute;
       uint32_t second;
       int32_t fractionNs;
-      std::sscanf(value.c_str(), "%2d:%2d:%2d.%9d", &hour,
-                  &minute, &second, &fractionNs);
+      std::sscanf(value.c_str(), "%2d:%2d:%2d.%9d", &hour, &minute, &second,
+                  &fractionNs);
       int32_t secondValue = (hour * 60 + minute) * 60 + second;
       convRes = dataBuf.PutTime(Time(secondValue, fractionNs));
       break;
     }
-    case ScalarType::INTERVAL_YEAR_TO_MONTH: 
-    {
+    case ScalarType::INTERVAL_YEAR_TO_MONTH: {
       int32_t year, month;
       std::sscanf(value.c_str(), "%d-%d", &year, &month);
       convRes = dataBuf.PutInterval(IntervalYearMonth(year, month));
       break;
     }
-    case ScalarType::INTERVAL_DAY_TO_SECOND: 
-    {
+    case ScalarType::INTERVAL_DAY_TO_SECOND: {
       int32_t day, hour, minute, second, fraction;
-      std::sscanf(value.c_str(), "%d %2d:%2d:%2d.%9d", &day,
-                  &hour, &minute, &second, &fraction);
-      convRes = dataBuf.PutInterval(IntervalDaySecond(day, hour, minute, second, fraction));
+      std::sscanf(value.c_str(), "%d %2d:%2d:%2d.%9d", &day, &hour, &minute,
+                  &second, &fraction);
+      convRes = dataBuf.PutInterval(
+          IntervalDaySecond(day, hour, minute, second, fraction));
       break;
     }
     default:
@@ -200,11 +194,11 @@ ConversionResult::Type TimestreamColumn::ParseScalarType(
 }
 
 ConversionResult::Type TimestreamColumn::ParseTimeSeriesType(
-    const Datum& datum,
-    ApplicationDataBuffer& dataBuf) const {
+    const Datum& datum, ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseTimeSeriesType is called");
 
-  const Aws::Vector< TimeSeriesDataPoint >& valueVec = datum.GetTimeSeriesValue();
+  const Aws::Vector< TimeSeriesDataPoint >& valueVec =
+      datum.GetTimeSeriesValue();
 
   std::string result = "[";
   for (const auto& itr : valueVec) {
@@ -233,13 +227,12 @@ ConversionResult::Type TimestreamColumn::ParseTimeSeriesType(
 
   ConversionResult::Type convRes = dataBuf.PutString(result);
 
-  LOG_DEBUG_MSG("convRes is " << static_cast<int>(convRes));
+  LOG_DEBUG_MSG("convRes is " << static_cast< int >(convRes));
   return convRes;
 }
 
 ConversionResult::Type TimestreamColumn::ParseArrayType(
-    const Datum& datum,
-    ApplicationDataBuffer& dataBuf) const {
+    const Datum& datum, ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseArrayType is called");
 
   const Aws::Vector< Datum >& valueVec = datum.GetArrayValue();
@@ -261,7 +254,7 @@ ConversionResult::Type TimestreamColumn::ParseArrayType(
       result += ",";
     }
     result.pop_back();
-    result += "]";  
+    result += "]";
   }
 
   ConversionResult::Type convRes = dataBuf.PutString(result);
@@ -271,8 +264,7 @@ ConversionResult::Type TimestreamColumn::ParseArrayType(
 }
 
 ConversionResult::Type TimestreamColumn::ParseRowType(
-    const Datum& datum,
-    ApplicationDataBuffer& dataBuf) const {
+    const Datum& datum, ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ParseRowType is called");
 
   const Row& row = datum.GetRowValue();

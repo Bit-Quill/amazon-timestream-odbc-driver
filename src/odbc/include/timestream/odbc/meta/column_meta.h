@@ -96,11 +96,11 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * @param databaseName Database name.
    * @param tableName Table name.
    */
-  ColumnMeta(const std::string& databaseName, const boost::optional< std::string >& tableName)
+  ColumnMeta(const std::string& databaseName,
+             const boost::optional< std::string >& tableName)
       : tableName(tableName),
         columnName(""),
-        dataType(static_cast< int16_t >(
-            ScalarType::NOT_SET)),
+        dataType(static_cast< int16_t >(ScalarType::NOT_SET)),
         isAutoIncrement("NO"),
         precision(-1),
         decimalDigits(-1),
@@ -127,7 +127,7 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
              Nullability::Type nullability)
       : tableName(tableName),
         columnName(columnName),
-        dataType(static_cast<int16_t>(scalarType)),
+        dataType(static_cast< int16_t >(scalarType)),
         isAutoIncrement("NO"),
         precision(-1),
         decimalDigits(-1),
@@ -222,7 +222,8 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * @param columnBindings the map containing the data to be read.
    * @param position the ordinal position of the column.
    */
-  void Read(timestream::odbc::app::ColumnBindingMap& columnBindings, int32_t position);
+  void Read(timestream::odbc::app::ColumnBindingMap& columnBindings,
+            int32_t position);
 
   /**
    * Read using reader.
@@ -234,7 +235,8 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
    * Get Aws ColumnInfo.
    * @return Aws ColumnInfo.
    */
-  const boost::optional< Aws::TimestreamQuery::Model::ColumnInfo >& GetColumnInfo() const {
+  const boost::optional< Aws::TimestreamQuery::Model::ColumnInfo >&
+  GetColumnInfo() const {
     return columnInfo;
   }
 
@@ -383,7 +385,7 @@ class IGNITE_IMPORT_EXPORT ColumnMeta {
   ScalarType GetScalarDataType(const std::string& dataType);
 
   /** Aws columnInfo. */
-  boost::optional<Aws::TimestreamQuery::Model::ColumnInfo> columnInfo;
+  boost::optional< Aws::TimestreamQuery::Model::ColumnInfo > columnInfo;
 
   /** Catalog name. */
   boost::optional< std::string > catalogName;

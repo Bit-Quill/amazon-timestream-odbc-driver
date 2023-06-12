@@ -77,8 +77,7 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
 
   if (res->GetResponseCode() != Aws::Http::HttpResponseCode::OK) {
     // HTTP response code is not 200(OK), proceed to log error
-    errInfo =
-        "Request to Azure Active Directory for access token failed.";
+    errInfo = "Request to Azure Active Directory for access token failed.";
 
     if (res->HasClientError()) {
       errInfo += " Client error: '" + res->GetClientErrorMessage() + "'.";
@@ -92,8 +91,7 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
   Aws::Utils::Json::JsonValue resJson(res->GetResponseBody());
 
   if (!resJson.WasParseSuccessful()) {
-    errInfo =
-        "Error parsing response body: " + resJson.GetErrorMessage();
+    errInfo = "Error parsing response body: " + resJson.GetErrorMessage();
     LOG_ERROR_MSG(errInfo);
     return accessToken;
   }
@@ -111,7 +109,8 @@ std::string TimestreamAADCredentialsProvider::GetAccessToken(
   return accessToken;
 }
 
-std::string TimestreamAADCredentialsProvider::GetSAMLAssertion(std::string& errInfo) {
+std::string TimestreamAADCredentialsProvider::GetSAMLAssertion(
+    std::string& errInfo) {
   LOG_DEBUG_MSG("GetSAMLAssertion is called");
 
   std::string accessToken = GetAccessToken(errInfo);
@@ -148,7 +147,8 @@ std::string TimestreamAADCredentialsProvider::GetSAMLAssertion(std::string& errI
       reinterpret_cast< char const* >(decodedBuffer.GetUnderlyingData()), size);
 
   // Construct SAML response with SAML assertion
-  std::string assertion("<samlp:Response "
+  std::string assertion(
+      "<samlp:Response "
       "xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\"><samlp:Status><"
       "samlp:StatusCode "
       "Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\"/></samlp:Status>"

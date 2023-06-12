@@ -402,7 +402,7 @@ const std::string& DiagnosticRecord::GetSqlState() const {
       return STATE_HY090;
 
     case SqlState::SHY091_INVALID_DESCR_FIELD_ID:
-      return STATE_HY091; 
+      return STATE_HY091;
 
     case SqlState::SHY092_OPTION_TYPE_OUT_OF_RANGE:
       return STATE_HY092;

@@ -22,9 +22,10 @@
 
 namespace timestream {
 namespace odbc {
-TimestreamCursor::TimestreamCursor(const Aws::Vector< Row > rowVec,
-                                   const meta::ColumnMetaVector& columnMetadataVec)
-    : rowVec_(rowVec), 
+TimestreamCursor::TimestreamCursor(
+    const Aws::Vector< Row > rowVec,
+    const meta::ColumnMetaVector& columnMetadataVec)
+    : rowVec_(rowVec),
       iterator_(rowVec_.begin()),
       iteratorEnd_(rowVec_.end()),
       columnMetadataVec_(columnMetadataVec) {
@@ -32,7 +33,7 @@ TimestreamCursor::TimestreamCursor(const Aws::Vector< Row > rowVec,
 }
 
 TimestreamCursor::~TimestreamCursor() {
-// No-op.
+  // No-op.
 }
 
 bool TimestreamCursor::Increment() {

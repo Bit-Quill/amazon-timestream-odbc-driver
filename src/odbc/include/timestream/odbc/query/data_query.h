@@ -31,7 +31,7 @@
 
 #include <queue>
 #include <mutex>
-#include <condition_variable> 
+#include <condition_variable>
 
 using Aws::TimestreamQuery::Model::ColumnInfo;
 using Aws::TimestreamQuery::Model::QueryRequest;
@@ -46,8 +46,8 @@ namespace query {
 /**
  * Context for asynchronous fetching data query result.
  */
-class IGNITE_IMPORT_EXPORT DataQueryContext  {
- public: 
+class IGNITE_IMPORT_EXPORT DataQueryContext {
+ public:
   DataQueryContext() : isClosing_(false) {
   }
 
@@ -205,7 +205,8 @@ class IGNITE_IMPORT_EXPORT DataQuery : public timestream::odbc::query::Query {
 
   /**
    * Fetch one page resultset.
-   * @param isFirst Flag indicating if the page to be fetched is the first page or not.
+   * @param isFirst Flag indicating if the page to be fetched is the first page
+   * or not.
    * @return Result.
    */
   SqlResult::Type FetchOnePage(bool isFirst);

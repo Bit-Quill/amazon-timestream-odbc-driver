@@ -18,8 +18,7 @@
 
 namespace timestream {
 namespace odbc {
-MockStatement::MockStatement(Connection& parent)
-    : Statement(parent) {
+MockStatement::MockStatement(Connection& parent) : Statement(parent) {
   // No-op.
 }
 

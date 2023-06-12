@@ -28,8 +28,7 @@ namespace odbc {
 namespace query {
 ColumnPrivilegesQuery::ColumnPrivilegesQuery(
     diagnostic::DiagnosableAdapter& diag)
-    : Query(diag, QueryType::COLUMN_PRIVILEGES),
-      columnsMeta() {
+    : Query(diag, QueryType::COLUMN_PRIVILEGES), columnsMeta() {
   using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -81,19 +80,20 @@ const meta::ColumnMetaVector* ColumnPrivilegesQuery::GetMeta() {
 
 SqlResult::Type ColumnPrivilegesQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLColumnPrivileges is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLColumnPrivileges is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }
 
 SqlResult::Type ColumnPrivilegesQuery::GetColumn(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
-
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLColumnPrivileges is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLColumnPrivileges is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }

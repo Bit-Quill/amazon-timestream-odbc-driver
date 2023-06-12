@@ -68,15 +68,16 @@ TimestreamWriter::CreateMetadataCreater(Aws::String tableType) {
   if (tableType == "COMPUTER") {
     return std::make_shared< ComputerTableCreater >();
   } else {
-    std::cerr << "No table metadata creator is found for " << tableType << std::endl;
+    std::cerr << "No table metadata creator is found for " << tableType
+              << std::endl;
     return nullptr;
   }
 }
 
 bool TimestreamWriter::WriteSingleValueRecords(const Aws::String& tableType,
-                                              const Aws::String& database,
-                                              const Aws::String& table,
-                                              int loopNum) {
+                                               const Aws::String& database,
+                                               const Aws::String& table,
+                                               int loopNum) {
   std::shared_ptr< MeasureMetadataCreater > creater =
       CreateMetadataCreater(tableType);
   if (!creater) {
@@ -135,7 +136,8 @@ bool TimestreamWriter::WriteSingleValueRecords(const Aws::String& tableType,
 
 bool TimestreamWriter::WriteMultiValueRecords(const Aws::String& tableType,
                                               const Aws::String& database,
-                                              const Aws::String& table, int loopNum) {
+                                              const Aws::String& table,
+                                              int loopNum) {
   std::shared_ptr< MeasureMetadataCreater > creater =
       CreateMetadataCreater(tableType);
   if (!creater) {
@@ -199,5 +201,5 @@ bool TimestreamWriter::WriteMultiValueRecords(const Aws::String& tableType,
   }
   return true;
 }
-}
-}
+}  // namespace odbc
+}  // namespace timestream

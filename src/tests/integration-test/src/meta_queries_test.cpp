@@ -223,7 +223,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
   void callSQLColAttribute(SQLHSTMT stmt, const SQLCHAR *query,
                            SQLSMALLINT fieldId,
                            const std::string &expectedVal) {
-    SQLWCHAR strBuf[1024] = { 0 };
+    SQLWCHAR strBuf[1024] = {0};
     std::vector< SQLWCHAR > wQuery =
         MakeSqlBuffer(reinterpret_cast< const char * >(query));
 
@@ -232,9 +232,9 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     if (!SQL_SUCCEEDED(ret) && ret != SQL_NO_DATA)
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-    // resLen (6th parameter of SQLColAttribute) is unused, but it needs to be defined for macOS, 
-    // as iODBC will attempt to access resLen when strBuf is non-empty string.
-    // This behavior is out of the driver's control.
+    // resLen (6th parameter of SQLColAttribute) is unused, but it needs to be
+    // defined for macOS, as iODBC will attempt to access resLen when strBuf is
+    // non-empty string. This behavior is out of the driver's control.
     SQLSMALLINT resLen = 0;
     ret = SQLColAttribute(stmt, 1, fieldId, strBuf, sizeof(strBuf), &resLen,
                           nullptr);
@@ -274,7 +274,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     BOOST_CHECK_EQUAL(intVal, expectedVal);
   }
 
- /**
+  /**
    * Check attribute using SQLColAttributes.
    * The value returned from SQLColAttributes should match the expected value.
    *
@@ -284,8 +284,8 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
    * @param expectedVal Expected string data.
    */
   void callSQLColAttributes(SQLHSTMT stmt, const SQLCHAR *query,
-                           SQLSMALLINT fieldId,
-                           const std::string &expectedVal) {
+                            SQLSMALLINT fieldId,
+                            const std::string &expectedVal) {
     SQLWCHAR strBuf[1024] = {0};
     std::vector< SQLWCHAR > wQuery =
         MakeSqlBuffer(reinterpret_cast< const char * >(query));
@@ -300,7 +300,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     // non-empty string. This behavior is out of the driver's control.
     SQLSMALLINT resLen = 0;
     ret = SQLColAttributes(stmt, 1, fieldId, strBuf, sizeof(strBuf), &resLen,
-                          nullptr);
+                           nullptr);
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
@@ -319,7 +319,7 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
    * @param expectedVal Expected int data.
    */
   void callSQLColAttributes(SQLHSTMT stmt, const SQLCHAR *query,
-                           SQLSMALLINT fieldId, const int &expectedVal) {
+                            SQLSMALLINT fieldId, const int &expectedVal) {
     SQLLEN intVal;
     std::vector< SQLWCHAR > wQuery =
         MakeSqlBuffer(reinterpret_cast< const char * >(query));
@@ -391,7 +391,8 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
     ConnectToTS();
 
     SQLRETURN ret = (this->*func)(
-        "select device_id, time, flag, rebuffering_ratio, video_startup_time from data_queries_test_db.TestScalarTypes");
+        "select device_id, time, flag, rebuffering_ratio, video_startup_time "
+        "from data_queries_test_db.TestScalarTypes");
     ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
     SQLSMALLINT columnCount = 0;
@@ -401,16 +402,17 @@ struct MetaQueriesTestSuiteFixture : public odbc::OdbcTestSuite {
 
     BOOST_CHECK_EQUAL(columnCount, 5);
 
-    CheckColumnMetaWithSQLDescribeCol(stmt, 1, "device_id",
-                                      SQL_VARCHAR, TIMESTREAM_SQL_MAX_LENGTH, -1,
+    CheckColumnMetaWithSQLDescribeCol(stmt, 1, "device_id", SQL_VARCHAR,
+                                      TIMESTREAM_SQL_MAX_LENGTH, -1,
                                       SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLDescribeCol(stmt, 2, "time", SQL_TYPE_TIMESTAMP, 19,
                                       -1, SQL_NULLABLE_UNKNOWN);
     CheckColumnMetaWithSQLDescribeCol(stmt, 3, "flag", SQL_BIT, 1, -1,
                                       SQL_NULLABLE_UNKNOWN);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE, 15, 15, SQL_NULLABLE_UNKNOWN);
-    CheckColumnMetaWithSQLDescribeCol(stmt, 5, "video_startup_time",
-                                      SQL_BIGINT, 19, 0, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 4, "rebuffering_ratio", SQL_DOUBLE,
+                                      15, 15, SQL_NULLABLE_UNKNOWN);
+    CheckColumnMetaWithSQLDescribeCol(stmt, 5, "video_startup_time", SQL_BIGINT,
+                                      19, 0, SQL_NULLABLE_UNKNOWN);
   }
 
   /**
@@ -583,17 +585,17 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColGetTypeInfo) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 7, "NULLABLE", SQL_INTEGER, 10, 0,
                                     SQL_NO_NULLS);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 8, "CASE_SENSITIVE", SQL_INTEGER, 10, 0,
-                                    SQL_NO_NULLS);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 8, "CASE_SENSITIVE", SQL_INTEGER, 10,
+                                    0, SQL_NO_NULLS);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 9, "SEARCHABLE", SQL_INTEGER, 10, 0,
                                     SQL_NO_NULLS);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 10, "UNSIGNED_ATTRIBUTE", SQL_INTEGER, 10,
-                                    0, SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 10, "UNSIGNED_ATTRIBUTE", SQL_INTEGER,
+                                    10, 0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 11, "FIXED_PREC_SCALE", SQL_INTEGER, 10, 0,
-                                    SQL_NO_NULLS);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 11, "FIXED_PREC_SCALE", SQL_INTEGER,
+                                    10, 0, SQL_NO_NULLS);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 12, "AUTO_UNIQUE_VALUE", SQL_INTEGER,
                                     10, 0, SQL_NULLABLE);
@@ -605,17 +607,17 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColGetTypeInfo) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 14, "MINIMUM_SCALE", SQL_INTEGER, 10,
                                     0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 15, "MAXIMUM_SCALE", SQL_INTEGER,
-                                    10, 0, SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 15, "MAXIMUM_SCALE", SQL_INTEGER, 10,
+                                    0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 16, "SQL_DATA_TYPE", SQL_INTEGER, 10, 0,
-                                    SQL_NO_NULLS);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 16, "SQL_DATA_TYPE", SQL_INTEGER, 10,
+                                    0, SQL_NO_NULLS);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 17, "SQL_DATETIME_SUB", SQL_INTEGER,
                                     10, 0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 18, "NUM_PREC_RADIX", SQL_INTEGER,
-                                    10, 0, SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 18, "NUM_PREC_RADIX", SQL_INTEGER, 10,
+                                    0, SQL_NULLABLE);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 19, "INTERVAL_PRECISION", SQL_INTEGER,
                                     10, 0, SQL_NULLABLE);
@@ -1156,7 +1158,8 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescOctetLength) {
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_VARCHAR should have octet length TIMESTREAM_SQL_MAX_LENGTH
-  callSQLColAttribute(stmt, req1, SQL_DESC_OCTET_LENGTH, TIMESTREAM_SQL_MAX_LENGTH);
+  callSQLColAttribute(stmt, req1, SQL_DESC_OCTET_LENGTH,
+                      TIMESTREAM_SQL_MAX_LENGTH);
 
   const SQLCHAR req2[] =
       "select flag from meta_queries_test_db.TestColumnsMetadata1";
@@ -1191,7 +1194,8 @@ BOOST_AUTO_TEST_CASE(TestColAttributeDescPrecision) {
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_VARCHAR should have precision TIMESTREAM_SQL_MAX_LENGTH
-  callSQLColAttribute(stmt, req1, SQL_DESC_PRECISION, TIMESTREAM_SQL_MAX_LENGTH);
+  callSQLColAttribute(stmt, req1, SQL_DESC_PRECISION,
+                      TIMESTREAM_SQL_MAX_LENGTH);
 
   const SQLCHAR req2[] =
       "select flag from meta_queries_test_db.TestColumnsMetadata1";
@@ -1482,8 +1486,7 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLColumns) {
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NO_NULLS);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 5, "DATA_TYPE", SQL_INTEGER,
-                                    10, 0,
+  CheckColumnMetaWithSQLDescribeCol(stmt, 5, "DATA_TYPE", SQL_INTEGER, 10, 0,
                                     SQL_NO_NULLS);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 6, "TYPE_NAME", SQL_VARCHAR,
@@ -1502,8 +1505,8 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLColumns) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 10, "NUM_PREC_RADIX", SQL_INTEGER, 10,
                                     0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 11, "NULLABLE", SQL_INTEGER, 10,
-                                    0, SQL_NO_NULLS);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 11, "NULLABLE", SQL_INTEGER, 10, 0,
+                                    SQL_NO_NULLS);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 12, "REMARKS", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
@@ -1516,19 +1519,21 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLColumns) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 14, "SQL_DATA_TYPE", SQL_INTEGER, 10,
                                     0, SQL_NO_NULLS);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 15, "SQL_DATETIME_SUB", SQL_INTEGER, 10, 0, SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 15, "SQL_DATETIME_SUB", SQL_INTEGER,
+                                    10, 0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 16, "CHAR_OCTET_LENGTH", SQL_INTEGER, 10, 0, SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 16, "CHAR_OCTET_LENGTH", SQL_INTEGER,
+                                    10, 0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 17, "ORDINAL_POSITION", SQL_INTEGER, 10,
-                                    0, SQL_NO_NULLS);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 17, "ORDINAL_POSITION", SQL_INTEGER,
+                                    10, 0, SQL_NO_NULLS);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 18, "IS_NULLABLE", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
 }
 
-BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) { 
+BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsDataTypes) {
   ConnectToTS();
 
   std::string dbNameStr = "data_queries_test_db";
@@ -1716,10 +1721,10 @@ BOOST_AUTO_TEST_CASE(TestGetDataWithColumnsTableNameOnly) {
 
   std::string first_database = std::string(database_name);
 
-  BOOST_CHECK_EQUAL("fleet", column_name);                   // COLUMN_NAME
-  BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);                 // DATA_TYPE
-  BOOST_CHECK_EQUAL(SqlTypeName::VARCHAR, type_name);        // TYPE_NAME
-  BOOST_CHECK_EQUAL(SQL_NO_NULLS, nullable);                 // TYPE_NAME
+  BOOST_CHECK_EQUAL("fleet", column_name);             // COLUMN_NAME
+  BOOST_CHECK_EQUAL(SQL_VARCHAR, data_type);           // DATA_TYPE
+  BOOST_CHECK_EQUAL(SqlTypeName::VARCHAR, type_name);  // TYPE_NAME
+  BOOST_CHECK_EQUAL(SQL_NO_NULLS, nullable);           // TYPE_NAME
 
   // Currently at 1st column in the table, call SQLFetch(stmt) 11 times to go to
   // 12th column
@@ -2849,9 +2854,8 @@ BOOST_AUTO_TEST_CASE(TestGetDatabasesWithSQLTables) {
     columnIndex = 2;
     std::vector< SQLWCHAR > schemas = MakeSqlBuffer(SQL_ALL_SCHEMAS);
 
-    ret =
-        SQLTables(stmt, empty.data(), SQL_NTS, schemas.data(), SQL_NTS,
-                  empty.data(), SQL_NTS, empty.data(), SQL_NTS);
+    ret = SQLTables(stmt, empty.data(), SQL_NTS, schemas.data(), SQL_NTS,
+                    empty.data(), SQL_NTS, empty.data(), SQL_NTS);
 
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -2867,9 +2871,8 @@ BOOST_AUTO_TEST_CASE(TestGetDatabasesWithSQLTables) {
     columnIndex = 1;
     std::vector< SQLWCHAR > catalogs = MakeSqlBuffer(SQL_ALL_CATALOGS);
 
-    ret =
-        SQLTables(stmt, catalogs.data(), SQL_NTS, empty.data(), SQL_NTS,
-                  empty.data(), SQL_NTS, empty.data(), SQL_NTS);
+    ret = SQLTables(stmt, catalogs.data(), SQL_NTS, empty.data(), SQL_NTS,
+                    empty.data(), SQL_NTS, empty.data(), SQL_NTS);
 
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -3207,7 +3210,8 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
   BOOST_CHECK_EQUAL(true, WasNull(sql_datetime_sub_len));
   BOOST_CHECK_EQUAL(0, sql_datetime_sub);  // SQL_DATETIME_SUB
   BOOST_CHECK_EQUAL(false, WasNull(char_octet_length_len));
-  BOOST_CHECK_EQUAL(TIMESTREAM_SQL_MAX_LENGTH, char_octet_length);  // CHAR_OCTET_LENGTH
+  BOOST_CHECK_EQUAL(TIMESTREAM_SQL_MAX_LENGTH,
+                    char_octet_length);  // CHAR_OCTET_LENGTH
   BOOST_CHECK_EQUAL(false, WasNull(ordinal_position_len));
   BOOST_CHECK_EQUAL(1, ordinal_position);  // ORDINAL_POSITION
   BOOST_CHECK_EQUAL(false, WasNull(is_nullable_len));
@@ -3233,8 +3237,9 @@ BOOST_AUTO_TEST_CASE(TestSQLColumnWithSQLBindCols) {
 BOOST_AUTO_TEST_CASE(TestGetDataWithSelectQuery) {
   ConnectToTS();
 
-  std::vector< SQLWCHAR > selectReq =
-      MakeSqlBuffer("select time from data_queries_test_db.TestComplexTypes where measure_value::double=35.2");
+  std::vector< SQLWCHAR > selectReq = MakeSqlBuffer(
+      "select time from data_queries_test_db.TestComplexTypes where "
+      "measure_value::double=35.2");
   SQLRETURN ret = SQLExecDirect(stmt, selectReq.data(), SQL_NTS);
 
   if (!SQL_SUCCEEDED(ret))
@@ -3262,7 +3267,9 @@ BOOST_AUTO_TEST_CASE(TestGetInfoScrollOptions) {
 BOOST_AUTO_TEST_CASE(TestSQLNumResultColsAfterSQLPrepare) {
   ConnectToTS();
 
-  SQLRETURN ret = PrepareQuery("select time from data_queries_test_db.TestComplexTypes where measure_value::double=35.2");
+  SQLRETURN ret = PrepareQuery(
+      "select time from data_queries_test_db.TestComplexTypes where "
+      "measure_value::double=35.2");
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   SQLSMALLINT columnCount = 0;
@@ -3304,8 +3311,8 @@ BOOST_AUTO_TEST_CASE(TestSQLDescribeColSQLTablesODBCVer3) {
 
   BOOST_CHECK_EQUAL(columnCount, 5);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 1, "TABLE_CAT",
-                                    SQL_VARCHAR, TIMESTREAM_SQL_MAX_LENGTH, -1,
+  CheckColumnMetaWithSQLDescribeCol(stmt, 1, "TABLE_CAT", SQL_VARCHAR,
+                                    TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 2, "TABLE_SCHEM", SQL_VARCHAR,
@@ -3374,7 +3381,6 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeys) {
   std::vector< SQLWCHAR > empty = {0};
   std::vector< SQLWCHAR > table = MakeSqlBuffer("TestColumnsMetadata1");
 
-
   SQLRETURN ret = SQLForeignKeys(stmt, NULL, 0,          /* Primary catalog */
                                  NULL, 0,                /* Primary schema */
                                  NULL, 0,                /* Primary table */
@@ -3442,9 +3448,9 @@ BOOST_AUTO_TEST_CASE(TestSQLForeignKeys) {
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 14, "DEFERRABILITY", SQL_INTEGER, 10, 0,
-                                    SQL_NULLABLE);
-  
+  CheckColumnMetaWithSQLDescribeCol(stmt, 14, "DEFERRABILITY", SQL_INTEGER, 10,
+                                    0, SQL_NULLABLE);
+
   // Check SQL_NO_DATA is returned for SQLForeignKeys
   ret = SQLFetch(stmt);
 
@@ -3547,14 +3553,14 @@ BOOST_AUTO_TEST_CASE(TestSQLSpecialColumns) {
   CheckColumnMetaWithSQLDescribeCol(stmt, 5, "COLUMN_SIZE", SQL_INTEGER, 10, 0,
                                     SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 6, "BUFFER_LENGTH", SQL_INTEGER, 10, 0,
-                                    SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 6, "BUFFER_LENGTH", SQL_INTEGER, 10,
+                                    0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 7, "DECIMAL_DIGITS", SQL_INTEGER, 10, 0,
-                                    SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 7, "DECIMAL_DIGITS", SQL_INTEGER, 10,
+                                    0, SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 8, "PSEUDO_COLUMN", SQL_INTEGER, 10, 0,
-                                    SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 8, "PSEUDO_COLUMN", SQL_INTEGER, 10,
+                                    0, SQL_NULLABLE);
 
   // Check SQL_NO_DATA is returned for SQLSpecialColumns
   ret = SQLFetch(stmt);
@@ -3574,7 +3580,7 @@ BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer3) {
     ret = SQLStatistics(stmt, empty.data(), SQL_NTS, database.data(), SQL_NTS,
                         table.data(), SQL_NTS, SQL_INDEX_UNIQUE, SQL_ENSURE);
   } else {
-    ret = SQLStatistics(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS, 
+    ret = SQLStatistics(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS,
                         table.data(), SQL_NTS, SQL_INDEX_UNIQUE, SQL_ENSURE);
   }
 
@@ -3681,8 +3687,8 @@ BOOST_AUTO_TEST_CASE(TestSQLStatisticsODBCVer2) {
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
                                     SQL_NULLABLE);
 
-  CheckColumnMetaWithSQLDescribeCol(stmt, 8, "SEQ_IN_INDEX", SQL_INTEGER,
-                                    10, 0, SQL_NULLABLE);
+  CheckColumnMetaWithSQLDescribeCol(stmt, 8, "SEQ_IN_INDEX", SQL_INTEGER, 10, 0,
+                                    SQL_NULLABLE);
 
   CheckColumnMetaWithSQLDescribeCol(stmt, 10, "COLLATION", SQL_VARCHAR,
                                     TIMESTREAM_SQL_MAX_LENGTH, -1,
@@ -3703,11 +3709,13 @@ BOOST_AUTO_TEST_CASE(TestSQLProcedureColumns) {
   SQLRETURN ret;
 
   if (DATABASE_AS_SCHEMA) {
-    ret = SQLProcedureColumns(stmt, empty.data(), SQL_NTS, database.data(),
-                              SQL_NTS, any.data(), SQL_NTS, any.data(), SQL_NTS);
+    ret =
+        SQLProcedureColumns(stmt, empty.data(), SQL_NTS, database.data(),
+                            SQL_NTS, any.data(), SQL_NTS, any.data(), SQL_NTS);
   } else {
-    ret = SQLProcedureColumns(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS,
-                              any.data(), SQL_NTS, any.data(), SQL_NTS);
+    ret =
+        SQLProcedureColumns(stmt, database.data(), SQL_NTS, empty.data(),
+                            SQL_NTS, any.data(), SQL_NTS, any.data(), SQL_NTS);
   }
 
   if (!SQL_SUCCEEDED(ret)) {
@@ -3805,7 +3813,7 @@ BOOST_AUTO_TEST_CASE(TestSQLProcedures) {
     ret = SQLProcedures(stmt, empty.data(), SQL_NTS, database.data(), SQL_NTS,
                         any.data(), SQL_NTS);
   } else {
-    ret = SQLProcedures(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS, 
+    ret = SQLProcedures(stmt, database.data(), SQL_NTS, empty.data(), SQL_NTS,
                         any.data(), SQL_NTS);
   }
 
@@ -3936,11 +3944,11 @@ BOOST_AUTO_TEST_CASE(TestSQLTablePrivileges) {
 
   if (DATABASE_AS_SCHEMA) {
     ret = SQLTablePrivileges(stmt, nullptr, 0, testDatabase.data(), SQL_NTS,
-                    testTable.data(), SQL_NTS);
+                             testTable.data(), SQL_NTS);
 
   } else {
     ret = SQLTablePrivileges(stmt, testDatabase.data(), SQL_NTS, nullptr, 0,
-                    testTable.data(), SQL_NTS);
+                             testTable.data(), SQL_NTS);
   }
 
   if (!SQL_SUCCEEDED(ret))
@@ -4025,9 +4033,8 @@ BOOST_AUTO_TEST_CASE(TestSQLCancelWithColumns) {
       "HY010: [unixODBC][Driver Manager]Function sequence error",
       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #elif defined(__APPLE__)
-  BOOST_REQUIRE_EQUAL(
-      "S1010: [iODBC][Driver Manager]Function sequence error",
-      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #else
   BOOST_REQUIRE_EQUAL("HY010: Query was not executed.",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -4064,9 +4071,8 @@ BOOST_AUTO_TEST_CASE(TestSQLCancelWithTables) {
       "HY010: [unixODBC][Driver Manager]Function sequence error",
       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #elif defined(__APPLE__)
-  BOOST_REQUIRE_EQUAL(
-      "S1010: [iODBC][Driver Manager]Function sequence error",
-      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #else
   BOOST_REQUIRE_EQUAL("HY010: Query was not executed.",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -4108,9 +4114,9 @@ BOOST_AUTO_TEST_CASE(TestSQLCloseCursorWithColumns) {
   ret = SQLCloseCursor(stmt);
   BOOST_CHECK_EQUAL(ret, SQL_ERROR);
 
-#ifdef __linux__ 
+#ifdef __linux__
   BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
-              GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #else
   BOOST_REQUIRE_EQUAL("24000: No cursor was open",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -4248,7 +4254,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnDisplaySize) {
 
   // SQL_VARCHAR should have display size TIMESTREAM_SQL_MAX_LENGTH
   callSQLColAttributes(stmt, req1, SQL_COLUMN_DISPLAY_SIZE,
-                      TIMESTREAM_SQL_MAX_LENGTH);
+                       TIMESTREAM_SQL_MAX_LENGTH);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnLabel) {
@@ -4267,7 +4273,8 @@ BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnLength) {
       "select device_id from meta_queries_test_db.TestColumnsMetadata1";
 
   // SQL_VARCHAR should have length TIMESTREAM_SQL_MAX_LENGTH
-  callSQLColAttributes(stmt, req1, SQL_COLUMN_LENGTH, TIMESTREAM_SQL_MAX_LENGTH);
+  callSQLColAttributes(stmt, req1, SQL_COLUMN_LENGTH,
+                       TIMESTREAM_SQL_MAX_LENGTH);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnFixedPrecScale) {
@@ -4287,7 +4294,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnName) {
       "meta_queries_test_db.TestColumnsMetadata1";
 
   callSQLColAttributes(stmt, req, SQL_COLUMN_NAME,
-                      std::string("video_startup_time"));
+                       std::string("video_startup_time"));
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnNullable) {
@@ -4321,7 +4328,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnPrecision) {
 
   // SQL_VARCHAR should have precision TIMESTREAM_SQL_MAX_LENGTH
   callSQLColAttributes(stmt, req1, SQL_COLUMN_PRECISION,
-                      TIMESTREAM_SQL_MAX_LENGTH);
+                       TIMESTREAM_SQL_MAX_LENGTH);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnQualifierName) {
@@ -4416,7 +4423,7 @@ BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnUpdatable) {
 
   // only SQL_ATTR_READWRITE_UNKNOWN is returned
   callSQLColAttributes(stmt, req, SQL_COLUMN_UPDATABLE,
-                      SQL_ATTR_READWRITE_UNKNOWN);
+                       SQL_ATTR_READWRITE_UNKNOWN);
 }
 
 BOOST_AUTO_TEST_CASE(TestColAttributesODBC2ColumnTypeName) {

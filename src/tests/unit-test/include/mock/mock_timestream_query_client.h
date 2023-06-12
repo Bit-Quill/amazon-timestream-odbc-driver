@@ -36,8 +36,10 @@ class MockTimestreamQueryClient
    */
   MockTimestreamQueryClient(
       const Aws::Auth::AWSCredentials &credentials,
-      const Aws::Client::ClientConfiguration &clientConfiguration = Aws::Client::ClientConfiguration())
-      : Aws::TimestreamQuery::TimestreamQueryClient(credentials, clientConfiguration), 
+      const Aws::Client::ClientConfiguration &clientConfiguration =
+          Aws::Client::ClientConfiguration())
+      : Aws::TimestreamQuery::TimestreamQueryClient(credentials,
+                                                    clientConfiguration),
         credentials_(credentials),
         clientConfiguration_(clientConfiguration) {
   }
@@ -50,7 +52,7 @@ class MockTimestreamQueryClient
 
   /**
    * Run a query.
-   * 
+   *
    * @param request Aws QueryResult .
    * @return Operation outcome.
    */

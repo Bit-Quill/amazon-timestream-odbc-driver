@@ -71,8 +71,8 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-    std::vector< SQLWCHAR > request =
-        MakeSqlBuffer("select * from data_queries_test_db.TestComplexTypes order by time");
+    std::vector< SQLWCHAR > request = MakeSqlBuffer(
+        "select * from data_queries_test_db.TestComplexTypes order by time");
 
     ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
     if (!SQL_SUCCEEDED(ret))
@@ -86,7 +86,8 @@ struct ApiRobustnessTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
 
     ret = SQLFetchScroll(stmt, orientation, 0);
 
-    // Operation is not supported, only forward is supported. However, there should be no crash.
+    // Operation is not supported, only forward is supported. However, there
+    // should be no crash.
     BOOST_CHECK(ret == SQL_ERROR);
 
     CheckSQLStatementDiagnosticError("HYC00");
@@ -218,7 +219,7 @@ BOOST_AUTO_TEST_CASE(TestSQLPrepare) {
   // Value length is null.
   ret = SQLPrepare(stmt, sql.data(), 0);
 #ifdef __APPLE__
-  //iODBC returns SUCCESS
+  // iODBC returns SUCCESS
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 #else
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
@@ -374,7 +375,7 @@ BOOST_AUTO_TEST_CASE(TestSQLColumns) {
 
   // Sizes are nulls.
   ret = SQLColumns(stmt, catalogName.data(), 0, schemaName.data(), 0,
-             tableName.data(), 0, columnName.data(), 0);
+                   tableName.data(), 0, columnName.data(), 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   // Values are nulls.
@@ -404,7 +405,7 @@ BOOST_AUTO_TEST_CASE(TestSQLBindCol) {
   CheckSQLStatementDiagnosticError("HYC00");
 #else
   CheckSQLStatementDiagnosticError("HY003");
-#endif // _WIN32
+#endif  // _WIN32
 
   // Size is negative.
   ret = SQLBindCol(stmt, 1, SQL_C_SLONG, &ind1, -1, &len1);
@@ -516,19 +517,20 @@ BOOST_AUTO_TEST_CASE(TestSQLColAttribute) {
 
   SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer),
                   &resLen, 0);
-  #ifndef __APPLE__
-  // On macOS machine with iODBC, iODBC driver manager will attempt to access StringLengthPtr 
-  // (the 6th parameter of SQLColAttribute) when buffer is non-empty, and segmentation fault will occur if StringLengthPtr is nullptr. 
+#ifndef __APPLE__
+  // On macOS machine with iODBC, iODBC driver manager will attempt to access
+  // StringLengthPtr (the 6th parameter of SQLColAttribute) when buffer is
+  // non-empty, and segmentation fault will occur if StringLengthPtr is nullptr.
   // This behavior is out of the driver's control.
   SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer), 0,
                   &numericAttr);
-  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer),
-        0, 0);
-  #endif // __APPLE__
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, sizeof(buffer), 0,
+                  0);
+#endif  // __APPLE__
   SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, buffer, 0, &resLen,
                   &numericAttr);
-  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, 0, sizeof(buffer), &resLen,
-                  &numericAttr);
+  SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, 0, sizeof(buffer),
+                  &resLen, &numericAttr);
   SQLColAttribute(stmt, 1, SQL_DESC_BASE_COLUMN_NAME, 0, 0, 0, 0);
 
   SQLColAttribute(stmt, 1, SQL_DESC_COUNT, buffer, sizeof(buffer), &resLen, 0);
@@ -868,7 +870,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError) {
   if (ret != SQL_SUCCESS && ret != SQL_NO_DATA)
     BOOST_FAIL("Unexpected error");
 
- #ifndef __APPLE__
+#ifndef __APPLE__
   // This code could lead to segment fault on macOS BigSur, but not on Ventura
   // This is a limitaion of iODBC driver manger on BigSur
   ret = SQLError(0, 0, stmt, state, &nativeCode, message, ODBC_BUFFER_SIZE,
@@ -891,7 +893,7 @@ BOOST_AUTO_TEST_CASE(TestSQLError) {
   SQLError(0, 0, stmt, 0, 0, 0, 0, 0);
 
   SQLError(0, 0, 0, 0, 0, 0, 0, 0);
-#endif // __APPLE__
+#endif  // __APPLE__
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLCancelForTypeInfo) {
@@ -909,8 +911,9 @@ BOOST_AUTO_TEST_CASE(TestSQLCancelForTypeInfo) {
   ret = SQLFetch(stmt);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 #ifdef __linux__
-  BOOST_REQUIRE_EQUAL("HY010: [unixODBC][Driver Manager]Function sequence error",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL(
+      "HY010: [unixODBC][Driver Manager]Function sequence error",
+      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #elif defined(__APPLE__)
   BOOST_REQUIRE_EQUAL("S1010: [iODBC][Driver Manager]Function sequence error",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -939,9 +942,8 @@ BOOST_AUTO_TEST_CASE(TestSQLCloseCursorForTypeInfo) {
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
 
 #ifdef __linux__
-  BOOST_REQUIRE_EQUAL(
-      "24000: [unixODBC][Driver Manager]Invalid cursor state",
-      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #else
   BOOST_REQUIRE_EQUAL("24000: No cursor was open",
                       GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
@@ -956,21 +958,21 @@ BOOST_AUTO_TEST_CASE(TestSQLAllocFreeDesc) {
   SQLRETURN ret = SQLAllocHandle(SQL_HANDLE_DESC, dbc, &desc);
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
 
-  //Set the allocated desciptor to statement ARD
+  // Set the allocated desciptor to statement ARD
   ret = SQLSetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, desc, 0);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
   ret = SQLFreeHandle(SQL_HANDLE_DESC, desc);
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS);
 
-  SQLHDESC ard = nullptr;   
+  SQLHDESC ard = nullptr;
   SQLINTEGER resLen = 0;
 
-  //Implicit ARD should be returned when the explicit ARD is freed
+  // Implicit ARD should be returned when the explicit ARD is freed
   ret = SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &ard, 0, NULL);
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  //Implicit ARD is not equal to explicit ARD
+  // Implicit ARD is not equal to explicit ARD
   BOOST_CHECK(ard != 0 && ard != desc);
 }
 

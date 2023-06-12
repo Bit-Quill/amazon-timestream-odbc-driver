@@ -26,10 +26,8 @@
 namespace timestream {
 namespace odbc {
 namespace query {
-ProceduresQuery::ProceduresQuery(
-    diagnostic::DiagnosableAdapter& diag)
-    : Query(diag, QueryType::PROCEDURES),
-      columnsMeta() {
+ProceduresQuery::ProceduresQuery(diagnostic::DiagnosableAdapter& diag)
+    : Query(diag, QueryType::PROCEDURES), columnsMeta() {
   using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -40,26 +38,26 @@ ProceduresQuery::ProceduresQuery(
   const std::string sch("");
   const std::string tbl("");
 
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_CAT", ScalarType::VARCHAR,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_SCHEM", ScalarType::VARCHAR,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_NAME", ScalarType::VARCHAR,
-                                   Nullability::NO_NULL));
-  // NUM_INPUT_PARAMS, NUM_OUTPUT_PARAMS, and NUM_RESULT_SETS intentionally set to "NOT_SET",
-  // as they are reserved for future use according to Microsoft ODBC Documentation.
-  // Internally, "NOT_SET" is treated same as VARCHAR data type.
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_INPUT_PARAMS", ScalarType::NOT_SET,
-                                   Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_CAT",
+                                   ScalarType::VARCHAR, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_SCHEM",
+                                   ScalarType::VARCHAR, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_NAME",
+                                   ScalarType::VARCHAR, Nullability::NO_NULL));
+  // NUM_INPUT_PARAMS, NUM_OUTPUT_PARAMS, and NUM_RESULT_SETS intentionally set
+  // to "NOT_SET", as they are reserved for future use according to Microsoft
+  // ODBC Documentation. Internally, "NOT_SET" is treated same as VARCHAR data
+  // type.
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_INPUT_PARAMS",
+                                   ScalarType::NOT_SET, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_OUTPUT_PARAMS",
                                    ScalarType::NOT_SET, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_RESULT_SETS",
                                    ScalarType::NOT_SET, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "REMARKS", ScalarType::VARCHAR,
                                    Nullability::NULLABLE));
-  columnsMeta.push_back(
-      ColumnMeta(sch, tbl, "PROCEDURE_TYPE", ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_TYPE",
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
 }
 
 ProceduresQuery::~ProceduresQuery() {
@@ -92,9 +90,8 @@ SqlResult::Type ProceduresQuery::FetchNextRow(
   return SqlResult::AI_NO_DATA;
 }
 
-SqlResult::Type ProceduresQuery::GetColumn(
-    uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
-
+SqlResult::Type ProceduresQuery::GetColumn(uint16_t columnIdx,
+                                           app::ApplicationDataBuffer& buffer) {
   diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                        "SQLProcedures is not supported. No data is returned.",
                        LogLevel::Type::WARNING_LEVEL);

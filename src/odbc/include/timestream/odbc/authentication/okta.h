@@ -78,11 +78,12 @@ class IGNITE_IMPORT_EXPORT TimestreamOktaCredentialsProvider
   /** single number character reference length */
   static const size_t SINGLE_NUM_CHAR_REF_LENGTH;
 
-  /** SAML response pattern, used for regular expression search in SAML assertion */
+  /** SAML response pattern, used for regular expression search in SAML
+   * assertion */
   static const std::string SAML_RESPONSE_PATTERN;
 };
 
 }  // namespace odbc
 }  // namespace timestream
 
-#endif //_TIMESTREAM_ODBC_AUTHENTICATION_OKTA
+#endif  //_TIMESTREAM_ODBC_AUTHENTICATION_OKTA

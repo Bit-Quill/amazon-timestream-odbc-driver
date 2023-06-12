@@ -34,8 +34,8 @@
 #include "timestream/odbc/log.h"
 #include "timestream/odbc/log_level.h"
 
-using timestream::odbc::Logger;
 using ignite::odbc::common::concurrent::CsLockGuard;
+using timestream::odbc::Logger;
 using timestream::odbc::config::Configuration;
 
 // logger_ pointer will  initialized in first call to GetLoggerInstance

@@ -94,7 +94,7 @@ struct DescriptorTestSuiteFixture : public timestream::odbc::OdbcTestSuite {
 
 BOOST_FIXTURE_TEST_SUITE(DescriptorTestSuite, DescriptorTestSuiteFixture)
 
-//Test ARD fields which is set when SQLBindCol is executed
+// Test ARD fields which is set when SQLBindCol is executed
 BOOST_AUTO_TEST_CASE(TestDescriptorGetFromBindCol) {
   SQLRETURN ret;
 
@@ -446,9 +446,7 @@ BOOST_AUTO_TEST_CASE(TestDescriptorSetRainyCase) {
 
   OdbcClientError error = GetOdbcError(SQL_HANDLE_DESC, ard);
   BOOST_CHECK_EQUAL(error.sqlstate, "HY000");
-  BOOST_CHECK_EQUAL(error.message,
-                    "Invalid buffer length -20");
-
+  BOOST_CHECK_EQUAL(error.message, "Invalid buffer length -20");
 
   SQLSMALLINT siv;
   siv = SQL_INTERVAL_DAY_TO_HOUR;
@@ -548,18 +546,23 @@ BOOST_AUTO_TEST_CASE(TestDescriptorSetRainyCase2) {
 
 #ifdef _WIN32
   // error from Windows driver manager
-  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ALLOC_TYPE, "Descriptor type out of range");
+  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ALLOC_TYPE,
+                               "Descriptor type out of range");
 #else
-  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ALLOC_TYPE, "Invalid descriptor field id");
+  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ALLOC_TYPE,
+                               "Invalid descriptor field id");
 #endif
-  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ARRAY_SIZE, "Invalid descriptor field id");
+  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ARRAY_SIZE,
+                               "Invalid descriptor field id");
   CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ARRAY_STATUS_PTR,
-                       "Invalid descriptor field id");
-  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_BIND_OFFSET_PTR, "Invalid descriptor field id");
-  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_BIND_TYPE, "Invalid descriptor field id");
+                               "Invalid descriptor field id");
+  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_BIND_OFFSET_PTR,
+                               "Invalid descriptor field id");
+  CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_BIND_TYPE,
+                               "Invalid descriptor field id");
   CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_COUNT, "Invalid descriptor field id");
   CHECK_DESC_SET_FIELD_FAILURE(SQL_DESC_ROWS_PROCESSED_PTR,
-                       "Invalid descriptor field id");
+                               "Invalid descriptor field id");
 }
 
 // Test SQLGetDescField not supported fieldIds for ARD
@@ -651,8 +654,9 @@ BOOST_AUTO_TEST_CASE(TestCopyDescriptorRainyCase) {
   ret = SQLCopyDesc(ard, ird);
   BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 
-// For Linux driver manager SQLGetDiagRec is called instead of our SQLGetDiagRec.
-// Driver manager SQLGetDiagRec does not return any error info. So no error check for Linux.
+// For Linux driver manager SQLGetDiagRec is called instead of our
+// SQLGetDiagRec. Driver manager SQLGetDiagRec does not return any error info.
+// So no error check for Linux.
 #if defined(_WIN32)
   OdbcClientError error = GetOdbcError(SQL_HANDLE_DESC, ird);
   BOOST_CHECK_EQUAL(error.sqlstate, "HY016");
@@ -662,7 +666,7 @@ BOOST_AUTO_TEST_CASE(TestCopyDescriptorRainyCase) {
   OdbcClientError error = GetOdbcError(SQL_HANDLE_DESC, ard);
   BOOST_CHECK_EQUAL(error.sqlstate, "HY016");
   BOOST_CHECK_EQUAL(error.message,
-                    "Cannot modify an implementation row descriptor");  
+                    "Cannot modify an implementation row descriptor");
 #endif
 }
 

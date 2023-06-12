@@ -27,8 +27,7 @@
 namespace timestream {
 namespace odbc {
 namespace query {
-ForeignKeysQuery::ForeignKeysQuery(
-    diagnostic::DiagnosableAdapter& diag)
+ForeignKeysQuery::ForeignKeysQuery(diagnostic::DiagnosableAdapter& diag)
     : Query(diag, QueryType::FOREIGN_KEYS) {
   using namespace timestream::odbc::type_traits;
 
@@ -75,7 +74,8 @@ ForeignKeysQuery::~ForeignKeysQuery() {
 }
 
 SqlResult::Type ForeignKeysQuery::Execute() {
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
       "SQLForeignKeys is not supported. Return empty result set.",
       LogLevel::Type::WARNING_LEVEL);
 
@@ -92,10 +92,9 @@ const meta::ColumnMetaVector* ForeignKeysQuery::GetMeta() {
 
 SqlResult::Type ForeignKeysQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
-  diag.AddStatusRecord(
-      SqlState::S01000_GENERAL_WARNING,
-      "SQLForeignKeys is not supported. No data is returned.",
-      LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                       "SQLForeignKeys is not supported. No data is returned.",
+                       LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }

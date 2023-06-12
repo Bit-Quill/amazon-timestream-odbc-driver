@@ -22,7 +22,6 @@
 #include <aws/timestream-write/model/Record.h>
 #include <aws/timestream-write/model/MeasureValue.h>
 
-
 using Aws::TimestreamWrite::Model::Dimension;
 using Aws::TimestreamWrite::Model::MeasureValue;
 using Aws::TimestreamWrite::Model::Record;
@@ -37,16 +36,17 @@ class MeasureMetadataCreater {
   virtual ~MeasureMetadataCreater() = default;
 
   virtual void CreateDimensions(Aws::Vector< Dimension >& dimensions) = 0;
-  virtual void CreateRecords(
-      Aws::Vector< Dimension >& dimensions, Aws::Vector< Record >& values) = 0;
-  virtual void CreateMeasureValues(Aws::Vector< MeasureValue >& values)  = 0;
+  virtual void CreateRecords(Aws::Vector< Dimension >& dimensions,
+                             Aws::Vector< Record >& values) = 0;
+  virtual void CreateMeasureValues(Aws::Vector< MeasureValue >& values) = 0;
   virtual const char* GetMetricName() = 0;
 
-  typedef void (*RecordValueAssignFunPtr)(Aws::Vector< Record >& values, int index);
+  typedef void (*RecordValueAssignFunPtr)(Aws::Vector< Record >& values,
+                                          int index);
   virtual RecordValueAssignFunPtr GetRecordValueAssignFunPtr() = 0;
 
   typedef void (*MeasureValueAssignFunPtr)(Aws::Vector< MeasureValue >& values,
-                                          int index);
+                                           int index);
   virtual MeasureValueAssignFunPtr GetMeasureValueAssignFunPtr() = 0;
 };
 }  // namespace odbc

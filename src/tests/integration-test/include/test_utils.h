@@ -32,20 +32,20 @@
 
 #include "timestream/odbc/utils.h"
 
-#define ODBC_THROW_ON_ERROR(ret, type, handle)     \
-  if (!SQL_SUCCEEDED(ret)) {                       \
+#define ODBC_THROW_ON_ERROR(ret, type, handle)         \
+  if (!SQL_SUCCEEDED(ret)) {                           \
     throw timestream_test::GetOdbcError(type, handle); \
   }
 
-#define ODBC_FAIL_ON_ERROR(ret, type, handle)                   \
-  if (!SQL_SUCCEEDED(ret)) {                                    \
+#define ODBC_FAIL_ON_ERROR(ret, type, handle)                       \
+  if (!SQL_SUCCEEDED(ret)) {                                        \
     BOOST_FAIL(timestream_test::GetOdbcErrorMessage(type, handle)); \
   }
 
-#define ODBC_FAIL_ON_ERROR1(ret, type, handle, msg)           \
-  if (!SQL_SUCCEEDED(ret)) {                                  \
+#define ODBC_FAIL_ON_ERROR1(ret, type, handle, msg)               \
+  if (!SQL_SUCCEEDED(ret)) {                                      \
     BOOST_FAIL(timestream_test::GetOdbcErrorMessage(type, handle) \
-               + ", msg = " + msg);                           \
+               + ", msg = " + msg);                               \
   }
 
 #define MUTE_TEST_FOR_TEAMCITY                                            \

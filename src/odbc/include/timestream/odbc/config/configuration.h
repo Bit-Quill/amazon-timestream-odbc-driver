@@ -817,7 +817,8 @@ class IGNITE_IMPORT_EXPORT Configuration {
   SettableValue< int32_t > connectionTimeout = DefaultValue::connectionTimeout;
 
   /** Max Retry Count.  */
-  SettableValue< int32_t > maxRetryCountClient = DefaultValue::maxRetryCountClient;
+  SettableValue< int32_t > maxRetryCountClient =
+      DefaultValue::maxRetryCountClient;
 
   /** Max Connections.  */
   SettableValue< int32_t > maxConnections = DefaultValue::maxConnections;

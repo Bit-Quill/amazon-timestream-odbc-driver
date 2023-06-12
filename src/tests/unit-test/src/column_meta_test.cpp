@@ -209,7 +209,8 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix) {
   bool found;
 
   std::vector< std::pair< int16_t, std::string > > tests = {
-      std::make_pair(static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::VARCHAR),
+      std::make_pair(static_cast< int16_t >(
+                         Aws::TimestreamQuery::Model::ScalarType::VARCHAR),
                      std::string("'")),
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::BOOLEAN),
@@ -223,16 +224,20 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLiteralPrefix) {
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::TIMESTAMP),
                      std::string("")),
-      std::make_pair(static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::DATE),
-                     std::string("")),
-      std::make_pair(static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::TIME),
-                     std::string("")),
-      std::make_pair(static_cast< int16_t >(
+      std::make_pair(
+          static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::DATE),
+          std::string("")),
+      std::make_pair(
+          static_cast< int16_t >(Aws::TimestreamQuery::Model::ScalarType::TIME),
+          std::string("")),
+      std::make_pair(
+          static_cast< int16_t >(
               Aws::TimestreamQuery::Model::ScalarType::INTERVAL_DAY_TO_SECOND),
-                     std::string("")),
-      std::make_pair(static_cast< int16_t >(
+          std::string("")),
+      std::make_pair(
+          static_cast< int16_t >(
               Aws::TimestreamQuery::Model::ScalarType::INTERVAL_YEAR_TO_MONTH),
-                     std::string("")),
+          std::string("")),
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::INTEGER),
                      std::string("")),
@@ -327,7 +332,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeLocalTypeName) {
   std::string resVal;
   bool found;
 
-   std::vector< std::pair< int16_t, std::string > > tests = {
+  std::vector< std::pair< int16_t, std::string > > tests = {
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::VARCHAR),
                      timestream::odbc::type_traits::SqlTypeName::VARCHAR),
@@ -449,7 +454,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeConciseTypeAndType) {
   std::string resVal;
   bool found;
 
-   std::vector< std::pair< int16_t, SQLLEN > > tests = {
+  std::vector< std::pair< int16_t, SQLLEN > > tests = {
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::VARCHAR),
                      SQL_VARCHAR),
@@ -515,7 +520,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeDisplaySize) {
   std::string resVal;
   bool found;
 
-   std::vector< std::pair< int16_t, SQLLEN > > tests = {
+  std::vector< std::pair< int16_t, SQLLEN > > tests = {
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::VARCHAR),
                      TIMESTREAM_SQL_MAX_LENGTH),
@@ -731,7 +736,7 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeNumPrecRadix) {
   std::string resVal;
   bool found;
 
-   std::vector< std::pair< int16_t, SQLLEN > > tests = {
+  std::vector< std::pair< int16_t, SQLLEN > > tests = {
       std::make_pair(static_cast< int16_t >(
                          Aws::TimestreamQuery::Model::ScalarType::VARCHAR),
                      0),
@@ -913,8 +918,8 @@ BOOST_AUTO_TEST_CASE(TestGetAttributeUnnamed) {
   SQLLEN intVal;
   std::string resVal;
   bool found;
-  ColumnMeta columnMetaUnnamed(database, table, std::string(""), ScalarType::UNKNOWN,
-                               Nullability::NULLABLE);
+  ColumnMeta columnMetaUnnamed(database, table, std::string(""),
+                               ScalarType::UNKNOWN, Nullability::NULLABLE);
 
   // test SQL_DESC_UNNAMED
   found = columnMetaUnnamed.GetAttribute(SQL_DESC_UNNAMED, intVal);

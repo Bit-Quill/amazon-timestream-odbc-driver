@@ -616,7 +616,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
       if (buffer) {
         char tmpStr[32]{};
         snprintf(tmpStr, 32, "%4d-%02d-%02d", tmTime.tm_year + 1900,
-                tmTime.tm_mon + 1, tmTime.tm_mday);
+                 tmTime.tm_mon + 1, tmTime.tm_mday);
         strncpy(buffer, tmpStr,
                 std::min(buflen, static_cast< SqlLen >(valLen + 1)));
 
@@ -641,7 +641,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDate(const Date& value) {
       if (buffer) {
         char tmpStr[32]{};
         snprintf(tmpStr, 32, "%4d-%02d-%02d", tmTime.tm_year + 1900,
-                tmTime.tm_mon + 1, tmTime.tm_mday);
+                 tmTime.tm_mon + 1, tmTime.tm_mday);
 
         LOG_DEBUG_MSG("valLen is " << valLen << ", buflen is " << buflen
                                    << ", tmpStr is " << tmpStr);
@@ -1054,8 +1054,9 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
   switch (type) {
     case OdbcNativeType::AI_CHAR: {
       char tmp[32]{};
-      snprintf(tmp, 32, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
-              value.GetMinute(), value.GetSecond(), value.GetFraction());
+      snprintf(tmp, 32, "%d %02d:%02d:%02d.%09d", value.GetDay(),
+               value.GetHour(), value.GetMinute(), value.GetSecond(),
+               value.GetFraction());
       SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 
       if (resLenPtr)
@@ -1078,8 +1079,9 @@ ConversionResult::Type ApplicationDataBuffer::PutInterval(
 
     case OdbcNativeType::AI_WCHAR: {
       char tmp[32]{};
-      snprintf(tmp, 32, "%d %02d:%02d:%02d.%09d", value.GetDay(), value.GetHour(),
-              value.GetMinute(), value.GetSecond(), value.GetFraction());
+      snprintf(tmp, 32, "%d %02d:%02d:%02d.%09d", value.GetDay(),
+               value.GetHour(), value.GetMinute(), value.GetSecond(),
+               value.GetFraction());
       SqlLen resLen = static_cast< SqlLen >(strlen(tmp));
 
       if (resLenPtr)
@@ -1961,8 +1963,8 @@ void ApplicationDataBuffer::SetIntervalType(SQL_INTERVAL_STRUCT* buffer) {
   }
 }
 
-void ApplicationDataBuffer::SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
-                                          const IntervalYearMonth& value) {
+void ApplicationDataBuffer::SetIntervalBufferValue(
+    SQL_INTERVAL_STRUCT* buffer, const IntervalYearMonth& value) {
   SetIntervalType(buffer);
   if (value.GetYear() < 0 || (value.GetYear() == 0 && value.GetMonth() < 0)) {
     buffer->interval_sign = SQL_FALSE;
@@ -2045,8 +2047,8 @@ void ApplicationDataBuffer::SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
   }
 }
 
-void ApplicationDataBuffer::SetIntervalBufferValue(SQL_INTERVAL_STRUCT* buffer,
-                                           const IntervalDaySecond& value) {
+void ApplicationDataBuffer::SetIntervalBufferValue(
+    SQL_INTERVAL_STRUCT* buffer, const IntervalDaySecond& value) {
   SetIntervalType(buffer);
   if (value.GetDay() < 0 || (value.GetDay() == 0 && value.GetHour() < 0)
       || (value.GetDay() == 0 && value.GetHour() == 0 && value.GetMinute() < 0)

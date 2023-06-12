@@ -97,7 +97,6 @@ inline void SpaceToUnderscore(std::string& str) {
   std::replace(str.begin(), str.end(), ' ', '_');
 }
 
-
 /**
  * Skip leading spaces.
  *
@@ -334,7 +333,7 @@ inline Date CTmToDate(const tm& ctime) {
  * @param ns Nanosecond.
  * @return Corresponding value of Time.
  */
-inline Time CTmToTime(const tm& ctime, int32_t ns=0) {
+inline Time CTmToTime(const tm& ctime, int32_t ns = 0) {
   time_t time = ignite::odbc::common::IgniteTimeGm(ctime);
 
   return CTimeToTime(time, ns);
@@ -398,7 +397,8 @@ IGNITE_FRIEND_EXPORT Date MakeDateLocal(int year = 1900, int month = 1,
  * @param ns Nanosecond.
  * @return Time.
  */
-IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour = 0, int min = 0, int sec = 0, int ns = 0);
+IGNITE_FRIEND_EXPORT Time MakeTimeGmt(int hour = 0, int min = 0, int sec = 0,
+                                      int ns = 0);
 
 /**
  * Make Time in human understandable way.

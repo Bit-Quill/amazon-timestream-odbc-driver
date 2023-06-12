@@ -429,7 +429,8 @@ void Descriptor::CopyDesc(Descriptor* dst) {
 
 SqlResult::Type Descriptor::InternalCopyDesc(Descriptor* dst) {
   if (dst->GetType() == DescType::IRD) {
-    AddStatusRecord(SqlState::SHY016_MODIFY_IRD, "Cannot modify an implementation row descriptor");
+    AddStatusRecord(SqlState::SHY016_MODIFY_IRD,
+                    "Cannot modify an implementation row descriptor");
     return SqlResult::AI_ERROR;
   }
 

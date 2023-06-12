@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(TestConnectionInfoSupportedInfo) {
                         &reslen);
   BOOST_REQUIRE(result == SqlResult::AI_SUCCESS);
 #endif  // SQL_CURSOR_ROLLBACK_BEHAVIOR
-#endif // ifndef _WIN32
+#endif  // ifndef _WIN32
 
 #ifdef SQL_TXN_CAPABLE
   result = info.GetInfo(SQL_TXN_CAPABLE, buffer, sizeof(buffer), &reslen);

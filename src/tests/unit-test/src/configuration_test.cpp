@@ -207,11 +207,11 @@ void CheckConnectionConfig(const Configuration& cfg) {
               << "endpointoverride=" << testEndpoint << ';'
               << "idparn=" << testIdPArn << ';' << "idphost=" << testIdPHost
               << ';' << "idppassword=" << testIdPPassword << ';'
-              << "idpusername=" << testIdPUserName << ';'
-              << "loglevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
-              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath()
+              << "idpusername=" << testIdPUserName << ';' << "loglevel="
+              << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel())
               << ';'
-              << "maxconnections=" << testMaxConnections << ';'
+              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath()
+              << ';' << "maxconnections=" << testMaxConnections << ';'
               << "maxretrycountclient=" << testMaxRetryCountClient << ';'
               << "oktaapplicationid=" << testOktaAppId << ';'
               << "profilename=" << testProfileName << ";"
@@ -283,7 +283,8 @@ BOOST_AUTO_TEST_CASE(CheckTestValuesNotEqualDefault) {
   BOOST_CHECK_NE(testReqTimeoutMS, Configuration::DefaultValue::reqTimeout);
   BOOST_CHECK_NE(testConnectionTimeoutMS,
                  Configuration::DefaultValue::connectionTimeout);
-  BOOST_CHECK_NE(testMaxRetryCountClient, Configuration::DefaultValue::maxRetryCountClient);
+  BOOST_CHECK_NE(testMaxRetryCountClient,
+                 Configuration::DefaultValue::maxRetryCountClient);
   BOOST_CHECK_NE(testMaxConnections,
                  Configuration::DefaultValue::maxConnections);
   BOOST_CHECK_NE(testEndpoint, Configuration::DefaultValue::endpoint);
@@ -309,10 +310,11 @@ BOOST_AUTO_TEST_CASE(TestConnectStringUppercase) {
   constructor << "UID=" << testUid << ';' << "PWD=" << testPwd << ';'
               << "ACCESSKEYID=" << testAccessKeyId << ';'
               << "SECRETKEY=" << testSecretKey << ';'
-              << "SESSIONTOKEN=" << testSessionToken << ';'
-              << "LOGLEVEL=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
-              << "LOGOUTPUT=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
-              << "AUTH=" << AuthType::ToString(testAuthType) << ';'
+              << "SESSIONTOKEN=" << testSessionToken << ';' << "LOGLEVEL="
+              << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel())
+              << ';'
+              << "LOGOUTPUT=" << Logger::GetLoggerInstance()->GetLogPath()
+              << ';' << "AUTH=" << AuthType::ToString(testAuthType) << ';'
               << "PROFILENAME=" << testProfileName << ';'
               << "REQUESTTIMEOUT=" << testReqTimeoutMS << ';'
               << "CONNECTIONTIMEOUT=" << testConnectionTimeoutMS << ';'
@@ -345,10 +347,11 @@ BOOST_AUTO_TEST_CASE(TestConnectStringLowercase) {
   constructor << "uid=" << testUid << ';' << "pwd=" << testPwd << ';'
               << "accesskeyid=" << testAccessKeyId << ';'
               << "secretkey=" << testSecretKey << ';'
-              << "sessiontoken=" << testSessionToken << ';'
-              << "loglevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
-              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
-              << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "sessiontoken=" << testSessionToken << ';' << "loglevel="
+              << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel())
+              << ';'
+              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath()
+              << ';' << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "profilename=" << testProfileName << ';'
               << "requesttimeout=" << testReqTimeoutMS << ';'
               << "connectiontimeout=" << testConnectionTimeoutMS << ';'
@@ -381,10 +384,11 @@ BOOST_AUTO_TEST_CASE(TestConnectStringZeroTerminated) {
   constructor << "uid=" << testUid << ';' << "pwd=" << testPwd << ';'
               << "accesskeyid=" << testAccessKeyId << ';'
               << "secretkey=" << testSecretKey << ';'
-              << "sessiontoken=" << testSessionToken << ';'
-              << "loglevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
-              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
-              << "auth=" << AuthType::ToString(testAuthType) << ';'
+              << "sessiontoken=" << testSessionToken << ';' << "loglevel="
+              << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel())
+              << ';'
+              << "logoutput=" << Logger::GetLoggerInstance()->GetLogPath()
+              << ';' << "auth=" << AuthType::ToString(testAuthType) << ';'
               << "profilename=" << testProfileName << ';'
               << "requesttimeout=" << testReqTimeoutMS << ';'
               << "connectiontimeout=" << testConnectionTimeoutMS << ';'
@@ -419,10 +423,11 @@ BOOST_AUTO_TEST_CASE(TestConnectStringMixed) {
   constructor << "Uid=" << testUid << ';' << "Pwd=" << testPwd << ';'
               << "AccessKeyId=" << testAccessKeyId << ';'
               << "SecretKey=" << testSecretKey << ';'
-              << "SessionToken=" << testSessionToken << ';'
-              << "LogLevel=" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << ';'
-              << "LogOutput=" << Logger::GetLoggerInstance()->GetLogPath() << ';'
-              << "Auth=" << AuthType::ToString(testAuthType) << ';'
+              << "SessionToken=" << testSessionToken << ';' << "LogLevel="
+              << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel())
+              << ';'
+              << "LogOutput=" << Logger::GetLoggerInstance()->GetLogPath()
+              << ';' << "Auth=" << AuthType::ToString(testAuthType) << ';'
               << "ProfileName=" << testProfileName << ';'
               << "RequestTimeout=" << testReqTimeoutMS << ';'
               << "ConnectionTimeout=" << testConnectionTimeoutMS << ';'
@@ -456,9 +461,11 @@ BOOST_AUTO_TEST_CASE(TestConnectStringWhiteSpaces) {
               << "PWD   =  " << testPwd << ";  "
               << "ACCESSKEYID =" << testAccessKeyId << ';'
               << "SECRETKEY=" << testSecretKey << ';'
-              << "SESSIONTOKEN=" << testSessionToken << ';'
-              << "  LOGLEVEL =" << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel()) << "  ; "
-              << "LOGOUTPUT=  " << Logger::GetLoggerInstance()->GetLogPath() << " ;"
+              << "SESSIONTOKEN=" << testSessionToken << ';' << "  LOGLEVEL ="
+              << LogLevel::ToString(Logger::GetLoggerInstance()->GetLogLevel())
+              << "  ; "
+              << "LOGOUTPUT=  " << Logger::GetLoggerInstance()->GetLogPath()
+              << " ;"
               << " AUTH=" << AuthType::ToString(testAuthType) << ';'
               << "     PROFILENAME  = " << testProfileName << "    ; "
               << "  REQUESTTIMEOUT=" << testReqTimeoutMS << "  ;  "

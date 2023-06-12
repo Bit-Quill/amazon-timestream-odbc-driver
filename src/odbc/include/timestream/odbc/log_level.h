@@ -22,9 +22,16 @@
 
 namespace timestream {
 namespace odbc {
-  /** Log Level enum. */
-  struct IGNITE_IMPORT_EXPORT LogLevel {
-    enum class Type { OFF, ERROR_LEVEL, WARNING_LEVEL, INFO_LEVEL, DEBUG_LEVEL, UNKNOWN };
+/** Log Level enum. */
+struct IGNITE_IMPORT_EXPORT LogLevel {
+  enum class Type {
+    OFF,
+    ERROR_LEVEL,
+    WARNING_LEVEL,
+    INFO_LEVEL,
+    DEBUG_LEVEL,
+    UNKNOWN
+  };
 
   /**
    * Convert log level from string.

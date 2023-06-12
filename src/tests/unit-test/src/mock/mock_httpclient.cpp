@@ -106,9 +106,8 @@ void MockHttpClient::HandleAADAccessTokenRequest(
 
   std::smatch matches;
   std::string user("");
-  if (std::regex_search(
-          body, matches,
-          std::regex(std::string("username=\\s*(\\w*)")))) {
+  if (std::regex_search(body, matches,
+                        std::regex(std::string("username=\\s*(\\w*)")))) {
     user = matches.str(1);
   }
 
@@ -116,13 +115,13 @@ void MockHttpClient::HandleAADAccessTokenRequest(
   if (user == "aad_valid_user") {
     response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
 
-    response->GetResponseBody() << "{\"access_token\" : \"correctAccessToken\"}";
+    response->GetResponseBody()
+        << "{\"access_token\" : \"correctAccessToken\"}";
   } else if (user == "aad_wrong_access_token") {
     response->SetResponseCode(Aws::Http::HttpResponseCode::OK);
 
-    response->GetResponseBody()
-        << "{\"access_token\" : "
-           "\"abcdefghijklmn123456890\"}";
+    response->GetResponseBody() << "{\"access_token\" : "
+                                   "\"abcdefghijklmn123456890\"}";
   } else if (user == "aad_fail_access_token") {
     response->SetResponseCode(Aws::Http::HttpResponseCode::BAD_REQUEST);
   } else if (user == "aad_client_error") {

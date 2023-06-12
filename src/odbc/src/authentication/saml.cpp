@@ -24,8 +24,7 @@ namespace odbc {
 
 bool TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion(
     Aws::STS::Model::AssumeRoleWithSAMLRequest& samlRequest,
-    Aws::Auth::AWSCredentials& awsCredentials,
-    std::string& errInfo) {
+    Aws::Auth::AWSCredentials& awsCredentials, std::string& errInfo) {
   LOG_DEBUG_MSG("FetchCredentialsWithSAMLAssertion is called");
 
   Aws::STS::Model::AssumeRoleWithSAMLOutcome outcome =
@@ -43,8 +42,8 @@ bool TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion(
     retval = true;
   } else {
     auto error = outcome.GetError();
-    errInfo = "Failed to fetch credentials, ERROR: " + error.GetExceptionName() + ": "
-                                          + error.GetMessage();
+    errInfo = "Failed to fetch credentials, ERROR: " + error.GetExceptionName()
+              + ": " + error.GetMessage();
     LOG_ERROR_MSG(errInfo);
   }
 
@@ -52,8 +51,7 @@ bool TimestreamSAMLCredentialsProvider::FetchCredentialsWithSAMLAssertion(
 }
 
 bool TimestreamSAMLCredentialsProvider::GetAWSCredentials(
-    Aws::Auth::AWSCredentials& credentials,
-    std::string& errInfo) {
+    Aws::Auth::AWSCredentials& credentials, std::string& errInfo) {
   LOG_DEBUG_MSG("GetAWSCredentials is called");
 
   std::string samlAsseration = GetSAMLAssertion(errInfo);
@@ -66,7 +64,8 @@ bool TimestreamSAMLCredentialsProvider::GetAWSCredentials(
         .WithSAMLAssertion(samlAsseration)
         .WithPrincipalArn(config_.GetIdPArn().c_str());
 
-    retval = FetchCredentialsWithSAMLAssertion(samlRequest, credentials, errInfo);
+    retval =
+        FetchCredentialsWithSAMLAssertion(samlRequest, credentials, errInfo);
   }
 
   return retval;

@@ -460,7 +460,7 @@ boost::optional< int32_t > SqlTypeDisplaySize(boost::optional< int16_t > type) {
 
     case SQL_TYPE_TIMESTAMP:
       return 20;
-    
+
     case SQL_INTERVAL_DAY_TO_SECOND:
       return 25;
 
@@ -607,8 +607,7 @@ boost::optional< int32_t > SqlTypeTransferLength(
   }
 }
 
-boost::optional< int32_t > SqlTypePrecision(
-    boost::optional< int16_t > type) {
+boost::optional< int32_t > SqlTypePrecision(boost::optional< int16_t > type) {
   if (!type)
     return boost::none;
   switch (*type) {
@@ -635,7 +634,6 @@ boost::optional< int32_t > SqlTypePrecision(
 
     case SQL_TYPE_TIME:
       return 6;
-
 
     case SQL_INTERVAL_DAY_TO_SECOND:
       return 11;

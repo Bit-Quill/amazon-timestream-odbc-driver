@@ -37,7 +37,6 @@ namespace query {
  */
 class TableMetadataQuery : public timestream::odbc::query::Query {
  public:
-
   struct ResultColumn {
     enum Type {
       /** Catalog name. NULL if not applicable to the data source. */
@@ -164,33 +163,36 @@ class TableMetadataQuery : public timestream::odbc::query::Query {
   SqlResult::Type MakeRequestGetTablesMeta();
 
   /**
-   * Validate and handle database search patterns / identifiers in tables meta retrieval
-   * 
+   * Validate and handle database search patterns / identifiers in tables meta
+   * retrieval
+   *
    * @return Operation result.
    */
   SqlResult::Type getTables();
 
   /**
    * Get the list of all databases.
-   * 
+   *
    * @return Operation result
    */
   SqlResult::Type getAllDatabases();
 
   /**
-   * Get tables that have exact match with the database and table case-sensitivie identifier
-   * 
-   * @param databasePattern Database pattern 
-   * @return Operation result 
+   * Get tables that have exact match with the database and table
+   * case-sensitivie identifier
+   *
+   * @param databasePattern Database pattern
+   * @return Operation result
    */
   SqlResult::Type getTablesWithIdentifier(
       const std::string& databaseIdentifier);
 
   /**
-   * Get tables that match the database and table case-insensitivie search patterns
-   * 
-   * @param databasePattern Database pattern 
-   * @return Operation result 
+   * Get tables that match the database and table case-insensitivie search
+   * patterns
+   *
+   * @param databasePattern Database pattern
+   * @return Operation result
    */
   SqlResult::Type getTablesWithSearchPattern(
       const boost::optional< std::string >& databasePattern);
@@ -215,8 +217,8 @@ class TableMetadataQuery : public timestream::odbc::query::Query {
    * @return Operation result
    */
   SqlResult::Type getMatchedTables(const std::string& databaseName,
-                                const std::string& tablePattern,
-                                std::vector< std::string >& c);
+                                   const std::string& tablePattern,
+                                   std::vector< std::string >& c);
 
   /**
    * Remove outer matching quotes from a string. They can be either single (')
@@ -256,7 +258,7 @@ class TableMetadataQuery : public timestream::odbc::query::Query {
 
   /** Return a list of supported table types flag. */
   bool all_table_types;
-  
+
   /** Fetched metadata. */
   meta::TableMetaVector meta;
 

@@ -73,7 +73,8 @@ bool WriteDsnString(const char* dsn, const char* key, const char* value,
 SettableValue< std::string > ReadDsnString(const char* dsn,
                                            const std::string& key,
                                            const std::string& dflt = "") {
-  LOG_DEBUG_MSG("ReadDsnString is called with dsn is " << dsn << ", key is " << key);
+  LOG_DEBUG_MSG("ReadDsnString is called with dsn is " << dsn << ", key is "
+                                                       << key);
   static const char* unique = "35a920dd-8837-43d2-a846-e01a2e7b5f84";
 
   SettableValue< std::string > val(dflt);
@@ -106,14 +107,14 @@ SettableValue< std::string > ReadDsnString(const char* dsn,
 SettableValue< int32_t > ReadDsnInt(const char* dsn, const std::string& key,
                                     int32_t dflt = 0) {
   LOG_DEBUG_MSG("ReadDsnInt is called with dsn is " << dsn << ", key is "
-                                                       << key);
+                                                    << key);
   SettableValue< std::string > str = ReadDsnString(dsn, key, "");
 
   SettableValue< int32_t > res(dflt);
 
   if (str.IsSet())
-    res.SetValue(
-        timestream::odbc::common::LexicalCast< int, std::string >(str.GetValue()));
+    res.SetValue(timestream::odbc::common::LexicalCast< int, std::string >(
+        str.GetValue()));
 
   LOG_DEBUG_MSG("res is " << res.GetValue());
   return res;
@@ -122,7 +123,7 @@ SettableValue< int32_t > ReadDsnInt(const char* dsn, const std::string& key,
 SettableValue< bool > ReadDsnBool(const char* dsn, const std::string& key,
                                   bool dflt = false) {
   LOG_DEBUG_MSG("ReadDsnBool is called with dsn is " << dsn << ", key is "
-                                                    << key);
+                                                     << key);
   SettableValue< std::string > str = ReadDsnString(dsn, key, "");
 
   SettableValue< bool > res(dflt);
@@ -276,8 +277,8 @@ void ReadDsnConfiguration(const char* dsn, Configuration& config,
       ReadDsnString(dsn, ConnectionStringParser::Key::logLevel);
 
   if (logLevel.IsSet() && !config.IsLogLevelSet()) {
-    LogLevel::Type level =
-        LogLevel::FromString(logLevel.GetValue(), LogLevel::Type::WARNING_LEVEL);
+    LogLevel::Type level = LogLevel::FromString(logLevel.GetValue(),
+                                                LogLevel::Type::WARNING_LEVEL);
     config.SetLogLevel(level);
   }
 

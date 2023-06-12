@@ -795,7 +795,8 @@ SqlResult::Type Connection::AddCursorName(const Statement* stmt,
 
   // in case multiple statement in different threads
   std::lock_guard< std::mutex > lock(cursorNameMutex_);
-  std::map< const Statement*, std::string >::iterator itr = cursorNameMap_.find(stmt);
+  std::map< const Statement*, std::string >::iterator itr =
+      cursorNameMap_.find(stmt);
   if (itr != cursorNameMap_.end()) {
     cursorNames_.erase(itr->second);
   }
@@ -1463,8 +1464,8 @@ SqlResult::Type Connection::InternalSetConnectOption(SQLUSMALLINT option,
     case SQL_QUIET_MODE:
     case SQL_LOGIN_TIMEOUT: {
       AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "Specified attribute is ignored.",
-                       timestream::odbc::LogLevel::Type::WARNING_LEVEL);
+                      "Specified attribute is ignored.",
+                      timestream::odbc::LogLevel::Type::WARNING_LEVEL);
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
 

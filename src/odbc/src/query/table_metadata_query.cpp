@@ -507,7 +507,7 @@ SqlResult::Type TableMetadataQuery::getTables() {
         // **zero** or more characters and it would match empty string schema
         // names.
         // 2. Sometimes BI tools can pass SQLTables(catalogname - %, schemaname
-        // - %, tablename - %,...) to get all tables, and we want to support 
+        // - %, tablename - %,...) to get all tables, and we want to support
         // this case.
         retval = getTablesWithSearchPattern(catalog);
       }
@@ -525,9 +525,8 @@ SqlResult::Type TableMetadataQuery::getMatchedDatabases(
   std::string sql = "SHOW DATABASES LIKE \'" + databasePattern + "\'";
   LOG_DEBUG_MSG("sql is " << sql);
 
-   dataQuery_ =
-       std::make_shared< DataQuery >(diag, connection, sql);
-   SqlResult::Type result = dataQuery_->Execute();
+  dataQuery_ = std::make_shared< DataQuery >(diag, connection, sql);
+  SqlResult::Type result = dataQuery_->Execute();
 
   if (result == SqlResult::AI_NO_DATA) {
     std::string warnMsg =
@@ -566,8 +565,7 @@ SqlResult::Type TableMetadataQuery::getMatchedTables(
       "SHOW TABLES FROM \"" + databaseName + "\" LIKE \'" + tablePattern + "\'";
   LOG_DEBUG_MSG("sql is " << sql);
 
-  dataQuery_ =
-      std::make_shared< DataQuery >(diag, connection, sql);
+  dataQuery_ = std::make_shared< DataQuery >(diag, connection, sql);
   SqlResult::Type result = dataQuery_->Execute();
 
   if (result == SqlResult::AI_NO_DATA) {
@@ -679,8 +677,7 @@ SqlResult::Type TableMetadataQuery::getTablesWithIdentifier(
   SqlResult::Type res = getMatchedTables(databaseName, "%", tableNames);
 
   if (res != SqlResult::AI_SUCCESS && res != SqlResult::AI_SUCCESS_WITH_INFO) {
-    LOG_DEBUG_MSG(
-        "getTablesWithIdentifier early exiting with result: " << res);
+    LOG_DEBUG_MSG("getTablesWithIdentifier early exiting with result: " << res);
     return res;
   }
 

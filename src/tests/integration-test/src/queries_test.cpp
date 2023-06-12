@@ -68,8 +68,10 @@ struct QueriesTestSuiteFixture : odbc::OdbcTestSuite {
     }
 
     std::vector< SQLWCHAR > request = MakeSqlBuffer(
-        "select device_id, cast(video_startup_time AS int), video_startup_time, rebuffering_ratio,"
-        "flag from data_queries_test_db.TestScalarTypes where video_startup_time < 3 order by device_id");
+        "select device_id, cast(video_startup_time AS int), "
+        "video_startup_time, rebuffering_ratio,"
+        "flag from data_queries_test_db.TestScalarTypes where "
+        "video_startup_time < 3 order by device_id");
 
     ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
     if (!SQL_SUCCEEDED(ret))
@@ -266,7 +268,7 @@ BOOST_AUTO_TEST_CASE(TestNoDataErrorMessage) {
   ret = SQLMoreResults(stmt);
   BOOST_REQUIRE_EQUAL(ret, SQL_NO_DATA);
   BOOST_REQUIRE_EQUAL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt),
-      "Cannot find ODBC error message");
+                      "Cannot find ODBC error message");
 }
 
 BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetData) {
@@ -868,51 +870,51 @@ BOOST_AUTO_TEST_CASE(TestSQLCancel) {
   CreateDsnConnectionStringForAWS(dsnConnectionString);
   AddMaxRowPerPage(dsnConnectionString, "1");
   Connect(dsnConnectionString);
-    SQLRETURN ret;
-    std::vector< SQLWCHAR > request = MakeSqlBuffer(
-        "select time, index, cpu_utilization from "
-        "data_queries_test_db.TestMultiMeasureBigTable order by time");
-    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select time, index, cpu_utilization from "
+      "data_queries_test_db.TestMultiMeasureBigTable order by time");
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-    ret = SQLCancel(stmt);
-    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  ret = SQLCancel(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-    ret = SQLFetch(stmt);
+  ret = SQLFetch(stmt);
 #if defined(__linux__) || defined(__APPLE__)
-    BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+  BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 #else
-    BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
+  BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLCloseCursor) {
-    std::string dsnConnectionString;
-    CreateDsnConnectionStringForAWS(dsnConnectionString);
-    AddMaxRowPerPage(dsnConnectionString, "1");
-    Connect(dsnConnectionString);
-    SQLRETURN ret;
-    std::vector< SQLWCHAR > request = MakeSqlBuffer(
-        "select time, index, cpu_utilization from "
-        "data_queries_test_db.TestMultiMeasureBigTable order by time");
-    ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
-    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  std::string dsnConnectionString;
+  CreateDsnConnectionStringForAWS(dsnConnectionString);
+  AddMaxRowPerPage(dsnConnectionString, "1");
+  Connect(dsnConnectionString);
+  SQLRETURN ret;
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select time, index, cpu_utilization from "
+      "data_queries_test_db.TestMultiMeasureBigTable order by time");
+  ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-    ret = SQLCloseCursor(stmt);
-    BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+  ret = SQLCloseCursor(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-    ret = SQLFetch(stmt);
-    BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 
-    ret = SQLCloseCursor(stmt);
-    BOOST_CHECK_EQUAL(SQL_ERROR, ret);
+  ret = SQLCloseCursor(stmt);
+  BOOST_CHECK_EQUAL(SQL_ERROR, ret);
 
 #ifdef __linux__
-    BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
-                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("24000: [unixODBC][Driver Manager]Invalid cursor state",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #else
-    BOOST_REQUIRE_EQUAL("24000: No cursor was open",
-                        GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  BOOST_REQUIRE_EQUAL("24000: No cursor was open",
+                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 #endif
 }
 
@@ -1264,10 +1266,9 @@ BOOST_AUTO_TEST_CASE(TestSQLFetchPaginationEmptyTable) {
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
-  BOOST_REQUIRE_NE(
-      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt)
-          .find("01000: Query result is empty"),
-      std::string::npos);
+  BOOST_REQUIRE_NE(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt)
+                       .find("01000: Query result is empty"),
+                   std::string::npos);
 
   ret = SQLFetch(stmt);
   BOOST_CHECK_EQUAL(SQL_NO_DATA, ret);
@@ -1351,7 +1352,8 @@ BOOST_AUTO_TEST_CASE(TestTwoRowsString) {
 
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
       "select device_id, cast(video_startup_time AS int), video_startup_time, "
-      "rebuffering_ratio, flag from data_queries_test_db.TestScalarTypes where video_startup_time "
+      "rebuffering_ratio, flag from data_queries_test_db.TestScalarTypes where "
+      "video_startup_time "
       "< 3 order by device_id");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
@@ -1363,10 +1365,12 @@ BOOST_AUTO_TEST_CASE(TestTwoRowsString) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[0], SQL_NTS, true), "00000001");
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[0], SQL_NTS, true),
+                    "00000001");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[1], SQL_NTS, true), "1");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[2], SQL_NTS, true), "1");
-  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[3], SQL_NTS, true), "0.1");
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[3], SQL_NTS, true),
+                    "0.1");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[4], SQL_NTS, true), "1");
 
   SQLLEN columnLens[columnsCnt];
@@ -1384,10 +1388,12 @@ BOOST_AUTO_TEST_CASE(TestTwoRowsString) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[0], SQL_NTS, true), "00000002");
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[0], SQL_NTS, true),
+                    "00000002");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[1], SQL_NTS, true), "2");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[2], SQL_NTS, true), "2");
-  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[3], SQL_NTS, true), "0.2");
+  BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[3], SQL_NTS, true),
+                    "0.2");
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(columns[4], SQL_NTS, true), "0");
 
 #ifdef __APPLE__
@@ -1433,7 +1439,8 @@ BOOST_AUTO_TEST_CASE(TestDefaultValues) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  ret = SQLBindCol(stmt, 2, SQL_C_TIMESTAMP, &timestampColumn, 0, &columnLens[1]);
+  ret =
+      SQLBindCol(stmt, 2, SQL_C_TIMESTAMP, &timestampColumn, 0, &columnLens[1]);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
@@ -1445,17 +1452,20 @@ BOOST_AUTO_TEST_CASE(TestDefaultValues) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  ret = SQLBindCol(stmt, 5, SQL_C_DOUBLE, &defaultDoubleColumn, 0, &columnLens[4]);
+  ret = SQLBindCol(stmt, 5, SQL_C_DOUBLE, &defaultDoubleColumn, 0,
+                   &columnLens[4]);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  ret = SQLBindCol(stmt, 6, SQL_C_SBIGINT, &defaultBigintColumn, 0, &columnLens[5]);
+  ret = SQLBindCol(stmt, 6, SQL_C_SBIGINT, &defaultBigintColumn, 0,
+                   &columnLens[5]);
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
       "select device_id, time, cpu_usage, flag, rebuffering_ratio,"
-      "video_startup_time from data_queries_test_db.TestScalarTypes where device_id='00000005'");
+      "video_startup_time from data_queries_test_db.TestScalarTypes where "
+      "device_id='00000005'");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret))
@@ -1505,12 +1515,12 @@ BOOST_AUTO_TEST_CASE(TestExecuteAfterCursorClose) {
 
   // Binding columns.
   SQLRETURN ret = SQLBindCol(stmt, 1, SQL_C_WCHAR, &strField, sizeof(strField),
-                   &strFieldLen);
+                             &strFieldLen);
 
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-    // Binding columns.
+  // Binding columns.
   ret = SQLBindCol(stmt, 2, SQL_C_DOUBLE, &doubleField, 0, 0);
 
   if (!SQL_SUCCEEDED(ret))
@@ -1518,7 +1528,8 @@ BOOST_AUTO_TEST_CASE(TestExecuteAfterCursorClose) {
 
   // Just selecting everything to make sure everything is OK
   std::vector< SQLWCHAR > selectReq = MakeSqlBuffer(
-      "select device_id, cpu_usage from data_queries_test_db.TestScalarTypes where device_id='00000005'");
+      "select device_id, cpu_usage from data_queries_test_db.TestScalarTypes "
+      "where device_id='00000005'");
 
   ret = SQLPrepare(stmt, selectReq.data(), SQL_NTS);
 
@@ -1577,7 +1588,8 @@ BOOST_AUTO_TEST_CASE(TestCloseNonFullFetch) {
 
   // Just selecting everything to make sure everything is OK
   std::vector< SQLWCHAR > selectReq = MakeSqlBuffer(
-      "select device_id, cpu_usage from data_queries_test_db.TestScalarTypes where device_id='00000005'");
+      "select device_id, cpu_usage from data_queries_test_db.TestScalarTypes "
+      "where device_id='00000005'");
 
   ret = SQLExecDirect(stmt, selectReq.data(), SQL_NTS);
 
@@ -1650,8 +1662,9 @@ BOOST_AUTO_TEST_CASE(TestManyCursors2) {
     if (!SQL_SUCCEEDED(ret))
       BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-    std::vector< SQLWCHAR > req =
-        MakeSqlBuffer("select video_startup_time from data_queries_test_db.TestScalarTypes where device_id='00000001'");
+    std::vector< SQLWCHAR > req = MakeSqlBuffer(
+        "select video_startup_time from data_queries_test_db.TestScalarTypes "
+        "where device_id='00000001'");
 
     ret = SQLExecDirect(stmt, req.data(), SQL_NTS);
 
@@ -1684,8 +1697,9 @@ BOOST_AUTO_TEST_CASE(TestManyCursors2) {
 BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar) {
   ConnectToTS();
   SQLRETURN ret;
-  std::vector< SQLWCHAR > request =
-      MakeSqlBuffer("select device_id, region from data_queries_test_db.TestScalarTypes where device_id='00000006'");
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, region from data_queries_test_db.TestScalarTypes "
+      "where device_id='00000006'");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -1704,8 +1718,8 @@ BOOST_AUTO_TEST_CASE(TestSingleResultUsingGetDataWideChar) {
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
   BOOST_CHECK_NE(SQL_NULL_DATA, fieldString_len);
-  BOOST_CHECK_EQUAL(
-      u8"美西-5", utility::SqlWcharToString(fieldString, fieldString_len, true));
+  BOOST_CHECK_EQUAL(u8"美西-5", utility::SqlWcharToString(
+                                    fieldString, fieldString_len, true));
 
   // Fetch 2nd row - not exist
   ret = SQLFetch(stmt);
@@ -1716,7 +1730,8 @@ BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar) {
   ConnectToTS();
   SQLRETURN ret;
   std::vector< SQLWCHAR > request = MakeSqlBuffer(
-      u8"select device_id, region from data_queries_test_db.TestScalarTypes where region='美西-5'");
+      u8"select device_id, region from data_queries_test_db.TestScalarTypes "
+      u8"where region='美西-5'");
 
   ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
   if (!SQL_SUCCEEDED(ret)) {
@@ -1736,8 +1751,8 @@ BOOST_AUTO_TEST_CASE(TestSingleResultSelectWideCharUsingGetDataWideChar) {
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
   BOOST_CHECK_NE(SQL_NULL_DATA, fieldString_len);
-  BOOST_CHECK_EQUAL(
-      u8"美西-5", utility::SqlWcharToString(fieldString, fieldString_len, true));
+  BOOST_CHECK_EQUAL(u8"美西-5", utility::SqlWcharToString(
+                                    fieldString, fieldString_len, true));
 
   // Fetch 2nd row - does not exist
   ret = SQLFetch(stmt);

@@ -40,7 +40,8 @@ BOOST_GLOBAL_FIXTURE(OdbcUnitTestConfig);
 
 namespace timestream {
 namespace odbc {
-OdbcUnitTestSuite::OdbcUnitTestSuite() : env(new MockEnvironment()), dbc(nullptr), stmt(nullptr) {
+OdbcUnitTestSuite::OdbcUnitTestSuite()
+    : env(new MockEnvironment()), dbc(nullptr), stmt(nullptr) {
   dbc = static_cast< MockConnection* >(env->CreateConnection());
 
   // MockTimestreamService is singleton

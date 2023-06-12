@@ -110,7 +110,8 @@ class Query {
    * @param columnBindings Application buffers to put data to.
    * @return Operation result.
    */
-  virtual SqlResult::Type FetchNextRow(timestream::odbc::app::ColumnBindingMap& columnBindings) = 0;
+  virtual SqlResult::Type FetchNextRow(
+      timestream::odbc::app::ColumnBindingMap& columnBindings) = 0;
 
   /**
    * Get data of the specified column in the result set.
@@ -119,8 +120,9 @@ class Query {
    * @param buffer Buffer to put column data to.
    * @return Operation result.
    */
-  virtual SqlResult::Type GetColumn(uint16_t columnIdx,
-                                    timestream::odbc::app::ApplicationDataBuffer& buffer) = 0;
+  virtual SqlResult::Type GetColumn(
+      uint16_t columnIdx,
+      timestream::odbc::app::ApplicationDataBuffer& buffer) = 0;
 
   /**
    * Close query.
@@ -152,8 +154,9 @@ class Query {
 
   /**
    * Get row number of the row that the cursor points at.
-   * Row number starts at 1. 
-   * 0 is invalid row number and is the default return value for unsupported queries.
+   * Row number starts at 1.
+   * 0 is invalid row number and is the default return value for unsupported
+   * queries.
    *
    * @return Row number of the row that the cursor points at.
    */
@@ -181,7 +184,8 @@ class Query {
   /**
    * Constructor.
    */
-  Query(timestream::odbc::diagnostic::DiagnosableAdapter& diag, QueryType::Type type)
+  Query(timestream::odbc::diagnostic::DiagnosableAdapter& diag,
+        QueryType::Type type)
       : diag(diag), type(type) {
     // No-op.
   }

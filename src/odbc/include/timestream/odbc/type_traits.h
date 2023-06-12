@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Modifications Copyright Amazon.com, Inc. or its affiliates.
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -23,7 +23,7 @@
 
 #ifndef TIMESTREAM_SQL_MAX_LENGTH
 #define TIMESTREAM_SQL_MAX_LENGTH 65532
-#endif // TIMESTREAM_SQL_MAX_LENGTH
+#endif  // TIMESTREAM_SQL_MAX_LENGTH
 
 #include <stdint.h>
 
@@ -320,8 +320,7 @@ boost::optional< int32_t > SqlTypeTransferLength(
  * @param type SQL type.
  * @return Precision.
  */
-boost::optional< int32_t > SqlTypePrecision(
-    boost::optional< int16_t > type);
+boost::optional< int32_t > SqlTypePrecision(boost::optional< int16_t > type);
 
 /**
  * Get SQL type scale.
@@ -329,8 +328,7 @@ boost::optional< int32_t > SqlTypePrecision(
  * @param type SQL type.
  * @return Scale.
  */
-boost::optional< int32_t > SqlTypeScale(
-    boost::optional< int16_t > type);
+boost::optional< int32_t > SqlTypeScale(boost::optional< int16_t > type);
 
 /**
  * Get binary type transfer octet length.

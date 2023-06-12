@@ -588,8 +588,7 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToStringEdgeCase) {
 
   appBuf.PutTime(time);
 
-  BOOST_CHECK_EQUAL(std::string(strBuf),
-                    std::string("07:15:00.12345678"));
+  BOOST_CHECK_EQUAL(std::string(strBuf), std::string("07:15:00.12345678"));
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimeToWString) {
@@ -662,7 +661,8 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Timestamp date = timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(
+      2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -671,13 +671,14 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToString) {
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimestampToStringEdgeCase) {
-  char strBuf[sizeof("YYYY-MM-DD HH:MM:SS.xxxxxxxxx")-1];
+  char strBuf[sizeof("YYYY-MM-DD HH:MM:SS.xxxxxxxxx") - 1];
   SqlLen reslen = 0;
 
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_CHAR, &strBuf, sizeof(strBuf),
                                &reslen);
 
-  Timestamp date = timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(
+      2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -692,7 +693,8 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToWString) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Timestamp date = timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(
+      2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -701,14 +703,14 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToWString) {
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimestampToWStringEdgeCase) {
-  SQLWCHAR strBuf[sizeof("YYYY-MM-DD HH:MM:SS.xxxxxxxxx")-1];
+  SQLWCHAR strBuf[sizeof("YYYY-MM-DD HH:MM:SS.xxxxxxxxx") - 1];
   SqlLen reslen = 0;
 
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_WCHAR, &strBuf,
                                sizeof(strBuf), &reslen);
 
-  Timestamp date =
-      timestream::odbc::common::MakeTimestampGmt(2018, 11, 1, 17, 45, 59, 123456789);
+  Timestamp date = timestream::odbc::common::MakeTimestampGmt(
+      2018, 11, 1, 17, 45, 59, 123456789);
 
   appBuf.PutTimestamp(date);
 
@@ -723,7 +725,8 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToDate) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TDATE, &buf, sizeof(buf),
                                &reslen);
 
-  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
+  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34,
+                                                            51, 573948623);
 
   appBuf.PutTimestamp(ts);
 
@@ -739,7 +742,8 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTime) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIME, &buf, sizeof(buf),
                                &reslen);
 
-  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
+  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34,
+                                                            51, 573948623);
 
   appBuf.PutTimestamp(ts);
 
@@ -755,7 +759,8 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToTimestamp) {
   ApplicationDataBuffer appBuf(OdbcNativeType::AI_TTIMESTAMP, &buf, sizeof(buf),
                                &reslen);
 
-  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34, 51, 573948623);
+  Timestamp ts = timestream::odbc::common::MakeTimestampGmt(2004, 8, 14, 6, 34,
+                                                            51, 573948623);
 
   appBuf.PutTimestamp(ts);
 
@@ -866,7 +871,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer yearBuf(OdbcNativeType::AI_INTERVAL_YEAR, &buf,
-                               sizeof(buf), &reslen);
+                                sizeof(buf), &reslen);
   yearBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_YEAR, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -874,7 +879,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer monthBuf(OdbcNativeType::AI_INTERVAL_MONTH, &buf,
-                                sizeof(buf), &reslen);
+                                 sizeof(buf), &reslen);
   monthBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_MONTH, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -882,7 +887,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer dayBuf(OdbcNativeType::AI_INTERVAL_DAY, &buf,
-                                 sizeof(buf), &reslen);
+                               sizeof(buf), &reslen);
   dayBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_DAY, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -890,7 +895,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer hourBuf(OdbcNativeType::AI_INTERVAL_HOUR, &buf,
-                                 sizeof(buf), &reslen);
+                                sizeof(buf), &reslen);
   hourBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_HOUR, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -898,7 +903,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer minuteBuf(OdbcNativeType::AI_INTERVAL_MINUTE, &buf,
-                                 sizeof(buf), &reslen);
+                                  sizeof(buf), &reslen);
   minuteBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_MINUTE, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -906,15 +911,15 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer secondBuf(OdbcNativeType::AI_INTERVAL_SECOND, &buf,
-                                 sizeof(buf), &reslen);
+                                  sizeof(buf), &reslen);
   secondBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_SECOND, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
   BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
-  ApplicationDataBuffer dayToHourBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR, &buf,
-                                 sizeof(buf), &reslen);
+  ApplicationDataBuffer dayToHourBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_HOUR,
+                                     &buf, sizeof(buf), &reslen);
   dayToHourBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_HOUR, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -925,8 +930,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer dayToMinBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_MINUTE,
-                                 &buf,
-                                 sizeof(buf), &reslen);
+                                    &buf, sizeof(buf), &reslen);
   dayToMinBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_MINUTE, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -936,8 +940,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer hourToMinBuf(OdbcNativeType::AI_INTERVAL_HOUR_TO_MINUTE,
-                                 &buf,
-                                 sizeof(buf), &reslen);
+                                     &buf, sizeof(buf), &reslen);
   hourToMinBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_HOUR_TO_MINUTE, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -946,8 +949,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer hourToSecBuf(OdbcNativeType::AI_INTERVAL_HOUR_TO_SECOND,
-                                 &buf,
-                                 sizeof(buf), &reslen);
+                                     &buf, sizeof(buf), &reslen);
   hourToSecBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_HOUR_TO_SECOND, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -956,9 +958,8 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
   BOOST_CHECK_EQUAL(0, buf.intval.day_second.second);
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
-  ApplicationDataBuffer minToSecBuf(OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND,
-                                 &buf,
-                                 sizeof(buf), &reslen);
+  ApplicationDataBuffer minToSecBuf(
+      OdbcNativeType::AI_INTERVAL_MINUTE_TO_SECOND, &buf, sizeof(buf), &reslen);
   minToSecBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_MINUTE_TO_SECOND, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -967,8 +968,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
 
   memset(&buf, 0, sizeof(SQL_INTERVAL_STRUCT));
   ApplicationDataBuffer dayToSecBuf(OdbcNativeType::AI_INTERVAL_DAY_TO_SECOND,
-                                 &buf,
-                                 sizeof(buf), &reslen);
+                                    &buf, sizeof(buf), &reslen);
   dayToSecBuf.PutInterval(interval);
   BOOST_CHECK_EQUAL(SQL_IS_DAY_TO_SECOND, buf.interval_type);
   BOOST_CHECK_EQUAL(SQL_TRUE, buf.interval_sign);
@@ -1083,8 +1083,7 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToStringEdgeCase) {
 
   appBuf.PutInterval(interval);
 
-  BOOST_CHECK_EQUAL(std::string(strBuf),
-                    std::string("3 10:25:55.12345678"));
+  BOOST_CHECK_EQUAL(std::string(strBuf), std::string("3 10:25:55.12345678"));
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWString) {

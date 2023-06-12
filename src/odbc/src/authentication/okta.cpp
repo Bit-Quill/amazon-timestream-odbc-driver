@@ -65,7 +65,8 @@ TimestreamOktaCredentialsProvider::CreateSessionTokenReq() {
   return req;
 }
 
-std::string TimestreamOktaCredentialsProvider::GetSessionToken(std::string& errInfo) {
+std::string TimestreamOktaCredentialsProvider::GetSessionToken(
+    std::string& errInfo) {
   LOG_DEBUG_MSG("GetSessionToken is called");
 
   std::string sessionToken("");
@@ -116,7 +117,8 @@ std::string TimestreamOktaCredentialsProvider::DecodeNumericCharacters(
   result.reserve(htmlString.size());
   for (size_t i = 0; i < htmlString.length(); i++) {
     char c;
-    // Numeric character reference has 6 characters. It starts with "&#x" and ends with ";".
+    // Numeric character reference has 6 characters. It starts with "&#x" and
+    // ends with ";".
     if (htmlString.substr(i, 3) == "&#x" && htmlString[i + 5] == ';') {
       // Extract the 2-digit hex code. e.g. "&#x2d;" -> "2d"
       std::string hexCode = htmlString.substr(i + 3, 2);
@@ -133,10 +135,11 @@ std::string TimestreamOktaCredentialsProvider::DecodeNumericCharacters(
   return result;
 }
 
-std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(std::string& errInfo) {
+std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(
+    std::string& errInfo) {
   LOG_DEBUG_MSG("GetSAMLAssertion is called");
   std::string samlResponse("");
-  
+
   // get session token
   std::string sessionToken = GetSessionToken(errInfo);
   if (sessionToken.empty()) {
@@ -146,7 +149,7 @@ std::string TimestreamOktaCredentialsProvider::GetSAMLAssertion(std::string& err
 
   std::string baseUri = "https://" + config_.GetIdPHost() + "/app/amazon_aws/"
                         + config_.GetOktaAppId() + "/sso/saml";
-  
+
   // create saml request
   std::shared_ptr< Aws::Http::HttpRequest > samlGetRequest =
       Aws::Http::CreateHttpRequest(

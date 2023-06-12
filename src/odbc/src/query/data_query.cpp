@@ -72,26 +72,23 @@ SqlResult::Type DataQuery::Cancel() {
     if (!result_) {
       LOG_ERROR_MSG("no result found");
       diag.AddStatusRecord(SqlState::SHY000_GENERAL_ERROR,
-          "query is not executed");
+                           "query is not executed");
       return SqlResult::AI_ERROR;
     }
-  
+
     // Try to cancel current query
     Aws::TimestreamQuery::Model::CancelQueryRequest cancel_request;
     cancel_request.SetQueryId(result_->GetQueryId());
 
-    auto outcome =
-          connection_.GetQueryClient()->CancelQuery(cancel_request);
+    auto outcome = connection_.GetQueryClient()->CancelQuery(cancel_request);
     std::string message("");
     if (outcome.IsSuccess()) {
-      message = "Query ID: " + cancel_request.GetQueryId()
-                            + " is cancelled." 
-          + outcome.GetResult().GetCancellationMessage();
+      message = "Query ID: " + cancel_request.GetQueryId() + " is cancelled."
+                + outcome.GetResult().GetCancellationMessage();
     } else {
-      message = "Query ID: " + cancel_request.GetQueryId()
-                            + " can't cancel."
-                            + outcome.GetError().GetMessage();
-      // ValidationException is an exception that the query is finished and 
+      message = "Query ID: " + cancel_request.GetQueryId() + " can't cancel."
+                + outcome.GetError().GetMessage();
+      // ValidationException is an exception that the query is finished and
       // cancel does not work, it should not be counted as error
       if (outcome.GetError().GetExceptionName() != "ValidationException") {
         LOG_ERROR_MSG(message.c_str());
@@ -191,7 +188,7 @@ SqlResult::Type DataQuery::SwitchCursor() {
     if (!threads_.empty()) {
       std::thread& itr = threads_.front();
       // wait for the last thread to end. The join() should be done before the
-      // thread is popped from the queue. The thread could not be joined after 
+      // thread is popped from the queue. The thread could not be joined after
       // it is popped from the queue, as it could cause crash.
       LOG_DEBUG_MSG("Waiting for thread " << itr.get_id() << " to end");
       if (itr.joinable()) {
@@ -199,7 +196,7 @@ SqlResult::Type DataQuery::SwitchCursor() {
       }
       threads_.pop();
     } else {
-      LOG_DEBUG_MSG("The threads queue is empty");   
+      LOG_DEBUG_MSG("The threads queue is empty");
     }
 
     request_.SetNextToken(token);
@@ -257,8 +254,7 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     SqlResult::Type result = ProcessConversionResult(convRes, 0, i);
 
     if (result == SqlResult::AI_ERROR) {
-      LOG_ERROR_MSG(
-          "Exit due to data reading error");
+      LOG_ERROR_MSG("Exit due to data reading error");
       return SqlResult::AI_ERROR;
     }
   }
@@ -403,7 +399,8 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
   cursor_.reset(new TimestreamCursor(result_->GetRows(), resultMeta_));
 
   if (!result_->GetNextToken().empty()) {
-    LOG_DEBUG_MSG("Next token is not empty, starting async thread to fetch next page");
+    LOG_DEBUG_MSG(
+        "Next token is not empty, starting async thread to fetch next page");
     request_.SetNextToken(result_->GetNextToken());
     std::thread next(AsyncFetchOnePage, queryClient_, std::ref(request_),
                      std::ref(context_));
@@ -481,8 +478,7 @@ void DataQuery::ReadColumnMetadataVector(
   resultMeta_.clear();
 
   if (tsVector.empty()) {
-    LOG_ERROR_MSG(
-        "Exit due to column vector is empty");
+    LOG_ERROR_MSG("Exit due to column vector is empty");
 
     return;
   }
@@ -496,16 +492,15 @@ void DataQuery::ReadColumnMetadataVector(
 
 SqlResult::Type DataQuery::ProcessConversionResult(
     app::ConversionResult::Type convRes, int32_t rowIdx, int32_t columnIdx) {
-  LOG_DEBUG_MSG("ProcessConversionResult is called with convRes is " << static_cast<int>(convRes));
+  LOG_DEBUG_MSG("ProcessConversionResult is called with convRes is "
+                << static_cast< int >(convRes));
 
   switch (convRes) {
     case app::ConversionResult::Type::AI_SUCCESS: {
-
       return SqlResult::AI_SUCCESS;
     }
 
     case app::ConversionResult::Type::AI_NO_DATA: {
-
       return SqlResult::AI_NO_DATA;
     }
 
@@ -513,8 +508,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S01004_DATA_TRUNCATED,
           "Buffer is too small for the column data. Truncated from the right.",
-          timestream::odbc::LogLevel::Type::WARNING_LEVEL,
-          rowIdx, columnIdx);
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -523,8 +517,7 @@ SqlResult::Type DataQuery::ProcessConversionResult(
       diag.AddStatusRecord(
           SqlState::S01S07_FRACTIONAL_TRUNCATION,
           "Buffer is too small for the column data. Fraction truncated.",
-          timestream::odbc::LogLevel::Type::WARNING_LEVEL,
-          rowIdx, columnIdx);
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -532,10 +525,8 @@ SqlResult::Type DataQuery::ProcessConversionResult(
     case app::ConversionResult::Type::AI_INDICATOR_NEEDED: {
       diag.AddStatusRecord(
           SqlState::S22002_INDICATOR_NEEDED,
-          "Indicator is needed but not suplied for the column buffer.", 
-          timestream::odbc::LogLevel::Type::WARNING_LEVEL, 
-          rowIdx,
-          columnIdx);
+          "Indicator is needed but not suplied for the column buffer.",
+          timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -543,8 +534,8 @@ SqlResult::Type DataQuery::ProcessConversionResult(
     case app::ConversionResult::Type::AI_UNSUPPORTED_CONVERSION: {
       diag.AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
                            "Data conversion is not supported.",
-                           timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx,
-                           columnIdx);
+                           timestream::odbc::LogLevel::Type::WARNING_LEVEL,
+                           rowIdx, columnIdx);
 
       return SqlResult::AI_SUCCESS_WITH_INFO;
     }
@@ -552,7 +543,8 @@ SqlResult::Type DataQuery::ProcessConversionResult(
     case app::ConversionResult::Type::AI_FAILURE:
       LOG_DEBUG_MSG("parameter: convRes: AI_FAILURE");
     default: {
-      diag.AddStatusRecord(SqlState::S01S01_ERROR_IN_ROW, "Can not retrieve row column.",
+      diag.AddStatusRecord(
+          SqlState::S01S01_ERROR_IN_ROW, "Can not retrieve row column.",
           timestream::odbc::LogLevel::Type::WARNING_LEVEL, rowIdx, columnIdx);
       break;
     }

@@ -329,7 +329,8 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithWarningLevel) {
   BOOST_CHECK_EQUAL(std::string::npos, stringStream.str().find(testData));
 
   LOG_WARNING_MSG(
-      "TestLogStreamWithWarningLevel ends. Log path/level changes are expected.");
+      "TestLogStreamWithWarningLevel ends. Log path/level changes are "
+      "expected.");
 
   // set the original log level / log path back
   if (logVarSaved)

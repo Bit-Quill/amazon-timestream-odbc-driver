@@ -26,8 +26,7 @@ namespace timestream {
 namespace odbc {
 namespace query {
 SpecialColumnsQuery::SpecialColumnsQuery(diagnostic::DiagnosableAdapter& diag)
-    : Query(diag, QueryType::SPECIAL_COLUMNS),
-      columnsMeta() {
+    : Query(diag, QueryType::SPECIAL_COLUMNS), columnsMeta() {
   using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -78,9 +77,10 @@ const meta::ColumnMetaVector* SpecialColumnsQuery::GetMeta() {
 }
 
 SqlResult::Type SpecialColumnsQuery::FetchNextRow(app::ColumnBindingMap&) {
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLSpecialColumns is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLSpecialColumns is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }

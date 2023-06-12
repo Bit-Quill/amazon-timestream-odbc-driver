@@ -49,7 +49,7 @@ class ColumnMetadataQuery : public timestream::odbc::query::Query {
                       Connection& connection,
                       const boost::optional< std::string >& catalog,
                       const boost::optional< std::string >& schema,
-                      const boost::optional< std::string >& table, 
+                      const boost::optional< std::string >& table,
                       const boost::optional< std::string >& column);
 
   /**
@@ -116,7 +116,6 @@ class ColumnMetadataQuery : public timestream::odbc::query::Query {
    */
   virtual int64_t AffectedRows() const;
 
-  
   /**
    * Get row number of the row that the cursor points at.
    * Row number starts at 1.
@@ -155,11 +154,12 @@ class ColumnMetadataQuery : public timestream::odbc::query::Query {
   SqlResult::Type MakeRequestGetColumnsMeta();
 
   /**
-   * Make get columns metadata requets and use response to set internal state for a table.
+   * Make get columns metadata requets and use response to set internal state
+   * for a table.
    *
    * @param databaseName Database name
    * @param tableName Table name
-   * 
+   *
    * @return Operation result.
    */
   SqlResult::Type MakeRequestGetColumnsMetaPerTable(

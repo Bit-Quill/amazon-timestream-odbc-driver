@@ -114,7 +114,8 @@ namespace odbc {
 namespace query {
 TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
                              int16_t sqlType)
-    : timestream::odbc::query::Query(diag, timestream::odbc::query::QueryType::TYPE_INFO),
+    : timestream::odbc::query::Query(
+        diag, timestream::odbc::query::QueryType::TYPE_INFO),
       columnsMeta(),
       executed(false),
       fetched(false),
@@ -147,40 +148,29 @@ TypeInfoQuery::TypeInfoQuery(diagnostic::DiagnosableAdapter& diag,
   columnsMeta.push_back(ColumnMeta(sch, tbl, "NULLABLE", ScalarType::INTEGER,
                                    Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "CASE_SENSITIVE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NO_NULL));
+                                   ScalarType::INTEGER, Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SEARCHABLE", ScalarType::INTEGER,
                                    Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "UNSIGNED_ATTRIBUTE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "FIXED_PREC_SCALE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NO_NULL));
+                                   ScalarType::INTEGER, Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "AUTO_UNIQUE_VALUE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "LOCAL_TYPE_NAME",
-                                   ScalarType::VARCHAR,
-                                   Nullability::NULLABLE));
+                                   ScalarType::VARCHAR, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "MINIMUM_SCALE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "MAXIMUM_SCALE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATA_TYPE",
-                                   ScalarType::INTEGER,
-                                   Nullability::NO_NULL));
+                                   ScalarType::INTEGER, Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "SQL_DATETIME_SUB",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "NUM_PREC_RADIX",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "INTERVAL_PRECISION",
-                                   ScalarType::INTEGER,
-                                   Nullability::NULLABLE));
+                                   ScalarType::INTEGER, Nullability::NULLABLE));
 
   assert(IsSqlTypeSupported(sqlType) || sqlType == SQL_ALL_TYPES);
 
@@ -230,7 +220,8 @@ const meta::ColumnMetaVector* TypeInfoQuery::GetMeta() {
 
 SqlResult::Type TypeInfoQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
-  LOG_DEBUG_MSG("FetchNextRow is called with columnBindings size " << columnBindings.size());
+  LOG_DEBUG_MSG("FetchNextRow is called with columnBindings size "
+                << columnBindings.size());
   if (!executed) {
     diag.AddStatusRecord(SqlState::SHY010_SEQUENCE_ERROR,
                          "Query was not executed.");
@@ -296,7 +287,7 @@ SqlResult::Type TypeInfoQuery::GetColumn(uint16_t columnIdx,
     }
 
     case ResultColumn::LITERAL_PREFIX: {
-      if (currentType == static_cast< int8_t > (ScalarType::VARCHAR))
+      if (currentType == static_cast< int8_t >(ScalarType::VARCHAR))
         buffer.PutString("'");
       else
         buffer.PutNull();

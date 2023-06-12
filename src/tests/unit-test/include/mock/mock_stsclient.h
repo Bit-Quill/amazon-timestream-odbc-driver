@@ -39,7 +39,8 @@ class MockSTSClient : public STSClient {
   ~MockSTSClient() = default;
 
   /**
-   * Handle AssumeRoleWithSAMLRequest to generate a mocked outcome with credentials
+   * Handle AssumeRoleWithSAMLRequest to generate a mocked outcome with
+   * credentials
    *
    * @param request The AssumeRoleWithSAMLRequest.
    * @return Mocked outcome.

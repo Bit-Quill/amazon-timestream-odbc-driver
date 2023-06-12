@@ -173,7 +173,7 @@ void OdbcTestSuite::Connect(const std::string& connectStr, int32_t odbcVer) {
       SQLDriverConnect(dbc, NULL, &connectStr0[0],
                        static_cast< SQLSMALLINT >(connectStr0.size()), outstr,
                        ODBC_BUFFER_SIZE, &outstrlen, SQL_DRIVER_COMPLETE);
-                       
+
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_DBC, dbc));
 
@@ -252,14 +252,14 @@ std::string OdbcTestSuite::ExpectSQLTablesReject(
     SQLWCHAR* catalogName, SQLSMALLINT catalogNameLen, SQLWCHAR* schemaName,
     SQLSMALLINT schemaNameLen, SQLWCHAR* tableName, SQLSMALLINT tableNameLen,
     SQLWCHAR* tableType, SQLSMALLINT tableTypeLen,
-    const std::string& expectedState,
-    const std::string& expectedError) {
+    const std::string& expectedState, const std::string& expectedError) {
   SQLWCHAR outstr[ODBC_BUFFER_SIZE];
   SQLSMALLINT outstrlen;
 
   // Connecting to ODBC server.
-  SQLRETURN ret = SQLTables(stmt, catalogName, catalogNameLen, schemaName, schemaNameLen,
-                  tableName, tableNameLen, tableType, tableTypeLen);
+  SQLRETURN ret =
+      SQLTables(stmt, catalogName, catalogNameLen, schemaName, schemaNameLen,
+                tableName, tableNameLen, tableType, tableTypeLen);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   OdbcClientError error = GetOdbcError(SQL_HANDLE_STMT, stmt);
@@ -712,7 +712,8 @@ void OdbcTestSuite::CreateDsnConnectionStringForAWS(
     connectionString.append(miscOptions);
 }
 
-void OdbcTestSuite::AddMaxRowPerPage(std::string& connectionString, const std::string& value) {
+void OdbcTestSuite::AddMaxRowPerPage(std::string& connectionString,
+                                     const std::string& value) {
   connectionString.append("maxRowPerPage=" + value + ";");
 }
 

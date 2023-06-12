@@ -92,8 +92,7 @@ class IGNITE_IMPORT_EXPORT DiagnosableAdapter
   virtual void AddStatusRecord(SqlState::Type sqlState,
                                const std::string& message,
                                timestream::odbc::LogLevel::Type logLevel,
-                               int32_t rowNum,
-                               int32_t columnNum);
+                               int32_t rowNum, int32_t columnNum);
 
   /**
    * Add new status record.
@@ -102,10 +101,10 @@ class IGNITE_IMPORT_EXPORT DiagnosableAdapter
    * @param message Message.
    * @param logLevel Log level
    */
-  virtual void AddStatusRecord(SqlState::Type sqlState,
-                               const std::string& message,
-                               timestream::odbc::LogLevel::Type logLevel =
-                                   timestream::odbc::LogLevel::Type::ERROR_LEVEL);
+  virtual void AddStatusRecord(
+      SqlState::Type sqlState, const std::string& message,
+      timestream::odbc::LogLevel::Type logLevel =
+          timestream::odbc::LogLevel::Type::ERROR_LEVEL);
 
   /**
    * Add new status record with SqlState::SHY000_GENERAL_ERROR state.

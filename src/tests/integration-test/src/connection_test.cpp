@@ -96,7 +96,8 @@ BOOST_AUTO_TEST_CASE(TestDriverConnection) {
 
 BOOST_AUTO_TEST_CASE(TestDriverConnectionWithEndpoint) {
   std::string connectionString;
-  std::string misc("EndpointOverride=query.timestream.us-west-2.amazonaws.com;");
+  std::string misc(
+      "EndpointOverride=query.timestream.us-west-2.amazonaws.com;");
 
   CreateDsnConnectionStringForAWS(connectionString, "", "", misc);
 
@@ -283,8 +284,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAAD) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -332,8 +332,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionGenericConnectionStringUsingAAD) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -352,8 +351,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidUser) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -374,8 +372,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyUser) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -394,8 +391,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidPassword) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -416,8 +412,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyPassword) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -437,8 +432,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidAPPId) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -459,8 +453,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyAppId) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -480,8 +473,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidTenant) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -503,8 +495,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyTenant) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -524,8 +515,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidClientSecret) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -547,8 +537,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyClientSecret) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -571,8 +560,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidRoleArn) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -594,8 +582,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyRoleArn) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -618,8 +605,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADInvalidIdpArn) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -641,8 +627,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingAADEmptyIdpArn) {
     Disconnect();
   } else {
     std::cout << boost::unit_test::framework::current_test_case().p_name
-              << " is skipped due to no valid Azure AD account"
-              << std::endl;
+              << " is skipped due to no valid Azure AD account" << std::endl;
   }
 }
 
@@ -665,7 +650,7 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOkta) {
 BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaUidPwd) {
   if (CheckEnvVarSetToTrue("ENABLE_OKTA_TEST")) {
     // Test Okta authentication given all correct configuration parameters
-    // which are from environment variables by default. 
+    // which are from environment variables by default.
     // Using Uid/Pwd instead of idPUsername/idPPassword
     std::string  connectionString =
       "driver={Amazon Timestream ODBC Driver};"
@@ -707,8 +692,9 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidHost) {
         "error when sending http request'");
 #else
     ExpectConnectionReject(connectionString, "08001",
-        "Failed to establish connection to Timestream.\n"
-        "Failed to get Okta session token. Error info: 'curlCode: 6, Couldn't resolve host name'");
+                           "Failed to establish connection to Timestream.\n"
+                           "Failed to get Okta session token. Error info: "
+                           "'curlCode: 6, Couldn't resolve host name'");
 #endif
 
     Disconnect();
@@ -855,9 +841,11 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidRoleArn) {
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
                                   nullptr, "invalid_role_arn");
 
-    ExpectConnectionReject(connectionString, "08001",
-                           "Failed to establish connection to Timestream.\n"
-        "Failed to fetch credentials, ERROR: ValidationError: 1 validation error detected"
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\n"
+        "Failed to fetch credentials, ERROR: ValidationError: 1 validation "
+        "error detected"
         ": Value 'invalid_role_arn' at 'roleArn' failed to satisfy constraint"
         ": Member must have length greater than or equal to 20");
 
@@ -895,10 +883,13 @@ BOOST_AUTO_TEST_CASE(TestSQLConnectionUsingOktaInvalidIdpArn) {
     CreateOktaDsnConnectionString(connectionString, nullptr, nullptr, nullptr,
                                   nullptr, nullptr, "invalid_idp_arn");
 
-    ExpectConnectionReject(connectionString, "08001",
-        "Failed to establish connection to Timestream.\nFailed to fetch credentials, "
+    ExpectConnectionReject(
+        connectionString, "08001",
+        "Failed to establish connection to Timestream.\nFailed to fetch "
+        "credentials, "
         "ERROR: ValidationError: 1 validation error detected"
-        ": Value 'invalid_idp_arn' at 'principalArn' failed to satisfy constraint"
+        ": Value 'invalid_idp_arn' at 'principalArn' failed to satisfy "
+        "constraint"
         ": Member must have length greater than or equal to 20");
 
     Disconnect();
@@ -1048,7 +1039,6 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingIncompleteProfile) {
   }
 }
 
-
 BOOST_AUTO_TEST_CASE(TestConnectionUsingNonExistProfile) {
   const std::string profile = "nonexist-profile";
   std::string connectionString;
@@ -1077,14 +1067,14 @@ BOOST_AUTO_TEST_CASE(TestConnectionUsingEmptyProfile) {
 BOOST_AUTO_TEST_CASE(TestConnectionConcurrency) {
   ConnectionTestSuiteFixture testConn[10];
   bool result[10] = {false};
-  
+
   std::vector< std::thread > threads;
 
   for (int i = 0; i < 10; ++i)
     threads.push_back(
         std::thread(&ConnectionTestSuiteFixture::connectForMultiThread,
                     testConn[i], std::ref(result[i])));
-  
+
   for (auto& th : threads)
     th.join();
 
@@ -1206,7 +1196,9 @@ BOOST_AUTO_TEST_CASE(TestSQLDriverConnectionInvalidUserUsingGenericIAMString) {
 
 BOOST_AUTO_TEST_CASE(TestDriverConnectionMiscAttributes) {
   std::string connectionString;
-  std::string misc("RequestTimeout=10000;ConnectionTimeout=10000;MaxRetryCountClient=5;MaxConnections=25");
+  std::string misc(
+      "RequestTimeout=10000;ConnectionTimeout=10000;MaxRetryCountClient=5;"
+      "MaxConnections=25");
   CreateDsnConnectionStringForAWS(connectionString, "", "", misc);
 
   Connect(connectionString);

@@ -38,7 +38,7 @@ class MockTimestreamService {
    * Destory the singleton object.
    */
   static void DestoryMockTimestreamService();
-  
+
   /**
    * Get the singleton object pointer.
    */
@@ -55,7 +55,7 @@ class MockTimestreamService {
    * Add credentials configured by user before testcase starts
    *
    * @param keyId Access key Id
-   * @param secretKey Secret access key 
+   * @param secretKey Secret access key
    */
   void AddCredential(const Aws::String& keyId, const Aws::String& secretKey);
 
@@ -89,7 +89,7 @@ class MockTimestreamService {
    * @param request Query request
    */
   Aws::TimestreamQuery::Model::QueryOutcome HandleQueryReq(
-      const Aws::TimestreamQuery::Model::QueryRequest &request);
+      const Aws::TimestreamQuery::Model::QueryRequest& request);
 
  private:
   /**
@@ -98,11 +98,13 @@ class MockTimestreamService {
   MockTimestreamService() {
   }
 
-  void SetupResultForMockTable(Aws::TimestreamQuery::Model::QueryResult& result);
+  void SetupResultForMockTable(
+      Aws::TimestreamQuery::Model::QueryResult& result);
 
   static std::mutex mutex_;
   static MockTimestreamService* instance_;
-  std::map< Aws::String, Aws::String > credMap_;  // credentials configured by user
+  std::map< Aws::String, Aws::String >
+      credMap_;  // credentials configured by user
   static int token;
   static int errorToken;
 };

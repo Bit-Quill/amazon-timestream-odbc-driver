@@ -172,40 +172,49 @@ SqlResult::Type ColumnMetadataQuery::Execute() {
   if (executed)
     Close();
 
-  if (DATABASE_AS_SCHEMA && catalog && !catalog->empty() && *catalog != SQL_ALL_CATALOGS) {
+  if (DATABASE_AS_SCHEMA && catalog && !catalog->empty()
+      && *catalog != SQL_ALL_CATALOGS) {
     // catalog has been provided with a non-empty value that isn't
     // SQL_ALL_CATALOGS. Return empty result set by default since
     // Timestream does not have catalogs.
-    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
-        "Empty result set is returned as catalog is set to \"" + *catalog
-        + "\" and Timestream does not have catalogs");
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Empty result set is returned as catalog is set to \""
+                             + *catalog
+                             + "\" and Timestream does not have catalogs");
     return SqlResult::AI_SUCCESS_WITH_INFO;
-  } else if (!DATABASE_AS_SCHEMA && schema && !schema->empty() && *schema != SQL_ALL_SCHEMAS) {
+  } else if (!DATABASE_AS_SCHEMA && schema && !schema->empty()
+             && *schema != SQL_ALL_SCHEMAS) {
     // schema has been provided with a non-empty value that isn't
     // SQL_ALL_SCHEMAS. Return empty result set by default since
     // Timestream does not have schemas.
-    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
-        "Empty result set is returned as schema is set to \"" + *schema
-        + "\" and Timestream does not have schemas");
+    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
+                         "Empty result set is returned as schema is set to \""
+                             + *schema
+                             + "\" and Timestream does not have schemas");
     return SqlResult::AI_SUCCESS_WITH_INFO;
   }
 
   if (connection.GetMetadataID()) {
-    if ((DATABASE_AS_SCHEMA && (schema == boost::none || table == boost::none)) ||
-        (!DATABASE_AS_SCHEMA && (catalog == boost::none || table == boost::none)) || 
-        column == boost::none) {
+    if ((DATABASE_AS_SCHEMA && (schema == boost::none || table == boost::none))
+        || (!DATABASE_AS_SCHEMA
+            && (catalog == boost::none || table == boost::none))
+        || column == boost::none) {
       if (DATABASE_AS_SCHEMA) {
-        diag.AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
+        diag.AddStatusRecord(
+            SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
             "SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
-            "the SchemaName, TableName, or ColumnName argument was a null pointer.");
+            "the SchemaName, TableName, or ColumnName argument was a null "
+            "pointer.");
       } else {
-        diag.AddStatusRecord(SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
+        diag.AddStatusRecord(
+            SqlState::SHY009_INVALID_USE_OF_NULL_POINTER,
             "SQL_ATTR_METADATA_ID statement attribute was set to SQL_TRUE, and "
-            "the CatalogName, TableName, or ColumnName argument was a null pointer.");
+            "the CatalogName, TableName, or ColumnName argument was a null "
+            "pointer.");
       }
       return SqlResult::AI_ERROR;
     }
-  } else { 
+  } else {
     if (catalog == boost::none) {
       catalog = std::string("%");
     }
@@ -256,7 +265,7 @@ SqlResult::Type ColumnMetadataQuery::Cancel() {
   if (dataQuery_) {
     dataQuery_->Cancel();
   }
-    
+
   Close();
 
   return SqlResult::AI_SUCCESS;
@@ -488,8 +497,8 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     // not be a unicode string.
     char databaseName[STRING_BUFFER_SIZE]{};
     ApplicationDataBuffer buf1(
-        timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, databaseName,
-        buflen, nullptr);
+        timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR,
+        databaseName, buflen, nullptr);
     columnBindings[databaseType] = buf1;
 
     // According to Timestream, table name could only contain
@@ -497,8 +506,8 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
     // not be a unicode string.
     char tableName[STRING_BUFFER_SIZE]{};
     ApplicationDataBuffer buf2(
-        timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR, &tableName,
-        buflen, nullptr);
+        timestream::odbc::type_traits::OdbcNativeType::Type::AI_CHAR,
+        &tableName, buflen, nullptr);
     columnBindings[TableMetadataQuery::ResultColumn::TABLE_NAME] = buf2;
 
     LOG_ERROR_MSG("table is " << databaseName << "." << tableName);
@@ -506,7 +515,8 @@ SqlResult::Type ColumnMetadataQuery::GetColumnsWithDatabaseSearchPattern(
            == SqlResult::AI_SUCCESS) {
       result = MakeRequestGetColumnsMetaPerTable(std::string(databaseName),
                                                  std::string(tableName));
-      if (result != SqlResult::AI_SUCCESS && result != SqlResult::AI_SUCCESS_WITH_INFO) {
+      if (result != SqlResult::AI_SUCCESS
+          && result != SqlResult::AI_SUCCESS_WITH_INFO) {
         LOG_ERROR_MSG("Failed to get columns for " << databaseName << "."
                                                    << tableName);
         break;
@@ -537,17 +547,18 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMeta() {
   }
 }
 
-SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std::string& databaseName, const std::string& tableName) {
-  LOG_DEBUG_MSG("MakeRequestGetColumnsMetaPerTable is called with databaseName: "
-                << databaseName << ", tableName: " << tableName);
+SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(
+    const std::string& databaseName, const std::string& tableName) {
+  LOG_DEBUG_MSG(
+      "MakeRequestGetColumnsMetaPerTable is called with databaseName: "
+      << databaseName << ", tableName: " << tableName);
   std::string sql = "describe \"";
   sql += databaseName;
   sql += "\".\"";
   sql += tableName + "\"";
   LOG_DEBUG_MSG("sql is " << sql);
 
-  dataQuery_ =
-      std::make_shared< DataQuery >(diag, connection, sql);
+  dataQuery_ = std::make_shared< DataQuery >(diag, connection, sql);
   SqlResult::Type result = dataQuery_->Execute();
   if (result != SqlResult::AI_SUCCESS) {
     LOG_DEBUG_MSG("Sql execution result is " << result);
@@ -559,8 +570,8 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
   // column name could be a unicode string
   SQLWCHAR columnName[STRING_BUFFER_SIZE];
   ApplicationDataBuffer buf1(
-      timestream::odbc::type_traits::OdbcNativeType::Type::AI_WCHAR, columnName, buflen,
-      nullptr);
+      timestream::odbc::type_traits::OdbcNativeType::Type::AI_WCHAR, columnName,
+      buflen, nullptr);
   columnBindings[1] = buf1;
 
   char dataType[64];
@@ -575,12 +586,14 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
       buflen, nullptr);
   columnBindings[3] = buf3;
 
-  LOG_DEBUG_MSG("column is " << columnName << ", dataType is " << dataType << ", remarks is " << remarks);
+  LOG_DEBUG_MSG("column is " << columnName << ", dataType is " << dataType
+                             << ", remarks is " << remarks);
 
   int32_t prevPosition = 0;
   while (dataQuery_->FetchNextRow(columnBindings) == SqlResult::AI_SUCCESS) {
     if (column.get_value_or("") == "%"
-            || column.get_value_or("") == utility::SqlWcharToString(columnName,STRING_BUFFER_SIZE)) {
+        || column.get_value_or("")
+               == utility::SqlWcharToString(columnName, STRING_BUFFER_SIZE)) {
       meta.emplace_back(meta::ColumnMeta(databaseName, tableName));
       meta.back().Read(columnBindings, ++prevPosition);
     }
@@ -589,12 +602,13 @@ SqlResult::Type ColumnMetadataQuery::MakeRequestGetColumnsMetaPerTable(const std
   LOG_DEBUG_MSG("meta size is " << meta.size());
 
   if (meta.empty()) {
-    diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING, 
+    diag.AddStatusRecord(
+        SqlState::S01000_GENERAL_WARNING,
         "No columns with name \'" + column.get_value_or("") + "\' found",
         LogLevel::Type::WARNING_LEVEL);
     result = SqlResult::AI_SUCCESS_WITH_INFO;
   }
-  
+
   return result;
 }
 }  // namespace query

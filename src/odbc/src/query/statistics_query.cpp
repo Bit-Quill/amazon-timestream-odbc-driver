@@ -45,14 +45,14 @@ StatisticsQuery::StatisticsQuery(diagnostic::DiagnosableAdapter& diag,
   std::string catalog_meta_name = "TABLE_CAT";
   std::string schema_meta_name = "TABLE_SCHEM";
   std::string ordinal_pos_name = "ORDINAL_POSITION";
-  std::string sort_order_name = "ASC_OR_DESC"; 
+  std::string sort_order_name = "ASC_OR_DESC";
 
   if (odbcVer == SQL_OV_ODBC2) {
     // For backwards compatibility with ODBC 2.0
     catalog_meta_name = "TABLE_QUALIFIER";
     schema_meta_name = "TABLE_OWNER";
     ordinal_pos_name = "SEQ_IN_INDEX";
-    sort_order_name = "COLLATION"; 
+    sort_order_name = "COLLATION";
   }
 
   columnsMeta.push_back(ColumnMeta(sch, tbl, catalog_meta_name,
@@ -87,7 +87,6 @@ StatisticsQuery::~StatisticsQuery() {
   // No-op.
 }
 
-
 SqlResult::Type StatisticsQuery::Execute() {
   diag.AddStatusRecord(
       SqlState::S01000_GENERAL_WARNING,
@@ -114,8 +113,8 @@ SqlResult::Type StatisticsQuery::FetchNextRow(
   return SqlResult::AI_NO_DATA;
 }
 
-SqlResult::Type StatisticsQuery::GetColumn(
-    uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
+SqlResult::Type StatisticsQuery::GetColumn(uint16_t columnIdx,
+                                           app::ApplicationDataBuffer& buffer) {
   diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                        "SQLStatistics is not supported. No data is returned.",
                        LogLevel::Type::WARNING_LEVEL);

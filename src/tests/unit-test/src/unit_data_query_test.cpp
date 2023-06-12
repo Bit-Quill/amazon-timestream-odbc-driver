@@ -25,11 +25,11 @@
 #include "timestream/odbc/utility.h"
 
 using timestream::odbc::AuthType;
-using timestream::odbc::OdbcUnitTestSuite;
 using timestream::odbc::MockConnection;
 using timestream::odbc::MockTimestreamService;
-using timestream::odbc::config::Configuration;
+using timestream::odbc::OdbcUnitTestSuite;
 using timestream::odbc::Statement;
+using timestream::odbc::config::Configuration;
 using namespace boost::unit_test;
 
 /**
@@ -76,8 +76,7 @@ struct DataQueryUnitTestSuiteFixture : OdbcUnitTestSuite {
       return "";
     }
     return stmt->GetDiagnosticRecords()
-        .GetStatusRecord(
-            stmt->GetDiagnosticRecords().GetLastNonRetrieved())
+        .GetStatusRecord(stmt->GetDiagnosticRecords().GetLastNonRetrieved())
         .GetSqlState();
   }
 
@@ -117,7 +116,8 @@ BOOST_AUTO_TEST_CASE(TestDataQuery) {
   stmt->FetchRow();
   BOOST_CHECK(IsSuccessful());
 
-  BOOST_CHECK_EQUAL("cpu_usage", timestream::odbc::utility::SqlWcharToString(measure, measure_len, true));
+  BOOST_CHECK_EQUAL("cpu_usage", timestream::odbc::utility::SqlWcharToString(
+                                     measure, measure_len, true));
   BOOST_CHECK_EQUAL(timestamp.year, 2022);
   BOOST_CHECK_EQUAL(timestamp.month, 11);
   BOOST_CHECK_EQUAL(timestamp.day, 9);
@@ -152,8 +152,8 @@ BOOST_AUTO_TEST_CASE(TestDataQuery10000Rows) {
 }
 
 BOOST_AUTO_TEST_CASE(TestDataQuery10RowWithError) {
-  // Test fetching 10 rows and each page contains 3 rows. 
-  // When fetch the 10th row, the outcome contains an error. 
+  // Test fetching 10 rows and each page contains 3 rows.
+  // When fetch the 10th row, the outcome contains an error.
   Connect();
 
   std::string sql = "select measure, time from mockDB.mockTable10Error";

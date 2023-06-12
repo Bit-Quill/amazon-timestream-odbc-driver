@@ -28,8 +28,7 @@ namespace odbc {
 namespace query {
 ProcedureColumnsQuery::ProcedureColumnsQuery(
     diagnostic::DiagnosableAdapter& diag)
-    : Query(diag, QueryType::PROCEDURE_COLUMNS),
-      columnsMeta() {
+    : Query(diag, QueryType::PROCEDURE_COLUMNS), columnsMeta() {
   using namespace timestream::odbc::type_traits;
 
   using meta::ColumnMeta;
@@ -40,13 +39,12 @@ ProcedureColumnsQuery::ProcedureColumnsQuery(
   const std::string sch("");
   const std::string tbl("");
 
-
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_CAT", ScalarType::VARCHAR,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_SCHEM", ScalarType::VARCHAR,
-                                   Nullability::NULLABLE));
-  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_NAME", ScalarType::VARCHAR,
-                                   Nullability::NO_NULL));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_CAT",
+                                   ScalarType::VARCHAR, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_SCHEM",
+                                   ScalarType::VARCHAR, Nullability::NULLABLE));
+  columnsMeta.push_back(ColumnMeta(sch, tbl, "PROCEDURE_NAME",
+                                   ScalarType::VARCHAR, Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_NAME", ScalarType::VARCHAR,
                                    Nullability::NO_NULL));
   columnsMeta.push_back(ColumnMeta(sch, tbl, "COLUMN_TYPE", ScalarType::INTEGER,
@@ -104,19 +102,20 @@ const meta::ColumnMetaVector* ProcedureColumnsQuery::GetMeta() {
 
 SqlResult::Type ProcedureColumnsQuery::FetchNextRow(
     app::ColumnBindingMap& columnBindings) {
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLProcedureColumns is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLProcedureColumns is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }
 
 SqlResult::Type ProcedureColumnsQuery::GetColumn(
     uint16_t columnIdx, app::ApplicationDataBuffer& buffer) {
-
-  diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
-                       "SQLProcedureColumns is not supported. No data is returned.",
-                       LogLevel::Type::WARNING_LEVEL);
+  diag.AddStatusRecord(
+      SqlState::S01000_GENERAL_WARNING,
+      "SQLProcedureColumns is not supported. No data is returned.",
+      LogLevel::Type::WARNING_LEVEL);
 
   return SqlResult::AI_NO_DATA;
 }

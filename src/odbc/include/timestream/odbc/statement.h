@@ -333,7 +333,8 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @param nameBufLen Cursor name buffer length.
    * @param nameResLen Returned cursor name result length.
    */
-  void GetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen, SQLSMALLINT* nameResLen);
+  void GetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen,
+                     SQLSMALLINT* nameResLen);
 
   /**
    * Set cursor name.
@@ -416,8 +417,8 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @param strLengthOrIndicator Pointer to the length/indicator buffer.
    */
   void SetDescriptorFields(uint16_t columnIdx, int16_t targetType,
-                                     void* targetValue, SqlLen bufferLength,
-                                     SqlLen* strLengthOrIndicator);
+                           void* targetValue, SqlLen bufferLength,
+                           SqlLen* strLengthOrIndicator);
 
   /**
    * Set statement attribute.
@@ -558,7 +559,7 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalExecuteGetColumnsMetaQuery(
       const boost::optional< std::string >& catalog,
-      const boost::optional< std::string >& schema, 
+      const boost::optional< std::string >& schema,
       const boost::optional< std::string >& table,
       const boost::optional< std::string >& column);
 
@@ -579,21 +580,21 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
 
   /**
    * Get foreign keys. Empty result will be returned.
-   * 
+   *
    * @return Operation result.
    */
   SqlResult::Type InternalExecuteGetForeignKeysQuery();
 
   /**
    * Get primary keys. Empty result will be returned.
-   * 
+   *
    * @return Operation result.
    */
   SqlResult::Type InternalExecuteGetPrimaryKeysQuery();
 
   /**
    * Get special columns. Empty result will be returned.
-   * 
+   *
    * @return Operation result.
    */
   SqlResult::Type InternalExecuteSpecialColumnsQuery();
@@ -673,8 +674,9 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    */
   SqlResult::Type InternalAffectedRows(int64_t& rowCnt);
 
-  SqlResult::Type InternalGetCursorName(SQLWCHAR* nameBuf, SQLSMALLINT nameBufLen,
-               SQLSMALLINT* nameResLen);
+  SqlResult::Type InternalGetCursorName(SQLWCHAR* nameBuf,
+                                        SQLSMALLINT nameBufLen,
+                                        SQLSMALLINT* nameResLen);
 
   SqlResult::Type InternalSetCursorName(SQLWCHAR* name, SQLSMALLINT nameLen);
 
@@ -711,7 +713,7 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
 
   /** implicitly allocated APD(not in use now) */
   std::unique_ptr< Descriptor > apdi;
-  
+
   /** implicitly allocated IRD(not in use now) */
   std::unique_ptr< Descriptor > irdi;
 

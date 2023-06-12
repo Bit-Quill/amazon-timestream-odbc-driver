@@ -318,8 +318,8 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDescRec) {
   SQLRETURN ret = SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &desc, 0, NULL);
 
   std::vector< SQLWCHAR > column = MakeSqlBuffer("Region");
-  ret = SQLGetDescRec(desc, 1, column.data(), 10, NULL, NULL, NULL, NULL,
-                      NULL, NULL, NULL);
+  ret = SQLGetDescRec(desc, 1, column.data(), 10, NULL, NULL, NULL, NULL, NULL,
+                      NULL, NULL);
   BOOST_REQUIRE_EQUAL(ret, SQL_ERROR);
   CheckSQLDiagnosticError(SQL_HANDLE_DESC, desc, "HYC00");
   BOOST_REQUIRE_EQUAL("HYC00: SQLGetDescRec is not supported.",
@@ -341,8 +341,9 @@ BOOST_AUTO_TEST_CASE(TestSetGetCursorName) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(timestream::odbc::utility::SqlWcharToString(cursorName.data()),
-                    timestream::odbc::utility::SqlWcharToString(cursorNameRes));
+  BOOST_CHECK_EQUAL(
+      timestream::odbc::utility::SqlWcharToString(cursorName.data()),
+      timestream::odbc::utility::SqlWcharToString(cursorNameRes));
   BOOST_CHECK_EQUAL(resLen, 7);
 }
 
@@ -357,7 +358,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetCursorNameTruncated) {
   SQLWCHAR cursorNameRes[20];
   SQLSMALLINT resLen;
 
-  // cursor name is truncated when call SQLGetCursorName 
+  // cursor name is truncated when call SQLGetCursorName
   ret = SQLGetCursorName(stmt, cursorNameRes, 6, &resLen);
 
   BOOST_REQUIRE_EQUAL(ret, SQL_SUCCESS_WITH_INFO);
@@ -383,8 +384,8 @@ BOOST_AUTO_TEST_CASE(TestSQLSetCursorNameTruncated) {
   if (!SQL_SUCCEEDED(ret))
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
-  BOOST_CHECK_EQUAL(
-      timestream::odbc::utility::SqlWcharToString(cursorNameRes), "curso");
+  BOOST_CHECK_EQUAL(timestream::odbc::utility::SqlWcharToString(cursorNameRes),
+                    "curso");
   BOOST_CHECK_EQUAL(resLen, 5);
 }
 
@@ -401,7 +402,7 @@ BOOST_AUTO_TEST_CASE(TestSQLSetCursorNameMultipleTimes) {
   BOOST_CHECK_EQUAL(ret, SQL_ERROR);
   CheckSQLStatementDiagnosticError("3C000");
   BOOST_CHECK_EQUAL("3C000: Cursor name \"cursor1\" has already been used.",
-                      GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+                    GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
 
   std::vector< SQLWCHAR > cursorName2 = MakeSqlBuffer("cursor2");
   ret = SQLSetCursorName(stmt, cursorName2.data(), 10);
@@ -550,9 +551,9 @@ BOOST_AUTO_TEST_CASE(TestSQLGetFunctions) {
 #endif
 }
 
-// For Windows and Linux, SQLGetFunctions implementation from driver manager is used.
-// For macOS, the driver's implementation of SQLGetFunctions is used due to
-// iODBC driver mangaer not providing SQLGetFunctions on BigSur
+// For Windows and Linux, SQLGetFunctions implementation from driver manager is
+// used. For macOS, the driver's implementation of SQLGetFunctions is used due
+// to iODBC driver mangaer not providing SQLGetFunctions on BigSur
 BOOST_AUTO_TEST_CASE(TestSQLGetFunctionsForODBC2) {
   ConnectToTS();
   SQLUSMALLINT fExists[SQL_API_ALL_FUNCTIONS_SIZE];

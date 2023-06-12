@@ -37,10 +37,11 @@ class TimestreamWriter {
   ~TimestreamWriter() = default;
 
   bool WriteSingleValueRecords(const Aws::String& tableMeta,
-                              const Aws::String& database,
-                              const Aws::String& table, int loop);
+                               const Aws::String& database,
+                               const Aws::String& table, int loop);
 
-  bool WriteMultiValueRecords(const Aws::String& tableMeta, const Aws::String& database,
+  bool WriteMultiValueRecords(const Aws::String& tableMeta,
+                              const Aws::String& database,
                               const Aws::String& table, int loop);
 
  private:

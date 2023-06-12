@@ -146,7 +146,7 @@ class DsnConfigurationWindow : public CustomWindow {
   /*
    * Returns the parsed Driver Version in the format V.XX.XX.XXXX.
    * Leading zeros will not be included.
-   * 
+   *
    * @param driverVersion Driver Version number to be parsed.
    * @return str Parsed Driver Version.
    */

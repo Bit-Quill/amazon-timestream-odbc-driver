@@ -30,7 +30,7 @@
 #include "timestream/odbc/ignite_error.h"
 #include "timestream/odbc/authentication/auth_type.h"
 
-#define TRIM_UTF8(str)  utility::Trim(utility::ToUtf8(str))
+#define TRIM_UTF8(str) utility::Trim(utility::ToUtf8(str))
 
 namespace timestream {
 namespace odbc {
@@ -478,8 +478,7 @@ void DsnConfigurationWindow::OnAuthTypeChanged() const {
 void DsnConfigurationWindow::OnLogLevelChanged() const {
   std::wstring logLevelWStr;
   logLevelComboBox->GetText(logLevelWStr);
-  if (LogLevel::FromString(TRIM_UTF8(logLevelWStr),
-                           LogLevel::Type::UNKNOWN)
+  if (LogLevel::FromString(TRIM_UTF8(logLevelWStr), LogLevel::Type::UNKNOWN)
       == LogLevel::Type::OFF) {
     logPathEdit->SetEnabled(false);
     browseButton->SetEnabled(false);
@@ -829,110 +828,108 @@ bool DsnConfigurationWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_COMMAND: {
       switch (LOWORD(wParam)) {
         case ChildId::TEST_BUTTON: {
-            TestConnection();
+          TestConnection();
 
-            break;
+          break;
         }
 
         case ChildId::OK_BUTTON: {
-            try {
-                RetrieveParameters(config);
+          try {
+            RetrieveParameters(config);
 
-                accepted = true;
+            accepted = true;
 
-                PostMessage(GetHandle(), WM_CLOSE, 0, 0);
-            }
-            catch (IgniteError& err) {
-                std::wstring errWText = utility::FromUtf8(err.GetText());
-                MessageBox(NULL, errWText.c_str(), L"Error!",
-                    MB_ICONEXCLAMATION | MB_OK);
-            }
+            PostMessage(GetHandle(), WM_CLOSE, 0, 0);
+          } catch (IgniteError& err) {
+            std::wstring errWText = utility::FromUtf8(err.GetText());
+            MessageBox(NULL, errWText.c_str(), L"Error!",
+                       MB_ICONEXCLAMATION | MB_OK);
+          }
 
-            break;
+          break;
         }
 
         case IDCANCEL:
         case ChildId::CANCEL_BUTTON: {
-            PostMessage(GetHandle(), WM_CLOSE, 0, 0);
+          PostMessage(GetHandle(), WM_CLOSE, 0, 0);
 
-            break;
+          break;
         }
 
         case ChildId::NAME_EDIT: {
-            // Check if window has been created.
-            if (created) {
-                okButton->SetEnabled(nameEdit->HasText());
+          // Check if window has been created.
+          if (created) {
+            okButton->SetEnabled(nameEdit->HasText());
 
-                if (!shownNameBalloon && !nameEdit->HasText()) {
-                    Edit_ShowBalloonTip(nameEdit->GetHandle(), nameBalloon.get());
-                    shownNameBalloon = true;
-                }
-                else {
-                    Edit_HideBalloonTip(nameEdit->GetHandle());
-                    shownNameBalloon = false;
-                }
+            if (!shownNameBalloon && !nameEdit->HasText()) {
+              Edit_ShowBalloonTip(nameEdit->GetHandle(), nameBalloon.get());
+              shownNameBalloon = true;
+            } else {
+              Edit_HideBalloonTip(nameEdit->GetHandle());
+              shownNameBalloon = false;
             }
-            break;
+          }
+          break;
         }
 
         case ChildId::MAX_CONNECTIONS_EDIT: {
-            if (created) {
-                std::wstring maxConWStr;
-                maxConnectionsEdit->GetText(maxConWStr);
+          if (created) {
+            std::wstring maxConWStr;
+            maxConnectionsEdit->GetText(maxConWStr);
 
-                std::string maxConStr = TRIM_UTF8(maxConWStr);
+            std::string maxConStr = TRIM_UTF8(maxConWStr);
 
-                int16_t maxCon = timestream::odbc::common::LexicalCast< int16_t >(maxConStr);
+            int16_t maxCon =
+                timestream::odbc::common::LexicalCast< int16_t >(maxConStr);
 
-                if (!shownMaxConBalloon && maxCon <= 0) {
-                    Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
-                        maxConnectionsBalloon.get());
-                    shownMaxConBalloon = true;
-                }
-                else {
-                    Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
-                    shownMaxConBalloon = false;
-                }
+            if (!shownMaxConBalloon && maxCon <= 0) {
+              Edit_ShowBalloonTip(maxConnectionsEdit->GetHandle(),
+                                  maxConnectionsBalloon.get());
+              shownMaxConBalloon = true;
+            } else {
+              Edit_HideBalloonTip(maxConnectionsEdit->GetHandle());
+              shownMaxConBalloon = false;
             }
-            break;
+          }
+          break;
         }
 
         case ChildId::AUTH_TYPE_COMBO_BOX: {
-            OnAuthTypeChanged();
+          OnAuthTypeChanged();
 
-            break;
+          break;
         }
 
         case ChildId::LOG_LEVEL_COMBO_BOX: {
-            OnLogLevelChanged();
+          OnLogLevelChanged();
 
-            break;
+          break;
         }
 
         case ChildId::BROWSE_BUTTON: {
-            std::wstring initLogPath;
-            logPathEdit->GetText(initLogPath);
-            std::unique_ptr< BROWSEINFO > bi(std::make_unique< BROWSEINFO >());
-            bi->lpszTitle = L"Choose log file target directory:";
-            bi->ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-            bi->hwndOwner = browseButton->GetHandle();
-            bi->lpfn = BrowseCallbackProc;
-            bi->lParam = reinterpret_cast< LPARAM >(initLogPath.c_str());
+          std::wstring initLogPath;
+          logPathEdit->GetText(initLogPath);
+          std::unique_ptr< BROWSEINFO > bi(std::make_unique< BROWSEINFO >());
+          bi->lpszTitle = L"Choose log file target directory:";
+          bi->ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+          bi->hwndOwner = browseButton->GetHandle();
+          bi->lpfn = BrowseCallbackProc;
+          bi->lParam = reinterpret_cast< LPARAM >(initLogPath.c_str());
 
-            const LPITEMIDLIST& pidl = SHBrowseForFolder(bi.get());
+          const LPITEMIDLIST& pidl = SHBrowseForFolder(bi.get());
 
-            if (pidl != nullptr) {
-                // get the name of the folder and put it in the log path field
-                wchar_t logPath[_MAX_PATH];
-                SHGetPathFromIDList(pidl, logPath);
-                logPathEdit->SetText(static_cast<std::wstring>(logPath));
-            }
+          if (pidl != nullptr) {
+            // get the name of the folder and put it in the log path field
+            wchar_t logPath[_MAX_PATH];
+            SHGetPathFromIDList(pidl, logPath);
+            logPathEdit->SetText(static_cast< std::wstring >(logPath));
+          }
 
-            break;
+          break;
         }
 
         default:
-            return false;
+          return false;
       }
 
       break;
@@ -1032,8 +1029,10 @@ void DsnConfigurationWindow::RetrieveBasicAuthParameters(
   LOG_INFO_MSG("Retrieving arguments:");
   LOG_INFO_MSG("Session Token:                   " << sessionTokenStr);
   LOG_INFO_MSG("Profile Name: " << profileNameStr);
-  LOG_INFO_MSG("Access Key Id is " << (accessKeyIdStr.empty() ? "empty" : "not empty"));
-  LOG_INFO_MSG("Secret key is  " << (secretKeyStr.empty() ? "empty" : "not empty"));
+  LOG_INFO_MSG("Access Key Id is "
+               << (accessKeyIdStr.empty() ? "empty" : "not empty"));
+  LOG_INFO_MSG("Secret key is  "
+               << (secretKeyStr.empty() ? "empty" : "not empty"));
   // username and password intentionally not logged for security reasons
 }
 
@@ -1087,8 +1086,7 @@ void DsnConfigurationWindow::RetrieveAdvanceAuthParameters(
   cfg.SetAADTenant(aadTenantStr);
 
   LOG_INFO_MSG("Auth Type:    " << AuthType::ToString(authType));
-  LOG_DEBUG_MSG("Auth Type string from combobox"
-                << TRIM_UTF8(authTypeWStr));
+  LOG_DEBUG_MSG("Auth Type string from combobox" << TRIM_UTF8(authTypeWStr));
   LOG_DEBUG_MSG("AuthType::Type authType: " << static_cast< int >(authType));
   LOG_INFO_MSG("Role ARN:     " << roleArnStr);
   LOG_INFO_MSG("IdP User Name:     " << idPUserNameStr);
@@ -1120,7 +1118,8 @@ void DsnConfigurationWindow::RetrieveConnectionParameters(
   int32_t connectionTimeout =
       connectionTimeoutStr.empty()
           ? 0
-          : timestream::odbc::common::LexicalCast< int32_t >(connectionTimeoutStr);
+          : timestream::odbc::common::LexicalCast< int32_t >(
+              connectionTimeoutStr);
   if (connectionTimeout < 0) {
     connectionTimeout = config::Configuration::DefaultValue::connectionTimeout;
   }
@@ -1178,7 +1177,7 @@ void DsnConfigurationWindow::RetrieveLogParameters(
   std::string logLevelStr = TRIM_UTF8(logLevelWStr);
   std::string logPathStr = TRIM_UTF8(logPathWStr);
 
-  LogLevel::Type logLevel = 
+  LogLevel::Type logLevel =
       static_cast< LogLevel::Type >(logLevelComboBox->GetCBSelection());
 
   cfg.SetLogLevel(logLevel);

@@ -62,16 +62,15 @@ T* GetPointerWithOffset(T* ptr, size_t offset) {
  * @return isTruncated Reference to indicator of whether the input string was
  * truncated in the output buffer.
  * return value(bytes):
- *   - 0, if the inBuffer is nullptr or outBufferLenBytes is 0 but outBuffer is not
- *   nullptr
+ *   - 0, if the inBuffer is nullptr or outBufferLenBytes is 0 but outBuffer is
+ * not nullptr
  *   - the required output buffer length, if outBuffer is nullptr
  *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
  *   is not 0
  */
-IGNITE_IMPORT_EXPORT size_t CopyUtf8StringToSqlCharString(
-    const char* inBuffer, SQLCHAR* outBuffer,
-                                     size_t outBufferLenBytes,
-                                     bool& isTruncated);
+IGNITE_IMPORT_EXPORT size_t
+CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
+                              size_t outBufferLenBytes, bool& isTruncated);
 
 /**
  * Copy utf-8 string to SQLWCHAR buffer of the specific length. It will ensure
@@ -88,10 +87,9 @@ IGNITE_IMPORT_EXPORT size_t CopyUtf8StringToSqlCharString(
  *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
  *   is not 0
  */
-IGNITE_IMPORT_EXPORT size_t CopyUtf8StringToSqlWcharString(
-    const char* inBuffer, SQLWCHAR* outBuffer,
-                                      size_t outBufferLenBytes,
-                                      bool& isTruncated);
+IGNITE_IMPORT_EXPORT size_t
+CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
+                               size_t outBufferLenBytes, bool& isTruncated);
 
 /**
  * Copy string to buffer of the specific length.
@@ -107,9 +105,9 @@ IGNITE_IMPORT_EXPORT size_t CopyUtf8StringToSqlWcharString(
  *   is not 0
  */
 IGNITE_IMPORT_EXPORT size_t CopyStringToBuffer(const std::string& str,
-                                              SQLWCHAR* buf, size_t buflen,
-                                              bool& isTruncated,
-                                              bool isLenInBytes = false);
+                                               SQLWCHAR* buf, size_t buflen,
+                                               bool& isTruncated,
+                                               bool isLenInBytes = false);
 
 /**
  * Convert SQLWCHAR string buffer to std::string.
@@ -121,8 +119,8 @@ IGNITE_IMPORT_EXPORT size_t CopyStringToBuffer(const std::string& str,
  * @return Standard string containing the same data.
  */
 IGNITE_IMPORT_EXPORT std::string SqlWcharToString(const SQLWCHAR* sqlStr,
-                              int32_t sqlStrLen = SQL_NTS,
-                              bool isLenInBytes = false);
+                                                  int32_t sqlStrLen = SQL_NTS,
+                                                  bool isLenInBytes = false);
 
 /**
  * Convert SQLWCHAR string buffer to boost::optional< std::string >.
@@ -135,9 +133,8 @@ IGNITE_IMPORT_EXPORT std::string SqlWcharToString(const SQLWCHAR* sqlStr,
  * If sqlStrLen indicates null string, boost::none is returned.
  */
 IGNITE_IMPORT_EXPORT boost::optional< std::string > SqlWcharToOptString(
-    const SQLWCHAR* sqlStr,
-                                                    int32_t sqlStrLen = SQL_NTS,
-                                                    bool isLenInBytes = false);
+    const SQLWCHAR* sqlStr, int32_t sqlStrLen = SQL_NTS,
+    bool isLenInBytes = false);
 
 /**
  * Convert SQL string buffer to std::string.
@@ -147,7 +144,7 @@ IGNITE_IMPORT_EXPORT boost::optional< std::string > SqlWcharToOptString(
  * @return Standard string containing the same data.
  */
 IGNITE_IMPORT_EXPORT std::string SqlCharToString(const SQLCHAR* sqlStr,
-                                                int32_t sqlStrLen);
+                                                 int32_t sqlStrLen);
 
 /**
  * Convert a wide string to UTF-8 encoded string.
@@ -217,7 +214,7 @@ IGNITE_IMPORT_EXPORT std::string Ltrim(const std::string& s);
 /**
  * Trims trailing space from a string.
  * @param s string to be trimmed
- * 
+ *
  * @return the string with trailing spaces trimmed.
  */
 IGNITE_IMPORT_EXPORT std::string Rtrim(const std::string& s);
@@ -236,7 +233,8 @@ IGNITE_IMPORT_EXPORT std::string Trim(const std::string& s);
  *
  * @return the converted regular expression string.
  */
-IGNITE_IMPORT_EXPORT std::string ConvertPatternToRegex(const std::string& pattern);
+IGNITE_IMPORT_EXPORT std::string ConvertPatternToRegex(
+    const std::string& pattern);
 
 /**
  * Converts a numeric string to int.
@@ -244,7 +242,8 @@ IGNITE_IMPORT_EXPORT std::string ConvertPatternToRegex(const std::string& patter
  *
  * @return the converted int value
  */
-IGNITE_IMPORT_EXPORT int StringToInt(const std::string& s, size_t* idx = 0, int base = 10);
+IGNITE_IMPORT_EXPORT int StringToInt(const std::string& s, size_t* idx = 0,
+                                     int base = 10);
 
 /**
  * Converts a numeric string to long
@@ -252,7 +251,8 @@ IGNITE_IMPORT_EXPORT int StringToInt(const std::string& s, size_t* idx = 0, int 
  *
  * @return the converted long value
  */
-IGNITE_IMPORT_EXPORT long StringToLong(const std::string& s, size_t* idx = 0, int base = 10);
+IGNITE_IMPORT_EXPORT long StringToLong(const std::string& s, size_t* idx = 0,
+                                       int base = 10);
 
 /**
  * Checks if an environment variable is set to true. Case insensitive.
@@ -263,7 +263,8 @@ IGNITE_IMPORT_EXPORT long StringToLong(const std::string& s, size_t* idx = 0, in
 IGNITE_IMPORT_EXPORT bool CheckEnvVarSetToTrue(const std::string& envVar);
 
 /**
- * Get driver version based on DRIVER_VERSION_MAJOR, DRIVER_VERSION_MINOR and DRIVER_VERSION_PATCH
+ * Get driver version based on DRIVER_VERSION_MAJOR, DRIVER_VERSION_MINOR and
+ * DRIVER_VERSION_PATCH
  *
  * @return the generated full driver version in string
  */

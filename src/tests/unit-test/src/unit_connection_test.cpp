@@ -47,8 +47,8 @@ struct ConnectionUnitTestSuiteFixture : OdbcUnitTestSuite {
   }
 
   void getLogOptions(Configuration& config) const {
-    using timestream::odbc::LogLevel;
     using ignite::odbc::common::GetEnv;
+    using timestream::odbc::LogLevel;
 
     std::string logPath = GetEnv("TIMESTREAM_LOG_PATH", "");
     std::string logLevelStr = GetEnv("TIMESTREAM_LOG_LEVEL", "2");
@@ -244,9 +244,7 @@ BOOST_AUTO_TEST_CASE(TestAADWrongAccessToken) {
 
   getLogOptions(cfg);
 
-  CheckConnectError(
-      cfg,
-      "Failed to fetch credentials");
+  CheckConnectError(cfg, "Failed to fetch credentials");
 
   BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
   BOOST_CHECK_EQUAL(GetSqlState(), "08001");
@@ -265,8 +263,7 @@ BOOST_AUTO_TEST_CASE(TestAADEmptyAccessToken) {
 
   getLogOptions(cfg);
 
-  CheckConnectError(
-      cfg, "Failed to get SAML asseration");
+  CheckConnectError(cfg, "Failed to get SAML asseration");
 
   BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
   BOOST_CHECK_EQUAL(GetSqlState(), "08001");
@@ -286,7 +283,8 @@ BOOST_AUTO_TEST_CASE(TestAADNoAccessToken) {
   getLogOptions(cfg);
 
   CheckConnectError(
-      cfg, "Unable to extract the access token from the Azure AD response body");
+      cfg,
+      "Unable to extract the access token from the Azure AD response body");
 
   BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
   BOOST_CHECK_EQUAL(GetSqlState(), "08001");
@@ -306,8 +304,7 @@ BOOST_AUTO_TEST_CASE(TestAADFailAccessToken) {
   getLogOptions(cfg);
 
   CheckConnectError(
-      cfg,
-      "Request to Azure Active Directory for access token failed");
+      cfg, "Request to Azure Active Directory for access token failed");
 
   BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
   BOOST_CHECK_EQUAL(GetSqlState(), "08001");
@@ -387,17 +384,19 @@ BOOST_AUTO_TEST_CASE(TestEstablishUsingOkta) {
 
   // verify SAMLResponse number character references are decoded correctly
   std::string errInfo;
-  BOOST_CHECK_EQUAL(dbc->GetSAMLCredentialsProvider()->GetSAMLAssertion(errInfo),
-                    "TUw6Mi4wOmF0dHJuYW1lLWZvcm1hdDpiYXNpYyI+"
-                    "aGVtYS1pbnN0YW5jZSIgeHNpOnR5cGU9InhzOnN0cmluZyI+");
+  BOOST_CHECK_EQUAL(
+      dbc->GetSAMLCredentialsProvider()->GetSAMLAssertion(errInfo),
+      "TUw6Mi4wOmF0dHJuYW1lLWZvcm1hdDpiYXNpYyI+"
+      "aGVtYS1pbnN0YW5jZSIgeHNpOnR5cGU9InhzOnN0cmluZyI+");
 
   // verify SQL_USER_NAME is set correctly after connect
   SQLWCHAR userName[16];
   short buflen = 16 * sizeof(SQLWCHAR);
   short reslen;
   dbc->GetInfo().GetInfo(SQL_USER_NAME, userName, buflen, &reslen);
-  
-  BOOST_CHECK(timestream::odbc::utility::SqlWcharToString(userName) == "okta_valid_user");
+
+  BOOST_CHECK(timestream::odbc::utility::SqlWcharToString(userName)
+              == "okta_valid_user");
   BOOST_CHECK(IsSuccessful());
 }
 
@@ -412,7 +411,8 @@ BOOST_AUTO_TEST_CASE(TestOktaFailToGetSessionToken) {
   cfg.SetIdPArn("arn:idp");
 
   CheckConnectError(
-      cfg, "Failed to get Okta session token. Error info: 'Invalid access key id'");
+      cfg,
+      "Failed to get Okta session token. Error info: 'Invalid access key id'");
 
   BOOST_CHECK_EQUAL(GetReturnCode(), SQL_ERROR);
   BOOST_CHECK_EQUAL(GetSqlState(), "08001");
