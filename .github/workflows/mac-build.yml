@@ -1,18 +1,12 @@
 name: ODBC Driver for Mac
 
 on:
-  schedule:
-    - cron: '0 8 * * *'
-
-  # Do Not run for each push or pull_request temporarily
-  #push:
-  #  branches:
-  #    - main
-  #    - develop
-  #pull_request:
-  #  branches:
-  #    - main
-  #    - develop
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 env:
   CI_OUTPUT_PATH: "ci-output"
@@ -45,53 +39,10 @@ env:
   # OKTA_IDP_ARN: ${{secrets.OKTA_IDP_ARN}}  
 
 jobs:
-  # check if there is a change within one day
-  check:
-    runs-on: macos-11
-    outputs:
-      status: ${{env.CheckStatus}}
-    steps:
-      - uses: actions/checkout@v2
-      - id: early
-        name: Check last commit
-        run: |
-          # store multi-line script output in environment variable CheckStatus
-          # The CheckStatus is set to the check.outputs.status which could be used
-          # to determine if the steps should be continued or not.
-          echo 'CheckStatus<<EOF' >> $GITHUB_ENV
-          ${{github.workspace}}/scripts/unix_check_changes.sh >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-      - id: late
-        name: Print last commit info
-        run: echo "${{ env.CheckStatus }}"
-
   build-mac:
     runs-on: macos-11
-    needs: check
-    if: (contains(needs.check.outputs.status, 'continue')) && (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
     - uses: actions/checkout@v2
-
-#   - name: Checkout repolinter
-#     uses: actions/checkout@v2
-#     with:
-#       repository: todogroup/repolinter
-#       path: repolinter
-#
-#   - name: Run repolinter
-#     run: |
-#       rm -rf ~/.npm
-#       brew install npm node
-#       test -f "/usr/local/bin/aws" || brew install awscli
-#       rm -rf ../repolinter
-#       mv repolinter ..
-#       cd ../repolinter
-#       npm install
-#       sudo npm install -g ajv@latest
-#       aws s3 cp ${{secrets.REPOLINTER_RULESET_URL}} --region us-west-2 .
-#       node ${{github.workspace}}/../repolinter/bin/repolinter.js lint ${{github.workspace}} -r ${{github.workspace}}/../repolinter/amazon-ospo-ruleset.json
-#       cd ${{github.workspace}}
-#       rm -rf ../repolinter
 
     - name: run-cppcheck
       run: |
@@ -128,12 +79,6 @@ jobs:
         name: AmazonTimestreamODBC-${{env.ODBC_DRIVER_VERSION}}.pkg
         path: ./cmake-build64/AmazonTimestreamODBC-${{env.ODBC_DRIVER_VERSION}}.pkg
 
-    # - name: prepare-dsn
-    #   run: |
-    #     sudo mkdir /Library/ODBC
-    #     sudo cp ./src/Tests/Tests/odbc-mac.ini /Library/ODBC/odbc.ini
-    #     sudo cp ./src/Tests/Tests/odbcinst-mac.ini /Library/ODBC/odbcinst.ini
-    #     mkdir ${{ github.workspace }}/odbc-logs
     - name: register-odbc-driver
       run: |
         chmod +x scripts/register_driver_unix.sh
@@ -193,55 +138,3 @@ jobs:
         path: |
           ./odbc_test_result.xml
           ./build/odbc/logs/timestream_odbc_*.log
-
-    # - name: print-memory-leak-logs
-    #   if: always()
-    #   run: |
-    #     cat ./leaks_*
-    # - name: upload-test-logs
-    #   if: failure()
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: test-logs-mac64
-    #     path: |
-    #       ${{ github.workspace }}/odbc-logs/
-    #       ${{ github.workspace }}/leaks_
-    # - name: test
-    #   run: |
-    #     bash ./run_test_runner.sh
-    # - name: build-installer
-    #   if: success()
-    #   run: |
-    #     cd cmake-build64
-    #     cmake ../src
-    #     make
-    #     cpack .
-    #     cd ..
-    # - name: create-output
-    #   if: success()
-    #   run: |
-    #     mkdir build-output
-    #     mkdir test-output
-    #     mkdir installer
-    #     cp ./build/odbc/lib/*.dylib build-output/
-    #     cp ./build/odbc/lib/*.a build-output/
-    #     cp ./cmake-build64/*.pkg installer/
-    # - name: upload-build
-    #   if: success()
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: mac64-build
-    #     path: build-output
-    # - name: upload-installer
-    #   if: success()
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: mac64-installer
-    #     path: installer
-    # - name: upload-test-results
-    #   if: success()
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: mac-test-results
-    #     path: test-output
-
