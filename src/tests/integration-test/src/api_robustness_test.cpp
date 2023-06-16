@@ -38,6 +38,7 @@
 #include "timestream/odbc/log.h"
 #include "timestream/odbc/config/configuration.h"
 #include "timestream/odbc/config/connection_string_parser.h"
+#include "timestream/odbc/utility.h"
 
 using namespace timestream;
 using namespace timestream_test;
@@ -974,6 +975,59 @@ BOOST_AUTO_TEST_CASE(TestSQLAllocFreeDesc) {
 
   // Implicit ARD is not equal to explicit ARD
   BOOST_CHECK(ard != 0 && ard != desc);
+}
+
+BOOST_AUTO_TEST_CASE(TestRowArraySizeGreaterThanOne) {
+  ConnectToTS();
+
+  std::vector< SQLWCHAR > request = MakeSqlBuffer(
+      "select device_id, rebuffering_ratio from "
+      "data_queries_test_db.TestScalarTypes order by device_id limit 3");
+
+  SQLRETURN ret = SQLExecDirect(stmt, request.data(), SQL_NTS);
+  if (!SQL_SUCCEEDED(ret)) {
+    BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
+  }
+
+  SQLULEN val = 3;
+
+  // set row array size to be 3
+  ret =
+      SQLSetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE,
+                     reinterpret_cast< SQLPOINTER >(val), sizeof(val));
+
+  ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
+
+  // output buffer should be an array of 3
+  const int32_t buf_size = 1024;
+  SQLWCHAR id[3][buf_size];
+  SQLLEN id_len[3]{0};
+
+  ret = SQLBindCol(stmt, 1, SQL_C_WCHAR, id, sizeof(id[0]), &id_len[0]);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // output buffer should be an array of 3
+  double fieldDouble[3]{0};
+  SQLLEN fieldDouble_len[3]{0};
+  ret = SQLBindCol(stmt, 2, SQL_C_DOUBLE, &fieldDouble, sizeof(fieldDouble[0]),
+                   &fieldDouble_len[0]);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // fetch 3 rows in one fetch
+  ret = SQLFetch(stmt);
+  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
+
+  // verify results
+  BOOST_CHECK_EQUAL("00000001", timestream::odbc::utility::SqlWcharToString(
+                                    id[0], id_len[0], true));
+  BOOST_CHECK_EQUAL("00000002", timestream::odbc::utility::SqlWcharToString(
+                                    id[1], id_len[1], true));
+  BOOST_CHECK_EQUAL("00000003", timestream::odbc::utility::SqlWcharToString(
+                                    id[2], id_len[2], true));
+
+  BOOST_CHECK_EQUAL(0.1, fieldDouble[0]);
+  BOOST_CHECK_EQUAL(0.2, fieldDouble[1]);
+  BOOST_CHECK_EQUAL(0.3, fieldDouble[2]);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
