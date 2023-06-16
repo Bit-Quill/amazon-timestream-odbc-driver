@@ -90,7 +90,6 @@ set(SOURCES src/app/application_data_buffer.cpp
         src/timestamp.cpp
         src/timestream_column.cpp
         src/timestream_cursor.cpp
-        src/timestream_row.cpp
         src/type_traits.cpp
         src/utility.cpp
         src/utils.cpp)

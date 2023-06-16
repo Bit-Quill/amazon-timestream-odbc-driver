@@ -41,12 +41,11 @@ class TimestreamColumn {
   /**
    * Constructor.
    *
-   * @param row Aws Row.
    * @param columnIdx The column index, start from 0.
    * @param columnMetadata The column metadata.
    */
-  TimestreamColumn(const Row& row, uint32_t columnIdx,
-                   const meta::ColumnMeta& columnMetadata);
+  TimestreamColumn(
+                   uint32_t columnIdx, const meta::ColumnMeta& columnMetadata);
 
   /**
    * Copy constructor.
@@ -64,12 +63,6 @@ class TimestreamColumn {
   TimestreamColumn& operator=(const TimestreamColumn& other) = delete;
 
   /**
-   * Updates the reference to the current row.
-   * @param row The new row that owns this column.
-   */
-  void Update(const Row& row);
-
-  /**
    * Destructor.
    */
   ~TimestreamColumn() = default;
@@ -77,10 +70,12 @@ class TimestreamColumn {
   /**
    * Read column data and store it in application data buffer.
    *
+   * @param datum Aws datum which contains the result data.
    * @param dataBuf Application data buffer.
    * @return Operation result.
    */
-  ConversionResult::Type ReadToBuffer(ApplicationDataBuffer& dataBuf) const;
+  ConversionResult::Type ReadToBuffer(const Datum& datum,
+                                      ApplicationDataBuffer& dataBuf) const;
 
  private:
   /**
@@ -132,9 +127,6 @@ class TimestreamColumn {
    */
   ConversionResult::Type ParseRowType(const Datum& datum,
                                       ApplicationDataBuffer& dataBuf) const;
-
-  /** The row that owns this column */
-  Row row_;
 
   /** The column index */
   uint32_t columnIdx_;

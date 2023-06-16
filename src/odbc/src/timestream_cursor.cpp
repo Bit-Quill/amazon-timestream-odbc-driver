@@ -27,8 +27,8 @@ TimestreamCursor::TimestreamCursor(
     const meta::ColumnMetaVector& columnMetadataVec)
     : rowVec_(rowVec),
       iterator_(rowVec_.begin()),
-      iteratorEnd_(rowVec_.end()),
-      columnMetadataVec_(columnMetadataVec) {
+      columnMetadataVec_(columnMetadataVec),
+      curPos_(0) {
   // No-op.
 }
 
@@ -36,29 +36,57 @@ TimestreamCursor::~TimestreamCursor() {
   // No-op.
 }
 
+// After Increment, the "curPos_"th iterator is being handled
 bool TimestreamCursor::Increment() {
   LOG_DEBUG_MSG("Increment is called");
-  bool hasData = HasData();
-  LOG_DEBUG_MSG("hasData is " << hasData);
-  if (hasData) {
-    if (currentRow_) {
-      (*currentRow_).Update(*iterator_);
-    } else {
-      currentRow_.reset(new TimestreamRow(*iterator_, columnMetadataVec_));
-    }
+
+  if (curPos_ > 0) {
     ++iterator_;
-  } else {
-    currentRow_.reset();
   }
-  return hasData;
+  curPos_++;
+  return curPos_ <= rowVec_.size();
 }
 
 bool TimestreamCursor::HasData() const {
-  return iterator_ != iteratorEnd_;
+  return curPos_ <= rowVec_.size();
 }
 
-TimestreamRow* TimestreamCursor::GetRow() {
-  return currentRow_.get();
+app::ConversionResult::Type TimestreamCursor::ReadColumnToBuffer(
+    uint32_t columnIdx, app::ApplicationDataBuffer& dataBuf) {
+  LOG_DEBUG_MSG("ReadColumnToBuffer is called");
+  if (!EnsureColumnDiscovered(columnIdx)) {
+    LOG_ERROR_MSG("columnIdx could not be discovered for index " << columnIdx);
+    return app::ConversionResult::Type::AI_FAILURE;
+  }
+
+  TimestreamColumn& column = GetColumn(columnIdx);
+  const Datum& datum = iterator_->GetData()[columnIdx-1];
+  return column.ReadToBuffer(datum, dataBuf);
+}
+
+bool TimestreamCursor::EnsureColumnDiscovered(uint32_t columnIdx) {
+  LOG_DEBUG_MSG("EnsureColumnDiscovered is called for column " << columnIdx);
+  if (columnIdx > columnMetadataVec_.size() || columnIdx < 1) {
+    LOG_ERROR_MSG("columnIdx out of range for index " << columnIdx);
+    return false;
+  }
+
+  LOG_DEBUG_MSG("columns_ size is " << columns_.size()
+                                    << ", columnMetadataVec_ size is "
+                                    << columnMetadataVec_.size());
+  if (columns_.size() == columnMetadataVec_.size()) {
+    return true;
+  }
+
+  uint32_t index = columns_.size();
+  while (index < columnIdx) {
+    TimestreamColumn newColumn(index, columnMetadataVec_[index]);
+
+    columns_.push_back(newColumn);
+    index++;
+  }
+
+  return true;
 }
 }  // namespace odbc
 }  // namespace timestream

@@ -27,7 +27,7 @@
 #include <memory>
 
 #include "timestream/odbc/common_types.h"
-#include "timestream/odbc/timestream_row.h"
+#include "timestream/odbc/timestream_column.h"
 #include "timestream/odbc/meta/column_meta.h"
 
 #include <aws/core/utils/memory/stl/AWSVector.h>
@@ -70,15 +70,51 @@ class TimestreamCursor {
   bool HasData() const;
 
   /**
-   * Get current row.
+   * Get column number in a row.
    *
-   * @return Current row. Returns zero if cursor needs data update or has no
-   * more data.
+   * @return number of columns.
    */
-  TimestreamRow* GetRow();
+  int32_t GetColumnSize() const {
+    return columnMetadataVec_.size();
+  }
+
+  /**
+   * Read column data and store it in application data buffer.
+   *
+   * @param columnIdx Column index.
+   * @param dataBuf Application data buffer.
+   * @return Conversion result.
+   */
+  app::ConversionResult::Type ReadColumnToBuffer(
+      uint32_t columnIdx, app::ApplicationDataBuffer& dataBuf);
 
  private:
   IGNITE_NO_COPY_ASSIGNMENT(TimestreamCursor);
+
+  /**
+   * Get columns by its index.
+   *
+   * Column indexing starts at 1.
+   *
+   * @note This operation is private because it's unsafe to use:
+   *       It is neccessary to ensure that column is discovered prior
+   *       to calling this method using EnsureColumnDiscovered().
+   *
+   * @param columnIdx Column index.
+   * @return Reference to specified column.
+   */
+  TimestreamColumn& GetColumn(uint32_t columnIdx) {
+    return columns_[columnIdx - 1];
+  }
+
+  /**
+   * Ensure that column data is discovered.
+   *
+   * @param columnIdx Column index.
+   * @return True if the column is discovered and false if it can not
+   * be discovered.
+   */
+  bool EnsureColumnDiscovered(uint32_t columnIdx);
 
   /** Resultset rows */
   const Aws::Vector< Row > rowVec_;
@@ -86,14 +122,14 @@ class TimestreamCursor {
   /** The iterator to beginning of cursor */
   Aws::Vector< Row >::const_iterator iterator_;
 
-  /** The iterator to end of cursor */
-  const Aws::Vector< Row >::const_iterator iteratorEnd_;
-
   /** The column metadata vector*/
   const meta::ColumnMetaVector& columnMetadataVec_;
 
-  /** The current row */
-  std::unique_ptr< TimestreamRow > currentRow_;
+  /** Columns. */
+  std::vector< TimestreamColumn > columns_;
+
+  /* current iterator position, start from 1 when used */
+  int curPos_;
 };
 }  // namespace odbc
 }  // namespace timestream

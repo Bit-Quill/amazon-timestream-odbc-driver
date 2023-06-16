@@ -308,7 +308,7 @@ SqlResult::Type TableMetadataQuery::Close() {
 }
 
 bool TableMetadataQuery::DataAvailable() const {
-  return cursor != meta.end();
+  return executed && !meta.empty() && cursor != meta.end();
 }
 
 int64_t TableMetadataQuery::AffectedRows() const {

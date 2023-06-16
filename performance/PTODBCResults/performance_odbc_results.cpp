@@ -556,7 +556,7 @@ TEST_PERF_TEST(
     true)
 
 TEST_PERF_TEST(
-    Q4_EXPECT_0_ROWS,
+    Q4_EXPECT_1_ROWS,
     CREATE_STRING(
         "WITH gc_timeseries AS ( SELECT region, cell, silo, availability_zone, "
         "microservice_name, instance_name, process_name, jdk_version, "

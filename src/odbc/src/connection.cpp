@@ -1342,7 +1342,7 @@ void Connection::SetODBC2FunctionsValue(SQLUSMALLINT* valueBuf) {
   valueBuf[SQL_API_SQLTABLES] = true;
   valueBuf[SQL_API_SQLTRANSACT] = true;
 }
-#endif __APPLE__
+#endif //__APPLE__
 
 void Connection::SetStmtAttribute(SQLUSMALLINT option, SQLULEN value) {
   IGNITE_ODBC_API_CALL(InternalSetStmtAttribute(option, value));

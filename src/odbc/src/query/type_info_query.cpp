@@ -388,7 +388,7 @@ SqlResult::Type TypeInfoQuery::Close() {
 }
 
 bool TypeInfoQuery::DataAvailable() const {
-  return cursor != types.end();
+  return executed && cursor != types.end();
 }
 
 int64_t TypeInfoQuery::AffectedRows() const {

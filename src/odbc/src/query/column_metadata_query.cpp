@@ -444,7 +444,7 @@ SqlResult::Type ColumnMetadataQuery::Close() {
 }
 
 bool ColumnMetadataQuery::DataAvailable() const {
-  return cursor != meta.end();
+  return executed && !meta.empty() && cursor != meta.end();
 }
 
 int64_t ColumnMetadataQuery::AffectedRows() const {

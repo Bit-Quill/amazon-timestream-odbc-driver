@@ -211,8 +211,7 @@ SqlResult::Type DataQuery::SwitchCursor() {
 
 SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   LOG_DEBUG_MSG("FetchNextRow is called");
-
-  if (!cursor_.get()) {
+  if (!cursor_) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.",
                          timestream::odbc::LogLevel::Type::WARNING_LEVEL);
@@ -236,20 +235,14 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
     }
   }
 
-  TimestreamRow* row = cursor_->GetRow();
-  if (!row) {
-    diag.AddStatusRecord("Cursor has a null row.");
-    return SqlResult::AI_ERROR;
-  }
-
-  for (uint32_t i = 1; i < row->GetColumnSize() + 1; ++i) {
+  for (uint32_t i = 1; i < cursor_->GetColumnSize() + 1; ++i) {
     app::ColumnBindingMap::iterator it = columnBindings.find(i);
 
     if (it == columnBindings.end())
       continue;
-
+  
     app::ConversionResult::Type convRes =
-        row->ReadColumnToBuffer(i, it->second);
+        cursor_->ReadColumnToBuffer(i, it->second);
 
     SqlResult::Type result = ProcessConversionResult(convRes, 0, i);
 
@@ -260,7 +253,6 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
   }
 
   rowCounter++;
-
   return SqlResult::AI_SUCCESS;
 }
 
@@ -268,7 +260,7 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
                                      app::ApplicationDataBuffer& buffer) {
   LOG_DEBUG_MSG("GetColumn is called");
 
-  if (!cursor_.get()) {
+  if (!cursor_) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.",
                          timestream::odbc::LogLevel::Type::WARNING_LEVEL);
@@ -276,9 +268,7 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
     return SqlResult::AI_NO_DATA;
   }
 
-  TimestreamRow* row = cursor_->GetRow();
-
-  if (!row) {
+  if (!cursor_->HasData()) {
     diag.AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
                          "Cursor has reached end of the result set.");
 
@@ -286,7 +276,7 @@ SqlResult::Type DataQuery::GetColumn(uint16_t columnIdx,
   }
 
   app::ConversionResult::Type convRes =
-      row->ReadColumnToBuffer(columnIdx, buffer);
+      cursor_->ReadColumnToBuffer(columnIdx, buffer);
 
   SqlResult::Type result = ProcessConversionResult(convRes, 0, columnIdx);
 
@@ -336,7 +326,7 @@ int64_t DataQuery::AffectedRows() const {
 }
 
 int64_t DataQuery::RowNumber() const {
-  if (!cursor_.get() || !cursor_->GetRow()) {
+  if (!cursor_ || !cursor_->HasData()) {
     diag.AddStatusRecord(SqlState::S01000_GENERAL_WARNING,
                          "Cursor does not point to any data.",
                          timestream::odbc::LogLevel::Type::WARNING_LEVEL);
@@ -409,7 +399,6 @@ SqlResult::Type DataQuery::MakeRequestExecute() {
   }
 
   SqlResult::Type retval = MakeRequestFetch();
-
   return retval;
 }
 

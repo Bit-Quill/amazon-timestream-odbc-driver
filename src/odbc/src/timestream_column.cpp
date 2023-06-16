@@ -34,17 +34,15 @@ namespace timestream {
 namespace odbc {
 #define BUFFER_SIZE 1024
 
-void TimestreamColumn::Update(const Row& row) {
-  row_ = row;
-}
-
-TimestreamColumn::TimestreamColumn(const Row& row, uint32_t columnIdx,
+TimestreamColumn::TimestreamColumn(
+                                   uint32_t columnIdx,
                                    const meta::ColumnMeta& columnMeta)
-    : row_(row), columnIdx_(columnIdx), columnMeta_(columnMeta) {
+    :
+      columnIdx_(columnIdx), 
+      columnMeta_(columnMeta) {
 }
 
-ConversionResult::Type TimestreamColumn::ReadToBuffer(
-    ApplicationDataBuffer& dataBuf) const {
+ConversionResult::Type TimestreamColumn::ReadToBuffer(const Datum& datum, ApplicationDataBuffer& dataBuf) const {
   LOG_DEBUG_MSG("ReadToBuffer is called");
   const boost::optional< Aws::TimestreamQuery::Model::ColumnInfo >& columnInfo =
       columnMeta_.GetColumnInfo();
@@ -54,7 +52,6 @@ ConversionResult::Type TimestreamColumn::ReadToBuffer(
     return ConversionResult::Type::AI_FAILURE;
   }
 
-  Datum datum = row_.GetData()[columnIdx_];
   ConversionResult::Type retval = ParseDatum(datum, dataBuf);
 
   return retval;
