@@ -37,7 +37,7 @@ sudo yum install unixODBC
 
     #### Sample command for Debian 64 bit 
     ```
-    sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_x86_64.deb
+    sudo dpkg -i AmazonTimestreamODBC_2.0.0_RELEASE_amd64.deb
     ```
 
     #### Sample command for Debian 32 bit 
@@ -86,7 +86,7 @@ There is no automatical way to uninstall it. It has to be done manually.
 
     #### Command for Debian 64 bit
     ```
-    sudo apt remove amazontimestreamodbc_2.0.0_release_x86_64
+    sudo apt remove amazontimestreamodbc_2.0.0_release_amd64
     ```
 
     #### Command for Debian 32 bit
