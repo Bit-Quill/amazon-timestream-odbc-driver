@@ -12,6 +12,7 @@
 - [SQLTables](#sqltables)
 - [Database Reporting Differences Between Timestream JDBC Driver and ODBC Driver](#database-reporting-differences-between-timestream-jdbc-driver-and-odbc-driver)
 - [Timestream Data Types](#timestream-data-types)
+- [Microsoft Excel on macOS](#microsoft-excel-on-macos)
 
 ## ODBC API Support
 Note that the following table describes the planned functionality for the GA release. As the driver is still in development, not all functions marked as "yes" under the "Support" column below are supported at this time.
@@ -437,3 +438,6 @@ Wrapped in "()". Each element is separated by ",".
 For null it could only be fetched as a string and the result is "-".
 
 Please refer to [Timestream Data Types](https://docs.aws.amazon.com/timestream/latest/developerguide/supported-data-types.html) for more info.
+
+## Microsoft Excel on macOS
+Timestream uses Unicode character set, but Microsoft Excel on macOS is using SQLCHAR to fetch strings instead of SQLWCHAR. Timestream ODBC driver therefore does a SQLWCHAR to SQLCHAR conversion for characters when used with Microsoft Excel on macOS. The unmapped characters from Unicode to ANSI is displayed as "?". 
