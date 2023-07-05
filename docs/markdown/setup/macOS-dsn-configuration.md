@@ -3,8 +3,7 @@
 ## Prerequisites
 In order to use the Timestream ODBC Driver, [ODBC Manager](http://www.odbcmanager.net/) or [iODBC Driver Manager](http://www.iodbc.org/dataspace/doc/iodbc/wiki/iodbcWiki/Downloads) must be installed.
 
-**For M1/M2 processors should be installed the version of iODBC Driver Manager (x86_64 and/or arm64).**
-
+**For M1/M2 processors, user should install (x86_64 and/or arm64) version of iODBC Driver Manager.**
 
 ### Using ODBC Manager ###
 If ODBC Manager does not have an Amazon Timestream ODBC Driver entry, you can add it following the steps below.
