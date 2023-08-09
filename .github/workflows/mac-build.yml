@@ -38,6 +38,10 @@ env:
   # OKTA_ROLE_ARN: ${{secrets.OKTA_ROLE_ARN}}
   # OKTA_IDP_ARN: ${{secrets.OKTA_IDP_ARN}}  
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-mac:
     runs-on: macos-11
