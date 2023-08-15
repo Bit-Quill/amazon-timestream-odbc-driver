@@ -685,11 +685,13 @@ bool Connection::TryRestoreConnection(const config::Configuration& cfg,
   clientCfg.connectTimeoutMs = cfg.GetConnectionTimeout();
   clientCfg.requestTimeoutMs = cfg.GetReqTimeout();
   clientCfg.maxConnections = cfg.GetMaxConnections();
+  clientCfg.userAgent = "ts-odbc." + utility::GetFormatedDriverVersion();
   LOG_DEBUG_MSG("region is "
                 << cfg.GetRegion() << ", connection timeout is "
                 << clientCfg.connectTimeoutMs << ", request timeout is "
                 << clientCfg.requestTimeoutMs << ", max connection is "
-                << clientCfg.maxConnections);
+                << clientCfg.maxConnections << ", user agent is "
+                << clientCfg.userAgent);
 
   SetClientProxy(clientCfg);
 
