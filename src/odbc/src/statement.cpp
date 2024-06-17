@@ -344,7 +344,21 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       break;
     }
 
-    case SQL_ROWSET_SIZE:
+    case SQL_ROWSET_SIZE: {
+      SqlUlen val = reinterpret_cast<SqlUlen>(value);
+
+      LOG_DEBUG_MSG("SQL_ROWSET_SIZE: " << val);
+
+      rowsetSize = val;
+
+      // TODO: Reset value after success or failure in SQLExtendedFetch
+      ard->GetHeader().rowsetSize = rowsetSize;
+
+      LOG_DEBUG_MSG("rowsetSize: " << rowsetSize);
+
+      break;
+    }
+
     case SQL_ATTR_ROW_ARRAY_SIZE: {
       SqlUlen val = reinterpret_cast< SqlUlen >(value);
 
@@ -421,7 +435,7 @@ void Statement::SetAttribute(StatementAttributes& stmtAttr) {
   SetAttribute(SQL_ATTR_CONCURRENCY, &stmtAttr.concurrency, 0);
   SetAttribute(SQL_ATTR_CURSOR_TYPE, &stmtAttr.cursorType, 0);
   SetAttribute(SQL_ATTR_RETRIEVE_DATA, &stmtAttr.retrievData, 0);
-  SetAttribute(SQL_ATTR_ROW_ARRAY_SIZE, &stmtAttr.rowsetSize, 0);
+  SetAttribute(SQL_ROWSET_SIZE, &stmtAttr.rowsetSize, 0);
 }
 
 void Statement::GetAttribute(int attr, void* buf, SQLINTEGER bufLen,
@@ -538,7 +552,18 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
       break;
     }
 
-    case SQL_ROWSET_SIZE:
+    case SQL_ROWSET_SIZE: {
+      SQLINTEGER* val = reinterpret_cast<SQLINTEGER*>(buf);
+
+      *val = static_cast<SQLINTEGER>(rowsetSize);
+
+      if (valueLen)
+          *valueLen = SQL_IS_INTEGER;
+      LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
+        << (valueLen ? *valueLen : 0));
+      break;
+    }
+
     case SQL_ATTR_ROW_ARRAY_SIZE: {
       SQLINTEGER* val = reinterpret_cast< SQLINTEGER* >(buf);
 
@@ -655,6 +680,7 @@ SqlResult::Type Statement::InternalGetStmtOption(SQLUSMALLINT option,
     case SQL_CONCURRENCY:
     case SQL_CURSOR_TYPE:
     case SQL_RETRIEVE_DATA:
+    case SQL_ROWSET_SIZE:
     default: {
       return InternalGetAttribute(option, value, 0, nullptr);
     }
@@ -987,60 +1013,66 @@ void Statement::ExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset, SQLULEN* 
 }
 
 SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset,
-        SQLULEN* rowCount, SQLUSMALLINT* rowStatusArray) {
-    LOG_DEBUG_MSG("InternalExtendedFetch called with orientation " << orientation);
-    UNREFERENCED_PARAMETER(offset);
-    if (orientation != SQL_FETCH_NEXT) {
-        AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
-            "Only SQL_FETCH_NEXT FetchOrientation type is supported");
+    SQLULEN* rowCount, SQLUSMALLINT* rowStatusArray) {
+  LOG_DEBUG_MSG("InternalExtendedFetch called with orientation " << orientation);
+  UNREFERENCED_PARAMETER(offset);
 
-        return SqlResult::AI_ERROR;
-    }
+  if (orientation != SQL_FETCH_NEXT) {
+    AddStatusRecord(SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
+      "Only SQL_FETCH_NEXT FetchOrientation type is supported");
+    return SqlResult::AI_ERROR;
+  }
 
-    if (rowCount)
-        *rowCount = 0;
+  if (rowCount)
+    *rowCount = 0;
 
-    if (!currentQuery.get()) {
-        std::string errMsg = "Cursor is not in the open state.";
-        AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
-        return SqlResult::AI_ERROR;
-    }
+  if (!currentQuery.get()) {
+    std::string errMsg = "Cursor is not in the open state.";
+    AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
+    return SqlResult::AI_ERROR;
+  }
 
-    SqlUlen columnBindOffsetValue = columnBindOffset ? *columnBindOffset : 0;
+  SqlUlen columnBindOffsetValue = columnBindOffset ? *columnBindOffset : 0;
+  for (app::ColumnBindingMap::iterator it = columnBindings.begin();
+    it != columnBindings.end(); ++it) {
+    it->second.SetByteOffset(columnBindOffsetValue);
+  }
+
+  SQLINTEGER fetched = 0;
+  SQLINTEGER errors = 0;
+
+  LOG_DEBUG_MSG("rowsetSize is " << rowsetSize);
+  for (SqlUlen i = 0; i < rowsetSize; ++i) {
     for (app::ColumnBindingMap::iterator it = columnBindings.begin();
-        it != columnBindings.end(); ++it)
-        it->second.SetByteOffset(columnBindOffsetValue);
-
-    SQLINTEGER fetched = 0;
-    SQLINTEGER errors = 0;
-
-    LOG_DEBUG_MSG("rowArraySize is " << rowArraySize);
-    for (SqlUlen i = 0; i < rowArraySize; ++i) {
-        for (app::ColumnBindingMap::iterator it = columnBindings.begin();
-            it != columnBindings.end(); ++it)
-            it->second.SetElementOffset(i);
-
-        SqlResult::Type res = currentQuery->FetchNextRow(columnBindings);
-
-        if (res == SqlResult::AI_SUCCESS || res == SqlResult::AI_SUCCESS_WITH_INFO)
-            ++fetched;
-        else if (res != SqlResult::AI_NO_DATA)
-            ++errors;
-
-        if (rowStatusArray)
-            rowStatusArray[i] = SqlResultToRowResult(res);
+      it != columnBindings.end(); ++it) {
+      it->second.SetElementOffset(i);
     }
 
-    if (rowCount)
-        *rowCount = fetched < 0 ? static_cast<SQLULEN>(rowArraySize) : fetched;
+    SqlResult::Type res = currentQuery->FetchNextRow(columnBindings);
 
-    if (fetched > 0)
-        return errors == 0 ? SqlResult::AI_SUCCESS
-        : SqlResult::AI_SUCCESS_WITH_INFO;
+    if (res == SqlResult::AI_SUCCESS || res == SqlResult::AI_SUCCESS_WITH_INFO) {
+      ++fetched;
+    } else if (res != SqlResult::AI_NO_DATA) {
+      ++errors;
+    }
 
-    LOG_DEBUG_MSG("rowCount is " << rowCount << ", fetched is " << fetched
-        << ", errors is " << errors);
-    return errors == 0 ? SqlResult::AI_NO_DATA : SqlResult::AI_ERROR;
+    if (rowStatusArray) {
+      rowStatusArray[i] = SqlResultToRowResult(res);
+    }
+  }
+
+  if (rowCount) {
+    *rowCount = fetched < 0 ? static_cast<SQLULEN>(rowsetSize) : fetched;
+  }
+
+  if (fetched > 0) {
+    return errors == 0 ? SqlResult::AI_SUCCESS
+      : SqlResult::AI_SUCCESS_WITH_INFO;
+  }
+  
+  LOG_DEBUG_MSG("rowCount is " << rowCount << ", fetched is " << fetched
+    << ", errors is " << errors);
+  return errors == 0 ? SqlResult::AI_NO_DATA : SqlResult::AI_ERROR;
 }
 
 void Statement::FetchScroll(int16_t orientation, int64_t offset) {

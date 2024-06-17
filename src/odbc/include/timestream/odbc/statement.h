@@ -726,6 +726,9 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   /** Row array size. */
   SqlUlen rowArraySize;
 
+  /** Rowset size. */
+  SqlUlen rowsetSize;
+
   /** implicitly allocated ARD */
   std::unique_ptr< Descriptor > ardi;
 
