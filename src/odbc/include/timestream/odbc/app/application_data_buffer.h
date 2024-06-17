@@ -116,7 +116,7 @@ class ApplicationDataBuffer {
    *
    * @param offset Offset.
    */
-  void SetByteOffset(int offset) {
+  void SetByteOffset(SqlUlen offset) {
     this->byteOffset = offset;
   }
 
@@ -616,7 +616,7 @@ class ApplicationDataBuffer {
   SqlLen* reslen;
 
   /** Current byte offset */
-  int byteOffset;
+  size_t byteOffset;
 
   /** Current element offset. */
   SqlUlen elementOffset;

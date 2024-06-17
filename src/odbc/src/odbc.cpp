@@ -526,7 +526,16 @@ SQLRETURN SQLExtendedFetch(SQLHSTMT stmt, SQLUSMALLINT orientation,
                            SQLUSMALLINT* rowStatusArray) {
   LOG_DEBUG_MSG("SQLExtendedFetch called");
 
-  SQLRETURN res = SQLFetchScroll(stmt, orientation, offset);
+  Statement* statement = reinterpret_cast< Statement* >(stmt);
+
+  if (!statement) {
+      LOG_ERROR_MSG("statement is nullptr");
+      return SQL_INVALID_HANDLE;
+  }
+
+  statement->ExtendedFetch(orientation, offset, rowCount, rowStatusArray);
+
+  SQLRETURN res = statement->GetDiagnosticRecords().GetReturnCode();
 
   if (res == SQL_SUCCESS) {
     if (rowCount)
