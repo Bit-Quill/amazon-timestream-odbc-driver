@@ -351,7 +351,6 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 
       rowsetSize = val;
 
-      // TODO: Reset value after success or failure in SQLExtendedFetch
       ard->GetHeader().rowsetSize = rowsetSize;
 
       LOG_DEBUG_MSG("rowsetSize: " << rowsetSize);
@@ -1120,9 +1119,9 @@ SqlResult::Type Statement::InternalFetchRow() {
 
   LOG_DEBUG_MSG("rowArraySize is " << rowArraySize);
   for (SqlUlen i = 0; i < rowArraySize; ++i) {
-      for (app::ColumnBindingMap::iterator it = columnBindings.begin();
-          it != columnBindings.end(); ++it)
-        it->second.SetElementOffset(i);
+    for (app::ColumnBindingMap::iterator it = columnBindings.begin();
+        it != columnBindings.end(); ++it)
+      it->second.SetElementOffset(i);
 
     SqlResult::Type res = currentQuery->FetchNextRow(columnBindings);
 
