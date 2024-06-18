@@ -1120,14 +1120,15 @@ SqlResult::Type Statement::InternalFetchRow() {
     it != columnBindings.end(); ++it)
     it->second.SetByteOffset(columnBindOffsetValue);
 
-  SQLINTEGER fetched = 0;
-  SQLINTEGER errors = 0;
+  SqlUlen fetched = 0;
+  SqlUlen errors = 0;
 
   LOG_DEBUG_MSG("rowArraySize is " << rowArraySize);
   for (SqlUlen i = 0; i < rowArraySize; ++i) {
     for (app::ColumnBindingMap::iterator it = columnBindings.begin();
-        it != columnBindings.end(); ++it)
+      it != columnBindings.end(); ++it) {
       it->second.SetElementOffset(i);
+    }
 
     SqlResult::Type res = currentQuery->FetchNextRow(columnBindings);
 
@@ -1141,7 +1142,7 @@ SqlResult::Type Statement::InternalFetchRow() {
   }
 
   if (rowsFetched)
-    *rowsFetched = fetched < 0 ? static_cast< SQLULEN >(rowArraySize) : fetched;
+    *rowsFetched = fetched;
 
   if (fetched > 0)
     return errors == 0 ? SqlResult::AI_SUCCESS
