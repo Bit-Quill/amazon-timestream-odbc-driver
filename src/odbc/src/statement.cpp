@@ -1109,6 +1109,8 @@ SqlResult::Type Statement::InternalFetchRow() {
     return SqlResult::AI_ERROR;
   }
 
+  // If columnBindOffset is NULL we want to make sure offsets still
+  // have a value, namely a value of 0
   SqlUlen columnBindOffsetValue = columnBindOffset ? *columnBindOffset : 0;
   for (app::ColumnBindingMap::iterator it = columnBindings.begin();
     it != columnBindings.end(); ++it)
