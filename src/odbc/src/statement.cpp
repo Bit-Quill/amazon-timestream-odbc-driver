@@ -1061,7 +1061,7 @@ SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLE
   }
 
   if (rowCount) {
-    *rowCount = fetched < 0 ? rowsetSize : fetched;
+    *rowCount = fetched;
   }
 
   if (fetched > 0) {
