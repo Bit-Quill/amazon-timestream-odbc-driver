@@ -486,7 +486,7 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * @param rowStatusArray SQLUSMALLINT* Pointer to an array in which to return the status of each row.
    * @return Operation result.
    */
-  SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset,
+  SqlResult::Type InternalExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset,
                                         SQLULEN* rowCount, SQLUSMALLINT* rowStatusArray);
 
   /**
