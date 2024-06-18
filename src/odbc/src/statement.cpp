@@ -374,7 +374,7 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
     }
 
     case SQL_ATTR_PARAM_BIND_OFFSET_PTR: {
-      ard->GetHeader().bindOffsetPtr = reinterpret_cast<SQLLEN*>(value);
+      apdi->GetHeader().bindOffsetPtr = reinterpret_cast<SQLLEN*>(value);
       break;
     }
 
