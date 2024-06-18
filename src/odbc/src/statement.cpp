@@ -994,10 +994,10 @@ void Statement::Close() {
 }
 
 SqlResult::Type Statement::InternalClose(bool ignoreErrors) {
-  if (ignoreErrors || !currentQuery.get())
+  if (!currentQuery.get())
     return SqlResult::AI_SUCCESS;
 
-  if (!currentQuery->DataAvailable()) {
+  if (!ignoreErrors && !currentQuery->DataAvailable()) {
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
                     "No cursor was open");
     return SqlResult::AI_ERROR;
@@ -1005,7 +1005,7 @@ SqlResult::Type Statement::InternalClose(bool ignoreErrors) {
 
   SqlResult::Type result = currentQuery->Close();
 
-  return result;
+  return ignoreErrors ? SqlResult::AI_SUCCESS : result;
 }
 
 void Statement::ExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset, SQLULEN* rowCount, SQLUSMALLINT* rowStatusArray) {
