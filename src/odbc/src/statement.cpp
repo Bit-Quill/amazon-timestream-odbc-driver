@@ -552,12 +552,12 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     }
 
     case SQL_ROWSET_SIZE: {
-      SQLINTEGER* val = reinterpret_cast<SQLINTEGER*>(buf);
+      SqlUlen* val = reinterpret_cast<SqlUlen*>(buf);
 
-      *val = static_cast<SQLINTEGER>(rowsetSize);
+      *val = rowsetSize;
 
       if (valueLen)
-          *valueLen = SQL_IS_INTEGER;
+          *valueLen = SQL_IS_UINTEGER;
       LOG_DEBUG_MSG("*val is " << *val << ", *valueLen is "
         << (valueLen ? *valueLen : 0));
       break;
