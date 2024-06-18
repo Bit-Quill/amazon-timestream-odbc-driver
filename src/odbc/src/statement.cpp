@@ -1036,6 +1036,8 @@ SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLE
     return SqlResult::AI_ERROR;
   }
 
+  // offset (aka FetchOffset) is ignored. Byte offsets are
+  // explicitly set to 0 to indicate that bind offsets are not supported
   for (app::ColumnBindingMap::iterator it = columnBindings.begin();
     it != columnBindings.end(); ++it) {
     it->second.SetByteOffset(0);
