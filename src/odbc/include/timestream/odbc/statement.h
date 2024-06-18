@@ -65,7 +65,18 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   void BindColumn(uint16_t columnIdx, int16_t targetType, void* targetValue,
                   SqlLen bufferLength, SqlLen* strLengthOrIndicator);
 
-  void Statement::ExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset, SQLULEN* rowCount, SQLUSMALLINT* rowStatusArray);
+  /**
+   * Fetch specified rowset of data from the result set and returns data
+   * for all bound columns. Rowsets can be specified at an absolute or
+   * relative position; bookmarks are not supported.
+   *
+   * @param orientation SQLUSMALLINT Type of fetch.
+   * @param offset SQLLEN Number of the row to fetch.
+   * @param rowCount SQLULEN* Pointer to a buffer in which to return the number of
+   *    rows actually fetched.
+   * @param rowStatusArray SQLUSMALLINT* Pointer to an array in which to return the status of each row.
+   */
+  void ExtendedFetch(SQLUSMALLINT orientation, SQLLEN offset, SQLULEN* rowCount, SQLUSMALLINT* rowStatusArray);
 
   /**
    * Set column binding offset pointer.
