@@ -373,11 +373,15 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
       break;
     }
 
-    case SQL_ATTR_PARAM_BIND_OFFSET_PTR:
-    case SQL_ATTR_ROW_BIND_OFFSET_PTR: {
-        SetColumnBindOffsetPtr(reinterpret_cast<SqlUlen*>(value));
+    case SQL_ATTR_PARAM_BIND_OFFSET_PTR: {
+      ard->GetHeader().bindOffsetPtr = reinterpret_cast<SQLLEN*>(value);
+      break;
+    }
 
-        ard->GetHeader().bindOffsetPtr = reinterpret_cast<SQLLEN*>(value);
+    case SQL_ATTR_ROW_BIND_OFFSET_PTR: {
+      SetColumnBindOffsetPtr(reinterpret_cast<SqlUlen*>(value));
+
+      ard->GetHeader().bindOffsetPtr = reinterpret_cast<SQLLEN*>(value);
       break;
     }
 
