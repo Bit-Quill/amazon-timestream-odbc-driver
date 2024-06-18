@@ -1001,10 +1001,10 @@ SqlResult::Type Statement::InternalClose(bool ignoreErrors) {
   if (!currentQuery.get())
     return SqlResult::AI_SUCCESS;
 
-  if (!ignoreErrors && !currentQuery->DataAvailable()) {
+  if (!currentQuery->DataAvailable()) {
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE,
                     "No cursor was open");
-    return SqlResult::AI_ERROR;
+    return ignoreErrors ? SqlResult::AI_SUCCESS : SqlResult::AI_ERROR;
   }
 
   SqlResult::Type result = currentQuery->Close();
