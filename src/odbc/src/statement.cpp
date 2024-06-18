@@ -1032,14 +1032,13 @@ SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLE
     return SqlResult::AI_ERROR;
   }
 
-  SqlUlen columnBindOffsetValue = columnBindOffset ? *columnBindOffset : 0;
   for (app::ColumnBindingMap::iterator it = columnBindings.begin();
     it != columnBindings.end(); ++it) {
-    it->second.SetByteOffset(columnBindOffsetValue);
+    it->second.SetByteOffset(0);
   }
 
-  SQLINTEGER fetched = 0;
-  SQLINTEGER errors = 0;
+  SqlUlen fetched = 0;
+  SqlUlen errors = 0;
 
   LOG_DEBUG_MSG("rowsetSize is " << rowsetSize);
   for (SqlUlen i = 0; i < rowsetSize; ++i) {
@@ -1062,7 +1061,7 @@ SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLE
   }
 
   if (rowCount) {
-    *rowCount = fetched < 0 ? static_cast<SQLULEN>(rowsetSize) : fetched;
+    *rowCount = fetched < 0 ? rowsetSize : fetched;
   }
 
   if (fetched > 0) {
