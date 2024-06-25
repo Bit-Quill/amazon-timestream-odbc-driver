@@ -30,6 +30,8 @@
 #include <boost/test/data/test_case.hpp>
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
 
 #include "timestream/odbc/type_traits.h"
 #include "timestream/odbc/utility.h"

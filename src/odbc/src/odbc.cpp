@@ -537,13 +537,7 @@ SQLRETURN SQLExtendedFetch(SQLHSTMT stmt, SQLUSMALLINT orientation,
 
   SQLRETURN res = statement->GetDiagnosticRecords().GetReturnCode();
 
-  if (res == SQL_SUCCESS) {
-    if (rowCount)
-      *rowCount = 1;
-
-    if (rowStatusArray)
-      rowStatusArray[0] = SQL_ROW_SUCCESS;
-  } else if (res == SQL_NO_DATA && rowCount)
+  if (res == SQL_NO_DATA && rowCount)
     *rowCount = 0;
 
   LOG_DEBUG_MSG("res is " << res);
@@ -1191,7 +1185,18 @@ SQLRETURN SQLGetData(SQLHSTMT stmt, SQLUSMALLINT colNum, SQLSMALLINT targetType,
   ApplicationDataBuffer dataBuffer(driverType, targetValue, bufferLength,
                                    strLengthOrIndicator);
 
+  // Cell offsets are used between SQLGetData calls to return
+  // variable-length data in parts. Statement keeps the cell offset
+  // between repeated calls on the same column.
+  if (colNum != statement->GetCurrentColNum()) {
+    statement->SetCurrentColNum(colNum);
+    statement->SetCellOffset(0);
+    dataBuffer.SetCellOffset(0);
+  } else {
+    dataBuffer.SetCellOffset(statement->GetCellOffset());
+  }
   statement->GetColumnData(colNum, dataBuffer);
+  statement->SetCellOffset(dataBuffer.GetCellOffset());
 
   return statement->GetDiagnosticRecords().GetReturnCode();
 }

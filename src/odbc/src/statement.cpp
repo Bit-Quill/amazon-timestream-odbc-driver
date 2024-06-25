@@ -51,7 +51,9 @@ Statement::Statement(Connection& parent)
       rowStatuses(nullptr),
       columnBindOffset(nullptr),
       rowArraySize(1),
-      rowsetSize(1) {
+      rowsetSize(1),
+      cellOffset(0),
+      currentColNum(1) {
   // Create and initialize implicit descriptors. Here we created the 4 implicit
   // descriptors. But besides implicit ARD, they are not in use because there is
   // no clear document about how to set and use them. This could be done in
@@ -229,6 +231,22 @@ int32_t Statement::GetColumnNumber() {
   IGNITE_ODBC_API_CALL(InternalGetColumnNumber(res));
 
   return res;
+}
+
+void Statement::SetCellOffset(size_t offset) {
+  cellOffset = offset;
+}
+
+size_t Statement::GetCellOffset() {
+  return cellOffset;
+}
+
+void Statement::SetCurrentColNum(SQLUSMALLINT colNum) {
+  currentColNum = colNum;
+}
+
+SQLUSMALLINT Statement::GetCurrentColNum() {
+  return currentColNum;
 }
 
 SqlResult::Type Statement::InternalGetColumnNumber(int32_t& res) {
@@ -435,11 +453,12 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
 }
 
 void Statement::SetAttribute(StatementAttributes& stmtAttr) {
-  SetAttribute(SQL_ATTR_ROW_BIND_TYPE, &stmtAttr.bindType, 0);
-  SetAttribute(SQL_ATTR_CONCURRENCY, &stmtAttr.concurrency, 0);
-  SetAttribute(SQL_ATTR_CURSOR_TYPE, &stmtAttr.cursorType, 0);
-  SetAttribute(SQL_ATTR_RETRIEVE_DATA, &stmtAttr.retrievData, 0);
-  SetAttribute(SQL_ROWSET_SIZE, &stmtAttr.rowsetSize, 0);
+  SetAttribute(SQL_ATTR_ROW_BIND_TYPE, reinterpret_cast<SQLPOINTER>(stmtAttr.bindType), 0);
+  SetAttribute(SQL_ATTR_CONCURRENCY, reinterpret_cast<SQLPOINTER>(stmtAttr.concurrency), 0);
+  SetAttribute(SQL_ATTR_CURSOR_TYPE, reinterpret_cast<SQLPOINTER>(stmtAttr.cursorType), 0);
+  SetAttribute(SQL_ATTR_RETRIEVE_DATA, reinterpret_cast<SQLPOINTER>(stmtAttr.retrievData), 0);
+  SetAttribute(SQL_ATTR_ROW_ARRAY_SIZE, reinterpret_cast<SQLPOINTER>(stmtAttr.rowArraySize), 0);
+  SetAttribute(SQL_ROWSET_SIZE, reinterpret_cast<SQLPOINTER>(stmtAttr.rowsetSize), 0);
 }
 
 void Statement::GetAttribute(int attr, void* buf, SQLINTEGER bufLen,

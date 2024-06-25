@@ -54,6 +54,7 @@ struct StatementAttributes {
   SqlUlen cursorType;
   SqlUlen retrievData;
   SqlUlen rowsetSize;
+  SqlUlen rowArraySize;
 };
 
 /**

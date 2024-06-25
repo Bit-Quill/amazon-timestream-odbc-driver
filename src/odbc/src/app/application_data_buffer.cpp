@@ -42,7 +42,8 @@ ApplicationDataBuffer::ApplicationDataBuffer()
       buflen(0),
       reslen(0),
       byteOffset(0),
-      elementOffset(0) {
+      elementOffset(0),
+      cellOffset(0) {
   // No-op.
 }
 
@@ -54,7 +55,8 @@ ApplicationDataBuffer::ApplicationDataBuffer(
       buflen(buflen),
       reslen(reslen),
       byteOffset(0),
-      elementOffset(0) {
+      elementOffset(0),
+      cellOffset(0) {
   // No-op.
 }
 
@@ -64,7 +66,8 @@ ApplicationDataBuffer::ApplicationDataBuffer(const ApplicationDataBuffer& other)
       buflen(other.buflen),
       reslen(other.reslen),
       byteOffset(other.byteOffset),
-      elementOffset(other.elementOffset) {
+      elementOffset(other.elementOffset),
+      cellOffset(other.cellOffset) {
   // No-op.
 }
 
@@ -80,6 +83,7 @@ ApplicationDataBuffer& ApplicationDataBuffer::operator=(
   reslen = other.reslen;
   byteOffset = other.byteOffset;
   elementOffset = other.elementOffset;
+  cellOffset = other.cellOffset;
 
   return *this;
 }
@@ -251,25 +255,43 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
   LOG_DEBUG_MSG("inCharSize is " << inCharSize << ", outCharSize is "
                                  << outCharSize << ", buflen is " << buflen);
 
+  size_t bytesRequired = value.length() * outCharSize;
+
+  // Safety check since inCharSize and outCharSize will be denominators.
+  if (inCharSize == 0 || outCharSize == 0) {
+    LOG_ERROR_MSG(
+      "Unexpected conversion from unknown type string, inCharSize is "
+      << inCharSize << ", outCharSize is " << outCharSize);
+    assert(false);
+  }
+
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
 
-  if (!dataPtr)
+  if (!dataPtr) {
     return ConversionResult::Type::AI_SUCCESS;
+  }
 
-  if (buflen < outCharSize)
-    return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
+  // Since cellOffset is in bytes, an index needs to be calculated.
+  size_t inCharIndex = cellOffset / inCharSize;
 
-  size_t lenWrittenOrRequired = 0;
+  if (inCharIndex >= value.length()) {
+    if (resLenPtr) {
+      *resLenPtr = SQL_NO_TOTAL;
+    }
+    return ConversionResult::Type::AI_NO_DATA;
+  }
+
+  size_t bytesWritten = 0;
   bool isTruncated = false;
   if (inCharSize == 1) {
     if (outCharSize == 2 || outCharSize == 4) {
-      lenWrittenOrRequired = utility::CopyUtf8StringToSqlWcharString(
-          reinterpret_cast< const char* >(value.c_str()),
+      bytesWritten = utility::CopyUtf8StringToSqlWcharString(
+          reinterpret_cast< const char* >(value.c_str() + inCharIndex),
           reinterpret_cast< SQLWCHAR* >(dataPtr), buflen, isTruncated);
     } else if (sizeof(OutCharT) == 1) {
-      lenWrittenOrRequired = utility::CopyUtf8StringToSqlCharString(
-          reinterpret_cast< const char* >(value.c_str()),
+      bytesWritten = utility::CopyUtf8StringToSqlCharString(
+          reinterpret_cast< const char* >(value.c_str() + inCharIndex),
           reinterpret_cast< SQLCHAR* >(dataPtr), buflen, isTruncated);
     } else {
       LOG_ERROR_MSG("Unexpected conversion from UTF8 string.");
@@ -282,16 +304,31 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
     assert(false);
   }
 
-  written = static_cast< int32_t >(lenWrittenOrRequired);
+  written = static_cast< int32_t >(bytesWritten);
   LOG_DEBUG_MSG("written is " << written);
-  if (resLenPtr) {
-    *resLenPtr = static_cast< SqlLen >(written);
-  }
+  int32_t totalBytesWritten = (cellOffset / inCharSize) * outCharSize + bytesWritten;
+  int32_t remainingBytesRequired = bytesRequired - totalBytesWritten > 0 ?
+    static_cast<int32_t>(bytesRequired - bytesWritten) : 0;
+  LOG_DEBUG_MSG("remainingBytesRequired is " << remainingBytesRequired);
 
-  if (isTruncated)
+  size_t numCharsWritten = bytesWritten / outCharSize;
+  SetCellOffset(cellOffset + numCharsWritten * inCharSize);
+
+  if (isTruncated) {
+    // Return the remaining required amount of data to the indicator pointer
+    // (resLenPtr).
+    if (resLenPtr) {
+      *resLenPtr = static_cast<SqlLen>(remainingBytesRequired);
+    }
     return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
-
-  return ConversionResult::Type::AI_SUCCESS;
+  } else {
+    // The last successful call should return the total size of
+    // the cell to resLenPtr.
+    if (resLenPtr) {
+      *resLenPtr = value.length() * outCharSize;
+    }
+    return ConversionResult::Type::AI_SUCCESS;
+  }
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutRawDataToBuffer(

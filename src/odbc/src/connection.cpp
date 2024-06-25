@@ -84,6 +84,14 @@ Connection::Connection(Environment* env)
 
   // record the Connection object in an atomic counter
   ++refCount_;
+
+  // Set default values for stmtAttr_
+  stmtAttr_.bindType = SQL_PARAM_BIND_BY_COLUMN;
+  stmtAttr_.concurrency = SQL_CONCUR_READ_ONLY;
+  stmtAttr_.cursorType = SQL_CURSOR_FORWARD_ONLY;
+  stmtAttr_.retrievData = SQL_RD_OFF;
+  stmtAttr_.rowArraySize = 1;
+  stmtAttr_.rowsetSize = 1;
 }
 
 Connection::~Connection() {

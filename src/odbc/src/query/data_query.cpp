@@ -240,7 +240,8 @@ SqlResult::Type DataQuery::FetchNextRow(app::ColumnBindingMap& columnBindings) {
 
     if (it == columnBindings.end())
       continue;
-  
+    // For each new row the cell offset must be reset.
+    it->second.SetCellOffset(0);
     app::ConversionResult::Type convRes =
         cursor_->ReadColumnToBuffer(i, it->second);
 

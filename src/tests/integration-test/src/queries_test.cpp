@@ -789,9 +789,9 @@ BOOST_AUTO_TEST_CASE(TestArraySingleResultUsingBindCol) {
                     utility::SqlCharToString(arrayChar1, arrayChar1_len));
   BOOST_CHECK_EQUAL(
       "[1,2,3]", utility::SqlWcharToString(arrayWchar1, arrayWchar1_len, true));
-  BOOST_CHECK_EQUAL("-", utility::SqlCharToString(arrayChar2, arrayChar2_len));
+  BOOST_CHECK_EQUAL("", utility::SqlCharToString(arrayChar2, arrayChar2_len));
   BOOST_CHECK_EQUAL(
-      "-", utility::SqlWcharToString(arrayWchar2, arrayWchar2_len, true));
+      "", utility::SqlWcharToString(arrayWchar2, arrayWchar2_len, true));
 }
 
 BOOST_AUTO_TEST_CASE(TestRowSingleResultUsingBindCol) {
@@ -840,29 +840,13 @@ BOOST_AUTO_TEST_CASE(TestNullSingleResultUsingBindCol) {
     BOOST_FAIL(GetOdbcErrorMessage(SQL_HANDLE_STMT, stmt));
   }
 
-  const int32_t buf_size = 1024;
-  SQLCHAR nullChar[buf_size]{};
-  SQLLEN nullChar_len = 0;
+  SQLLEN indicator = 0;
 
-  // fetch result as a string
-  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, nullChar, sizeof(nullChar),
-                   &nullChar_len);
+  // Fetch result
+  ret = SQLBindCol(stmt, 1, SQL_C_CHAR, NULL, 0, &indicator);
   BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
 
-  SQLWCHAR nullWchar[buf_size]{};
-  SQLLEN nullWchar_len = 0;
-
-  // fetch result as a unicode string
-  ret = SQLBindCol(stmt, 2, SQL_C_WCHAR, nullWchar, sizeof(nullWchar),
-                   &nullWchar_len);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  ret = SQLFetch(stmt);
-  BOOST_CHECK_EQUAL(SQL_SUCCESS, ret);
-
-  BOOST_CHECK_EQUAL("-", utility::SqlCharToString(nullChar, nullChar_len));
-  BOOST_CHECK_EQUAL("-",
-                    utility::SqlWcharToString(nullWchar, nullWchar_len, true));
+  BOOST_CHECK_EQUAL(SQL_NULL_DATA, indicator);
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLCancel) {

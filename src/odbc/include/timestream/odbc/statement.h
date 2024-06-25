@@ -333,7 +333,35 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   SQLUSMALLINT* GetRowStatusesPtr();
 
   /**
-   * Set current active ARD descriptor
+   * Get the cell offset for the current column.
+   * 
+   * @return Cell offset.
+   */
+  size_t GetCellOffset();
+
+  /**
+   * Set cell offset.
+   * 
+   * @param offset The new offset value.
+   */
+  void SetCellOffset(size_t offset);
+
+  /**
+   * Get the current column number.
+   * 
+   * @return Current column number.
+   */
+  SQLUSMALLINT GetCurrentColNum();
+
+  /**
+   * Set the current column number.
+   * 
+   * @param colNum SQLUSMALLINT The new current column number.
+   */
+  void SetCurrentColNum(SQLUSMALLINT colNum);
+
+  /**
+   * Set current active ARD descriptor.
    *
    * @param desc Descriptor pointer.
    */
@@ -733,6 +761,12 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
 
   /** Offset added to pointers to change binding of column data. */
   SqlUlen* columnBindOffset;
+
+  /** Offset used to iterate through a cell for variable-length data. */
+  size_t cellOffset;
+
+  /** The current column number. Used in SQLGetData. */
+  SqlUlen currentColNum;
 
   /** Row array size. */
   SqlUlen rowArraySize;
