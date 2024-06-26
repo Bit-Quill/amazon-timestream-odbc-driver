@@ -1128,13 +1128,14 @@ SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLE
     *rowCount = fetched;
   }
 
+  LOG_DEBUG_MSG("*rowCount is " << (rowCount ? *rowCount : 0) << ", fetched is " << fetched
+    << ", errors is " << errors);
+
   if (fetched > 0) {
     return errors == 0 ? SqlResult::AI_SUCCESS
       : SqlResult::AI_SUCCESS_WITH_INFO;
   }
   
-  LOG_DEBUG_MSG("rowCount is " << rowCount << ", fetched is " << fetched
-    << ", errors is " << errors);
   return errors == 0 ? SqlResult::AI_NO_DATA : SqlResult::AI_ERROR;
 }
 
