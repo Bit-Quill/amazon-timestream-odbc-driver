@@ -448,16 +448,16 @@ Reading and writing data on Timestream requires corresponding permissions. For r
 ### IAM Profile Tests
 1. The IAM profile tests are disabled by default because they require valid IAM profiles. They can be enabled by exporting environment variable `ENABLE_PROFILE_TEST` to `true`. Follow below instructions for setting up valid IAM profiles and required environment variables. 
 #### Windows
-1. `cd` to repository root. Set the environment variable ``REPOSITORY_ROOT`` to your repository root.
+1. `cd` to repository root. Set the environment variable `REPOSITORY_ROOT` to your repository root.
 2. Run `.\src\tests\input\create_credentials_file.ps1` to create credential files for testing. Note that this script will write AWS IAM credentials file `src\tests\input\credentials`.
 3. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
 
 #### Linux or macOS
-1. `cd` to repository root. Set environment variable REPOSITORY_ROOT to your repository root
+1. `cd` to repository root. Set environment variable `REPOSITORY_ROOT` to your repository root
 
     `export REPOSITORY_ROOT=<your repository root>`
 2. Run `./src/tests/input/create_credentials_file.sh` from the respository root to create credential files for testing. Note that this script will write AWS IAM credentials file `src/tests/input/credentials`.
-3. Set environment variable AWS_SHARED_CREDENTIALS_FILE to the newly created credentials file.
+3. Set environment variable `AWS_SHARED_CREDENTIALS_FILE` to the newly created credentials file.
 
     `export AWS_SHARED_CREDENTIALS_FILE=$REPOSITORY_ROOT/src/tests/input/credentials`
 
@@ -493,7 +493,7 @@ Reading and writing data on Timestream requires corresponding permissions. For r
 Ensure `OKTA_HOST` does not include `https://` or `http://`.
 
 ### Big Table Pagination Tests
-Big table pagination tests are time-consuming. To save time for integration test， they are disabled by default. They can be enabled by exporting the environment variable `BIG_TABLE_PAGINATION_TEST_ENABLE` with the value `true`.
+Big table pagination tests are time-consuming. To save time for integration test, they are disabled by default. They can be enabled by exporting the environment variable `BIG_TABLE_PAGINATION_TEST_ENABLE` with the value `true`.
 
 ### Proxy Manual Test on Windows
 For setting up connection proxy properties, see [connection proxy guide.](connection-proxy-guide.md).
