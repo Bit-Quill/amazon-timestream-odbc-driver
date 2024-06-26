@@ -70,7 +70,7 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
     // length in characters - as well as get .narrow() to work, as expected
     // Otherwise, it would be impossible to safely determine the
     // output buffer length needed.
-    std::wstring_convert< std::codecvt_utf8< wchar_t >, wchar_t >
+    thread_local std::wstring_convert< std::codecvt_utf8< wchar_t >, wchar_t >
       converter;
     std::wstring inString = converter.from_bytes(inBuffer);
     size_t inBufferBytes = inString.size();
