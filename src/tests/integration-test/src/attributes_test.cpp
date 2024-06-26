@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(StatementAttributeRowArraySize) {
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
 
-  ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, reinterpret_cast<SQLPOINTER>(&actual_row_array_size),
+  ret = SQLGetStmtAttr(stmt, SQL_ATTR_ROW_ARRAY_SIZE, &actual_row_array_size,
                        sizeof(actual_row_array_size), &resLen);
 
   ODBC_FAIL_ON_ERROR(ret, SQL_HANDLE_STMT, stmt);
