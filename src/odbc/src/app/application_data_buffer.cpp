@@ -229,7 +229,7 @@ ConversionResult::Type ApplicationDataBuffer::PutValToStrBuffer(
   LOG_DEBUG_MSG("PutValToStrBuffer is called with value " << value);
   std::stringstream converter;
   converter << value;
-  int32_t written = 0;
+  SqlLen written = 0;
   return PutStrToStrBuffer< CharT >(converter.str(), written);
 }
 
@@ -240,13 +240,13 @@ ConversionResult::Type ApplicationDataBuffer::PutValToStrBuffer(
   std::stringstream converter;
   // NOTE: Need to cast to larger integer - or will mistake it for a character.
   converter << static_cast< int32_t >(value);
-  int32_t written = 0;
+  SqlLen written = 0;
   return PutStrToStrBuffer< CharT >(converter.str(), written);
 }
 
 template < typename OutCharT, typename InCharT >
 ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
-    const std::basic_string< InCharT >& value, int32_t& written) {
+    const std::basic_string< InCharT >& value, SqlLen& written) {
   LOG_DEBUG_MSG("PutStrToStrBuffer is called with value " << value);
   written = 0;
 
@@ -317,20 +317,20 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
     assert(false);
   }
 
-  written = static_cast< int32_t >(bytesWritten);
+  written = static_cast< SqlLen >(bytesWritten);
   LOG_DEBUG_MSG("written is " << written);
 
-  int32_t totalBytesWritten = (currentCellOffset / inCharSize) * outCharSize + bytesWritten;
+  SqlLen totalBytesWritten = (currentCellOffset / inCharSize) * outCharSize + bytesWritten;
   // If all data was successfully returned to the buffer, resLenPtr receives the total
   // number of bytes in the cell, in size outCharSize. If data is being retrieved in parts,
   // resLenPtr will receive the remaining required data, gradually decreasing in length as
   // more calls with the same column are made.
-  int32_t remainingBytesRequired = bytesRequired - totalBytesWritten > 0 ?
-    static_cast<int32_t>(bytesRequired - bytesWritten) : bytesRequired;
+  SqlLen remainingBytesRequired = bytesRequired - totalBytesWritten > 0 ?
+    static_cast<SqlLen>(bytesRequired - bytesWritten) : bytesRequired;
   LOG_DEBUG_MSG("remainingBytesRequired is " << remainingBytesRequired);
 
   if (resLenPtr) {
-    *resLenPtr = static_cast<SqlLen>(remainingBytesRequired);
+    *resLenPtr = remainingBytesRequired;
   }
 
   if (cellOffset >= 0) {
@@ -346,7 +346,7 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutRawDataToBuffer(
-    const void* data, size_t len, int32_t& written) {
+    const void* data, size_t len, SqlLen& written) {
   LOG_DEBUG_MSG("PutRawDataToBuffer is called with len " << len);
   SqlLen iLen = static_cast< SqlLen >(len);
 
@@ -361,7 +361,7 @@ ConversionResult::Type ApplicationDataBuffer::PutRawDataToBuffer(
   if (dataPtr != 0 && toCopy > 0)
     memcpy(dataPtr, data, static_cast< size_t >(toCopy));
 
-  written = static_cast< int32_t >(toCopy);
+  written = toCopy;
   LOG_DEBUG_MSG("written is " << written);
 
   return toCopy < iLen ? ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED
@@ -457,13 +457,13 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
 
 ConversionResult::Type ApplicationDataBuffer::PutString(
     const std::string& value) {
-  int32_t written = 0;
+  SqlLen written = 0;
 
   return PutString(value, written);
 }
 
 ConversionResult::Type ApplicationDataBuffer::PutString(
-    const std::string& value, int32_t& written) {
+    const std::string& value, SqlLen& written) {
   using namespace type_traits;
   LOG_DEBUG_MSG("PutString is called with value " << value << ", type is "
                                                   << type);
@@ -487,7 +487,7 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
 
       converter >> numValue;
 
-      written = static_cast< int32_t >(value.size());
+      written = static_cast< SqlLen >(value.size());
 
       return PutNum(numValue);
     }
@@ -502,7 +502,7 @@ ConversionResult::Type ApplicationDataBuffer::PutString(
 
       converter >> numValue;
 
-      written = static_cast< int32_t >(value.size());
+      written = static_cast< SqlLen >(value.size());
 
       return PutNum(numValue);
     }
@@ -580,7 +580,7 @@ ConversionResult::Type ApplicationDataBuffer::PutDecimal(
 
       converter << value;
 
-      int32_t dummy = 0;
+      SqlLen dummy = 0;
 
       return PutString(converter.str(), dummy);
     }

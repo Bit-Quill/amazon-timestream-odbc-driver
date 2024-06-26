@@ -266,7 +266,7 @@ class ApplicationDataBuffer {
    * @param written Number of written characters.
    * @return Conversion result.
    */
-  ConversionResult::Type PutString(const std::string& value, int32_t& written);
+  ConversionResult::Type PutString(const std::string& value, SqlLen& written);
 
   /**
    * Put NULL.
@@ -555,7 +555,7 @@ class ApplicationDataBuffer {
    */
   template < typename OutCharT, typename InCharT >
   ConversionResult::Type PutStrToStrBuffer(
-      const std::basic_string< InCharT >& value, int32_t& written);
+      const std::basic_string< InCharT >& value, SqlLen& written);
 
   /**
    * Put raw data to any buffer.
@@ -566,7 +566,7 @@ class ApplicationDataBuffer {
    * @return Conversion result.
    */
   ConversionResult::Type PutRawDataToBuffer(const void* data, size_t len,
-                                            int32_t& written);
+                                            SqlLen& written);
 
   /**
    * Get int of type T.

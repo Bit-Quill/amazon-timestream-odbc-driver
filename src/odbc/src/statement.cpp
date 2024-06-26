@@ -315,9 +315,9 @@ SqlResult::Type Statement::InternalSetAttribute(int attr, void* value,
     }
 
     case SQL_ATTR_RETRIEVE_DATA: {
-      SqlUlen retrievData = reinterpret_cast< SqlUlen >(value);
+      SqlUlen retrieveData = reinterpret_cast< SqlUlen >(value);
 
-      if (retrievData != SQL_RD_ON) {
+      if (retrieveData != SQL_RD_ON) {
         AddStatusRecord(
             SqlState::SHYC00_OPTIONAL_FEATURE_NOT_IMPLEMENTED,
             "SQLFetch can only retrieve data after it positions the cursor");
@@ -456,7 +456,7 @@ void Statement::SetAttribute(StatementAttributes& stmtAttr) {
   SetAttribute(SQL_ATTR_ROW_BIND_TYPE, reinterpret_cast<SQLPOINTER>(stmtAttr.bindType), 0);
   SetAttribute(SQL_ATTR_CONCURRENCY, reinterpret_cast<SQLPOINTER>(stmtAttr.concurrency), 0);
   SetAttribute(SQL_ATTR_CURSOR_TYPE, reinterpret_cast<SQLPOINTER>(stmtAttr.cursorType), 0);
-  SetAttribute(SQL_ATTR_RETRIEVE_DATA, reinterpret_cast<SQLPOINTER>(stmtAttr.retrievData), 0);
+  SetAttribute(SQL_ATTR_RETRIEVE_DATA, reinterpret_cast<SQLPOINTER>(stmtAttr.retrieveData), 0);
   SetAttribute(SQL_ATTR_ROW_ARRAY_SIZE, reinterpret_cast<SQLPOINTER>(stmtAttr.rowArraySize), 0);
   SetAttribute(SQL_ROWSET_SIZE, reinterpret_cast<SQLPOINTER>(stmtAttr.rowsetSize), 0);
 }
