@@ -50,10 +50,10 @@ Statement::Statement(Connection& parent)
       rowsFetched(nullptr),
       rowStatuses(nullptr),
       columnBindOffset(nullptr),
-      rowArraySize(1),
-      rowsetSize(1),
       cellOffset(0),
-      currentColNum(0) {
+      currentColNum(0),
+      rowArraySize(1),
+      rowsetSize(1) {
   // Create and initialize implicit descriptors. Here we created the 4 implicit
   // descriptors. But besides implicit ARD, they are not in use because there is
   // no clear document about how to set and use them. This could be done in

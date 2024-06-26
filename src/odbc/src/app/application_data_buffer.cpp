@@ -42,8 +42,8 @@ ApplicationDataBuffer::ApplicationDataBuffer()
       buflen(0),
       reslen(0),
       byteOffset(0),
-      elementOffset(0),
-      cellOffset(-1) {
+      cellOffset(-1),
+      elementOffset(0) {
   // No-op.
 }
 
@@ -55,8 +55,8 @@ ApplicationDataBuffer::ApplicationDataBuffer(
       buflen(buflen),
       reslen(reslen),
       byteOffset(0),
-      elementOffset(0),
-      cellOffset(-1) {
+      cellOffset(-1),
+      elementOffset(0) {
   // No-op.
 }
 
@@ -66,8 +66,8 @@ ApplicationDataBuffer::ApplicationDataBuffer(const ApplicationDataBuffer& other)
       buflen(other.buflen),
       reslen(other.reslen),
       byteOffset(other.byteOffset),
-      elementOffset(other.elementOffset),
-      cellOffset(other.cellOffset) {
+      cellOffset(other.cellOffset),
+      elementOffset(other.elementOffset) {
   // No-op.
 }
 
@@ -82,8 +82,8 @@ ApplicationDataBuffer& ApplicationDataBuffer::operator=(
   buflen = other.buflen;
   reslen = other.reslen;
   byteOffset = other.byteOffset;
-  elementOffset = other.elementOffset;
   cellOffset = other.cellOffset;
+  elementOffset = other.elementOffset;
 
   return *this;
 }
