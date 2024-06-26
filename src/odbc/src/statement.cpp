@@ -53,7 +53,7 @@ Statement::Statement(Connection& parent)
       rowArraySize(1),
       rowsetSize(1),
       cellOffset(0),
-      currentColNum(1) {
+      currentColNum(0) {
   // Create and initialize implicit descriptors. Here we created the 4 implicit
   // descriptors. But besides implicit ARD, they are not in use because there is
   // no clear document about how to set and use them. This could be done in
@@ -233,11 +233,11 @@ int32_t Statement::GetColumnNumber() {
   return res;
 }
 
-void Statement::SetCellOffset(size_t offset) {
+void Statement::SetCellOffset(SqlLen offset) {
   cellOffset = offset;
 }
 
-size_t Statement::GetCellOffset() {
+SqlLen Statement::GetCellOffset() {
   return cellOffset;
 }
 
@@ -1133,6 +1133,9 @@ SqlResult::Type Statement::InternalFetchRow() {
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
     return SqlResult::AI_ERROR;
   }
+
+  // We're fetching a new row, ensure cellOffset is reset.
+  cellOffset = 0;
 
   // If columnBindOffset is NULL we want to make sure offsets still
   // have a value, namely a value of 0

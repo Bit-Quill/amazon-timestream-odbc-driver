@@ -125,7 +125,7 @@ class ApplicationDataBuffer {
    * 
    * @return Cell offset.
    */
-  size_t GetCellOffset() {
+  SqlLen GetCellOffset() {
     return this->cellOffset;
   }
 
@@ -134,7 +134,7 @@ class ApplicationDataBuffer {
    * 
    * @param offset Offset
    */
-  void SetCellOffset(SqlUlen offset) {
+  void SetCellOffset(SqlLen offset) {
     this->cellOffset = offset;
   }
 
@@ -637,7 +637,7 @@ class ApplicationDataBuffer {
   size_t byteOffset;
 
   /** Current cell offset, meaning byte offset within a cell */
-  size_t cellOffset;
+  SqlLen cellOffset;
 
   /** Current element offset. */
   SqlUlen elementOffset;

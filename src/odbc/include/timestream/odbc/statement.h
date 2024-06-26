@@ -337,14 +337,14 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
    * 
    * @return Cell offset.
    */
-  size_t GetCellOffset();
+  SqlLen GetCellOffset();
 
   /**
    * Set cell offset.
    * 
    * @param offset The new offset value.
    */
-  void SetCellOffset(size_t offset);
+  void SetCellOffset(SqlLen offset);
 
   /**
    * Get the current column number.
@@ -763,7 +763,7 @@ class IGNITE_IMPORT_EXPORT Statement : public diagnostic::DiagnosableAdapter {
   SqlUlen* columnBindOffset;
 
   /** Offset used to iterate through a cell for variable-length data. */
-  size_t cellOffset;
+  SqlLen cellOffset;
 
   /** The current column number. Used in SQLGetData. */
   SqlUlen currentColNum;

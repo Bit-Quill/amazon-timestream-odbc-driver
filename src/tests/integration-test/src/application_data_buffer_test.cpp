@@ -46,44 +46,36 @@ BOOST_AUTO_TEST_CASE(TestPutIntToString) {
   appBuf.PutInt8(12);
   BOOST_CHECK(!strcmp(buffer, "12"));
   BOOST_CHECK(reslen == strlen("12"));
-  appBuf.SetCellOffset(0);
 
   appBuf.PutInt8(-12);
   BOOST_CHECK(!strcmp(buffer, "-12"));
   BOOST_CHECK(reslen == strlen("-12"));
-  appBuf.SetCellOffset(0);
 
   appBuf.PutInt16(9876);
   BOOST_CHECK(!strcmp(buffer, "9876"));
   BOOST_CHECK(reslen == strlen("9876"));
-  appBuf.SetCellOffset(0);
 
   appBuf.PutInt16(-9876);
   BOOST_CHECK(!strcmp(buffer, "-9876"));
   BOOST_CHECK(reslen == strlen("-9876"));
-  appBuf.SetCellOffset(0);
 
   appBuf.PutInt32(1234567);
   BOOST_CHECK(!strcmp(buffer, "1234567"));
   BOOST_CHECK(reslen == strlen("1234567"));
-  appBuf.SetCellOffset(0);
 
   appBuf.PutInt32(-1234567);
   BOOST_CHECK(!strcmp(buffer, "-1234567"));
   BOOST_CHECK(reslen == strlen("-1234567"));
-  appBuf.SetCellOffset(0);
 
   std::string intMaxStr = std::to_string(INT64_MAX);
   appBuf.PutInt64(INT64_MAX);
   BOOST_CHECK(!strcmp(buffer, intMaxStr.c_str()));
   BOOST_CHECK(reslen == intMaxStr.size());
-  appBuf.SetCellOffset(0);
 
   std::string intMinStr = std::to_string(INT64_MIN);
   appBuf.PutInt64(INT64_MIN);
   BOOST_CHECK(!strcmp(buffer, intMinStr.c_str()));
   BOOST_CHECK(reslen == intMinStr.size());
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntToWString) {
@@ -96,44 +88,36 @@ BOOST_AUTO_TEST_CASE(TestPutIntToWString) {
   appBuf.PutInt8(12);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "12");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("12"));
-  appBuf.SetCellOffset(0);
 
   appBuf.PutInt8(-12);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "-12");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-12"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutInt16(9876);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "9876");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("9876"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutInt16(-9876);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "-9876");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-9876"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutInt32(1234567);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "1234567");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("1234567"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutInt32(-1234567);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "-1234567");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-1234567"));
-  appBuf.SetCellOffset(0);
-
+  
   std::string intMaxStr = std::to_string(INT64_MAX);
   appBuf.PutInt64(INT64_MAX);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == intMaxStr);
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == intMaxStr.size());
-  appBuf.SetCellOffset(0);
-
+  
   std::string intMinStr = std::to_string(INT64_MIN);
   appBuf.PutInt64(INT64_MIN);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == intMinStr);
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == intMinStr.size());
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutFloatToString) {
@@ -146,22 +130,18 @@ BOOST_AUTO_TEST_CASE(TestPutFloatToString) {
   appBuf.PutFloat(12.42f);
   BOOST_CHECK(!strcmp(buffer, "12.42"));
   BOOST_CHECK(reslen == strlen("12.42"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutFloat(-12.42f);
   BOOST_CHECK(!strcmp(buffer, "-12.42"));
   BOOST_CHECK(reslen == strlen("-12.42"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutDouble(1000.21);
   BOOST_CHECK(!strcmp(buffer, "1000.21"));
   BOOST_CHECK(reslen == strlen("1000.21"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutDouble(-1000.21);
   BOOST_CHECK(!strcmp(buffer, "-1000.21"));
   BOOST_CHECK(reslen == strlen("-1000.21"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutFloatToWString) {
@@ -174,22 +154,18 @@ BOOST_AUTO_TEST_CASE(TestPutFloatToWString) {
   appBuf.PutFloat(12.42f);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "12.42");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("12.42"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutFloat(-12.42f);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "-12.42");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-12.42"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutDouble(1000.21);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "1000.21");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("1000.21"));
-  appBuf.SetCellOffset(0);
-
+  
   appBuf.PutDouble(-1000.21);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "-1000.21");
   BOOST_CHECK((reslen / sizeof(SQLWCHAR)) == strlen("-1000.21"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutStringToString) {
@@ -205,7 +181,6 @@ BOOST_AUTO_TEST_CASE(TestPutStringToString) {
 
   BOOST_CHECK(!strcmp(buffer, testString.c_str()));
   BOOST_CHECK_EQUAL(static_cast< size_t >(reslen), testString.size());
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutStringToWstring) {
@@ -219,7 +194,6 @@ BOOST_AUTO_TEST_CASE(TestPutStringToWstring) {
 
   appBuf.PutString(testString);
   BOOST_CHECK(utility::SqlWcharToString(buffer) == "Test string");
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutStringToLong) {
@@ -391,23 +365,20 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToString) {
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(std::string(strBuf, reslen) == "0");
-  appBuf.SetCellOffset(0);
-
+  
   int8_t mag1[] = {1, 0};
 
   decimal = ignite::odbc::common::Decimal(mag1, sizeof(mag1), 0, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(std::string(strBuf, reslen) == "256");
-  appBuf.SetCellOffset(0);
-
+  
   int8_t mag2[] = {2, 23};
 
   decimal = ignite::odbc::common::Decimal(mag2, sizeof(mag2), 1, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(std::string(strBuf, reslen) == "-53.5");
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutDecimalToWString) {
@@ -421,23 +392,20 @@ BOOST_AUTO_TEST_CASE(TestPutDecimalToWString) {
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "0");
-  appBuf.SetCellOffset(0);
-
+  
   int8_t mag1[] = {1, 0};
 
   decimal = ignite::odbc::common::Decimal(mag1, sizeof(mag1), 0, 1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "256");
-  appBuf.SetCellOffset(0);
-
+  
   int8_t mag2[] = {2, 23};
 
   decimal = ignite::odbc::common::Decimal(mag2, sizeof(mag2), 1, -1);
 
   appBuf.PutDecimal(decimal);
   BOOST_CHECK(utility::SqlWcharToString(strBuf) == "-53.5");
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutDecimalToNumeric) {
@@ -511,7 +479,6 @@ BOOST_AUTO_TEST_CASE(TestPutDateToString) {
   appBuf.PutDate(date);
 
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen), std::string("1999-02-22"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutDateToStringEdgeCase) {
@@ -526,7 +493,6 @@ BOOST_AUTO_TEST_CASE(TestPutDateToStringEdgeCase) {
   appBuf.PutDate(date);
 
   BOOST_CHECK_EQUAL(std::string(strBuf), std::string("1999-02-2"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutDateToWString) {
@@ -542,7 +508,6 @@ BOOST_AUTO_TEST_CASE(TestPutDateToWString) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("1999-02-22"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutDateToWStringEdgeCase) {
@@ -558,7 +523,6 @@ BOOST_AUTO_TEST_CASE(TestPutDateToWStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("1999-02-2"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutDateToDate) {
@@ -611,7 +575,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToString) {
 
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen),
                     std::string("07:15:00.123456789"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimeToStringEdgeCase) {
@@ -626,7 +589,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToStringEdgeCase) {
   appBuf.PutTime(time);
 
   BOOST_CHECK_EQUAL(std::string(strBuf), std::string("07:15:00.12345678"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimeToWString) {
@@ -642,7 +604,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToWString) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("07:15:00.123456789"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimeToWStringEdgeCase) {
@@ -658,7 +619,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimeToWStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("07:15:00.12345678"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimeToTime) {
@@ -708,7 +668,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToString) {
 
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen),
                     std::string("2018-11-01 17:45:59.123456789"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimestampToStringEdgeCase) {
@@ -725,7 +684,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(std::string(strBuf),
                     std::string("2018-11-01 17:45:59.12345678"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimestampToWString) {
@@ -742,7 +700,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToWString) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("2018-11-01 17:45:59.123456789"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimestampToWStringEdgeCase) {
@@ -759,7 +716,6 @@ BOOST_AUTO_TEST_CASE(TestPutTimestampToWStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("2018-11-01 17:45:59.12345678"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutTimestampToDate) {
@@ -864,7 +820,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToString) {
   appBuf.PutInterval(interval);
 
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen), std::string("4-10"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToStringEdgeCase) {
@@ -879,7 +834,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToStringEdgeCase) {
   appBuf.PutInterval(interval);
 
   BOOST_CHECK_EQUAL(std::string(strBuf), std::string("4-1"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWString) {
@@ -894,7 +848,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWString) {
   appBuf.PutInterval(interval);
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("4-10"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWStringEdgeCase) {
@@ -909,7 +862,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToWStringEdgeCase) {
   appBuf.PutInterval(interval);
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf), std::string("4-1"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalYearMonthToOtherIntervals) {
@@ -1118,7 +1070,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToString) {
 
   BOOST_CHECK_EQUAL(std::string(strBuf, reslen),
                     std::string("3 10:25:55.123456789"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToStringEdgeCase) {
@@ -1133,7 +1084,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToStringEdgeCase) {
   appBuf.PutInterval(interval);
 
   BOOST_CHECK_EQUAL(std::string(strBuf), std::string("3 10:25:55.12345678"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWString) {
@@ -1149,7 +1099,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWString) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("3 10:25:55.123456789"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWStringEdgeCase) {
@@ -1165,7 +1114,6 @@ BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToWStringEdgeCase) {
 
   BOOST_CHECK_EQUAL(utility::SqlWcharToString(strBuf),
                     std::string("3 10:25:55.12345678"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestPutIntervalDaySecondToOtherIntervals) {
@@ -1583,7 +1531,6 @@ BOOST_AUTO_TEST_CASE(TestSetStringWithOffset) {
   BOOST_CHECK(buf[0].reslen == strlen("Hello Ignite!"));
   BOOST_CHECK(res == "Hello Ignite!");
   BOOST_CHECK(res.size() == strlen("Hello Ignite!"));
-  appBuf.SetCellOffset(0);
 
   appBuf.SetByteOffset(sizeof(SetStringWithOffsetTestStruct));
 
@@ -1594,14 +1541,12 @@ BOOST_AUTO_TEST_CASE(TestSetStringWithOffset) {
   BOOST_CHECK(res == "Hello Ignite!");
   BOOST_CHECK(res.size() == strlen("Hello Ignite!"));
   BOOST_CHECK(buf[0].reslen == strlen("Hello Ignite!"));
-  appBuf.SetCellOffset(0);
 
   res.assign(buf[1].val, buf[1].reslen);
 
   BOOST_CHECK(res == "Hello with offset!");
   BOOST_CHECK(res.size() == strlen("Hello with offset!"));
   BOOST_CHECK(buf[1].reslen == strlen("Hello with offset!"));
-  appBuf.SetCellOffset(0);
 }
 
 BOOST_AUTO_TEST_CASE(TestGetDateFromString) {

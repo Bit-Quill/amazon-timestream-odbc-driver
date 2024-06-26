@@ -43,7 +43,7 @@ ApplicationDataBuffer::ApplicationDataBuffer()
       reslen(0),
       byteOffset(0),
       elementOffset(0),
-      cellOffset(0) {
+      cellOffset(-1) {
   // No-op.
 }
 
@@ -56,7 +56,7 @@ ApplicationDataBuffer::ApplicationDataBuffer(
       reslen(reslen),
       byteOffset(0),
       elementOffset(0),
-      cellOffset(0) {
+      cellOffset(-1) {
   // No-op.
 }
 
@@ -255,7 +255,15 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
   LOG_DEBUG_MSG("inCharSize is " << inCharSize << ", outCharSize is "
                                  << outCharSize << ", buflen is " << buflen);
 
-  size_t bytesRequired = value.length() * outCharSize;
+  size_t bytesRequired = 0;
+  if (ANSI_STRING_ONLY) {
+    bytesRequired = value.length() * outCharSize;
+  } else {
+    static std::wstring_convert< std::codecvt_utf8< wchar_t >, wchar_t >
+      converter;
+    std::wstring inString = converter.from_bytes(value.c_str());
+    bytesRequired = inString.length() * outCharSize;
+  }
 
   // Safety check since inCharSize and outCharSize will be denominators.
   if (inCharSize == 0 || outCharSize == 0) {
@@ -272,8 +280,9 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
     return ConversionResult::Type::AI_SUCCESS;
   }
 
+  SqlUlen currentCellOffset = cellOffset >= 0 ? cellOffset : 0;
   // Since cellOffset is in bytes, an index needs to be calculated.
-  size_t inCharIndex = cellOffset / inCharSize;
+  SqlUlen inCharIndex = currentCellOffset / inCharSize;
 
   if (inCharIndex >= value.length()) {
     if (resLenPtr) {
@@ -306,27 +315,28 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
 
   written = static_cast< int32_t >(bytesWritten);
   LOG_DEBUG_MSG("written is " << written);
-  int32_t totalBytesWritten = (cellOffset / inCharSize) * outCharSize + bytesWritten;
+
+  int32_t totalBytesWritten = (currentCellOffset / inCharSize) * outCharSize + bytesWritten;
+  // If all data was successfully returned to the buffer, resLenPtr receives the total
+  // number of bytes in the cell, in size outCharSize. If data is being retrieved in parts,
+  // resLenPtr will receive the remaining required data, gradually decreasing in length as
+  // more calls with the same column are made.
   int32_t remainingBytesRequired = bytesRequired - totalBytesWritten > 0 ?
-    static_cast<int32_t>(bytesRequired - bytesWritten) : 0;
+    static_cast<int32_t>(bytesRequired - bytesWritten) : bytesRequired;
   LOG_DEBUG_MSG("remainingBytesRequired is " << remainingBytesRequired);
 
-  size_t numCharsWritten = bytesWritten / outCharSize;
-  SetCellOffset(cellOffset + numCharsWritten * inCharSize);
+  if (resLenPtr) {
+    *resLenPtr = static_cast<SqlLen>(remainingBytesRequired);
+  }
+
+  if (cellOffset >= 0) {
+    size_t numCharsWritten = bytesWritten / outCharSize;
+    SetCellOffset(cellOffset + numCharsWritten * inCharSize);
+  }
 
   if (isTruncated) {
-    // Return the remaining required amount of data to the indicator pointer
-    // (resLenPtr).
-    if (resLenPtr) {
-      *resLenPtr = static_cast<SqlLen>(remainingBytesRequired);
-    }
     return ConversionResult::Type::AI_VARLEN_DATA_TRUNCATED;
   } else {
-    // The last successful call should return the total size of
-    // the cell to resLenPtr.
-    if (resLenPtr) {
-      *resLenPtr = value.length() * outCharSize;
-    }
     return ConversionResult::Type::AI_SUCCESS;
   }
 }
