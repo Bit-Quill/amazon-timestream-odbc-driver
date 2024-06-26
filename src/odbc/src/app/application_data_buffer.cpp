@@ -277,6 +277,10 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
   void* dataPtr = GetData();
 
   if (!dataPtr) {
+    // Provide the total bytes required for the field.
+    if (resLenPtr) {
+      *resLenPtr = bytesRequired;
+    }
     return ConversionResult::Type::AI_SUCCESS;
   }
 
