@@ -63,7 +63,7 @@ size_t CopyUtf8StringToSqlCharString(const char* inBuffer, SQLCHAR* outBuffer,
       strncpy(reinterpret_cast< char* >(outBuffer), inBuffer, inBufferLenBytes);
       outBuffer[inBufferLenBytes] = 0;
     }
-    return std::min(inBufferLenBytes, outBufferLenBytes);
+    return std::min(inBufferLenBytes, outBufferLenBytes - 1);
   } else {
     // the inBuffer may contain unicode characters
     // Need to convert input string to wide-char to get the
