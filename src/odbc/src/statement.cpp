@@ -1085,14 +1085,14 @@ SqlResult::Type Statement::InternalExtendedFetch(SQLUSMALLINT orientation, SQLLE
     return SqlResult::AI_ERROR;
   }
 
-  if (rowCount)
-    *rowCount = 0;
-
   if (!currentQuery.get()) {
     std::string errMsg = "Cursor is not in the open state.";
     AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, errMsg);
     return SqlResult::AI_ERROR;
   }
+
+  if (rowCount)
+    *rowCount = 0;
 
   // offset (aka FetchOffset) is ignored. Byte offsets are
   // explicitly set to 0 to indicate that bind offsets are not supported
