@@ -265,14 +265,6 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
     bytesRequired = inString.length() * outCharSize;
   }
 
-  // Safety check since inCharSize and outCharSize will be denominators.
-  if (inCharSize == 0 || outCharSize == 0) {
-    LOG_ERROR_MSG(
-      "Unexpected conversion from unknown type string, inCharSize is "
-      << inCharSize << ", outCharSize is " << outCharSize);
-    assert(false);
-  }
-
   SqlLen* resLenPtr = GetResLen();
   void* dataPtr = GetData();
 
