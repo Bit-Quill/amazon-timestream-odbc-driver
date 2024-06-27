@@ -19,7 +19,6 @@ $command.ActiveConnection = $connection
 $command.CommandText = $query
 
 $recordset = $command.Execute()
-$recordset = $connection.Execute($query)
 
 if ($recordset) {
 	while (!$recordset.EOF) {
