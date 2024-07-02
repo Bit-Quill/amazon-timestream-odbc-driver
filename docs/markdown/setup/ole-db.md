@@ -1,6 +1,6 @@
 # OLE DB Setup and Support
 
-OLE DB can be used with the Amazon Timestream ODBC driver.
+The [OLE DB to ODBC bridge](https://learn.microsoft.com/en-us/sql/ado/guide/appendixes/microsoft-ole-db-provider-for-odbc?view=sql-server-ver15) can be used with the Amazon Timestream ODBC driver.
 
 ## PowerShell Example
 
