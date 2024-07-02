@@ -479,9 +479,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_APP_ROW_DESC: {
       SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
 
-      if (val) {
-        *val = static_cast<SQLPOINTER>(ard);
-      }
+      *val = static_cast<SQLPOINTER>(ard);
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -492,9 +490,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_IMP_ROW_DESC: {
       SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
 
-      if (val) {
-        *val = static_cast<SQLPOINTER>(ird);
-      }
+      *val = static_cast<SQLPOINTER>(ird);
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -504,9 +500,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_APP_PARAM_DESC: {
       SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
 
-      if (val) {
-        *val = static_cast<SQLPOINTER>(apdi.get());
-      }
+      *val = static_cast<SQLPOINTER>(apdi.get());
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -517,9 +511,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_IMP_PARAM_DESC: {
       SQLPOINTER* val = reinterpret_cast< SQLPOINTER* >(buf);
 
-      if (val) {
-        *val = static_cast<SQLPOINTER>(ipdi.get());
-      }
+      *val = static_cast<SQLPOINTER>(ipdi.get());
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -530,9 +522,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_CONCURRENCY: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_CONCUR_READ_ONLY;
-      }
+      *val = SQL_CONCUR_READ_ONLY;
 
       break;
     }
@@ -540,9 +530,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_CURSOR_SCROLLABLE: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_NONSCROLLABLE;
-      }
+      *val = SQL_NONSCROLLABLE;
 
       break;
     }
@@ -550,9 +538,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_CURSOR_SENSITIVITY: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_INSENSITIVE;
-      }
+      *val = SQL_INSENSITIVE;
 
       break;
     }
@@ -560,9 +546,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_CURSOR_TYPE: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_CURSOR_FORWARD_ONLY;
-      }
+      *val = SQL_CURSOR_FORWARD_ONLY;
 
       break;
     }
@@ -570,9 +554,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_ENABLE_AUTO_IPD: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_FALSE;
-      }
+      *val = SQL_FALSE;
 
       break;
     }
@@ -580,9 +562,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_METADATA_ID: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = connection.GetMetadataID() ? SQL_TRUE : SQL_FALSE;
-      }
+      *val = connection.GetMetadataID() ? SQL_TRUE : SQL_FALSE;
 
       break;
     }
@@ -590,9 +570,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_RETRIEVE_DATA: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_RD_ON;
-      }
+      *val = SQL_RD_ON;
 
       break;
     }
@@ -600,9 +578,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ROWSET_SIZE: {
       SqlUlen* val = reinterpret_cast<SqlUlen*>(buf);
 
-      if (val) {
-        *val = rowsetSize;
-      }
+      *val = rowsetSize;
 
       if (valueLen)
           *valueLen = SQL_IS_UINTEGER;
@@ -614,9 +590,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_ROW_ARRAY_SIZE: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = rowArraySize;
-      }
+      *val = rowArraySize;
 
       if (valueLen)
         *valueLen = SQL_IS_UINTEGER;
@@ -628,9 +602,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_ROW_BIND_TYPE: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_BIND_BY_COLUMN;
-      }
+      *val = SQL_BIND_BY_COLUMN;
 
       break;
     }
@@ -638,9 +610,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_ROWS_FETCHED_PTR: {
       SqlUlen** val = reinterpret_cast< SqlUlen** >(buf);
 
-      if (val) {
-        *val = reinterpret_cast<SqlUlen*>(GetRowsFetchedPtr());
-      }
+      *val = reinterpret_cast<SqlUlen*>(GetRowsFetchedPtr());
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -658,13 +628,9 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
             "Cursor is not in the open state, cannot determine row number";
         AddStatusRecord(SqlState::S24000_INVALID_CURSOR_STATE, warnMsg,
                         LogLevel::Type::WARNING_LEVEL);
-        if (val) {
-          *val = 0;
-        }
+        *val = 0;
       } else {
-        if (val) {
-          *val = static_cast<SqlUlen>(currentQuery->RowNumber());
-        }
+        *val = static_cast<SqlUlen>(currentQuery->RowNumber());
       }
 
       break;
@@ -673,9 +639,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_ROW_STATUS_PTR: {
       SQLUSMALLINT** val = reinterpret_cast< SQLUSMALLINT** >(buf);
 
-      if (val) {
-        *val = reinterpret_cast<SQLUSMALLINT*>(GetRowStatusesPtr());
-      }
+      *val = reinterpret_cast<SQLUSMALLINT*>(GetRowStatusesPtr());
 
       if (valueLen)
         *valueLen = SQL_IS_POINTER;
@@ -688,9 +652,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_PARAM_BIND_TYPE: {
       SqlUlen* val = reinterpret_cast< SqlUlen* >(buf);
 
-      if (val) {
-        *val = SQL_PARAM_BIND_BY_COLUMN;
-      }
+      *val = SQL_PARAM_BIND_BY_COLUMN;
 
       break;
     }
@@ -698,9 +660,7 @@ SqlResult::Type Statement::InternalGetAttribute(int attr, void* buf, SQLINTEGER,
     case SQL_ATTR_ROW_BIND_OFFSET_PTR: {
       SqlUlen** val = reinterpret_cast< SqlUlen** >(buf);
 
-      if (val) {
-        *val = reinterpret_cast<SqlUlen*>(GetColumnBindOffsetPtr());
-      }
+      *val = reinterpret_cast<SqlUlen*>(GetColumnBindOffsetPtr());
 
       if (valueLen) {
         *valueLen = SQL_IS_POINTER;
