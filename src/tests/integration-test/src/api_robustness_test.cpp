@@ -881,7 +881,7 @@ BOOST_AUTO_TEST_CASE(TestSQLGetDataVarcharAsciiZeroBufferLength) {
 }
 
 BOOST_AUTO_TEST_CASE(TestSQLGetDataVarcharAsciiInParts) {
-  // Ensures that SQLGetData cat be used to retrieve a varchar
+  // Ensures that SQLGetData can be used to retrieve a varchar
   // in parts to a SQLCHAR buffer.
   ConnectToTS();
 
