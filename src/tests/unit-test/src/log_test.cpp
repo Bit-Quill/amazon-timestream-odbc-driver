@@ -433,6 +433,7 @@ BOOST_AUTO_TEST_CASE(TestLogStreamWithErrorLevel) {
 
 BOOST_AUTO_TEST_CASE(TestLogSetInvalidLogPath) {
   std::string logPath = "invalid\\log\\path";
+  LOG_DEBUG_MSG(logPath);
 
   std::shared_ptr< Logger > logger = Logger::GetLoggerInstance();
 
