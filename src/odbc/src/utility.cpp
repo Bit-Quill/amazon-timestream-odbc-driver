@@ -218,15 +218,14 @@ size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
 size_t CopyWcharStringToSqlWcharString(const wchar_t* inBuffer, SQLWCHAR* outBuffer,
                                        size_t outBufferLenBytes, bool& isTruncated) {
     LOG_DEBUG_MSG(
-        "CopyWStringToSqlWcharString called with outBufferLenBytes = "
+        "CopyWcharStringToSqlWcharString called with outBufferLenBytes = "
         << outBufferLenBytes);
 
-    // Validate input parameters
-    if (!inBuffer || !outBuffer || outBufferLenBytes < sizeof(SQLWCHAR)) {
+    const size_t sqlWcharSize = sizeof(SQLWCHAR);
+    if (!inBuffer || !outBuffer || outBufferLenBytes < sqlWcharSize) {
       return 0;
     }
 
-    const size_t sqlWcharSize = sizeof(SQLWCHAR);
      // Reserve space for null terminator
     const size_t maxChars = (outBufferLenBytes / sqlWcharSize) - 1;
 

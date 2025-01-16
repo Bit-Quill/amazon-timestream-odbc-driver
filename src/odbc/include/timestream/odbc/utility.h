@@ -98,7 +98,8 @@ CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
  * @return isTruncated Reference to indicator of whether the input string was
  * truncated in the output buffer.
  * return value(bytes):
- *   - 0, if the inBuffer or outBufferLenBytes is nullptr or outBufferLenBytes is 0
+ *   - 0, if the inBuffer or outBufferLenBytes is nullptr or outBufferLenBytes is
+ * less than size of SQLWCHAR in bytes
  *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
  *   is not 0
  */
