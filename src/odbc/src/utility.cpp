@@ -215,6 +215,46 @@ size_t CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
   }
 }
 
+size_t CopyWcharStringToSqlWcharString(const wchar_t* inBuffer, SQLWCHAR* outBuffer,
+                                       size_t outBufferLenBytes, bool& isTruncated) {
+    LOG_DEBUG_MSG(
+        "CopyWStringToSqlWcharString called with outBufferLenBytes = "
+        << outBufferLenBytes);
+
+    // Validate input parameters
+    if (!inBuffer || !outBuffer || outBufferLenBytes < sizeof(SQLWCHAR)) {
+      return 0;
+    }
+
+    const size_t sqlWcharSize = sizeof(SQLWCHAR);
+     // Reserve space for null terminator
+    const size_t maxChars = (outBufferLenBytes / sqlWcharSize) - 1;
+
+    // determine the length up to maxChars + 1 to check for truncation
+    size_t inLength = wcsnlen(inBuffer, maxChars + 1);
+
+    // Check if truncation is needed
+    if (inLength > maxChars) {
+      isTruncated = true;
+      inLength = maxChars;
+      LOG_DEBUG_MSG("Truncation required. Adjusted input length to " << inLength);
+    } else {
+      LOG_DEBUG_MSG("No truncation required. Input length = " << inLength);
+    }
+
+    // Perform the copy using wmemcpy for efficiency
+    wmemcpy(outBuffer, inBuffer, inLength);
+
+    // Null-terminate the output buffer
+    outBuffer[inLength] = 0;
+
+    const size_t bytesWritten = inLength * sqlWcharSize;
+    LOG_DEBUG_MSG("Bytes written (excluding null terminator) = " << bytesWritten);
+    LOG_DEBUG_MSG("Truncation flag = " << (isTruncated ? "true" : "false"));
+
+    return bytesWritten;
+}
+
 // High-level entry point to handle buffer size in either bytes or characters
 size_t CopyStringToBuffer(const std::string& str, SQLWCHAR* buf, size_t buflen,
                           bool& isTruncated, bool isLenInBytes) {

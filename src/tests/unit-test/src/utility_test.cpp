@@ -174,4 +174,67 @@ BOOST_AUTO_TEST_CASE(TestUtilitySqlStringToString) {
   BOOST_CHECK_EQUAL(utf8StringShortened, result);
 }
 
+BOOST_AUTO_TEST_CASE(TestCopyWcharStringToSqlWcharString) {
+    // Normal Copy
+    {
+        const wchar_t* inBuffer = L"Hello, World!";
+        SQLWCHAR outBuffer[50] = {0};
+        bool isTruncated = false;
+        size_t bytesWritten = CopyWcharStringToSqlWcharString(inBuffer, outBuffer, sizeof(outBuffer), isTruncated);
+        BOOST_CHECK(!isTruncated);
+        BOOST_CHECK_EQUAL(bytesWritten, wcslen(inBuffer) * sizeof(SQLWCHAR));
+        BOOST_CHECK_EQUAL(std::wstring(reinterpret_cast<wchar_t*>(outBuffer)), std::wstring(inBuffer));
+    }
+
+    // Exact Fit
+    {
+        const wchar_t* inBuffer = L"ExactFit";
+        size_t inLength = wcslen(inBuffer);
+        size_t outBufferLenBytes = (inLength + 1) * sizeof(SQLWCHAR); // Exact fit including null terminator
+        SQLWCHAR outBuffer[9] = {0}; // 8 characters + null terminator
+        bool isTruncated = false;
+        size_t bytesWritten = CopyWcharStringToSqlWcharString(inBuffer, outBuffer, outBufferLenBytes, isTruncated);
+        BOOST_CHECK(!isTruncated);
+        BOOST_CHECK_EQUAL(bytesWritten, inLength * sizeof(SQLWCHAR));
+        BOOST_CHECK_EQUAL(std::wstring(reinterpret_cast<wchar_t*>(outBuffer)), std::wstring(inBuffer));
+    }
+
+    // Truncation
+    {
+        const wchar_t* inBuffer = L"TruncatedString";
+        size_t maxChars = 5; // Intentionally small to force truncation
+        size_t outBufferLenBytes = (maxChars + 1) * sizeof(SQLWCHAR); // 5 characters + null terminator
+        SQLWCHAR outBuffer[6] = {0};
+        bool isTruncated = false;
+        size_t bytesWritten = CopyWcharStringToSqlWcharString(inBuffer, outBuffer, outBufferLenBytes, isTruncated);
+        BOOST_CHECK(isTruncated);
+        BOOST_CHECK_EQUAL(bytesWritten, maxChars * sizeof(SQLWCHAR));
+        std::wstring expected(inBuffer, maxChars);
+        BOOST_CHECK_EQUAL(std::wstring(reinterpret_cast<wchar_t*>(outBuffer)), expected);
+    }
+
+    // Null Input Buffer
+    {
+        SQLWCHAR outBuffer[10] = {0};
+        bool isTruncated = false;
+        size_t bytesWritten = CopyWcharStringToSqlWcharString(nullptr, outBuffer, sizeof(outBuffer), isTruncated);
+        BOOST_CHECK_EQUAL(bytesWritten, 0);
+        // Here we check that the first element is untouched (still 0)
+        BOOST_CHECK_EQUAL(outBuffer[0], static_cast<SQLWCHAR>(0));
+    }
+
+    // Empty Input String
+    {
+        const wchar_t* inBuffer = L"";
+        SQLWCHAR outBuffer[10] = {0};
+        bool isTruncated = false;
+        size_t bytesWritten = CopyWcharStringToSqlWcharString(inBuffer, outBuffer, sizeof(outBuffer), isTruncated);
+        BOOST_CHECK(!isTruncated);
+        BOOST_CHECK_EQUAL(bytesWritten, 0);
+        BOOST_CHECK_EQUAL(outBuffer[0], static_cast<SQLWCHAR>(0));
+    }
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
+

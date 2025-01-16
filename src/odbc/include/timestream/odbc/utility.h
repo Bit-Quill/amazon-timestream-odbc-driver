@@ -90,6 +90,23 @@ CopyUtf8StringToSqlWcharString(const char* inBuffer, SQLWCHAR* outBuffer,
                                size_t outBufferLenBytes, bool& isTruncated);
 
 /**
+ * Copy wstring to SQLWCHAR buffer of the specific length. It will ensure
+ * null terminated result, possibly truncated.
+ * @param inBuffer null-terminated wstring to copy data from.
+ * @param outBuffer SQLWCHAR buffer to copy data to.
+ * @param outBufferLenBytes Length of the output buffer, in bytes.
+ * @return isTruncated Reference to indicator of whether the input string was
+ * truncated in the output buffer.
+ * return value(bytes):
+ *   - 0, if the inBuffer or outBufferLenBytes is nullptr or outBufferLenBytes is 0
+ *   - copied bytes number, if outBuffer is not nullptr and outBufferLenBytes
+ *   is not 0
+ */
+IGNITE_IMPORT_EXPORT size_t
+CopyWcharStringToSqlWcharString(const wchar_t* inBuffer, SQLWCHAR* outBuffer,
+                                size_t outBufferLenBytes, bool& isTruncated);
+
+/**
  * Copy string to buffer of the specific length.
  * @param str String to copy data from.
  * @param buf Buffer to copy data to.

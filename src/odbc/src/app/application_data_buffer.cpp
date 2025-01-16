@@ -257,13 +257,14 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
                                  << outCharSize << ", buflen is " << buflen);
 
   size_t bytesRequired = 0;
+  std::wstring convertedString;
   if (ANSI_STRING_ONLY) {
     bytesRequired = value.length() * outCharSize;
   } else {
     thread_local std::wstring_convert<std::codecvt_utf8<wchar_t >, wchar_t>
       converter;
-    std::wstring inString = converter.from_bytes(value.c_str());
-    bytesRequired = inString.length() * outCharSize;
+    convertedString = converter.from_bytes(value.c_str());
+    bytesRequired = convertedString.length() * outCharSize;
   }
 
   SqlLen* resLenPtr = GetResLen();
@@ -290,9 +291,9 @@ ConversionResult::Type ApplicationDataBuffer::PutStrToStrBuffer(
   bool isTruncated = false;
   if (inCharSize == 1) {
     if (outCharSize == 2 || outCharSize == 4) {
-      bytesWritten = utility::CopyUtf8StringToSqlWcharString(
-          reinterpret_cast< const char* >(value.c_str() + currentCellOffset),
-          reinterpret_cast< SQLWCHAR* >(dataPtr), buflen, isTruncated);
+      bytesWritten = utility::CopyWcharStringToSqlWcharString(
+          convertedString.c_str() + currentCellOffset,
+          reinterpret_cast<SQLWCHAR*>(dataPtr), buflen, isTruncated);
     } else if (sizeof(OutCharT) == 1) {
       bytesWritten = utility::CopyUtf8StringToSqlCharString(
           reinterpret_cast< const char* >(value.c_str() + currentCellOffset),
